@@ -7,3 +7,4 @@ Oppmøtetid: 09:00 - 15:00
 
 ### Medlemmer
 - **Ole-Kristian Wigum**
+- **Casper Kolsrud**
