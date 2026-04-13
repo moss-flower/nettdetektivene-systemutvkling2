@@ -1,57 +1,44 @@
-<script setup lang="ts">
-type Student = {
-  firstName: string
-  lastName: string
-  classLabel: string
-  tasksCompleted: number
-  xp: number
-}
-
-const students = [
-  { firstName: 'Ada', lastName: 'Berg', classLabel: 'Ronvik skole 6A', tasksCompleted: 14, xp: 980 },
-  { firstName: 'Liam', lastName: 'Dahl', classLabel: 'Ronvik skole 6A', tasksCompleted: 11, xp: 820 },
-  { firstName: 'Nora', lastName: 'Eide', classLabel: 'Ronvik skole 6B', tasksCompleted: 19, xp: 1240 },
-  { firstName: 'Isak', lastName: 'Foss', classLabel: 'Ronvik skole 6B', tasksCompleted: 7, xp: 590 },
-  { firstName: 'Mina', lastName: 'Hagen', classLabel: 'Ronvik skole 6A', tasksCompleted: 16, xp: 1070 },
-  { firstName: 'Sander', lastName: 'Lunde', classLabel: 'Ronvik skole 6C', tasksCompleted: 9, xp: 670 },
-  { firstName: 'Emilie', lastName: 'Nilsen', classLabel: 'Ronvik skole 6C', tasksCompleted: 20, xp: 1330 },
-  { firstName: 'Tobias', lastName: 'Solheim', classLabel: 'Ronvik skole 6A', tasksCompleted: 6, xp: 530 },
-  { firstName: 'Oskar', lastName: 'Vik', classLabel: 'Ronvik skole 6B', tasksCompleted: 12, xp: 870 },
-  { firstName: 'Leah', lastName: 'Aas', classLabel: 'Ronvik skole 6C', tasksCompleted: 18, xp: 1160 }
-] satisfies Student[]
-
-const sortedStudents = computed(() => {
-  return [...students].sort((a, b) => a.lastName.localeCompare(b.lastName))
-})
-</script>
-
 <template>
   <section class="overviewPage">
     <header class="overviewHeader">
       <p class="eyebrow">Læreroversikt</p>
-      <h1>Elevstatistikk</h1>
-      <p class="subtitle">Midlertidig visning med mock-data sortert på etternavn.</p>
+      <h1>Hjemskjerm</h1>
+      <p class="subtitle">Administrer klasserom og følg aktivitet.</p>
     </header>
 
-    <div class="tableCard">
-      <table>
-        <thead>
-          <tr>
-            <th>Navn</th>
-            <th>Klasse</th>
-            <th>Fullførte oppgaver</th>
-            <th>XP</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="student in sortedStudents" :key="`${student.lastName}-${student.firstName}`">
-            <td>{{ student.firstName }} {{ student.lastName }}</td>
-            <td>{{ student.classLabel }}</td>
-            <td>{{ student.tasksCompleted }}</td>
-            <td>{{ student.xp }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="dashboardGrid">
+      <article class="panel classesPanel">
+        <h2>Dine klasserom</h2>
+        <ul class="classList">
+          <li>
+            <NuxtLink to="/classroomOverview?classroomId=ronvik-6a">Ronvik skole 6A</NuxtLink>
+          </li>
+          <li>
+            <NuxtLink to="/classroomOverview?classroomId=ronvik-6b">Ronvik skole 6B</NuxtLink>
+          </li>
+          <li>
+            <NuxtLink to="/classroomOverview?classroomId=ronvik-6c">Ronvik skole 6C</NuxtLink>
+          </li>
+        </ul>
+      </article>
+
+      <article class="panel">
+        <h2>Innstillinger</h2>
+        <p>Profil, språk, varslingstyper og klasseregler.</p>
+      </article>
+
+      <article class="panel">
+        <h2>Varslinger</h2>
+        <ul class="notificationList">
+          <li>3 elever har levert nye oppgaver.</li>
+        </ul>
+      </article>
+
+      <article class="panel panel--highlight">
+        <h2>Opprett nytt klasserom</h2>
+        <p>Start et nytt klasserom og inviter elever.</p>
+        <button type="button">+ Opprett klasserom</button>
+      </article>
     </div>
   </section>
 </template>
@@ -86,28 +73,58 @@ h1 {
   color: var(--muted);
 }
 
-.tableCard {
+.dashboardGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.panel {
   border: 1px solid var(--border);
   border-radius: 1rem;
   background: #fff;
-  overflow: auto;
+  padding: var(--space-4);
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 650px;
+.classesPanel {
+  grid-column: 1 / -1;
 }
 
-th,
-td {
-  text-align: left;
-  padding: 0.85rem 1rem;
-  border-bottom: 1px solid var(--border);
+h2 {
+  margin: 0 0 0.75rem 0;
 }
 
-thead th {
-  background: #f8fafc;
-  font-weight: 700;
+.classList,
+.notificationList {
+  margin: 0;
+  padding-left: 1rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.classList a {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.panel--highlight {
+  background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+}
+
+button {
+  margin-top: 0.9rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--primary);
+  border-radius: 0.5rem;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
