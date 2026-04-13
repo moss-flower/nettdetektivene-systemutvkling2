@@ -3,6 +3,7 @@ type HomeItem = {
   id: string;
   title: string;
   description: string;
+  route: string;
   badge?: string;
 };
 
@@ -11,45 +12,62 @@ const items: HomeItem[] = [
     id: 'hjelp',
     title: 'Hjelp',
     description: 'Få tips hvis du står fast eller lurer på hva du skal gjøre.',
+    route: '',
     badge: '?'
   },
   {
     id: 'avatar',
     title: 'Avatar',
     description: 'Se profilen din og etter hvert tilpass hvordan detektiven din ser ut.',
+    route: '',
     badge: 'A'
   },
   {
     id: 'ledertavle',
     title: 'Ledertavle',
     description: 'Se poeng, plassering og hvem som har samlet flest spor.',
+    route: '',
     badge: '#'
   },
   {
     id: 'kart',
     title: 'Kartet',
     description: 'Her foregår spillet. Trykk her for å gå til stoppesteder og oppgaver.',
+    route: '/levels',
     badge: 'K'
   },
   {
     id: 'mysterium',
     title: 'Ukens mysterium',
     description: 'Et eget mysterium med ferske spor og en ny sak å utforske.',
+    route: '',
     badge: '!'
   },
   {
     id: 'medaljer',
     title: 'Medaljer',
     description: 'Se medaljene du har vunnet og hvilke du kan samle senere.',
+    route: '',
     badge: '*'
   },
   {
     id: 'notatblokk',
     title: 'Notatblokk',
     description: 'Skriv ned spor, tanker og ting du vil huske til senere.',
+    route: '',
     badge: 'N'
   }
 ];
+
+const router = useRouter();
+
+function handleClick(item: HomeItem) {
+  if (!item.route) {
+    return;
+  }
+
+  router.push(item.route);
+}
 </script>
 
 <template>
@@ -73,6 +91,7 @@ const items: HomeItem[] = [
           { 'board-item--map': item.id === 'kart' }
         ]"
         :aria-label="`${item.title}: ${item.description}`"
+        @click="handleClick(item)"
       >
         <span class="board-item__badge">{{ item.badge }}</span>
         <span class="board-item__title">{{ item.title }}</span>
