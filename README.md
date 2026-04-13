@@ -8,6 +8,7 @@ Oppmøtetid: 09:00 - 15:00
 ### Medlemmer
 - **Ole-Kristian Wigum**
 - **Casper Kolsrud**
+- **William Holtsdalen**
 
 ### Aktivitetsdiagram
 ![Aktivitetsdiagram](docs/aktivitets-diagram.png)
