@@ -84,6 +84,8 @@ function handleInput(event: Event) {
       :placeholder="props.placeholder"
       :value="inputValue"
       @input="handleInput"
+
+      class="input"
     />
 
     <p v-if="props.description" class="description">
@@ -101,17 +103,22 @@ function handleInput(event: Event) {
   gap: 0.35rem;
 }
 
-.field__label {
+.label {
   font-weight: 700;
   color: var(--text);
 }
 
-.field__description {
+.description {
   font-size: 0.95rem;
   color: var(--muted);
 }
 
-.field__input {
+.displayError {
+  font-size: 0.9rem;
+  color: var(--danger);
+}
+
+.input {
   width: 100%;
   padding: 0.85rem 1rem;
   border: 1px solid var(--border);
@@ -124,23 +131,4 @@ function handleInput(event: Event) {
     box-shadow var(--transition);
 }
 
-.field__input:focus {
-  outline: none; 
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-}
-
-.field__input:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
-
-.field__input--error {
-  border-color: var(--danger);
-}
-
-.field__error {
-  font-size: 0.9rem;
-  color: var(--danger);
-}
 </style>
