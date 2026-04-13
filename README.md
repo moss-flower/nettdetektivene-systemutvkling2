@@ -10,4 +10,4 @@ Oppmøtetid: 09:00 - 15:00
 - **Casper Kolsrud**
 
 ### Aktivitetsdiagram
-<img src="docs/aktivitets-diagram.png" alt="Aktivitetsdiagram" width="600"/>
+[Aktivitetsdiagram](docs/aktivitets-diagram.png)
