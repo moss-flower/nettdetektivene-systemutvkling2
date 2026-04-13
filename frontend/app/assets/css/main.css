@@ -1,0 +1,53 @@
+:root {
+  --bg: #1b1b1b;
+  --surface: #202020;
+  --text: #f3f3f3;
+  --muted: #6b7280;
+  --border: #4b4b4b;
+
+  --primary: #65f0af;
+  --primary-hover: #8afcc6;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+
+  --font: Inter, Arial, sans-serif;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2rem;
+
+  --radius: 0.5rem;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  --transition: 0.2s ease;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#__nuxt {
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
