@@ -47,7 +47,7 @@ __screenshots__/
 **/.env.local
 **/.env.*.local
 
-# Ik-backend
+# Backend
 backend/HELP.md
 backend/target/
 backend/.mvn/wrapper/maven-wrapper.jar
