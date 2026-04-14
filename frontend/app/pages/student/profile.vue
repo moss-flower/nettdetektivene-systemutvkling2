@@ -16,7 +16,7 @@ const xpProgress = Math.round((currentXp / nextLevelXp) * 100)
     </header>
 
     <div class="profileCard">
-      <div class="avatarWrap" aria-hidden="true">👤</div>
+      <div class="avatarWrap" aria-hidden="true">placeholder</div>
 
       <div class="infoBlock">
         <p class="label">Navn</p>
