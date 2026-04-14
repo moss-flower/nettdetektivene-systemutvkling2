@@ -3,32 +3,34 @@
     <h1>Bildegjenkjenning</h1>
 
     <GameplayImagerecognitionImageRecognitionSingleton
-      v-if="mockData.images[currentIndex]"
-      :data="mockData.images[currentIndex]!"
+      v-if="tasks[currentIndex]"
+      :data="tasks[currentIndex]!"
       @answered="onAnswered"
     />
 
     <GameplaySharedSelectedPopup
       v-if="showResultPopup"
       :correct="lastAnswerCorrect"
-      :is-last="currentIndex >= mockData.images.length - 1"
+      :is-last="currentIndex >= tasks.length - 1"
       @next="next"
     />
 
     <GameplaySharedCompletedPopup
       v-if="showCompletedPopup"
       :correct-count="correctCount"
-      :total="mockData.images.length"
+      :total="tasks.length"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import { TaskImageRecognitionDTO, ImageRecognitionType } from '~/composables/types/TaskTypes'
+import { sampleAndShuffle } from '~/composables/utils/gameUtils'
 
 const mockData: TaskImageRecognitionDTO = {
   taskId: "1",
   description: "Hvilken form for bilde er dette?",
+  taskAmount: 2,
   images: [
     { imageurl: "https://placehold.co/600x400?text=Image+1", type: ImageRecognitionType.Real },
     { imageurl: "https://placehold.co/600x400?text=Image+2", type: ImageRecognitionType.AI },
@@ -36,6 +38,7 @@ const mockData: TaskImageRecognitionDTO = {
   ]
 }
 
+const tasks = sampleAndShuffle(mockData.images, mockData.taskAmount)
 const currentIndex = ref(0)
 const showResultPopup = ref(false)
 const showCompletedPopup = ref(false)
@@ -50,7 +53,7 @@ function onAnswered(correct: boolean) {
 
 function next() {
   showResultPopup.value = false
-  if (currentIndex.value < mockData.images.length - 1) {
+  if (currentIndex.value < tasks.length - 1) {
     currentIndex.value++
   } else {
     showCompletedPopup.value = true

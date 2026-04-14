@@ -2,40 +2,43 @@
   <div>
     <h1>Markedsplassen</h1>
 
-    <GameplayMarketplaceMarketplaceSingleton
-      v-if="mockData.tasks[currentIndex]"
-      :data="mockData.tasks[currentIndex]!"
+    <GameplayMarketplaceSingleton
+      v-if="tasks[currentIndex]"
+      :data="tasks[currentIndex]!"
       @answered="onAnswered"
     />
 
     <GameplaySharedSelectedPopup
       v-if="showResultPopup"
       :correct="lastAnswerCorrect"
-      :is-last="currentIndex >= mockData.tasks.length - 1"
+      :is-last="currentIndex >= tasks.length - 1"
       @next="next"
     />
 
     <GameplaySharedCompletedPopup
       v-if="showCompletedPopup"
       :correct-count="correctCount"
-      :total="mockData.tasks.length"
+      :total="tasks.length"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import { TaskMarketplaceDTO, MarketplaceChoices } from '~/composables/types/TaskTypes'
+import { sampleAndShuffle } from '~/composables/utils/gameUtils'
 
 const mockData: TaskMarketplaceDTO = {
   taskId: "1",
   description: "Hva bør du gjøre med disse produktene?",
-  tasks: [
-    { imageurl: "https://placehold.co/600x400?text=Product+1", type: MarketplaceChoices.Buy },
-    { imageurl: "https://placehold.co/600x400?text=Product+2", type: MarketplaceChoices.ReviewMore },
-    { imageurl: "https://placehold.co/600x400?text=Product+3", type: MarketplaceChoices.DontBuy },
+  taskAmount: 2,
+  listing: [
+    { imageurl: "https://placehold.co/600x400?text=Product+1", type: MarketplaceChoices.Buy, price: 100 },
+    { imageurl: "https://placehold.co/600x400?text=Product+2", type: MarketplaceChoices.ReviewMore, price: 200 },
+    { imageurl: "https://placehold.co/600x400?text=Product+3", type: MarketplaceChoices.DontBuy, price: 300 },
   ]
 }
 
+const tasks = sampleAndShuffle(mockData.listing, mockData.taskAmount)
 const currentIndex = ref(0)
 const showResultPopup = ref(false)
 const showCompletedPopup = ref(false)
@@ -50,7 +53,7 @@ function onAnswered(correct: boolean) {
 
 function next() {
   showResultPopup.value = false
-  if (currentIndex.value < mockData.tasks.length - 1) {
+  if (currentIndex.value < tasks.length - 1) {
     currentIndex.value++
   } else {
     showCompletedPopup.value = true

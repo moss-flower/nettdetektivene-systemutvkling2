@@ -3,32 +3,34 @@
     <h1>Aviskiosken</h1>
 
     <GameplayNewsstandNewsStandSingleton
-      v-if="mockData.articles[currentIndex]"
-      :data="mockData.articles[currentIndex]!"
+      v-if="tasks[currentIndex]"
+      :data="tasks[currentIndex]!"
       @answered="onAnswered"
     />
 
     <GameplaySharedSelectedPopup
       v-if="showResultPopup"
       :correct="lastAnswerCorrect"
-      :is-last="currentIndex >= mockData.articles.length - 1"
+      :is-last="currentIndex >= tasks.length - 1"
       @next="next"
     />
 
     <GameplaySharedCompletedPopup
       v-if="showCompletedPopup"
       :correct-count="correctCount"
-      :total="mockData.articles.length"
+      :total="tasks.length"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import { TaskNewsStandDTO } from '~/composables/types/TaskTypes'
+import { sampleAndShuffle } from '~/composables/utils/gameUtils'
 
 const mockData: TaskNewsStandDTO = {
   taskId: "1",
   description: "Hvilke nyheter er ekte og hvilke er falske?",
+  taskAmount: 2,
   articles: [
     {
       correct: { author: "NRK", title: "Ekte nyhet 1", imageurl: "https://placehold.co/600x400?text=Real+1", text: "Dette er en ekte nyhetsartikkel." },
@@ -41,6 +43,7 @@ const mockData: TaskNewsStandDTO = {
   ]
 }
 
+const tasks = sampleAndShuffle(mockData.articles, mockData.taskAmount)
 const currentIndex = ref(0)
 const showResultPopup = ref(false)
 const showCompletedPopup = ref(false)
@@ -55,7 +58,7 @@ function onAnswered(correct: boolean) {
 
 function next() {
   showResultPopup.value = false
-  if (currentIndex.value < mockData.articles.length - 1) {
+  if (currentIndex.value < tasks.length - 1) {
     currentIndex.value++
   } else {
     showCompletedPopup.value = true

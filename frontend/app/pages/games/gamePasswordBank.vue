@@ -1,7 +1,37 @@
 <template>
   <div>
     <h1>Passordbanken</h1>
-    <!-- TODO: implement game logic for each subtask type -->
+
+    <template v-if="currentTask">
+      <GameplayPasswordbankPasswordBankGuess
+        v-if="currentTask instanceof TaskPasswordBankGuessSingleton"
+        :data="currentTask"
+        @answered="onAnswered"
+      />
+      <GameplayPasswordbankPasswordBankImprove
+        v-else-if="currentTask instanceof TaskPasswordBankImproveSingleton"
+        :data="currentTask"
+        @answered="onAnswered"
+      />
+      <GameplayPasswordbankPasswordBankMakePassword
+        v-else-if="currentTask instanceof TaskPasswordBankMakePasswordSingleton"
+        :data="currentTask"
+        @answered="onAnswered"
+      />
+    </template>
+
+    <GameplaySharedSelectedPopup
+      v-if="showResultPopup"
+      :correct="lastAnswerCorrect"
+      :is-last="currentIndex >= tasks.length - 1"
+      @next="next"
+    />
+
+    <GameplaySharedCompletedPopup
+      v-if="showCompletedPopup"
+      :correct-count="correctCount"
+      :total="tasks.length"
+    />
   </div>
 </template>
 
@@ -12,10 +42,12 @@ import {
   TaskPasswordBankImproveSingleton,
   TaskPasswordBankMakePasswordSingleton,
 } from '~/composables/types/TaskTypes'
+import { sampleAndShuffle } from '~/composables/utils/gameUtils'
 
 const mockData: TaskPasswordBankDTO = {
   taskId: "1",
   description: "Passordutfordringer",
+  taskAmount: 3,
   passwordTasks: [
     Object.assign(new TaskPasswordBankGuessSingleton(), {
       taskId: "1a",
@@ -34,6 +66,29 @@ const mockData: TaskPasswordBankDTO = {
       password: "",
     }),
   ]
+}
+
+const tasks = sampleAndShuffle(mockData.passwordTasks, mockData.taskAmount)
+const currentIndex = ref(0)
+const currentTask = computed(() => tasks[currentIndex.value])
+const showResultPopup = ref(false)
+const showCompletedPopup = ref(false)
+const lastAnswerCorrect = ref(false)
+const correctCount = ref(0)
+
+function onAnswered(correct: boolean) {
+  lastAnswerCorrect.value = correct
+  if (correct) correctCount.value++
+  showResultPopup.value = true
+}
+
+function next() {
+  showResultPopup.value = false
+  if (currentIndex.value < tasks.length - 1) {
+    currentIndex.value++
+  } else {
+    showCompletedPopup.value = true
+  }
 }
 </script>
 

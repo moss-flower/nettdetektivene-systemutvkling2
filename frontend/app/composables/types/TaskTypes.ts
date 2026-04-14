@@ -2,6 +2,7 @@
 class TaskDTO {
     taskId: string = "";
     description: string = "";
+    taskAmount: number = 4;
 }
 
 
@@ -73,11 +74,12 @@ enum ImageRecognitionType {
 
 // Task Marketplace; Which products should be bought, reviewed more, or not bought?
 class TaskMarketplaceDTO extends TaskDTO {
-    tasks: TaskMarketplaceSingleton[] = [];
+    listing: TaskMarketplaceSingleton[] = [];
 }
 
 class TaskMarketplaceSingleton {
     imageurl: string = "";
+    price: number = 0;
     type: MarketplaceChoices = MarketplaceChoices.Buy;
 }
 

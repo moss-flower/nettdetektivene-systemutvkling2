@@ -3,35 +3,37 @@
     <h1>Sosiale Medier</h1>
 
     <GameplaySocialmediaSocialMediaSingleton
-      v-if="posts[currentIndex]"
-      :data="posts[currentIndex]!"
+      v-if="tasks[currentIndex]"
+      :data="tasks[currentIndex]!"
       @answered="onAnswered"
     />
 
     <GameplaySharedSelectedPopup
       v-if="showResultPopup"
       :correct="lastAnswerCorrect"
-      :is-last="currentIndex >= posts.length - 1"
+      :is-last="currentIndex >= tasks.length - 1"
       @next="next"
     />
 
     <GameplaySharedCompletedPopup
       v-if="showCompletedPopup"
       :correct-count="correctCount"
-      :total="posts.length"
+      :total="tasks.length"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import { TaskSocialMediaDTO, SocialMediaChoices } from '~/composables/types/TaskTypes'
+import { sampleAndShuffle } from '~/composables/utils/gameUtils'
 
-const posts: TaskSocialMediaDTO[] = [
-  { taskId: "1", description: "Hva gjør du med dette innlegget?", imageurl: "https://placehold.co/600x400?text=Post+1", choice: SocialMediaChoices.Share },
-  { taskId: "2", description: "Hva gjør du med dette innlegget?", imageurl: "https://placehold.co/600x400?text=Post+2", choice: SocialMediaChoices.CheckSources },
-  { taskId: "3", description: "Hva gjør du med dette innlegget?", imageurl: "https://placehold.co/600x400?text=Post+3", choice: SocialMediaChoices.AskAdult },
+const allPosts: TaskSocialMediaDTO[] = [
+  { taskId: "1", description: "Hva gjør du med dette innlegget?", taskAmount: 2, imageurl: "https://placehold.co/600x400?text=Post+1", choice: SocialMediaChoices.Share },
+  { taskId: "2", description: "Hva gjør du med dette innlegget?", taskAmount: 2, imageurl: "https://placehold.co/600x400?text=Post+2", choice: SocialMediaChoices.CheckSources },
+  { taskId: "3", description: "Hva gjør du med dette innlegget?", taskAmount: 2, imageurl: "https://placehold.co/600x400?text=Post+3", choice: SocialMediaChoices.AskAdult },
 ]
 
+const tasks = sampleAndShuffle(allPosts, 2)
 const currentIndex = ref(0)
 const showResultPopup = ref(false)
 const showCompletedPopup = ref(false)
@@ -46,7 +48,7 @@ function onAnswered(correct: boolean) {
 
 function next() {
   showResultPopup.value = false
-  if (currentIndex.value < posts.length - 1) {
+  if (currentIndex.value < tasks.length - 1) {
     currentIndex.value++
   } else {
     showCompletedPopup.value = true
