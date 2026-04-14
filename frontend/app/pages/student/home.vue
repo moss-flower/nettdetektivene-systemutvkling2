@@ -1,5 +1,5 @@
 <script setup lang="ts">
-type HomeItem = {
+type StudentHomeItem = {
   id: string;
   title: string;
   description: string;
@@ -7,7 +7,7 @@ type HomeItem = {
   badge?: string;
 };
 
-const items: HomeItem[] = [
+const items: StudentHomeItem[] = [
   {
     id: 'hjelp',
     title: 'Hjelp',
@@ -61,7 +61,7 @@ const items: HomeItem[] = [
 
 const router = useRouter();
 
-function handleClick(item: HomeItem) {
+function handleClick(item: StudentHomeItem) {
   if (!item.route) {
     return;
   }
