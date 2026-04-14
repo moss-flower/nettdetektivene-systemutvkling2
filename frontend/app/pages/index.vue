@@ -22,7 +22,7 @@
         <span class="serviceText">
           Administrer klasserom, følg elever og se fremgang.
         </span>
-        <NuxtLink to="/login?role=laerer">
+        <NuxtLink to="/teacherOverview">
           <button>Velg</button>
         </NuxtLink>
       </div>
