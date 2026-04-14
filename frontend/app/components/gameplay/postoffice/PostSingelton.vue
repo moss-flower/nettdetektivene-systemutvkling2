@@ -1,6 +1,9 @@
 <template>
   <div class="post-singleton">
-    <img :src="data.imageurl" alt="Email" />
+    <img :src="data.avatarImageurl" alt="Sender avatar" />
+    <p class="sender">{{ data.sender }}</p>
+    <h2>{{ data.subject }}</h2>
+    <p>{{ data.content }}</p>
     <div class="actions">
       <button @click="answer(true)">Troverdig</button>
       <button @click="answer(false)">Svindel</button>
@@ -24,3 +27,5 @@ function answer(userSaidGood: boolean) {
   emit('answered', correct)
 }
 </script>
+
+<style scoped></style>

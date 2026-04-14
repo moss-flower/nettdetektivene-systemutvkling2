@@ -7,17 +7,31 @@ class TaskDTO {
 
 // Task NewsStand; Which of these news articles are real and which are fake?
 class TaskNewsStandDTO extends TaskDTO {
-    correct: string[] = [];
-    faulty: string[] = [];
+    articles: TaskNewsStandSingleton[] = [];
+}
+
+class TaskNewsStandSingleton {
+    correct: NewsArticle = new NewsArticle();
+    fake: NewsArticle = new NewsArticle();
+}
+
+class NewsArticle {
+    author: string = "";
+    title: string = ""
+    imageurl: string = "";
+    text: string = "";
 }
 
 // Task PostOffice; Which email is a scam and which is not?
 class TaskPostOfficeDTO extends TaskDTO {
-    tasks: TaskPostSingleton[] = [];
+    mails: TaskPostSingleton[] = [];
 }
 
 class TaskPostSingleton {
-    imageurl: string = "";
+    avatarImageurl: string = "";
+    sender: string = "";
+    subject: string = "";
+    content: string = "";
     isValid: boolean = false;
 }
 
@@ -39,10 +53,13 @@ class TaskPasswordBankMakePasswordDTO extends TaskPasswordBankDTO {
 
 // Task ImageRecognition; Which images are real, AI-generated, or manipulated?
 class TaskImageRecognitionDTO extends TaskDTO {
-    imageurl: string = "";
-    type: ImageRecognitionType = ImageRecognitionType.Real;
+    images: TaskImageRecognitionSingleton[] = [];
 }
 
+class TaskImageRecognitionSingleton {
+    imageurl: string = ""
+    type: ImageRecognitionType = ImageRecognitionType.Real;
+}
 
 enum ImageRecognitionType {
     Real,
@@ -87,6 +104,7 @@ class TaskFinalBossDTO extends TaskDTO {
 export {
     TaskDTO,
     TaskNewsStandDTO,
+    TaskNewsStandSingleton,
     TaskPostOfficeDTO,
     TaskPostSingleton,
     TaskPasswordBankDTO,
@@ -94,6 +112,7 @@ export {
     TaskPasswordBankImproveDTO,
     TaskPasswordBankMakePasswordDTO,
     TaskImageRecognitionDTO,
+    TaskImageRecognitionSingleton,
     ImageRecognitionType,
     TaskMarketplaceDTO,
     TaskMarketplaceSingleton,

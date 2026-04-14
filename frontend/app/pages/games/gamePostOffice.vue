@@ -2,23 +2,23 @@
   <div>
     <h1>Post Kontoret</h1>
 
-    <GameplayPostofficePostSingelton
-      v-if="mockData.tasks[currentIndex]"
-      :data="mockData.tasks[currentIndex]!"
+    <GameplayPostofficePostSingleton
+      v-if="mockData.mails[currentIndex]"
+      :data="mockData.mails[currentIndex]!"
       @answered="onAnswered"
     />
 
     <GameplaySharedSelectedPopup
       v-if="showResultPopup"
       :correct="lastAnswerCorrect"
-      :is-last="currentIndex >= mockData.tasks.length - 1"
+      :is-last="currentIndex >= mockData.mails.length - 1"
       @next="next"
     />
 
     <GameplaySharedCompletedPopup
       v-if="showCompletedPopup"
       :correct-count="correctCount"
-      :total="mockData.tasks.length"
+      :total="mockData.mails.length"
     />
   </div>
 </template>
@@ -29,10 +29,10 @@ import { TaskPostOfficeDTO } from '~/composables/types/TaskTypes'
 const mockData: TaskPostOfficeDTO = {
   taskId: "1",
   description: "Which emails are scams?",
-  tasks: [
-    { imageurl: "https://placehold.co/600x400?text=Email+1", isValid: true },
-    { imageurl: "https://placehold.co/600x400?text=Email+2", isValid: false },
-    { imageurl: "https://placehold.co/600x400?text=Email+3", isValid: false },
+  mails: [
+    { avatarImageurl: "https://placehold.co/100x100?text=A1", sender: "bank@sparebanken.no", subject: "Viktig melding om kontoen din", content: "Vi trenger at du bekrefter kontoinformasjonen din.", isValid: true },
+    { avatarImageurl: "https://placehold.co/100x100?text=A2", sender: "prince@nigeria.com", subject: "Du har vunnet!", content: "Send oss dine bankdetaljer for å motta premien.", isValid: false },
+    { avatarImageurl: "https://placehold.co/100x100?text=A3", sender: "support@microsoft.com.ru", subject: "Kontoen din er hacket", content: "Klikk her for å sikre kontoen din umiddelbart.", isValid: false },
   ]
 }
 
@@ -50,10 +50,14 @@ function onAnswered(correct: boolean) {
 
 function next() {
   showResultPopup.value = false
-  if (currentIndex.value < mockData.tasks.length - 1) {
+  if (currentIndex.value < mockData.mails.length - 1) {
     currentIndex.value++
   } else {
     showCompletedPopup.value = true
   }
 }
 </script>
+
+<style scoped>
+/* Styles here */
+</style>
