@@ -2,6 +2,7 @@
 import type { Level, LevelState } from "~/composables/types/local";
 import placeholderImage from "~/assets/placeholder.jpeg";
 
+//Props, temporary hardcoded content
 const props = withDefaults(
   defineProps<{
     levels: Level[];
@@ -90,6 +91,7 @@ const props = withDefaults(
   },
 );
 
+//Dynamically creates empty or full stars based on given filled-star number
 const createStarString = (number: number): string => {
   if (number > 3) {
     throw new Error("Stars must be below three");
