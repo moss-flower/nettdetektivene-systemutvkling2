@@ -1,0 +1,9 @@
+package no.safety.backend.registration.dto;
+
+import jakarta.validation.constraints.NotBlank;
+
+public record TeacherUserRegistrationRequest(
+    @NotBlank String username,
+    @NotBlank String password
+) {
+} 

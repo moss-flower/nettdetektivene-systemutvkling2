@@ -2,7 +2,8 @@ package no.safety.backend.auth.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record LoginRequest (
-    @NotBlank String email, 
+public record UserLoginRequest(
+    @NotBlank String username,
     @NotBlank String password
-) {}
+) {
+} 
