@@ -36,19 +36,23 @@ class TaskPostSingleton {
 }
 
 // Task PasswordBank; Which passwords are weak and which are strong?
-abstract class TaskPasswordBankDTO extends TaskDTO { }
+abstract class TaskPasswordBankSingletonAbstract extends TaskDTO { }
 
-class TaskPasswordBankGuessDTO extends TaskPasswordBankDTO {
+class TaskPasswordBankGuessSingleton extends TaskPasswordBankSingletonAbstract {
     passwordWeak: string[] = [];
     passwordStrong: string[] = [];
 }
 
-class TaskPasswordBankImproveDTO extends TaskPasswordBankDTO {
+class TaskPasswordBankImproveSingleton extends TaskPasswordBankSingletonAbstract {
     passwordStart: string = "";
 }
 
-class TaskPasswordBankMakePasswordDTO extends TaskPasswordBankDTO {
+class TaskPasswordBankMakePasswordSingleton extends TaskPasswordBankSingletonAbstract {
     password: string = "";
+}
+
+class TaskPasswordBankDTO extends TaskDTO {
+    passwordTasks: TaskPasswordBankSingletonAbstract[] = [];
 }
 
 // Task ImageRecognition; Which images are real, AI-generated, or manipulated?
@@ -107,10 +111,11 @@ export {
     TaskNewsStandSingleton,
     TaskPostOfficeDTO,
     TaskPostSingleton,
+    TaskPasswordBankSingletonAbstract,
+    TaskPasswordBankGuessSingleton,
+    TaskPasswordBankImproveSingleton,
+    TaskPasswordBankMakePasswordSingleton,
     TaskPasswordBankDTO,
-    TaskPasswordBankGuessDTO,
-    TaskPasswordBankImproveDTO,
-    TaskPasswordBankMakePasswordDTO,
     TaskImageRecognitionDTO,
     TaskImageRecognitionSingleton,
     ImageRecognitionType,
