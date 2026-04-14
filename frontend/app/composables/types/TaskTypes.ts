@@ -18,7 +18,7 @@ class TaskPostOfficeDTO extends TaskDTO {
 
 class TaskPostSingleton {
     imageurl: string = "";
-    isGood: boolean = false;
+    isValid: boolean = false;
 }
 
 // Task PasswordBank; Which passwords are weak and which are strong?
