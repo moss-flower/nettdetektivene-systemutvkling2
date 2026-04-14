@@ -26,7 +26,7 @@ const items: StudentHomeItem[] = [
     id: 'ledertavle',
     title: 'Ledertavle',
     description: 'Se poeng, plassering og hvem som har samlet flest spor.',
-    route: '/classroomOverview?classroomId=ronvik-6a',
+    route: '',
     badge: '#'
   },
   {
