@@ -45,9 +45,9 @@ const progressPercent = computed(() => {
     </div>
 
     <div v-if="student" class="detailCard">
-      <h2>Oversikt</h2>
+      <h2>Logg</h2>
       <p>Sist aktiv: {{ student.lastActive }}</p>
-      <p>Denne siden er en enkel placeholder for elevens progresjon i klasserommet.</p>
+      <p>Her kan vi kanskje ha en tabell med spillhistorikken til eleven.</p>
     </div>
   </section>
 </template>
