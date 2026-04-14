@@ -103,8 +103,8 @@ h2 {
 }
 
 .classList a {
+  font-weight: 700;
   color: var(--primary);
-  font-weight: 600;
 }
 
 .panel--highlight {
