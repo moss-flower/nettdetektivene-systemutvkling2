@@ -7,12 +7,40 @@ export type StudentLeaderboardEntry = {
   points: number;
 };
 
+export type StudentOverviewEntry = StudentLeaderboardEntry & {
+  badges: number;
+  lastActive: string;
+};
+
 export type ClassroomSummary = {
   id: string;
   name: string;
   totalScore: number;
   studentCount: number;
   averageProgressPercent: number;
+};
+
+export type ClassroomNotification = {
+  id: string;
+  classroomId: string;
+  title: string;
+  description: string;
+  timeLabel: string;
+};
+
+export type ClassroomTask = {
+  id: string;
+  classroomId: string;
+  title: string;
+  status: string;
+  level: string;
+};
+
+export type ClassroomMystery = {
+  classroomId: string;
+  title: string;
+  description: string;
+  status: string;
 };
 
 const TOTAL_LEVELS = 7;
@@ -30,6 +58,41 @@ const mockStudents: StudentLeaderboardEntry[] = [
   { id: 'leah-aas', name: 'Leah Aas', classroomId: 'ronvik-6c', completedLevels: 5, totalLevels: TOTAL_LEVELS, points: 1170 },
   { id: 'sander-lunde', name: 'Sander Lunde', classroomId: 'ronvik-6c', completedLevels: 3, totalLevels: TOTAL_LEVELS, points: 760 },
   { id: 'jonas-moen', name: 'Jonas Moen', classroomId: 'ronvik-6c', completedLevels: 1, totalLevels: TOTAL_LEVELS, points: 310 }
+];
+
+const studentExtras: Record<string, { badges: number; lastActive: string }> = {
+  'ada-berg': { badges: 8, lastActive: 'I dag' },
+  'liam-dahl': { badges: 5, lastActive: 'I går' },
+  'mina-hagen': { badges: 7, lastActive: 'I dag' },
+  'tobias-solheim': { badges: 2, lastActive: 'For 2 dager siden' },
+  'nora-eide': { badges: 10, lastActive: 'I dag' },
+  'isak-foss': { badges: 3, lastActive: 'I går' },
+  'oskar-vik': { badges: 4, lastActive: 'I går' },
+  'sara-olesen': { badges: 6, lastActive: 'I dag' },
+  'emilie-nilsen': { badges: 9, lastActive: 'I dag' },
+  'leah-aas': { badges: 7, lastActive: 'I går' },
+  'sander-lunde': { badges: 3, lastActive: 'For 3 dager siden' },
+  'jonas-moen': { badges: 1, lastActive: 'For 4 dager siden' }
+};
+
+const classroomNotifications: ClassroomNotification[] = [
+  { id: 'n1', classroomId: 'ronvik-6a', title: 'Ny innlevering', description: 'Ada Berg har fullført en ny oppgave.', timeLabel: 'For 10 minutter siden' },
+  { id: 'n2', classroomId: 'ronvik-6a', title: 'Elev trenger hjelp', description: 'Tobias Solheim har prøvd samme nivå flere ganger.', timeLabel: 'I dag' },
+  { id: 'n3', classroomId: 'ronvik-6b', title: 'Ukens mysterium', description: 'Tre elever har sendt inn forslag til ukens mysterium.', timeLabel: 'I dag' },
+  { id: 'n4', classroomId: 'ronvik-6c', title: 'Høy aktivitet', description: 'Klassen har hatt ekstra høy aktivitet denne uken.', timeLabel: 'I går' }
+];
+
+const classroomTasks: ClassroomTask[] = [
+  { id: 't1', classroomId: 'ronvik-6a', title: 'Skille ekte og falske nyheter', status: 'Aktiv', level: 'Nyhetskvartalet' },
+  { id: 't2', classroomId: 'ronvik-6a', title: 'Oppdage mistenkelige e-poster', status: 'Kladd', level: 'Postkontoret' },
+  { id: 't3', classroomId: 'ronvik-6b', title: 'Vurdere nettbutikker', status: 'Aktiv', level: 'Markedsplassen' },
+  { id: 't4', classroomId: 'ronvik-6c', title: 'Sterke passord', status: 'Planlagt', level: 'Passordbanken' }
+];
+
+const classroomMysteries: ClassroomMystery[] = [
+  { classroomId: 'ronvik-6a', title: 'Mysteriet om den rare overskriften', description: 'Elevene skal finne ut hvorfor en dramatisk overskrift ikke forteller hele sannheten.', status: 'Publisert' },
+  { classroomId: 'ronvik-6b', title: 'Det forsvunne passordet', description: 'Klassen jobber med spor som handler om deling av passord og trygg innlogging.', status: 'Klargjøres' },
+  { classroomId: 'ronvik-6c', title: 'Bildet som lurte alle', description: 'Et bilde sprer seg raskt, og elevene må finne ut om det er ekte, KI-laget eller manipulert.', status: 'Publisert' }
 ];
 
 const classroomNames: Record<string, string> = {
@@ -93,10 +156,42 @@ function getClassroomLeaderboard(classroomId: string) {
     });
 }
 
+function getClassroomStudents(classroomId: string): StudentOverviewEntry[] {
+  return mockStudents
+    .filter((student) => student.classroomId === classroomId)
+    .map((student) => ({
+      ...student,
+      badges: studentExtras[student.id]?.badges ?? 0,
+      lastActive: studentExtras[student.id]?.lastActive ?? 'Ukjent'
+    }))
+    .sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function getStudentById(classroomId: string, studentId: string): StudentOverviewEntry | null {
+  return getClassroomStudents(classroomId).find((student) => student.id === studentId) ?? null;
+}
+
+function getClassroomNotifications(classroomId: string): ClassroomNotification[] {
+  return classroomNotifications.filter((notification) => notification.classroomId === classroomId);
+}
+
+function getClassroomTasks(classroomId: string): ClassroomTask[] {
+  return classroomTasks.filter((task) => task.classroomId === classroomId);
+}
+
+function getClassroomMystery(classroomId: string): ClassroomMystery | null {
+  return classroomMysteries.find((mystery) => mystery.classroomId === classroomId) ?? null;
+}
+
 export function useTeacherDashboard() {
   return {
     getTeacherClassroomSummaries,
     getTeacherClassroomById,
     getClassroomLeaderboard,
+    getClassroomStudents,
+    getStudentById,
+    getClassroomNotifications,
+    getClassroomTasks,
+    getClassroomMystery,
   };
 }
