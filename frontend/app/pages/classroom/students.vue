@@ -10,7 +10,7 @@ const students = computed(() => getClassroomStudents(classroomId.value));
 <template>
   <section class="pageShell">
     <header class="pageHeader">
-      <NuxtLink class="backLink" :to="`/classroomOverview?classroomId=${classroomId}`">Tilbake til klasserommet</NuxtLink>
+      <NuxtLink class="backLink" :to="`/classroom/overview?classroomId=${classroomId}`">Tilbake til klasserommet</NuxtLink>
       <p class="eyebrow">Elevoversikt</p>
       <h1>{{ classroom?.name ?? 'Ukjent klasserom' }}</h1>
       <p class="subtitle">Klikk på en elev for å se progresjonen.</p>
@@ -30,7 +30,7 @@ const students = computed(() => getClassroomStudents(classroomId.value));
         <tbody>
           <tr v-for="student in students" :key="student.id">
             <td>
-              <NuxtLink :to="`/studentProgress?classroomId=${classroomId}&studentId=${student.id}`">{{ student.name }}</NuxtLink>
+              <NuxtLink :to="`/classroom/student-progress?classroomId=${classroomId}&studentId=${student.id}`">{{ student.name }}</NuxtLink>
             </td>
             <td>{{ Math.round((student.completedLevels / student.totalLevels) * 100) }} %</td>
             <td>{{ student.points }}</td>
