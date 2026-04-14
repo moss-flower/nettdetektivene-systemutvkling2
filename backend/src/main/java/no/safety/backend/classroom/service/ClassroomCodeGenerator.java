@@ -1,0 +1,37 @@
+package no.safety.backend.classroom.service;
+
+import java.security.SecureRandom;
+import java.util.List;
+import no.safety.backend.classroom.repository.ClassroomRepository;
+import org.springframework.stereotype.Component;
+
+@Component
+public class ClassroomCodeGenerator {
+
+  private final int MAX_ATTEMPTS = 20;
+  private final List<String> WORDS = List.of("alle", "ingen", "noen", "mange", "få", "kake", "tur",
+      "rev", "katt", "løve", "sterk", "svak", "teit", "eple", "båt", "slott", "konge", "stor", "due",
+      "brus", "burger", "potet", "gulrot", "penn", "blyant", "tavle", "liten", "bål", "skog", "tre",
+      "lava", "blad", "super", "brød", "vann", "elv", "hav", "ark", "papir", "linjal", "helt");
+  private final ClassroomRepository repo;
+  private final SecureRandom random;
+
+  public ClassroomCodeGenerator(ClassroomRepository repo) {
+    this.repo = repo;
+    this.random = new SecureRandom();
+  }
+
+  public String generateUniqueCode() {
+    for (int i = 0; i <= MAX_ATTEMPTS; i++) {
+      String code = String.format("%S-%S-%S", pick(), pick(), pick());
+      if (!repo.existsByCode(code)) {
+        return code;
+      }
+    }
+    throw new IllegalStateException("Could not generate a unique code.");
+  }
+
+  private String pick() {
+   return WORDS.get(random.nextInt(WORDS.size()));
+  }
+}
