@@ -1,3 +1,9 @@
+<script setup lang="ts">
+const { getTeacherClassroomSummaries } = useTeacherDashboard();
+
+const classroomSummaries = computed(() => getTeacherClassroomSummaries());
+</script>
+
 <template>
   <section class="overviewPage">
     <header class="overviewHeader">
@@ -10,14 +16,9 @@
       <article class="panel classesPanel">
         <h2>Dine klasserom</h2>
         <ul class="classList">
-          <li>
-            <NuxtLink to="/classroomOverview?classroomId=ronvik-6a">Ronvik skole 6A</NuxtLink>
-          </li>
-          <li>
-            <NuxtLink to="/classroomOverview?classroomId=ronvik-6b">Ronvik skole 6B</NuxtLink>
-          </li>
-          <li>
-            <NuxtLink to="/classroomOverview?classroomId=ronvik-6c">Ronvik skole 6C</NuxtLink>
+          <li v-for="classroom in classroomSummaries" :key="classroom.id" class="classListItem">
+            <NuxtLink :to="`/classroomOverview?classroomId=${classroom.id}`">{{ classroom.name }}</NuxtLink>
+            <span class="classScore">{{ classroom.totalScore }} poeng</span>
           </li>
         </ul>
       </article>
@@ -102,9 +103,22 @@ h2 {
   gap: 0.4rem;
 }
 
+.classListItem {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .classList a {
   font-weight: 700;
   color: var(--primary);
+}
+
+.classScore {
+  color: var(--muted);
+  font-size: 0.95rem;
+  white-space: nowrap;
 }
 
 .panel--highlight {
