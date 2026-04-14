@@ -1,14 +1,23 @@
 package no.safety.backend.user.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 
-@MappedSuperclass
+@Entity
 @Table(name = "users")
+@Inheritance(strategy = InheritanceType.JOINED)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id
@@ -16,9 +25,7 @@ public class User {
     @Column(updatable = false, nullable = false)
     private Long internalId;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(updatable = false, nullable = false)
+    @Column(updatable = false, nullable = false, unique = true, columnDefinition = "BINARY(16)")
     private UUID publicUuid;
 
     @Column(nullable = false, unique = true, length = 50)
@@ -30,6 +37,13 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @PrePersist
+    protected void onCreate() {
+        if (this.publicUuid == null) {
+            this.publicUuid = UUID.randomUUID();
+        }
+    }
+
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "user_roles",
@@ -38,71 +52,6 @@ public class User {
     )
     private Set<Role> roles = new HashSet<>();
 
-    public User() {
-    }
-
-    public User(String username, String email, String password) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-    }
-
-    public Long getInternalId() {
-        return internalId;
-    }
-
-    public void setInternalId(Long id) {
-        this.internalId = id;
-    }
-
-
-    public UUID getPublicUuid() {
-        return publicUuid;
-    }
-
-    public void setId(UUID id) {
-        this.publicUuid = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Set<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
-    }
-
-    public void addRole(Role role) {
-        this.roles.add(role);
-    }
-
-    public void removeRole(Role role) {
-        this.roles.remove(role);
-    }
 
     @Override
     public boolean equals(Object o) {
