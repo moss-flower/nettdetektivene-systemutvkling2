@@ -1,3 +1,9 @@
+<script setup lang="ts">
+const { getTeacherClassroomSummaries } = useTeacherDashboard();
+
+const classroomSummaries = computed(() => getTeacherClassroomSummaries());
+</script>
+
 <template>
   <section class="overviewPage">
     <header class="overviewHeader">
@@ -10,14 +16,9 @@
       <article class="panel classesPanel">
         <h2>Dine klasserom</h2>
         <ul class="classList">
-          <li>
-            <NuxtLink to="/classroomOverview?classroomId=ronvik-6a">Ronvik skole 6A</NuxtLink>
-          </li>
-          <li>
-            <NuxtLink to="/classroomOverview?classroomId=ronvik-6b">Ronvik skole 6B</NuxtLink>
-          </li>
-          <li>
-            <NuxtLink to="/classroomOverview?classroomId=ronvik-6c">Ronvik skole 6C</NuxtLink>
+          <li v-for="classroom in classroomSummaries" :key="classroom.id" class="classListItem">
+            <NuxtLink :to="`/classroomOverview?classroomId=${classroom.id}`">{{ classroom.name }}</NuxtLink>
+            <span class="classScore">{{ classroom.totalScore }} poeng</span>
           </li>
         </ul>
       </article>
@@ -81,8 +82,8 @@ h1 {
 
 .panel {
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: #fff;
+  border-radius: var(--radius);
+  background: var(--surface);
   padding: var(--space-4);
 }
 
@@ -102,22 +103,35 @@ h2 {
   gap: 0.4rem;
 }
 
+.classListItem {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .classList a {
+  font-weight: 700;
   color: var(--primary);
-  font-weight: 600;
+}
+
+.classScore {
+  color: var(--muted);
+  font-size: 0.95rem;
+  white-space: nowrap;
 }
 
 .panel--highlight {
-  background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+  background: var(--surface);
 }
 
 button {
   margin-top: 0.9rem;
   padding: 0.65rem 1rem;
   border: 1px solid var(--primary);
-  border-radius: 0.5rem;
+  border-radius: var(--radius);
   background: var(--primary);
-  color: #fff;
+  color: var(--bg);
   font-weight: 600;
   cursor: pointer;
 }

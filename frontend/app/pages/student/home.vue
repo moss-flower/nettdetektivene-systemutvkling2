@@ -124,7 +124,7 @@ function handleClick(item: StudentHomeItem) {
 
 .student-home__intro {
   max-width: 65ch;
-  color: #c8d0d8;
+  color: var(--muted);
   line-height: 1.5;
 }
 
@@ -144,8 +144,8 @@ function handleClick(item: StudentHomeItem) {
   min-height: 9rem;
   padding: 1rem;
   border: 2px solid var(--border);
-  border-radius: 1rem;
-  background: #242424;
+  border-radius: var(--radius);
+  background: var(--surface);
   color: var(--text);
   text-align: left;
   transition:
@@ -158,7 +158,7 @@ function handleClick(item: StudentHomeItem) {
 .board-item:focus-visible {
   transform: translateY(-2px);
   border-color: var(--primary);
-  background: #2a2a2a;
+  background: var(--surface);
   outline: none;
 }
 
@@ -169,7 +169,7 @@ function handleClick(item: StudentHomeItem) {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: #1b1b1b;
+  background: var(--bg);
   color: var(--primary);
   font-weight: 800;
 }
@@ -187,8 +187,8 @@ function handleClick(item: StudentHomeItem) {
   z-index: 1;
   padding: 0.65rem 0.8rem;
   border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  background: #171717;
+  border-radius: var(--radius);
+  background: var(--bg);
   color: var(--text);
   line-height: 1.4;
   opacity: 0;
@@ -236,7 +236,7 @@ function handleClick(item: StudentHomeItem) {
   justify-items: center;
   text-align: center;
   border-color: var(--primary);
-  background: #1f2a24;
+  background: var(--surface);
 }
 
 .board-item--map .board-item__badge {

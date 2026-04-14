@@ -1,43 +1,12 @@
 <script setup lang="ts">
-type Student = {
-  firstName: string
-  lastName: string
-  classLabel: string
-  tasksCompleted: number
-  xp: number
-}
+const route = useRoute();
+const { getTeacherClassroomById, getClassroomLeaderboard } = useTeacherDashboard();
 
-const route = useRoute()
+const classroomId = computed(() => String(route.query.classroomId ?? ''));
 
-const classMap: Record<string, string> = {
-  'ronvik-6a': 'Ronvik skole 6A',
-  'ronvik-6b': 'Ronvik skole 6B',
-  'ronvik-6c': 'Ronvik skole 6C'
-}
+const classroom = computed(() => getTeacherClassroomById(classroomId.value));
 
-const classroomLabel = computed(() => {
-  const classroomId = String(route.query.classroomId ?? '')
-  return classMap[classroomId] ?? 'Ukjent klasserom'
-})
-
-const students = [
-  { firstName: 'Ada', lastName: 'Berg', classLabel: 'Ronvik skole 6A', tasksCompleted: 14, xp: 980 },
-  { firstName: 'Liam', lastName: 'Dahl', classLabel: 'Ronvik skole 6A', tasksCompleted: 11, xp: 820 },
-  { firstName: 'Nora', lastName: 'Eide', classLabel: 'Ronvik skole 6B', tasksCompleted: 19, xp: 1240 },
-  { firstName: 'Isak', lastName: 'Foss', classLabel: 'Ronvik skole 6B', tasksCompleted: 7, xp: 590 },
-  { firstName: 'Mina', lastName: 'Hagen', classLabel: 'Ronvik skole 6A', tasksCompleted: 16, xp: 1070 },
-  { firstName: 'Sander', lastName: 'Lunde', classLabel: 'Ronvik skole 6C', tasksCompleted: 9, xp: 670 },
-  { firstName: 'Emilie', lastName: 'Nilsen', classLabel: 'Ronvik skole 6C', tasksCompleted: 20, xp: 1330 },
-  { firstName: 'Tobias', lastName: 'Solheim', classLabel: 'Ronvik skole 6A', tasksCompleted: 6, xp: 530 },
-  { firstName: 'Oskar', lastName: 'Vik', classLabel: 'Ronvik skole 6B', tasksCompleted: 12, xp: 870 },
-  { firstName: 'Leah', lastName: 'Aas', classLabel: 'Ronvik skole 6C', tasksCompleted: 18, xp: 1160 }
-] satisfies Student[]
-
-const sortedStudents = computed(() => {
-  return students
-    .filter((student) => student.classLabel === classroomLabel.value)
-    .sort((a, b) => a.lastName.localeCompare(b.lastName))
-})
+const leaderboard = computed(() => getClassroomLeaderboard(classroomId.value));
 </script>
 
 <template>
@@ -45,29 +14,53 @@ const sortedStudents = computed(() => {
     <header class="pageHeader">
       <NuxtLink class="backLink" to="/teacherOverview">Tilbake til hjemskjerm</NuxtLink>
       <p class="eyebrow">Klasseromsdetaljer</p>
-      <h1>{{ classroomLabel }}</h1>
-      <p class="subtitle">Elevoversikt sortert på etternavn.</p>
+      <h1>{{ classroom?.name ?? 'Ukjent klasserom' }}</h1>
+      <p class="subtitle">Ledertavle sortert etter progresjon.</p>
     </header>
 
-    <div class="tableCard">
+    <div v-if="classroom" class="summaryRow">
+      <article class="summaryCard">
+        <span class="summaryCard__label">Klassescore</span>
+        <strong>{{ classroom.totalScore }}</strong>
+      </article>
+
+      <article class="summaryCard">
+        <span class="summaryCard__label">Elever</span>
+        <strong>{{ classroom.studentCount }}</strong>
+      </article>
+
+      <article class="summaryCard">
+        <span class="summaryCard__label">Gjennomsnittlig progresjon</span>
+        <strong>{{ classroom.averageProgressPercent }} %</strong>
+      </article>
+    </div>
+
+    <div v-if="classroom" class="tableCard">
       <table>
         <thead>
           <tr>
-            <th>Navn</th>
-            <th>Klasse</th>
-            <th>Fullførte oppgaver</th>
-            <th>XP</th>
+            <th>Rang</th>
+            <th>Elev</th>
+            <th>Progresjon</th>
+            <th>Fullførte nivåer</th>
+            <th>Poeng</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="student in sortedStudents" :key="`${student.lastName}-${student.firstName}`">
-            <td>{{ student.firstName }} {{ student.lastName }}</td>
-            <td>{{ student.classLabel }}</td>
-            <td>{{ student.tasksCompleted }}</td>
-            <td>{{ student.xp }}</td>
+          <tr v-for="(student, index) in leaderboard" :key="student.id">
+            <td>{{ index + 1 }}</td>
+            <td>{{ student.name }}</td>
+            <td>{{ student.progressPercent }} %</td>
+            <td>{{ student.completedLevels }} / {{ student.totalLevels }}</td>
+            <td>{{ student.points }}</td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div v-else class="emptyState">
+      <h2>Fant ikke klasserommet</h2>
+      <p>Velg et klasserom fra lærerhjemsiden.</p>
     </div>
   </section>
 </template>
@@ -75,7 +68,7 @@ const sortedStudents = computed(() => {
 <style scoped>
 .classroomPage {
   width: 100%;
-  max-width: 1100px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: var(--space-4);
 }
@@ -109,10 +102,36 @@ h1 {
   color: var(--muted);
 }
 
+.summaryRow {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 1rem;
+}
+
+.summaryCard {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.summaryCard__label {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.summaryCard strong {
+  font-size: 1.6rem;
+  color: var(--primary);
+}
+
 .tableCard {
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: #fff;
+  border-radius: var(--radius);
+  background: var(--surface);
   overflow: auto;
 }
 
@@ -130,7 +149,20 @@ td {
 }
 
 thead th {
-  background: #f8fafc;
+  background: var(--bg);
   font-weight: 700;
+}
+
+.emptyState {
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+@media (max-width: 800px) {
+  .summaryRow {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
