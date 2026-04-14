@@ -81,8 +81,8 @@ h1 {
 
 .panel {
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: #222;
+  border-radius: var(--radius);
+  background: var(--surface);
   padding: var(--space-4);
 }
 
@@ -108,16 +108,16 @@ h2 {
 }
 
 .panel--highlight {
-  background: #222;
+  background: var(--surface);
 }
 
 button {
   margin-top: 0.9rem;
   padding: 0.65rem 1rem;
   border: 1px solid var(--primary);
-  border-radius: 0.5rem;
+  border-radius: var(--radius);
   background: var(--primary);
-  color: #111;
+  color: var(--bg);
   font-weight: 600;
   cursor: pointer;
 }

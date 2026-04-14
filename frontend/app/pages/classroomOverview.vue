@@ -114,8 +114,8 @@ h1 {
   gap: 0.35rem;
   padding: 1rem;
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: #222;
+  border-radius: var(--radius);
+  background: var(--surface);
 }
 
 .summaryCard__label {
@@ -130,8 +130,8 @@ h1 {
 
 .tableCard {
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: #222;
+  border-radius: var(--radius);
+  background: var(--surface);
   overflow: auto;
 }
 
@@ -149,15 +149,15 @@ td {
 }
 
 thead th {
-  background: #1a1a1a;
+  background: var(--bg);
   font-weight: 700;
 }
 
 .emptyState {
   padding: 1.25rem;
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: #222;
+  border-radius: var(--radius);
+  background: var(--surface);
 }
 
 @media (max-width: 800px) {
