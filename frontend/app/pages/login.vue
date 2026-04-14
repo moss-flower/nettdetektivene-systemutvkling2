@@ -19,6 +19,8 @@ const formValid = computed(() => emailValid.value && passwordValid.value);
 
 //Temporary placeholder handleLogin 
 function handleLogin() {
+  formError.value = "";
+
   if (!formValid.value) {
     formError.value = "Ugyldig input"
     return;
