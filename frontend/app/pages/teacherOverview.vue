@@ -82,7 +82,7 @@ h1 {
 .panel {
   border: 1px solid var(--border);
   border-radius: 1rem;
-  background: #fff;
+  background: #222;
   padding: var(--space-4);
 }
 
@@ -108,7 +108,7 @@ h2 {
 }
 
 .panel--highlight {
-  background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+  background: #222;
 }
 
 button {
@@ -117,7 +117,7 @@ button {
   border: 1px solid var(--primary);
   border-radius: 0.5rem;
   background: var(--primary);
-  color: #fff;
+  color: #111;
   font-weight: 600;
   cursor: pointer;
 }
