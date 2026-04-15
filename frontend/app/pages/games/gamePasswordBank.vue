@@ -1,20 +1,83 @@
+<script setup lang="ts">
+import type {
+  PasswordBankTask,
+} from '~/composables/types/TaskTypes'
+import { sampleAndShuffle } from '~/composables/utils/gameUtils'
+
+const mockData: PasswordBankTask = {
+  id: "1",
+  kind: "passwordBank",
+  description: "Passordutfordringer",
+  items: [
+    {
+      taskId: "1a",
+      guide: "Hvilke passord er svake og hvilke er sterke?",
+      task: {
+        kind: "guess",
+        weakPasswords: ["123456", "passord"],
+        strongPasswords: ["K7$mP!xQ9z", "Tr0ub4dor&3"],
+      }
+    },
+    {
+      taskId: "1b",
+      guide: "Forbedre dette passordet",
+      task: {
+        kind: "improve",
+        passwordStart: "hund123"
+      }
+    },
+    {
+      taskId: "1c",
+      guide: "Lag et sterkt passord",
+      task: {
+        kind: "makePassword",
+        inputPassword: ""
+      }
+    }
+  ]
+}
+
+const tasks = sampleAndShuffle(mockData.items, mockData.items.length)
+const currentIndex = ref(0)
+const currentTask = computed(() => tasks[currentIndex.value])
+const showResultPopup = ref(false)
+const showCompletedPopup = ref(false)
+const lastAnswerCorrect = ref(false)
+const correctCount = ref(0)
+
+const onAnswered = (correct: boolean) => {
+  lastAnswerCorrect.value = correct
+  if (correct) correctCount.value++
+  showResultPopup.value = true
+}
+
+const next = () => {
+  showResultPopup.value = false
+  if (currentIndex.value < tasks.length - 1) {
+    currentIndex.value++
+  } else {
+    showCompletedPopup.value = true
+  }
+}
+</script>
+
 <template>
   <div>
     <h1>Passordbanken</h1>
 
     <template v-if="currentTask">
       <GameplayPasswordbankPasswordBankGuess
-        v-if="currentTask instanceof TaskPasswordBankGuessSingleton"
+        v-if="currentTask.task.kind === 'guess'"
         :data="currentTask"
         @answered="onAnswered"
       />
       <GameplayPasswordbankPasswordBankImprove
-        v-else-if="currentTask instanceof TaskPasswordBankImproveSingleton"
+        v-else-if="currentTask.task.kind === 'improve'"
         :data="currentTask"
         @answered="onAnswered"
       />
       <GameplayPasswordbankPasswordBankMakePassword
-        v-else-if="currentTask instanceof TaskPasswordBankMakePasswordSingleton"
+        v-else-if="currentTask.task.kind === 'makePassword'"
         :data="currentTask"
         @answered="onAnswered"
       />
@@ -34,63 +97,6 @@
     />
   </div>
 </template>
-
-<script setup lang="ts">
-import {
-  TaskPasswordBankDTO,
-  TaskPasswordBankGuessSingleton,
-  TaskPasswordBankImproveSingleton,
-  TaskPasswordBankMakePasswordSingleton,
-} from '~/composables/types/TaskTypes'
-import { sampleAndShuffle } from '~/composables/utils/gameUtils'
-
-const mockData: TaskPasswordBankDTO = {
-  taskId: "1",
-  description: "Passordutfordringer",
-  taskAmount: 3,
-  passwordTasks: [
-    Object.assign(new TaskPasswordBankGuessSingleton(), {
-      taskId: "1a",
-      description: "Hvilke passord er svake og hvilke er sterke?",
-      passwordWeak: ["123456", "passord"],
-      passwordStrong: ["K7$mP!xQ9z", "Tr0ub4dor&3"],
-    }),
-    Object.assign(new TaskPasswordBankImproveSingleton(), {
-      taskId: "1b",
-      description: "Forbedre dette passordet",
-      passwordStart: "hund123",
-    }),
-    Object.assign(new TaskPasswordBankMakePasswordSingleton(), {
-      taskId: "1c",
-      description: "Lag et sterkt passord",
-      password: "",
-    }),
-  ]
-}
-
-const tasks = sampleAndShuffle(mockData.passwordTasks, mockData.taskAmount)
-const currentIndex = ref(0)
-const currentTask = computed(() => tasks[currentIndex.value])
-const showResultPopup = ref(false)
-const showCompletedPopup = ref(false)
-const lastAnswerCorrect = ref(false)
-const correctCount = ref(0)
-
-function onAnswered(correct: boolean) {
-  lastAnswerCorrect.value = correct
-  if (correct) correctCount.value++
-  showResultPopup.value = true
-}
-
-function next() {
-  showResultPopup.value = false
-  if (currentIndex.value < tasks.length - 1) {
-    currentIndex.value++
-  } else {
-    showCompletedPopup.value = true
-  }
-}
-</script>
 
 <style scoped>
 /* Styles here */

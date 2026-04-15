@@ -1,130 +1,114 @@
-// TaskTypes.ts
-class TaskDTO {
-    taskId: string = "";
-    description: string = "";
-    taskAmount: number = 4;
-}
+type BaseTask = {
+  id: string;
+  kind:
+    | "newsStand"
+    | "postOffice"
+    | "passwordBank"
+    | "imageRecognition"
+    | "marketplace"
+    | "socialMedia"
+    | "finalBoss";
+  description: string;
+};
 
+export type ImageRecognitionType = "real" | "AI" | "manipulated";
+export type MarketplaceChoice = "buy" | "reviewMore" | "dontBuy";
+export type SocialMediaChoice = "share" | "hold" | "checkSources" | "askAdult";
 
-// Task NewsStand; Which of these news articles are real and which are fake?
-class TaskNewsStandDTO extends TaskDTO {
-    articles: TaskNewsStandSingleton[] = [];
-}
+export type NewsArticle = {
+  author: string;
+  title: string;
+  imageUrl: string;
+  text: string;
+};
 
-class TaskNewsStandSingleton {
-    correct: NewsArticle = new NewsArticle();
-    fake: NewsArticle = new NewsArticle();
-}
+export type NewsStandPair = {
+  correct: NewsArticle;
+  fake: NewsArticle;
+};
 
-class NewsArticle {
-    author: string = "";
-    title: string = ""
-    imageurl: string = "";
-    text: string = "";
-}
+export type NewsStandTask = BaseTask & {
+  kind: "newsStand";
+  articles: NewsStandPair[];
+};
 
-// Task PostOffice; Which email is a scam and which is not?
-class TaskPostOfficeDTO extends TaskDTO {
-    mails: TaskPostSingleton[] = [];
-}
+export type PostOfficeMail = {
+  avatarImageUrl: string;
+  sender: string;
+  subject: string;
+  content: string;
+  isValid: boolean;
+};
 
-class TaskPostSingleton {
-    avatarImageurl: string = "";
-    sender: string = "";
-    subject: string = "";
-    content: string = "";
-    isValid: boolean = false;
-}
+export type PostOfficeTask = BaseTask & {
+  kind: "postOffice";
+  mails: PostOfficeMail[];
+};
 
-// Task PasswordBank; Which passwords are weak and which are strong?
-abstract class TaskPasswordBankSingletonAbstract extends TaskDTO { }
+export type PasswordBankItem = {
+  taskId: string,
+  guide: string,
+  task: {
+      kind: "guess";
+      weakPasswords: string[];
+      strongPasswords: string[];
+    }
+  | {
+      kind: "improve";
+      passwordStart: string;
+    }
+  | {
+      kind: "makePassword";
+      inputPassword: string;
+    };
+  }
 
-class TaskPasswordBankGuessSingleton extends TaskPasswordBankSingletonAbstract {
-    passwordWeak: string[] = [];
-    passwordStrong: string[] = [];
-}
+export type PasswordBankTask = BaseTask & {
+  kind: "passwordBank";
+  items: PasswordBankItem[];
+};
 
-class TaskPasswordBankImproveSingleton extends TaskPasswordBankSingletonAbstract {
-    passwordStart: string = "";
-}
+export type ImageRecognitionItem = {
+  imageUrl: string;
+  type: ImageRecognitionType;
+};
 
-class TaskPasswordBankMakePasswordSingleton extends TaskPasswordBankSingletonAbstract {
-    password: string = "";
-}
+export type ImageRecognitionTask = BaseTask & {
+  kind: "imageRecognition";
+  images: ImageRecognitionItem[];
+};
 
-class TaskPasswordBankDTO extends TaskDTO {
-    passwordTasks: TaskPasswordBankSingletonAbstract[] = [];
-}
+export type MarketplaceListing = {
+  imageUrl: string;
+  price: number;
+  expectedChoice: MarketplaceChoice;
+};
 
-// Task ImageRecognition; Which images are real, AI-generated, or manipulated?
-class TaskImageRecognitionDTO extends TaskDTO {
-    images: TaskImageRecognitionSingleton[] = [];
-}
+export type MarketplaceTask = BaseTask & {
+  kind: "marketplace";
+  listings: MarketplaceListing[];
+};
 
-class TaskImageRecognitionSingleton {
-    imageurl: string = ""
-    type: ImageRecognitionType = ImageRecognitionType.Real;
-}
+export type SocialMediaPost = {
+  postId: string;
+  imageUrl: string;
+  expectedChoice: SocialMediaChoice;
+};
 
-enum ImageRecognitionType {
-    Real,
-    AI,
-    Manipulated
-}
+export type SocialMediaTask = BaseTask & {
+  kind: "socialMedia";
+  posts: SocialMediaPost[];
+};
 
-// Task Marketplace; Which products should be bought, reviewed more, or not bought?
-class TaskMarketplaceDTO extends TaskDTO {
-    listing: TaskMarketplaceSingleton[] = [];
-}
+export type NonFinalTask =
+  | NewsStandTask
+  | PostOfficeTask
+  | PasswordBankTask
+  | ImageRecognitionTask
+  | MarketplaceTask
+  | SocialMediaTask;
 
-class TaskMarketplaceSingleton {
-    imageurl: string = "";
-    price: number = 0;
-    type: MarketplaceChoices = MarketplaceChoices.Buy;
-}
-
-enum MarketplaceChoices {
-    Buy,
-    ReviewMore,
-    DontBuy
-}
-
-// Task SocialMedia; What to do with a social media post: share, hold, check sources, or ask an adult?
-class TaskSocialMediaDTO extends TaskDTO {
-    imageurl: string = "";
-    choice: SocialMediaChoices = SocialMediaChoices.Share;
-}
-
-enum SocialMediaChoices {
-    Share,
-    Hold,
-    CheckSources,
-    AskAdult
-}
-
-class TaskFinalBossDTO extends TaskDTO {
-    tasks: TaskDTO[] = [];
-}
-
-// Exporting all the classes and enums
-export {
-    TaskDTO,
-    TaskNewsStandDTO,
-    TaskNewsStandSingleton,
-    TaskPostOfficeDTO,
-    TaskPostSingleton,
-    TaskPasswordBankSingletonAbstract,
-    TaskPasswordBankGuessSingleton,
-    TaskPasswordBankImproveSingleton,
-    TaskPasswordBankMakePasswordSingleton,
-    TaskPasswordBankDTO,
-    TaskImageRecognitionDTO,
-    TaskImageRecognitionSingleton,
-    ImageRecognitionType,
-    TaskMarketplaceDTO,
-    TaskMarketplaceSingleton,
-    MarketplaceChoices,
-    TaskSocialMediaDTO,
-    SocialMediaChoices,
-    TaskFinalBossDTO
+export type FinalBossTask = BaseTask & {
+  kind: "finalBoss";
+  tasks: NonFinalTask[];
 };

@@ -24,29 +24,47 @@
 </template>
 
 <script setup lang="ts">
-import { TaskSocialMediaDTO, SocialMediaChoices } from '~/composables/types/TaskTypes'
+import type { SocialMediaTask, SocialMediaChoice } from '~/composables/types/TaskTypes'
 import { sampleAndShuffle } from '~/composables/utils/gameUtils'
 
-const allPosts: TaskSocialMediaDTO[] = [
-  { taskId: "1", description: "Hva gjør du med dette innlegget?", taskAmount: 2, imageurl: "https://placehold.co/600x400?text=Post+1", choice: SocialMediaChoices.Share },
-  { taskId: "2", description: "Hva gjør du med dette innlegget?", taskAmount: 2, imageurl: "https://placehold.co/600x400?text=Post+2", choice: SocialMediaChoices.CheckSources },
-  { taskId: "3", description: "Hva gjør du med dette innlegget?", taskAmount: 2, imageurl: "https://placehold.co/600x400?text=Post+3", choice: SocialMediaChoices.AskAdult },
-]
 
-const tasks = sampleAndShuffle(allPosts, 2)
+const task: SocialMediaTask = {
+  id: "1",
+  kind: "socialMedia",
+  description: "Hva gjør du med dette innlegget?",
+  posts: [
+    {
+      postId: "1",
+      imageUrl: "https://placehold.co/600x400?text=Post+1",
+      expectedChoice: "share",
+    },
+    {
+      postId: "2",
+      imageUrl: "https://placehold.co/600x400?text=Post+2",
+      expectedChoice: "checkSources",
+    },
+    {
+      postId: "3",
+      imageUrl: "https://placehold.co/600x400?text=Post+3",
+      expectedChoice: "askAdult",
+    },
+  ]
+};
+
+const tasks = sampleAndShuffle(task.posts, 3)
 const currentIndex = ref(0)
 const showResultPopup = ref(false)
 const showCompletedPopup = ref(false)
 const lastAnswerCorrect = ref(false)
 const correctCount = ref(0)
 
-function onAnswered(correct: boolean) {
+const onAnswered = (correct: boolean) => {
   lastAnswerCorrect.value = correct
   if (correct) correctCount.value++
   showResultPopup.value = true
 }
 
-function next() {
+const next = () => {
   showResultPopup.value = false
   if (currentIndex.value < tasks.length - 1) {
     currentIndex.value++
