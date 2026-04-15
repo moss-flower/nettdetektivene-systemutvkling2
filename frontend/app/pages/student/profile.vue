@@ -9,7 +9,7 @@ const xpProgress = Math.round((currentXp / nextLevelXp) * 100)
 <template>
   <section class="profilePage">
     <header class="pageHeader">
-      <NuxtLink class="backLink" to="/student/home">Tilbake</NuxtLink>
+      <NuxtLink class="backLink" :to="routePaths.home">Tilbake</NuxtLink>
       <p class="eyebrow">Min profil</p>
       <h1>{{ studentName }}</h1>
       <p class="subtitle">Oversikt over navn, nivå og progresjon.</p>
@@ -44,7 +44,7 @@ const xpProgress = Math.round((currentXp / nextLevelXp) * 100)
       </div>
 
       <div class="actions">
-        <NuxtLink class="secondaryButton" to="/student/achievements">Achievements</NuxtLink>
+        <NuxtLink class="secondaryButton" :to="routePaths.studentAchievements">Achievements</NuxtLink>
       </div>
     </div>
   </section>

@@ -96,7 +96,7 @@ function handleRegister() {
 
       <p class="registerText">
         Har du allerede en konto?
-        <NuxtLink to="/" class="loginLink">Logg in</NuxtLink>
+        <NuxtLink :to="routePaths.login" class="loginLink">Logg in</NuxtLink>
       </p>
     </div>
   </section>

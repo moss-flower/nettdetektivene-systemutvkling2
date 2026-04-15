@@ -12,7 +12,7 @@ const leaderboard = computed(() => getClassroomLeaderboard(classroomId.value));
 <template>
   <section class="classroomPage">
     <header class="pageHeader">
-      <NuxtLink class="backLink" to="/teacherOverview">Tilbake til hjemskjerm</NuxtLink>
+      <NuxtLink class="backLink" :to="routePaths.teacherOverview">Tilbake til hjemskjerm</NuxtLink>
       <p class="eyebrow">Klasseromsdetaljer</p>
       <h1>{{ classroom?.name ?? 'Ukjent klasserom' }}</h1>
       <p class="subtitle">Ledertavle sortert etter progresjon.</p>
@@ -34,12 +34,12 @@ const leaderboard = computed(() => getClassroomLeaderboard(classroomId.value));
         <span class="actionCard__text">Åpne oppgavene som brukes i dette klasserommet.</span>
       </NuxtLink>
 
-      <NuxtLink to="/student/home" class="actionCard">
+      <NuxtLink :to="routePaths.studentHome" class="actionCard">
         <span class="actionCard__title">Test spillet</span>
         <span class="actionCard__text">Prøv spillet fra elevens perspektiv.</span>
       </NuxtLink>
 
-      <NuxtLink :to="`/classroom/mystery?classroomId=${classroom.id}`" class="actionCard">
+      <NuxtLink :to="routePathsWithString(routePaths.classroomMystery, `?classroomId=${classroom.id}`)" class="actionCard">
         <span class="actionCard__title">Ukens mysterium</span>
         <span class="actionCard__text">Se og rediger ukens mysterium for dette rommet.</span>
       </NuxtLink>
