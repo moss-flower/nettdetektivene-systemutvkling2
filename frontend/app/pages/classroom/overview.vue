@@ -12,7 +12,7 @@ const leaderboard = computed(() => getClassroomLeaderboard(classroomId.value));
 <template>
   <section class="classroomPage">
     <header class="pageHeader">
-      <NuxtLink class="backLink" to="/teacherOverview">Tilbake til hjemskjerm</NuxtLink>
+      <NuxtLink class="backLink" :to="routePaths.teacherOverview">Tilbake til hjemskjerm</NuxtLink>
       <p class="eyebrow">Klasseromsdetaljer</p>
       <h1>{{ classroom?.name ?? 'Ukjent klasserom' }}</h1>
       <p class="subtitle">Ledertavle sortert etter progresjon.</p>
