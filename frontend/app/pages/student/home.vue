@@ -24,7 +24,7 @@ const items: StudentHomeItem[] = [
     id: 'help',
     title: 'Hjelp',
     description: 'Få tips hvis du står fast eller lurer på hva du skal gjøre.',
-    route: '',
+    route: '/student/help',
     badge: '?',
     imagePath: helpImage,
     rotation: 4,
