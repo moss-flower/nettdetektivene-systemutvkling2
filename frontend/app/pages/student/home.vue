@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import StudentHomeMenuItem from '~/components/ui/StudentHomeMenuItem.vue';
+import StudentHomeMenuItem from '~/components/student/StudentHomeMenuItem.vue';
 import mapImage from "~/assets/images/Map.png";
 import helpImage from "~/assets/images/help.png";
 import profileImage from "~/assets/images/profile.png";
