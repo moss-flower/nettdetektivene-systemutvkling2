@@ -46,7 +46,7 @@ public class UserRegistrationIntegrationTest {
             .body(request)
             .exchange()
             .expectStatus().isCreated() 
-            .expectBody(String.class);
+            .expectBody(StudentUserRegistrationRequest.class);
 
         assertThat(studentUserRepository.findByUsername("student")).isPresent();
         assertThat(studentUserRepository.findByEmail("student@email.no")).isPresent();
@@ -61,7 +61,7 @@ public class UserRegistrationIntegrationTest {
             .body(request)
             .exchange()
             .expectStatus().isCreated() 
-            .expectBody(String.class);
+            .expectBody(TeacherUserRegistrationRequest.class);
 
         assertThat(teacherUserRepository.findByUsername("teacher")).isPresent();
         assertThat(teacherUserRepository.findByEmail("teacher@email.no")).isPresent();

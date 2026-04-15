@@ -37,7 +37,7 @@ public class UserRegistrationService {
      * @return the unique internal identifier of the newly registered {@link StudentUser}
      * @throws RuntimeException if the required {@code ROLE_STUDENT} lookup fails in the database
      */
-    public Long registerStudent(StudentUserRegistrationRequest request) {
+    public StudentUser registerStudent(StudentUserRegistrationRequest request) {
         StudentUser studentUser = StudentUser.builder()
             .username(request.username())
             .email(request.email())
@@ -46,7 +46,7 @@ public class UserRegistrationService {
                 .orElseThrow(() -> new RuntimeException("Role not found"))))
             .build();
 
-        return studentUserRepository.save(studentUser).getInternalId();
+        return studentUserRepository.save(studentUser);
     }
 
     /**
@@ -56,7 +56,7 @@ public class UserRegistrationService {
      * @return the unique internal identifier of the newly created {@link TeacherUser}
      * @throws RuntimeException if the required {@code ROLE_TEACHER} is not present in the database
      */
-    public Long registerTeacher(TeacherUserRegistrationRequest request) {
+    public TeacherUser registerTeacher(TeacherUserRegistrationRequest request) {
         TeacherUser teacherUser = TeacherUser.builder()
             .username(request.username())
             .email(request.email())
@@ -65,7 +65,6 @@ public class UserRegistrationService {
                 .orElseThrow(() -> new RuntimeException("Role not found"))))
             .build();
 
-        return teacherUserRepository.save(teacherUser).getInternalId();
+        return teacherUserRepository.save(teacherUser);
     }
-
 }

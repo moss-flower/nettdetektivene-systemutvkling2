@@ -10,8 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.registration.dto.StudentUserRegistrationRequest;
+import no.safety.backend.registration.dto.StudentUserRegistrationResponse;
 import no.safety.backend.registration.dto.TeacherUserRegistrationRequest;
+import no.safety.backend.registration.dto.TeacherUserRegistrationResponse;
 import no.safety.backend.registration.service.UserRegistrationService;
+import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.model.TeacherUser;
 
 /**
  * Registration controller that defines user registration API endpoints.
@@ -28,9 +32,14 @@ public class UserRegistrationController {
      * @return
      */
     @PostMapping(value = "/student")
-    public ResponseEntity<String> RegisterStudentUser(@Valid @RequestBody StudentUserRegistrationRequest request){
-        userRegistrationService.registerStudent(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Student account registered.");
+    public ResponseEntity<StudentUserRegistrationResponse> RegisterStudentUser(@Valid @RequestBody StudentUserRegistrationRequest request){
+        StudentUser savedUser = userRegistrationService.registerStudent(request);
+        
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(StudentUserRegistrationResponse.fromEntity(
+                        savedUser, 
+                        "Student account registered successfully.")
+                );
     }
 
     /**
@@ -39,8 +48,13 @@ public class UserRegistrationController {
      * @return
      */
     @PostMapping(value = "/teacher")
-    public ResponseEntity<String> RegisterTeacherUser(@Valid @RequestBody TeacherUserRegistrationRequest request){
-        userRegistrationService.registerTeacher(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Teacher account registered.");
+    public ResponseEntity<TeacherUserRegistrationResponse> RegisterTeacherUser(@Valid @RequestBody TeacherUserRegistrationRequest request){
+        TeacherUser savedUser = userRegistrationService.registerTeacher(request);
+        
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(TeacherUserRegistrationResponse.fromEntity(
+                        savedUser, 
+                        "Student account registered successfully.")
+                );
     }
 }
