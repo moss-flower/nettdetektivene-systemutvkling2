@@ -12,7 +12,7 @@ const items: StudentHomeItem[] = [
     id: 'hjelp',
     title: 'Hjelp',
     description: 'Få tips hvis du står fast eller lurer på hva du skal gjøre.',
-    route: routePathsWithString(routePaths.notYetImplemented, `?backPath=${routePaths.studentHome}`),
+    route: routePaths.studentHelp,
     badge: '?'
   },
   {
