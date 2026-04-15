@@ -79,16 +79,16 @@ function handleClick(event: MouseEvent) {
   width: max-content;
   max-width: min(15rem, calc(100vw - 2rem));
   padding: 0.5rem 0.75rem;
-  border: 2px solid rgb(154 112 60 / 0.45);
+  border: 2px solid rgb(98 163 120 / 0.48);
   border-radius: 1rem 1rem 1rem 0.45rem;
-  background: linear-gradient(180deg, #fff8d9 0%, #f5e4a8 100%);
-  color: #5f3b17;
+  background: linear-gradient(180deg, #e9ffd9 0%, #bde9a3 100%);
+  color: #244b2d;
   font-size: 0.92rem;
   line-height: 1.35;
   text-align: left;
   box-shadow:
-    0 1rem 1.8rem rgb(71 43 17 / 0.22),
-    0 0.3rem 0.5rem rgb(71 43 17 / 0.12),
+    0 1rem 1.8rem rgb(40 67 31 / 0.2),
+    0 0.3rem 0.5rem rgb(40 67 31 / 0.1),
     inset 0 1px 0 rgb(255 255 255 / 0.65);
   opacity: 0;
   pointer-events: none;
@@ -104,10 +104,10 @@ function handleClick(event: MouseEvent) {
   top: 100%;
   width: 0.85rem;
   height: 0.85rem;
-  border-right: 2px solid rgb(154 112 60 / 0.45);
-  border-bottom: 2px solid rgb(154 112 60 / 0.45);
-  background: #f5e4a8;
-  box-shadow: 0 0.45rem 0.75rem rgb(71 43 17 / 0.14);
+  border-right: 2px solid rgb(98 163 120 / 0.48);
+  border-bottom: 2px solid rgb(98 163 120 / 0.48);
+  background: #bde9a3;
+  box-shadow: 0 0.45rem 0.75rem rgb(40 67 31 / 0.12);
 }
 
 .menu-item__tooltip--top {
