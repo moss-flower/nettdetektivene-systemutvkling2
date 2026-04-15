@@ -39,8 +39,8 @@ public class UserRegistrationController {
      * @return
      */
     @PostMapping(value = "/teacher")
-    public ResponseEntity<String> RegisterStudentUser(@Valid @RequestBody TeacherUserRegistrationRequest request){
+    public ResponseEntity<String> RegisterTeacherUser(@Valid @RequestBody TeacherUserRegistrationRequest request){
         userRegistrationService.registerTeacher(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Student account registered.");
+        return ResponseEntity.status(HttpStatus.CREATED).body("Teacher account registered.");
     }
 }

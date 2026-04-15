@@ -1,9 +1,10 @@
-package no.safety.backend.user.config;
+package no.safety.backend.role.config;
 
 import lombok.RequiredArgsConstructor;
-import no.safety.backend.user.model.Role;
-import no.safety.backend.user.model.RoleType;
-import no.safety.backend.user.repository.RoleRepository;
+import no.safety.backend.role.model.Role;
+import no.safety.backend.role.model.RoleType;
+import no.safety.backend.role.repository.RoleRepository;
+
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
