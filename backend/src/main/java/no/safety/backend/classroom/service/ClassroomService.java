@@ -10,6 +10,9 @@ import no.safety.backend.classroom.repository.ClassroomRepository;
 import no.safety.backend.exception.ConflictException;
 import no.safety.backend.exception.ForbiddenException;
 import no.safety.backend.exception.NotFoundException;
+import no.safety.backend.user.model.TeacherUser;
+import no.safety.backend.user.model.User;
+import no.safety.backend.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,14 +21,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class ClassroomService {
 
   private final ClassroomRepository classroomRepo;
-  private final UserRepository userRepo;
+  private final UserRepository<User, UUID> userRepo;
   private final ClassroomCodeGenerator codegen;
 
+  //TODO: Replace all UUID params with authentication eventually and use this to get the role.
   @Transactional
   public ClassroomResponse create(ClassroomRequest req, UUID callerUuid) {
     User owner = userRepo.findByPublicUuid(callerUuid)
         .orElseThrow(() -> new NotFoundException("User not found"));
 
+    //TODO: add better role check.
     if (!(owner instanceof TeacherUser)) {
       throw new ForbiddenException("User must be a teacher");
     }
@@ -59,7 +64,7 @@ public class ClassroomService {
     User newOwner = userRepo.findByPublicUuid(newOwnerUuid)
         .orElseThrow(() -> new NotFoundException("User not found"));
 
-    //TODO: Replace with better role check after merging with user registration branch.
+    //TODO: Replace with better role check after user registration has implemented authentication tokens.
     if (!(newOwner instanceof TeacherUser)) {
       throw new ForbiddenException("New owner must be a teacher");
     }

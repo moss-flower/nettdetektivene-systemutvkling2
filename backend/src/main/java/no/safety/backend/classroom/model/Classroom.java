@@ -16,6 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import no.safety.backend.user.model.User;
 
 @Entity
 @Table(name = "classrooms")
