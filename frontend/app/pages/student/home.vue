@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import StudentHomeMenuItem from '~/components/student/StudentHomeMenuItem.vue';
-import mapImage from "~/assets/images/Map.png";
-import helpImage from "~/assets/images/help.png";
-import profileImage from "~/assets/images/profile.png";
-import leaderboardImage from "~/assets/images/Leaderboard.png";
-import medalsImage from "~/assets/images/medals.png";
-import mysteryImage from "~/assets/images/mystery.png";
-import notebookImage from "~/assets/images/notebook.png";
-import settingsImage from "~/assets/images/settings.png";
+import mapImage from "~/assets/images/studentHome/Map.png";
+import helpImage from "~/assets/images/studentHome/Help.png";
+import profileImage from "~/assets/images/studentHome/Profile.png";
+import leaderboardImage from "~/assets/images/studentHome/Leaderboard.png";
+import medalsImage from "~/assets/images/studentHome/Medals.png";
+import mysteryImage from "~/assets/images/studentHome/Mystery.png";
+import notebookImage from "~/assets/images/studentHome/Notebook.png";
+import settingsImage from "~/assets/images/studentHome/Settings.png";
 
 type StudentHomeItem = {
   id: string;
