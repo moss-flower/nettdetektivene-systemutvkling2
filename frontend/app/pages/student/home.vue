@@ -97,15 +97,6 @@ function handleClick(item: StudentHomeItem) {
 
 <template>
   <section class="student-home">
-    <header class="student-home__header">
-      <p class="student-home__eyebrow">Detektivtavla</p>
-      <h2>Hva vil du utforske i dag?</h2>
-      <p class="student-home__intro">
-        Trykk på tingene på tavla for å utforske spor, samle medaljer og følge veien videre i
-        oppdraget. Kartet i midten er hovedveien din gjennom saken.
-      </p>
-    </header>
-
     <div class="student-home__board" aria-label="Elevens hjemskjerm">
       <StudentHomeMenuItem
         v-for="item in items"
@@ -129,35 +120,6 @@ function handleClick(item: StudentHomeItem) {
   padding: clamp(1rem, 2vw, 2rem);
 }
 
-.student-home__header {
-  display: grid;
-  gap: 0.75rem;
-  max-width: 54rem;
-}
-
-.student-home__eyebrow {
-  color: var(--primary);
-  font-size: 0.82rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  margin: 0;
-}
-
-.student-home__header h2 {
-  margin: 0;
-  font-size: clamp(1.9rem, 4vw, 3rem);
-  line-height: 1.05;
-  color: var(--text);
-}
-
-.student-home__intro {
-  max-width: 60ch;
-  margin: 0;
-  color: color-mix(in srgb, var(--text) 72%, #744d2b);
-  line-height: 1.6;
-}
-
 .student-home__board {
   position: relative;
   min-height: clamp(32rem, 64vw, 44rem);
@@ -166,8 +128,6 @@ function handleClick(item: StudentHomeItem) {
   border: 0.45rem solid #a66f43;
   border-radius: 1.75rem;
   background:
-    radial-gradient(circle at 20% 20%, rgb(255 232 198 / 0.16), transparent 20%),
-    radial-gradient(circle at 80% 15%, rgb(255 240 222 / 0.12), transparent 18%),
     linear-gradient(180deg, #b57d4d 0%, #a86f42 100%);
   box-shadow:
     0 1.4rem 3rem rgb(74 39 15 / 0.18),
@@ -205,7 +165,8 @@ function handleClick(item: StudentHomeItem) {
 }
 
 .student-home__item:hover {
-  z-index: 9;
+  z-index: 100;
+  transform: scale(1.05);
 }
 
 .student-home__item--leaderboard {
@@ -244,8 +205,8 @@ function handleClick(item: StudentHomeItem) {
 }
 
 .student-home__item--help {
-  top: 6%;
-  right: 4.5%;
+  top: 5%;
+  right: 5%;
   width: 11.5%;
   z-index: 6;
 }
