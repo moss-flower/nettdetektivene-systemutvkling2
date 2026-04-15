@@ -5,12 +5,15 @@ import java.util.List;
 import no.safety.backend.classroom.repository.ClassroomRepository;
 import org.springframework.stereotype.Component;
 
+/**
+ *
+ */
 @Component
 public class ClassroomCodeGenerator {
 
-  private final int MAX_ATTEMPTS = 20;
   private final List<String> WORDS = List.of("alle", "ingen", "noen", "mange", "få", "kake", "tur",
-      "rev", "katt", "løve", "sterk", "svak", "teit", "eple", "båt", "slott", "konge", "stor", "due",
+      "rev", "katt", "løve", "sterk", "svak", "teit", "eple", "båt", "slott", "konge", "stor",
+      "due",
       "brus", "burger", "potet", "gulrot", "penn", "blyant", "tavle", "liten", "bål", "skog", "tre",
       "lava", "blad", "super", "brød", "vann", "elv", "hav", "ark", "papir", "linjal", "helt");
   private final ClassroomRepository repo;
@@ -21,8 +24,15 @@ public class ClassroomCodeGenerator {
     this.random = new SecureRandom();
   }
 
+  /**
+   * Generates a unique 3-word join code for classrooms.
+   *
+   * @return a 3 word string in the format WORD-WORD-WORD
+   * @throws IllegalStateException if a unique code failed to generate after 20 attempts
+   */
   public String generateUniqueCode() {
-    for (int i = 0; i <= MAX_ATTEMPTS; i++) {
+    int maxAttempts = 20;
+    for (int i = 0; i <= maxAttempts; i++) {
       String code = String.format("%S-%S-%S", pick(), pick(), pick());
       if (!repo.existsByCode(code)) {
         return code;
@@ -32,6 +42,6 @@ public class ClassroomCodeGenerator {
   }
 
   private String pick() {
-   return WORDS.get(random.nextInt(WORDS.size()));
+    return WORDS.get(random.nextInt(WORDS.size()));
   }
 }
