@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import StudentHomeMenuItem from '~/components/student/StudentHomeMenuItem.vue';
+import { routePaths } from '~/composables/routePaths';
 import mapImage from "~/assets/images/studentHome/Map.png";
 import helpImage from "~/assets/images/studentHome/Help.png";
 import profileImage from "~/assets/images/studentHome/Profile.png";
@@ -25,7 +26,7 @@ const items: StudentHomeItem[] = [
     id: 'help',
     title: 'Hjelp',
     description: 'Få tips hvis du står fast eller lurer på hva du skal gjøre.',
-    route: '/student/help',
+    route: routePaths.studentHelp,
     badge: '?',
     imagePath: helpImage,
     rotation: 4,
@@ -35,7 +36,7 @@ const items: StudentHomeItem[] = [
     id: 'avatar',
     title: 'Avatar',
     description: 'Se profilen din og tilpass hvordan detektiven din ser ut.',
-    route: '/student/profile',
+    route: routePaths.studentProfile,
     badge: 'A',
     imagePath: profileImage,
     rotation: -4,
@@ -55,7 +56,7 @@ const items: StudentHomeItem[] = [
     id: 'map',
     title: 'Kartet',
     description: 'Her foregår spillet. Trykk her for å gå til stoppesteder og oppgaver.',
-    route: '/levels',
+    route: routePaths.levels,
     badge: 'K',
     imagePath: mapImage,
     rotation: -1,
@@ -75,7 +76,7 @@ const items: StudentHomeItem[] = [
     id: 'medals',
     title: 'Medaljer',
     description: 'Se medaljene du har vunnet og hvilke du kan samle senere.',
-    route: '/student/achievements',
+    route: routePaths.studentAchievements,
     badge: '*',
     imagePath: medalsImage,
     rotation: 2,
