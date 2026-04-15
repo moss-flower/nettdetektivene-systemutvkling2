@@ -17,7 +17,7 @@ import no.safety.backend.registration.service.UserRegistrationService;
  * Registration controller that defines user registration API endpoints.
  */
 @RestController
-@RequestMapping("/register")
+@RequestMapping("/api/v1/register")
 @RequiredArgsConstructor
 public class UserRegistrationController {
     private final UserRegistrationService userRegistrationService;

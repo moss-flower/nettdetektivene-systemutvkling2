@@ -41,7 +41,7 @@ public class UserRegistrationIntegrationTest {
         StudentUserRegistrationRequest request = new StudentUserRegistrationRequest("john@example.com", "John");
 
         client.post()
-            .uri("/api/register/student")
+            .uri("/api/v1/register/student")
             .body(request)
             .exchange()
             .expectStatus().isCreated() 
