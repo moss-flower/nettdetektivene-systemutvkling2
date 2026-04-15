@@ -11,4 +11,4 @@ Oppmøtetid: 09:00 - 15:00
 - **William Holtsdalen**
 
 ### Aktivitetsdiagram
-![Aktivitetsdiagram](docs/flowchart.svg)
+![Aktivitetsdiagram](docs/flowchart.png)
