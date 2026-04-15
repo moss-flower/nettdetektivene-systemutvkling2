@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * Defines a teacher user entity which extends {@link User}
+ */
 @Entity
 @Table(name = "teachers")
 @PrimaryKeyJoinColumn(name = "user_id")

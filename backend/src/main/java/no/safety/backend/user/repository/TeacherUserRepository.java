@@ -8,6 +8,6 @@ import no.safety.backend.user.model.TeacherUser;
  * Defines a JPA repository for teacher user accounts.
  */
 @Repository
-public interface TeacherUserRepository extends UserRepository<TeacherUser, Long> {
+public interface TeacherUserRepository extends BaseUserRepository<TeacherUser, Long> {
     
 }

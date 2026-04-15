@@ -12,7 +12,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-
+/**
+ * Defines a user entity in the system.
+ */
 @Entity
 @Table(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -23,11 +25,13 @@ import java.util.UUID;
 @SuperBuilder
 public class User {
 
+    /* The internal user id used by the database */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long internalId;
 
+    /* The public UUID for the user sent to the client, should be used in API calls */
     @Column(updatable = false, nullable = false, unique = true, columnDefinition = "BINARY(16)")
     private UUID publicUuid;
 
@@ -40,6 +44,9 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    /**
+     * Generates a random UUID for the user upon instance creation.
+     */
     @PrePersist
     protected void onCreate() {
         if (this.publicUuid == null) {
@@ -47,15 +54,22 @@ public class User {
         }
     }
 
+    /**
+     * Creates a many to many database relation between users and roles.
+     */
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
+
+    /* The set of roles the user has. */
     private Set<Role> roles = new HashSet<>();
 
-
+    /**
+     * Override equals definition to ensure two different objects for the same user are considered equal by the system.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -63,6 +77,9 @@ public class User {
         return email != null && email.equals(user.getEmail());
     }
 
+    /**
+     * JPA safe hashcode pattern
+     */
     @Override
     public int hashCode() {
         return getClass().hashCode();

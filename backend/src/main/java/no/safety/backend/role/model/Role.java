@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Persistence entity representing a security role for system-wide authorization.
+ * Defines a role entity representing a security role for system-wide authorization.
  */
 @Entity
 @Table(name = "roles")
