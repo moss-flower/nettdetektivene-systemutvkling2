@@ -213,7 +213,7 @@ function handleClick(item: StudentHomeItem) {
 .student-home__item--map {
   top: 19%;
   left: 29%;
-  width: 37%;
+  width: 39%;
   z-index: 8;
 }
 
