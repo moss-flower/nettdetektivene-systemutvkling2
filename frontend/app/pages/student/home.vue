@@ -17,6 +17,7 @@ type StudentHomeItem = {
   badge?: string;
   imagePath?: string;
   rotation?: number;
+  tooltipPlacement?: "top" | "bottom";
 };
 
 const items: StudentHomeItem[] = [
@@ -28,15 +29,17 @@ const items: StudentHomeItem[] = [
     badge: '?',
     imagePath: helpImage,
     rotation: 4,
+    tooltipPlacement: "bottom",
   },
   {
     id: 'avatar',
     title: 'Avatar',
-    description: 'Se profilen din og etter hvert tilpass hvordan detektiven din ser ut.',
+    description: 'Se profilen din og tilpass hvordan detektiven din ser ut.',
     route: '/student/profile',
     badge: 'A',
     imagePath: profileImage,
     rotation: -4,
+    tooltipPlacement: "top",
   },
   {
     id: 'leaderboard',
@@ -46,6 +49,7 @@ const items: StudentHomeItem[] = [
     badge: '#',
     imagePath: leaderboardImage,
     rotation: -2,
+    tooltipPlacement: "bottom",
   },
   {
     id: 'map',
@@ -55,6 +59,7 @@ const items: StudentHomeItem[] = [
     badge: 'K',
     imagePath: mapImage,
     rotation: -1,
+    tooltipPlacement: "bottom",
   },
   {
     id: 'mystery',
@@ -64,6 +69,7 @@ const items: StudentHomeItem[] = [
     badge: '!',
     imagePath: mysteryImage,
     rotation: 1,
+    tooltipPlacement: "bottom",
   },
   {
     id: 'medals',
@@ -73,6 +79,7 @@ const items: StudentHomeItem[] = [
     badge: '*',
     imagePath: medalsImage,
     rotation: 2,
+    tooltipPlacement: "top",
   },
   {
     id: 'notebook',
@@ -82,6 +89,7 @@ const items: StudentHomeItem[] = [
     badge: 'N',
     imagePath: notebookImage,
     rotation: 3,
+    tooltipPlacement: "top",
   }, 
   {
     id: 'settings',
@@ -91,6 +99,7 @@ const items: StudentHomeItem[] = [
     badge: 'S',
     imagePath: settingsImage,
     rotation: 1,
+    tooltipPlacement: "bottom",
   },
 ];
 
@@ -113,10 +122,11 @@ function handleClick(item: StudentHomeItem) {
         :key="item.id"
         :image-path="item.imagePath"
         :alt="item.title"
+        :tooltip-text="item.description"
+        :tooltip-placement="item.tooltipPlacement"
         :rotation="item.rotation"
         :onClick="() => handleClick(item)"
         :class="['student-home__item', `student-home__item--${item.id}`]"
-        :title="item.description"
         />
     </div>
   </section>
