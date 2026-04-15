@@ -10,7 +10,7 @@ const notifications = computed(() => getClassroomNotifications(classroomId.value
 <template>
   <section class="pageShell">
     <header class="pageHeader">
-      <NuxtLink class="backLink" :to="`/classroom/overview?classroomId=${classroomId}`">Tilbake til klasserommet</NuxtLink>
+      <NuxtLink class="backLink" :to="routePathsWithString(routePaths.classroomOverview, `?classroomId=${classroomId}`)">Tilbake til klasserommet</NuxtLink>
       <p class="eyebrow">Varslingssenter</p>
       <h1>{{ classroom?.name ?? 'Ukjent klasserom' }}</h1>
     </header>

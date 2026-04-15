@@ -71,7 +71,7 @@ function handleLogin() {
 
       <p class="registerText">
         Har du ikke en konto?
-        <NuxtLink to="/register" class="registerLink">Registrer deg nå</NuxtLink>
+        <NuxtLink :to="routePaths.register" class="registerLink">Registrer deg nå</NuxtLink>
       </p>
     </div>
   </section>

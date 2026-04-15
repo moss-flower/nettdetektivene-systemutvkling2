@@ -76,7 +76,7 @@ function handleJoinClassroom() {
       </form>
 
       <p class="backText">
-        <NuxtLink to="/" class="backLink">Tilbake</NuxtLink>
+        <NuxtLink :to="routePaths.home" class="backLink">Tilbake</NuxtLink>
       </p>
     </div>
   </section>
