@@ -40,7 +40,7 @@ public class UserRegistrationService {
     public Long registerStudent(StudentUserRegistrationRequest request) {
         StudentUser studentUser = StudentUser.builder()
             .username(request.username())
-            .email(null)
+            .email(request.email())
             .password(passwordEncoder.encode(request.password()))
             .roles(Set.of(roleRepository.findByType(RoleType.ROLE_STUDENT)
                 .orElseThrow(() -> new RuntimeException("Role not found"))))
@@ -59,7 +59,7 @@ public class UserRegistrationService {
     public Long registerTeacher(TeacherUserRegistrationRequest request) {
         TeacherUser teacherUser = TeacherUser.builder()
             .username(request.username())
-            .email(null)
+            .email(request.email())
             .password(passwordEncoder.encode(request.password()))
             .roles(Set.of(roleRepository.findByType(RoleType.ROLE_TEACHER)
                 .orElseThrow(() -> new RuntimeException("Role not found"))))

@@ -38,15 +38,16 @@ public class UserRegistrationIntegrationTest {
 
     @Test
     void shouldRegisterStudentUserSuccessfully() {
-        StudentUserRegistrationRequest request = new StudentUserRegistrationRequest("john@example.com", "John");
+        StudentUserRegistrationRequest request = new StudentUserRegistrationRequest("bruker", "bruker@email.no", "passord");
 
         client.post()
             .uri("/api/v1/register/student")
             .body(request)
             .exchange()
             .expectStatus().isCreated() 
-            .expectBody(StudentUser.class);
+            .expectBody(String.class);
 
-        assertThat(studentUserRepository.findByEmail("john@example.com")).isPresent();
+        assertThat(studentUserRepository.findByUsername("bruker")).isPresent();
+        assertThat(studentUserRepository.findByEmail("bruker@email.no")).isPresent();
     }
 }
