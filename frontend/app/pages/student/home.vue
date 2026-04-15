@@ -7,6 +7,7 @@ import leaderboardImage from "~/assets/images/Leaderboard.png";
 import medalsImage from "~/assets/images/medals.png";
 import mysteryImage from "~/assets/images/mystery.png";
 import notebookImage from "~/assets/images/notebook.png";
+import settingsImage from "~/assets/images/settings.png";
 
 type StudentHomeItem = {
   id: string;
@@ -81,7 +82,16 @@ const items: StudentHomeItem[] = [
     badge: 'N',
     imagePath: notebookImage,
     rotation: 3,
-  }
+  }, 
+  {
+    id: 'settings',
+    title: 'Innstillinger',
+    description: 'Endre innstillinger for spillet.',
+    route: '',
+    badge: 'S',
+    imagePath: settingsImage,
+    rotation: 1,
+  },
 ];
 
 const router = useRouter();
@@ -194,27 +204,34 @@ function handleClick(item: StudentHomeItem) {
   top: 19%;
   left: 29%;
   width: 37%;
-  z-index: 1;
+  z-index: 8;
 }
 
 .student-home__item--mystery {
   top: 6%;
   right: 19%;
-  width: 18%;
+  width: 22%;
   z-index: 5;
 }
 
 .student-home__item--help {
   top: 5%;
   right: 5%;
-  width: 11.5%;
+  width: 16%;
   z-index: 6;
 }
 
 .student-home__item--notebook {
   right: 3.5%;
   bottom: 3.5%;
-  width: 24%;
+  width: 15%;
+  z-index: 4;
+}
+
+.student-home__item--settings {
+  right: 3.5%;
+  bottom: 40%;
+  width: 20%;
   z-index: 4;
 }
 
