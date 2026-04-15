@@ -17,7 +17,7 @@ const classroomSummaries = computed(() => getTeacherClassroomSummaries());
         <h2>Dine klasserom</h2>
         <ul class="classList">
           <li v-for="classroom in classroomSummaries" :key="classroom.id" class="classListItem">
-            <NuxtLink :to="`/classroomOverview?classroomId=${classroom.id}`">{{ classroom.name }}</NuxtLink>
+            <NuxtLink :to="routePathWithString(routePath.classroomOverview, `?classroomId=${classroom.id}`)">{{ classroom.name }}</NuxtLink>
             <span class="classScore">{{ classroom.totalScore }} poeng</span>
           </li>
         </ul>

@@ -9,7 +9,7 @@ const achievements = [
 <template>
   <section class="achievementsPage">
     <header class="pageHeader">
-      <NuxtLink class="backLink" to="/student/profile">Tilbake til profil</NuxtLink>
+      <NuxtLink class="backLink" :to="routePath.studentProfile">Tilbake til profil</NuxtLink>
       <p class="eyebrow">Achievements</p>
       <h1>Mine prestasjoner</h1>
       <p class="subtitle">Foreløpige plassholdere til vi får ekte data.</p>
