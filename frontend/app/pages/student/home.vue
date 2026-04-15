@@ -12,49 +12,49 @@ const items: StudentHomeItem[] = [
     id: 'hjelp',
     title: 'Hjelp',
     description: 'Få tips hvis du står fast eller lurer på hva du skal gjøre.',
-    route: '',
+    route: routePathsWithString(routePaths.notYetImplemented, `?backPath=${routePaths.studentHome}`),
     badge: '?'
   },
   {
     id: 'avatar',
     title: 'Avatar',
     description: 'Se profilen din og etter hvert tilpass hvordan detektiven din ser ut.',
-    route: '',
+    route: routePaths.studentProfile,
     badge: 'A'
   },
   {
     id: 'ledertavle',
     title: 'Ledertavle',
     description: 'Se poeng, plassering og hvem som har samlet flest spor.',
-    route: '',
+    route: routePathsWithString(routePaths.notYetImplemented, `?backPath=${routePaths.studentHome}`),
     badge: '#'
   },
   {
     id: 'kart',
     title: 'Kartet',
     description: 'Her foregår spillet. Trykk her for å gå til stoppesteder og oppgaver.',
-    route: '/levels',
+    route: routePaths.levels,
     badge: 'K'
   },
   {
     id: 'mysterium',
     title: 'Ukens mysterium',
     description: 'Et eget mysterium med ferske spor og en ny sak å utforske.',
-    route: '',
+    route: routePathsWithString(routePaths.notYetImplemented, `?backPath=${routePaths.studentHome}`),
     badge: '!'
   },
   {
     id: 'medaljer',
     title: 'Medaljer',
     description: 'Se medaljene du har vunnet og hvilke du kan samle senere.',
-    route: '',
+    route: routePaths.studentAchievements,
     badge: '*'
   },
   {
     id: 'notatblokk',
     title: 'Notatblokk',
     description: 'Skriv ned spor, tanker og ting du vil huske til senere.',
-    route: '',
+    route: routePathsWithString(routePaths.notYetImplemented, `?backPath=${routePaths.studentHome}`),
     badge: 'N'
   }
 ];
