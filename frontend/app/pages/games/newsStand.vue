@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import NewsStandExercise from '~/components/gameplay/newsstand/NewsStandExercise.vue'
+import CompletedPopup from '~/components/gameplay/shared/CompletedPopup.vue'
+import SelectedPopup from '~/components/gameplay/shared/SelectedPopup.vue'
 import type { NewsStandTask } from '~/composables/types/TaskTypes'
 import { sampleAndShuffle } from '~/composables/utils/gameUtils'
 
@@ -45,20 +48,20 @@ const next = () => {
   <div>
     <h1>Aviskiosken</h1>
 
-    <GameplayNewsstandNewsStandSingleton
+    <NewsStandExercise
       v-if="tasks[currentIndex]"
-      :data="tasks[currentIndex]!"
+      :data="mockData.articles[currentIndex]!"
       @answered="onAnswered"
     />
 
-    <GameplaySharedSelectedPopup
+    <SelectedPopup
       v-if="showResultPopup"
       :correct="lastAnswerCorrect"
       :is-last="currentIndex >= tasks.length - 1"
       @next="next"
     />
 
-    <GameplaySharedCompletedPopup
+    <CompletedPopup
       v-if="showCompletedPopup"
       :correct-count="correctCount"
       :total="tasks.length"

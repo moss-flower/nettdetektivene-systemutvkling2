@@ -1,29 +1,7 @@
-<template>
-  <div>
-    <h1>Sosiale Medier</h1>
-
-    <GameplaySocialmediaSocialMediaSingleton
-      v-if="tasks[currentIndex]"
-      :data="tasks[currentIndex]!"
-      @answered="onAnswered"
-    />
-
-    <GameplaySharedSelectedPopup
-      v-if="showResultPopup"
-      :correct="lastAnswerCorrect"
-      :is-last="currentIndex >= tasks.length - 1"
-      @next="next"
-    />
-
-    <GameplaySharedCompletedPopup
-      v-if="showCompletedPopup"
-      :correct-count="correctCount"
-      :total="tasks.length"
-    />
-  </div>
-</template>
-
 <script setup lang="ts">
+import CompletedPopup from '~/components/gameplay/shared/CompletedPopup.vue';
+import SelectedPopup from '~/components/gameplay/shared/SelectedPopup.vue';
+import SocialMediaExercise from '~/components/gameplay/socialmedia/SocialMediaExercise.vue';
 import type { SocialMediaTask, SocialMediaChoice } from '~/composables/types/TaskTypes'
 import { sampleAndShuffle } from '~/composables/utils/gameUtils'
 
@@ -73,6 +51,32 @@ const next = () => {
   }
 }
 </script>
+
+
+<template>
+  <div>
+    <h1>Sosiale Medier</h1>
+
+    <SocialMediaExercise
+      v-if="tasks[currentIndex]"
+      :posts="tasks[currentIndex]!"
+      @answered="onAnswered"
+    />
+
+    <SelectedPopup
+      v-if="showResultPopup"
+      :correct="lastAnswerCorrect"
+      :is-last="currentIndex >= tasks.length - 1"
+      @next="next"
+    />
+
+    <CompletedPopup
+      v-if="showCompletedPopup"
+      :correct-count="correctCount"
+      :total="tasks.length"
+    />
+  </div>
+</template>
 
 <style scoped>
 /* Styles here */

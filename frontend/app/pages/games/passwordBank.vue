@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import PasswordBankGuessExercise from '~/components/gameplay/passwordbank/PasswordBankGuessExercise.vue'
+import PasswordBankImproveExercise from '~/components/gameplay/passwordbank/PasswordBankImproveExercise.vue'
+import PasswordBankMakePasswordExercise from '~/components/gameplay/passwordbank/PasswordBankMakePasswordExercise.vue'
+import CompletedPopup from '~/components/gameplay/shared/CompletedPopup.vue'
+import SelectedPopup from '~/components/gameplay/shared/SelectedPopup.vue'
 import type {
   PasswordBankTask,
 } from '~/composables/types/TaskTypes'
@@ -10,29 +15,24 @@ const mockData: PasswordBankTask = {
   description: "Passordutfordringer",
   items: [
     {
-      taskId: "1a",
+      itemId: "1a",
       guide: "Hvilke passord er svake og hvilke er sterke?",
-      task: {
-        kind: "guess",
-        weakPasswords: ["123456", "passord"],
-        strongPasswords: ["K7$mP!xQ9z", "Tr0ub4dor&3"],
-      }
+      kind: "guess",
+      weakPasswords: ["123456", "passord"],
+      strongPasswords: ["K7$mP!xQ9z", "Tr0ub4dor&3"],
     },
     {
-      taskId: "1b",
-      guide: "Forbedre dette passordet",
-      task: {
-        kind: "improve",
-        passwordStart: "hund123"
-      }
+      itemId: "1b",
+      guide: "Forbedre dette passordet",  
+      kind: "improvePassword",
+      passwordStart: "hund123"
+      
     },
     {
-      taskId: "1c",
+      itemId: "1c",
       guide: "Lag et sterkt passord",
-      task: {
-        kind: "makePassword",
-        inputPassword: ""
-      }
+      kind: "makePassword",
+      inputPassword: ""
     }
   ]
 }
@@ -66,31 +66,31 @@ const next = () => {
     <h1>Passordbanken</h1>
 
     <template v-if="currentTask">
-      <GameplayPasswordbankPasswordBankGuess
-        v-if="currentTask.task.kind === 'guess'"
-        :data="currentTask"
+      <PasswordBankGuessExercise
+        v-if="currentTask.kind === 'guess'"
+        :taskInfo="currentTask"
         @answered="onAnswered"
       />
-      <GameplayPasswordbankPasswordBankImprove
-        v-else-if="currentTask.task.kind === 'improve'"
-        :data="currentTask"
+      <PasswordBankImproveExercise
+        v-else-if="currentTask.kind === 'improvePassword'"
+        :taskInfo="currentTask"
         @answered="onAnswered"
       />
-      <GameplayPasswordbankPasswordBankMakePassword
-        v-else-if="currentTask.task.kind === 'makePassword'"
-        :data="currentTask"
+      <PasswordBankMakePasswordExercise
+        v-else-if="currentTask.kind === 'makePassword'"
+        :taskInfo="currentTask"
         @answered="onAnswered"
       />
     </template>
 
-    <GameplaySharedSelectedPopup
+    <SelectedPopup
       v-if="showResultPopup"
       :correct="lastAnswerCorrect"
       :is-last="currentIndex >= tasks.length - 1"
       @next="next"
     />
 
-    <GameplaySharedCompletedPopup
+    <CompletedPopup
       v-if="showCompletedPopup"
       :correct-count="correctCount"
       :total="tasks.length"

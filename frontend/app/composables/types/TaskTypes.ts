@@ -15,6 +15,8 @@ export type ImageRecognitionType = "real" | "AI" | "manipulated";
 export type MarketplaceChoice = "buy" | "reviewMore" | "dontBuy";
 export type SocialMediaChoice = "share" | "hold" | "checkSources" | "askAdult";
 
+//================= NewsStand =================
+
 export type NewsArticle = {
   author: string;
   title: string;
@@ -32,6 +34,9 @@ export type NewsStandTask = BaseTask & {
   articles: NewsStandPair[];
 };
 
+
+//================= PostOffice =================
+
 export type PostOfficeMail = {
   avatarImageUrl: string;
   sender: string;
@@ -45,28 +50,43 @@ export type PostOfficeTask = BaseTask & {
   mails: PostOfficeMail[];
 };
 
-export type PasswordBankItem = {
-  taskId: string,
-  guide: string,
-  task: {
-      kind: "guess";
-      weakPasswords: string[];
-      strongPasswords: string[];
-    }
-  | {
-      kind: "improve";
-      passwordStart: string;
-    }
-  | {
-      kind: "makePassword";
-      inputPassword: string;
-    };
-  }
+
+//================= PasswordBank =================
+
+export type PasswordBankGuessItem = {
+  itemId: string;
+  kind: "guess";
+  guide: string;
+  weakPasswords: string[];
+  strongPasswords: string[];
+};
+
+export type PasswordBankMakePasswordItem = {
+  itemId: string;
+  kind: "makePassword";
+  guide: string;
+  inputPassword: string;
+};
+
+export type PasswordBankImprovePasswordItem = {
+  itemId: string;
+  kind: "improvePassword";
+  guide: string;
+  passwordStart: string;
+};
+
+export type PasswordBankExercise =
+  | PasswordBankGuessItem
+  | PasswordBankMakePasswordItem
+  | PasswordBankImprovePasswordItem;
 
 export type PasswordBankTask = BaseTask & {
   kind: "passwordBank";
-  items: PasswordBankItem[];
+  items: PasswordBankExercise[];
 };
+
+
+//================= ImageRecognition =================
 
 export type ImageRecognitionItem = {
   imageUrl: string;
@@ -77,6 +97,8 @@ export type ImageRecognitionTask = BaseTask & {
   kind: "imageRecognition";
   images: ImageRecognitionItem[];
 };
+
+//================= Marketplace =================
 
 export type MarketplaceListing = {
   imageUrl: string;
@@ -89,6 +111,8 @@ export type MarketplaceTask = BaseTask & {
   listings: MarketplaceListing[];
 };
 
+//================= SocialMedia =================
+
 export type SocialMediaPost = {
   postId: string;
   imageUrl: string;
@@ -100,6 +124,7 @@ export type SocialMediaTask = BaseTask & {
   posts: SocialMediaPost[];
 };
 
+//================= Boss =================
 export type NonFinalTask =
   | NewsStandTask
   | PostOfficeTask

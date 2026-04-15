@@ -1,19 +1,22 @@
 <script setup lang="ts">
-import type { ImageRecognitionTask, ImageRecognitionType } from '~/composables/types/TaskTypes'
+import MarketPlaceExercise from '~/components/gameplay/marketplace/MarketPlaceExercise.vue'
+import CompletedPopup from '~/components/gameplay/shared/CompletedPopup.vue'
+import SelectedPopup from '~/components/gameplay/shared/SelectedPopup.vue'
+import type { MarketplaceTask } from '~/composables/types/TaskTypes'
 import { sampleAndShuffle } from '~/composables/utils/gameUtils'
 
-const mockData: ImageRecognitionTask = {
+const mockData: MarketplaceTask = {
   id: "1",
-  kind: "imageRecognition",
-  description: "Hvilken form for bilde er dette?",
-  images: [
-    { imageUrl: "https://placehold.co/600x400?text=Image+1", type: "real" },
-    { imageUrl: "https://placehold.co/600x400?text=Image+2", type: "AI" },
-    { imageUrl: "https://placehold.co/600x400?text=Image+3", type: "manipulated" },
+  kind: "marketplace",
+  description: "Hva bør du gjøre med disse produktene?",
+  listings: [
+    { imageUrl: "https://placehold.co/600x400?text=Product+1", expectedChoice: "buy", price: 100 },
+    { imageUrl: "https://placehold.co/600x400?text=Product+2", expectedChoice: "reviewMore", price: 200 },
+    { imageUrl: "https://placehold.co/600x400?text=Product+3", expectedChoice: "dontBuy", price: 300 },
   ]
 }
 
-const tasks = sampleAndShuffle(mockData.images, mockData.images.length)
+const tasks = sampleAndShuffle(mockData.listings, mockData.listings.length)
 const currentIndex = ref(0)
 const showResultPopup = ref(false)
 const showCompletedPopup = ref(false)
@@ -38,22 +41,22 @@ const next = () => {
 
 <template>
   <div>
-    <h1>Bildegjenkjenning</h1>
+    <h1>Markedsplassen</h1>
 
-    <GameplayImagerecognitionImageRecognitionSingleton
+    <MarketPlaceExercise
       v-if="tasks[currentIndex]"
-      :data="tasks[currentIndex]!"
+      :listing="mockData.listings[currentIndex]!"
       @answered="onAnswered"
     />
 
-    <GameplaySharedSelectedPopup
+    <SelectedPopup
       v-if="showResultPopup"
       :correct="lastAnswerCorrect"
       :is-last="currentIndex >= tasks.length - 1"
       @next="next"
     />
 
-    <GameplaySharedCompletedPopup
+    <CompletedPopup
       v-if="showCompletedPopup"
       :correct-count="correctCount"
       :total="tasks.length"
