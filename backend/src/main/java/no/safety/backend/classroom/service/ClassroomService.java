@@ -1,5 +1,6 @@
 package no.safety.backend.classroom.service;
 
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.classroom.dto.ClassroomRequest;
@@ -13,17 +14,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class ClassroomService {
 
   private final ClassroomRepository classroomRepo;
   private final UserRepository userRepo;
   private final ClassroomCodeGenerator codegen;
-
-  public ClassroomService(ClassroomRepository classroomRepo, UserRepository userRepo) {
-    this.classroomRepo = classroomRepo;
-    this.userRepo = userRepo;
-    this.codegen = new ClassroomCodeGenerator(classroomRepo);
-  }
 
   @Transactional
   public ClassroomResponse create(ClassroomRequest req, UUID callerUuid) {
@@ -35,7 +31,7 @@ public class ClassroomService {
     }
 
     Classroom c = new Classroom();
-    c.setOwner(owner);
+    c.getOwners().add(owner);
     c.setName(req.name());
     c.setDescription(req.description());
     c.setCode(codegen.generateUniqueCode());
@@ -47,6 +43,7 @@ public class ClassroomService {
     Classroom c = requireOwned(classroomId, callerUuid);
     c.setName(req.name());
     c.setDescription(req.description());
+    classroomRepo.save(c);
     return ClassroomResponse.from(c);
   }
 
@@ -75,7 +72,7 @@ public class ClassroomService {
   }
 
   @Transactional
-  public ClassroomResponse removeOwner(Long classroomId, UUID ownerToRemoveUuid, Long callerUuid) {
+  public ClassroomResponse removeOwner(Long classroomId, UUID ownerToRemoveUuid, UUID callerUuid) {
     Classroom c = requireOwned(classroomId, callerUuid);
 
     if (c.getOwners().size() <= 1) {
@@ -99,6 +96,7 @@ public class ClassroomService {
    * @param callerUuid  UUID of the calling user
    * @return ClassroomResponse
    */
+  @Transactional
   public ClassroomResponse regenerateCode(Long classroomId, UUID callerUuid) {
     Classroom c = requireOwned(classroomId, callerUuid);
     c.setCode(codegen.generateUniqueCode());
@@ -106,13 +104,10 @@ public class ClassroomService {
   }
 
   private Classroom requireOwned(Long classroomId, UUID callerUuid) {
-    Classroom c = classroomRepo.findById(classroomId)
-        .orElseThrow(() -> new NotFoundException("Classroom not found"));
-
-    if (c.getOwners().stream().noneMatch(owner -> owner.getPublicUuid().equals(callerUuid))) {
-      throw new ForbiddenException("User is not an owner");
+    Optional<Classroom> c = classroomRepo.findByIdAndOwners_PublicUuid(classroomId, callerUuid);
+    if (c.isEmpty()) {
+      throw new ConflictException("Caller does not own this classroom or the classroom does not exist");
     }
-
-    return c;
+    return c.get();
   }
 }

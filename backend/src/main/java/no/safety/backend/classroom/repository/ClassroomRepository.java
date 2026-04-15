@@ -8,13 +8,9 @@ import java.util.List;
 
 public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
 
-  List<Classroom> findByOwnerUuid(UUID ownerUuid);
-
-  Optional<Classroom> findByIdAndOwnerUuid(Long id, UUID ownerUuid);
-
   boolean existsByCode(String code);
 
-  boolean existsByIdAndOwners_Uuid(Long id, UUID ownerUuid);
+  boolean existsByIdAndOwners_PublicUuid(Long id, UUID ownerUuid);
 
-  Optional<Classroom> findByIdAndOwners_Uuid(Long id, UUID ownerUuid);
+  Optional<Classroom> findByIdAndOwners_PublicUuid(Long id, UUID ownerUuid);
 }

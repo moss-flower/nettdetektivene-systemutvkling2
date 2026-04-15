@@ -5,67 +5,55 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import java.util.HashSet;
 import java.util.Set;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "classrooms")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Classroom {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false, unique = true, length = 30)
   private String code;
 
-  @Column(nullable = false)
+  @Column(nullable = false, length = 100)
   private String name;
 
+  @Column(nullable = false, length = 1000)
   private String description;
 
   @ManyToMany
-  private Set<User> owners;
+  @JoinTable(
+      name = "classroom_owners",
+      joinColumns = @JoinColumn(name="classroom_id"),
+      inverseJoinColumns = @JoinColumn(name = "user_id")
+  )
+  private Set<User> owners = new HashSet<User>();
 
-
-  public Long getId() {
-    return id;
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof Classroom classroom)) return false;
+    return id != null && id.equals(classroom.getId());
   }
 
-  public String getCode() {
-    return code;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public String getDescription() {
-    return description;
-  }
-
-  public void setCode(String code) {
-    this.code = code;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-  public Set<User> getOwners() {
-    return owners;
-  }
-
-  public void setOwners(Set<User> owners) {
-    this.owners = owners;
-  }
-
-  public void setOwner(User owner) {
-    this.owners = Set.of(owner);
+  @Override
+  public int hashCode() {
+    return getClass().hashCode();
   }
 }

@@ -1,6 +1,6 @@
 package no.safety.backend.classroom.dto;
 
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 import no.safety.backend.classroom.model.Classroom;
 
@@ -9,11 +9,11 @@ public record ClassroomResponse(
     String name,
     String description,
     String code,
-    Set<OwnerSummary> owners
+    List<OwnerSummary> owners
 ) {
 
   public static ClassroomResponse from(Classroom c) {
-    Set<OwnerSummary> owners = c.getOwners().stream()
+    List<OwnerSummary> owners = c.getOwners().stream()
         .map(u -> new OwnerSummary(u.getPublicUuid(), u.getName()))
         .collect(Collectors.toSet());
 
