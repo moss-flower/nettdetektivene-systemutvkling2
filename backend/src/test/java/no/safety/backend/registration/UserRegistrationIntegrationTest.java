@@ -14,6 +14,7 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 
 import no.safety.backend.registration.dto.StudentUserRegistrationRequest;
+import no.safety.backend.registration.dto.TeacherUserRegistrationRequest;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.repository.StudentUserRepository;
 import no.safety.backend.user.repository.TeacherUserRepository;
@@ -38,7 +39,7 @@ public class UserRegistrationIntegrationTest {
 
     @Test
     void shouldRegisterStudentUserSuccessfully() {
-        StudentUserRegistrationRequest request = new StudentUserRegistrationRequest("bruker", "bruker@email.no", "passord");
+        StudentUserRegistrationRequest request = new StudentUserRegistrationRequest("student", "student@email.no", "password");
 
         client.post()
             .uri("/api/v1/register/student")
@@ -47,7 +48,22 @@ public class UserRegistrationIntegrationTest {
             .expectStatus().isCreated() 
             .expectBody(String.class);
 
-        assertThat(studentUserRepository.findByUsername("bruker")).isPresent();
-        assertThat(studentUserRepository.findByEmail("bruker@email.no")).isPresent();
+        assertThat(studentUserRepository.findByUsername("student")).isPresent();
+        assertThat(studentUserRepository.findByEmail("student@email.no")).isPresent();
+    }
+
+    @Test
+    void shouldRegisterTeacherUserSuccessfully() {
+        TeacherUserRegistrationRequest request = new TeacherUserRegistrationRequest("teacher", "teacher@email.no", "passord");
+
+        client.post()
+            .uri("/api/v1/register/teacher")
+            .body(request)
+            .exchange()
+            .expectStatus().isCreated() 
+            .expectBody(String.class);
+
+        assertThat(teacherUserRepository.findByUsername("teacher")).isPresent();
+        assertThat(teacherUserRepository.findByEmail("teacher@email.no")).isPresent();
     }
 }
