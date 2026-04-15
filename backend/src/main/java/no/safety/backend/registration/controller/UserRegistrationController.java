@@ -13,18 +13,31 @@ import no.safety.backend.registration.dto.StudentUserRegistrationRequest;
 import no.safety.backend.registration.dto.TeacherUserRegistrationRequest;
 import no.safety.backend.registration.service.UserRegistrationService;
 
+/**
+ * Registration controller that defines user registration API endpoints.
+ */
 @RestController
 @RequestMapping("/register")
 @RequiredArgsConstructor
 public class UserRegistrationController {
     private final UserRegistrationService userRegistrationService;
 
+    /**
+     * API endpoint for student user registration.
+     * @param request
+     * @return
+     */
     @PostMapping(value = "/student")
     public ResponseEntity<String> RegisterStudentUser(@Valid @RequestBody StudentUserRegistrationRequest request){
         userRegistrationService.registerStudent(request);
         return ResponseEntity.status(HttpStatus.CREATED).body("Student account registered.");
     }
 
+    /**
+     * API endpoint for teacher user registration.
+     * @param request
+     * @return
+     */
     @PostMapping(value = "/teacher")
     public ResponseEntity<String> RegisterStudentUser(@Valid @RequestBody TeacherUserRegistrationRequest request){
         userRegistrationService.registerTeacher(request);
