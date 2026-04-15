@@ -59,6 +59,7 @@ public class ClassroomService {
     User newOwner = userRepo.findByPublicUuid(newOwnerUuid)
         .orElseThrow(() -> new NotFoundException("User not found"));
 
+    //TODO: Replace with better role check after merging with user registration branch.
     if (!(newOwner instanceof TeacherUser)) {
       throw new ForbiddenException("New owner must be a teacher");
     }
@@ -100,13 +101,17 @@ public class ClassroomService {
   public ClassroomResponse regenerateCode(Long classroomId, UUID callerUuid) {
     Classroom c = requireOwned(classroomId, callerUuid);
     c.setCode(codegen.generateUniqueCode());
+    classroomRepo.save(c);
     return ClassroomResponse.from(c);
   }
 
   private Classroom requireOwned(Long classroomId, UUID callerUuid) {
+    if (classroomRepo.findById(classroomId).isEmpty()) {
+      throw new NotFoundException("Could not find classroom");
+    }
     Optional<Classroom> c = classroomRepo.findByIdAndOwners_PublicUuid(classroomId, callerUuid);
     if (c.isEmpty()) {
-      throw new ConflictException("Caller does not own this classroom or the classroom does not exist");
+      throw new ForbiddenException("Caller is not an owner of the classroom");
     }
     return c.get();
   }
