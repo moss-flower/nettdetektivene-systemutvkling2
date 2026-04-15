@@ -45,6 +45,7 @@ function handleClick(event: MouseEvent) {
 <style scoped>
 .menu-item {
   position: relative;
+  isolation: isolate;
   width: 100%;
   display: block;
   padding: 0;
@@ -70,12 +71,20 @@ function handleClick(event: MouseEvent) {
   height: auto;
   display: block;
   filter: drop-shadow(0 0.9rem 0.8rem rgb(48 24 9 / 0.22));
+  transition: filter var(--transition);
+}
+
+.menu-item:hover .menu-item__image,
+.menu-item:focus-visible .menu-item__image {
+  filter:
+    drop-shadow(0 0 0.5rem var(--primary-hover));
 }
 
 .menu-item__tooltip {
   position: absolute;
   left: 50%;
   z-index: 20;
+  filter: none;
   width: max-content;
   max-width: min(15rem, calc(100vw - 2rem));
   padding: 0.5rem 0.75rem;
@@ -86,10 +95,6 @@ function handleClick(event: MouseEvent) {
   font-size: 0.92rem;
   line-height: 1.35;
   text-align: left;
-  box-shadow:
-    0 1rem 1.8rem rgb(40 67 31 / 0.2),
-    0 0.3rem 0.5rem rgb(40 67 31 / 0.1),
-    inset 0 1px 0 rgb(255 255 255 / 0.65);
   opacity: 0;
   pointer-events: none;
   transition:
@@ -102,12 +107,12 @@ function handleClick(event: MouseEvent) {
   position: absolute;
   left: 50%;
   top: 100%;
+  filter: none;
   width: 0.85rem;
   height: 0.85rem;
   border-right: 2px solid rgb(98 163 120 / 0.48);
   border-bottom: 2px solid rgb(98 163 120 / 0.48);
   background: #bde9a3;
-  box-shadow: 0 0.45rem 0.75rem rgb(40 67 31 / 0.12);
 }
 
 .menu-item__tooltip--top {
