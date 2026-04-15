@@ -12,7 +12,7 @@
         <p class="serviceText">
           Gå inn i spillet, løs oppgaver og følg progresjonen din.
         </p>
-        <NuxtLink :to="routePathWithString(routePath.login, '?role=student')">
+        <NuxtLink :to="routePathWithString(routePath.login, '?role=elev')">
           <button>Velg</button>
         </NuxtLink>
       </div>
