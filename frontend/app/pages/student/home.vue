@@ -176,7 +176,7 @@ function handleClick(item: StudentHomeItem) {
 
 .student-home__item:hover {
   z-index: 100;
-  transform: scale(1.05);
+  transform: scale(1.15);
 }
 
 .student-home__item--leaderboard {
@@ -187,8 +187,8 @@ function handleClick(item: StudentHomeItem) {
 }
 
 .student-home__item--avatar {
-  left: 2%;
-  bottom: 17%;
+  left: 3%;
+  bottom: 19%;
   width: 21%;
   z-index: 4;
 }
