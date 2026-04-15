@@ -7,13 +7,13 @@ import no.safety.backend.classroom.repository.ClassroomRepository;
 import org.springframework.stereotype.Component;
 
 /**
- *
+ * Generates a
  */
 @Component
 @RequiredArgsConstructor
 public class ClassroomCodeGenerator {
 
-  private final static List<String> WORDS = List.of("alle", "ingen", "noen", "mange", "få", "kake", "tur",
+  private static final List<String> WORDS = List.of("alle", "ingen", "noen", "mange", "få", "kake", "tur",
       "rev", "katt", "løve", "sterk", "svak", "teit", "eple", "båt", "slott", "konge", "stor",
       "due",
       "brus", "burger", "potet", "gulrot", "penn", "blyant", "tavle", "liten", "bål", "skog", "tre",
