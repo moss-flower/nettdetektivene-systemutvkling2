@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.registration.dto.StudentUserRegistrationRequest;
+import no.safety.backend.registration.dto.TeacherUserRegistrationRequest;
 import no.safety.backend.registration.service.UserRegistrationService;
 
 @RestController
@@ -21,6 +22,12 @@ public class UserRegistrationController {
     @PostMapping(value = "/student")
     public ResponseEntity<String> RegisterStudentUser(@Valid @RequestBody StudentUserRegistrationRequest request){
         userRegistrationService.registerStudent(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Student account registered.");
+    }
+
+    @PostMapping(value = "/teacher")
+    public ResponseEntity<String> RegisterStudentUser(@Valid @RequestBody TeacherUserRegistrationRequest request){
+        userRegistrationService.registerTeacher(request);
         return ResponseEntity.status(HttpStatus.CREATED).body("Student account registered.");
     }
 }
