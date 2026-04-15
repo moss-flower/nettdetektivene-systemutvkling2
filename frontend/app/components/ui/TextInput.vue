@@ -50,7 +50,7 @@ function validate(value: string): string | null {
   }
 
   if (props.maxLength !== undefined && normalized.length > props.maxLength) {
-    return `Maxmimum ${props.maxLength} characters`;
+    return `Maximum ${props.maxLength} characters`;
   }
 
   if (props.pattern && normalized && !props.pattern.test(normalized)) {
@@ -61,12 +61,13 @@ function validate(value: string): string | null {
 }
 
 function updateValidity() {
-  const displayError = validate(inputValue.value);
-  emit("update:isValid", !displayError);
+  displayError.value = validate(inputValue.value) ?? "";
+  emit("update:isValid", !displayError.value);
 }
 
 function handleInput(event: Event) {
   const value = (event.target as HTMLInputElement).value;
+  inputValue.value = value;
   emit("update:modelValue", value);
   updateValidity();
 }
@@ -84,13 +85,17 @@ function handleInput(event: Event) {
       :placeholder="props.placeholder"
       :value="inputValue"
       @input="handleInput"
+      class="input"
+      :class="{ inputError: displayError }"
     />
 
     <p v-if="props.description" class="description">
       {{ props.description }}
     </p>
 
-    <p v-if="displayError" class="displayError">{{ displayError }}</p>
+    <p v-if="props.showError && displayError" class="displayError">
+      {{ displayError }}
+    </p>
   </div>
 </template>
 
@@ -101,17 +106,22 @@ function handleInput(event: Event) {
   gap: 0.35rem;
 }
 
-.field__label {
+.label {
   font-weight: 700;
   color: var(--text);
 }
 
-.field__description {
+.description {
   font-size: 0.95rem;
   color: var(--muted);
 }
 
-.field__input {
+.displayError {
+  font-size: 0.9rem;
+  color: var(--danger);
+}
+
+.input {
   width: 100%;
   padding: 0.85rem 1rem;
   border: 1px solid var(--border);
@@ -124,23 +134,13 @@ function handleInput(event: Event) {
     box-shadow var(--transition);
 }
 
-.field__input:focus {
+.input:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
-.field__input:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
-
-.field__input--error {
+.inputError {
   border-color: var(--danger);
-}
-
-.field__error {
-  font-size: 0.9rem;
-  color: var(--danger);
 }
 </style>

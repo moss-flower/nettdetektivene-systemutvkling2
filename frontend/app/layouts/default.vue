@@ -26,7 +26,6 @@
   padding: 1rem;
   width: 90%;
   margin: auto;
-  border: 2px solid var(--border);
   height: 90vh;
 }
 </style>
