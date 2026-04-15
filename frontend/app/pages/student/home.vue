@@ -63,7 +63,7 @@ const items: StudentHomeItem[] = [
     route: '',
     badge: '!',
     imagePath: mysteryImage,
-    rotation: 5,
+    rotation: 1,
   },
   {
     id: 'medals',
@@ -230,7 +230,7 @@ function handleClick(item: StudentHomeItem) {
 
 .student-home__item--settings {
   right: 3.5%;
-  bottom: 40%;
+  bottom: 35%;
   width: 20%;
   z-index: 4;
 }
