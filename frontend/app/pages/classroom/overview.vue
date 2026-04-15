@@ -18,6 +18,33 @@ const leaderboard = computed(() => getClassroomLeaderboard(classroomId.value));
       <p class="subtitle">Ledertavle sortert etter progresjon.</p>
     </header>
 
+    <div v-if="classroom" class="actionGrid">
+      <NuxtLink :to="`/classroom/students?classroomId=${classroom.id}`" class="actionCard">
+        <span class="actionCard__title">Elever</span>
+        <span class="actionCard__text">Se elevoversikt og åpne enkeltelevens progresjon.</span>
+      </NuxtLink>
+
+      <NuxtLink :to="`/classroom/notifications?classroomId=${classroom.id}`" class="actionCard">
+        <span class="actionCard__title">Varslingssenter</span>
+        <span class="actionCard__text">Se varsler som bare gjelder dette klasserommet.</span>
+      </NuxtLink>
+
+      <NuxtLink :to="`/classroom/tasks?classroomId=${classroom.id}`" class="actionCard">
+        <span class="actionCard__title">Oppgaver</span>
+        <span class="actionCard__text">Åpne oppgavene som brukes i dette klasserommet.</span>
+      </NuxtLink>
+
+      <NuxtLink to="/student/home" class="actionCard">
+        <span class="actionCard__title">Test spillet</span>
+        <span class="actionCard__text">Prøv spillet fra elevens perspektiv.</span>
+      </NuxtLink>
+
+      <NuxtLink :to="`/classroom/mystery?classroomId=${classroom.id}`" class="actionCard">
+        <span class="actionCard__title">Ukens mysterium</span>
+        <span class="actionCard__text">Se og rediger ukens mysterium for dette rommet.</span>
+      </NuxtLink>
+    </div>
+
     <div v-if="classroom" class="summaryRow">
       <article class="summaryCard">
         <span class="summaryCard__label">Klassescore</span>
@@ -107,6 +134,33 @@ h1 {
   gap: 1rem;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-bottom: 1rem;
+}
+
+.actionGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin-bottom: 1rem;
+}
+
+.actionCard {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.actionCard__title {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.actionCard__text {
+  color: var(--muted);
+  line-height: 1.4;
 }
 
 .summaryCard {

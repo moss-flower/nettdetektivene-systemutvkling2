@@ -15,12 +15,17 @@ const classroomSummaries = computed(() => getTeacherClassroomSummaries());
     <div class="dashboardGrid">
       <article class="panel classesPanel">
         <h2>Dine klasserom</h2>
-        <ul class="classList">
-          <li v-for="classroom in classroomSummaries" :key="classroom.id" class="classListItem">
-            <NuxtLink :to="`/classroomOverview?classroomId=${classroom.id}`">{{ classroom.name }}</NuxtLink>
+        <div class="classroomCards">
+          <article
+            v-for="(classroom, index) in classroomSummaries"
+            :key="classroom.id"
+            class="classroomCard"
+            :class="`classroomCard--${(index % 3) + 1}`"
+          >
+            <NuxtLink :to="`/classroom/overview?classroomId=${classroom.id}`">{{ classroom.name }}</NuxtLink>
             <span class="classScore">{{ classroom.totalScore }} poeng</span>
-          </li>
-        </ul>
+          </article>
+        </div>
       </article>
 
       <article class="panel">
@@ -95,7 +100,6 @@ h2 {
   margin: 0 0 0.75rem 0;
 }
 
-.classList,
 .notificationList {
   margin: 0;
   padding-left: 1rem;
@@ -103,16 +107,39 @@ h2 {
   gap: 0.4rem;
 }
 
-.classListItem {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+.classroomCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
 }
 
-.classList a {
+.classroomCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 120px;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.classroomCard--1 {
+  background: rgba(101, 240, 175, 0.08);
+}
+
+.classroomCard--2 {
+  background: rgba(96, 165, 250, 0.1);
+}
+
+.classroomCard--3 {
+  background: rgba(244, 114, 182, 0.1);
+}
+
+.classroomCard a {
   font-weight: 700;
   color: var(--primary);
+  font-size: 1.05rem;
 }
 
 .classScore {
