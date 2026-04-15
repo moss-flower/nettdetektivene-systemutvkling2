@@ -5,11 +5,13 @@ export enum routePaths {
     join = '/join',
     register = '/register',
     teacherOverview = '/teacherOverview',
-    classroomOverview = '/classroomOverview',
+    classroomOverview = '/classroom/overview',
     classroomMystery = '/classroom/mystery',
     studentHome = '/student/home',
     studentProfile = '/student/profile',
     studentAchievements = '/student/achievements',
+    studentHelp = '/student/help',
+    notYetImplemented = '/notYetImplemented',
 }
 
 export const routePathsWithString = (path: routePaths, string: string) => `${path}${string}`;
