@@ -6,6 +6,7 @@ export enum routePaths {
     register = '/register',
     teacherOverview = '/teacherOverview',
     classroomOverview = '/classroomOverview',
+    classroomMystery = '/classroom/mystery',
     studentHome = '/student/home',
     studentProfile = '/student/profile',
     studentAchievements = '/student/achievements',
