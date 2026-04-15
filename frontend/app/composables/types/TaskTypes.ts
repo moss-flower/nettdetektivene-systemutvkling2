@@ -1,104 +1,139 @@
-// TaskTypes.ts
-class TaskDTO {
-    taskId: string = "";
-    description: string = "";
-}
+type BaseTask = {
+  id: string;
+  kind:
+    | "newsStand"
+    | "postOffice"
+    | "passwordBank"
+    | "imageRecognition"
+    | "marketplace"
+    | "socialMedia"
+    | "finalBoss";
+  description: string;
+};
+
+export type ImageRecognitionType = "real" | "AI" | "manipulated";
+export type MarketplaceChoice = "buy" | "reviewMore" | "dontBuy";
+export type SocialMediaChoice = "share" | "hold" | "checkSources" | "askAdult";
+
+//================= NewsStand =================
+
+export type NewsArticle = {
+  author: string;
+  title: string;
+  imageUrl: string;
+  text: string;
+};
+
+export type NewsStandPair = {
+  correct: NewsArticle;
+  fake: NewsArticle;
+};
+
+export type NewsStandTask = BaseTask & {
+  kind: "newsStand";
+  articles: NewsStandPair[];
+};
 
 
-// Task NewsStand; Which of these news articles are real and which are fake?
-class TaskNewsStandDTO extends TaskDTO {
-    correct: string[] = [];
-    faulty: string[] = [];
-}
+//================= PostOffice =================
 
-// Task PostOffice; Which email is a scam and which is not?
-class TaskPostOfficeDTO extends TaskDTO {
-    tasks: TaskPostSingleton[] = [];
-}
+export type PostOfficeMail = {
+  avatarImageUrl: string;
+  sender: string;
+  subject: string;
+  content: string;
+  isValid: boolean;
+};
 
-class TaskPostSingleton {
-    imageurl: string = "";
-    isGood: boolean = false;
-}
-
-// Task PasswordBank; Which passwords are weak and which are strong?
-abstract class TaskPasswordBankDTO extends TaskDTO { }
-
-class TaskPasswordBankGuessDTO extends TaskPasswordBankDTO {
-    passwordWeak: string[] = [];
-    passwordStrong: string[] = [];
-}
-
-class TaskPasswordBankImproveDTO extends TaskPasswordBankDTO {
-    passwordStart: string = "";
-}
-
-class TaskPasswordBankMakePasswordDTO extends TaskPasswordBankDTO {
-    password: string = "";
-}
-
-// Task ImageRecognition; Which images are real, AI-generated, or manipulated?
-class TaskImageRecognitionDTO extends TaskDTO {
-    imageurl: string = "";
-    type: ImageRecognitionType = ImageRecognitionType.Real;
-}
+export type PostOfficeTask = BaseTask & {
+  kind: "postOffice";
+  mails: PostOfficeMail[];
+};
 
 
-enum ImageRecognitionType {
-    Real,
-    AI,
-    Manipulated
-}
+//================= PasswordBank =================
 
-// Task Marketplace; Which products should be bought, reviewed more, or not bought?
-class TaskMarketplaceDTO extends TaskDTO {
-    tasks: TaskMarketplaceSingleton[] = [];
-}
+export type PasswordBankGuessItem = {
+  itemId: string;
+  kind: "guess";
+  guide: string;
+  weakPasswords: string[];
+  strongPasswords: string[];
+};
 
-class TaskMarketplaceSingleton {
-    imageurl: string = "";
-    type: MarketplaceChoices = MarketplaceChoices.Buy;
-}
+export type PasswordBankMakePasswordItem = {
+  itemId: string;
+  kind: "makePassword";
+  guide: string;
+  inputPassword: string;
+};
 
-enum MarketplaceChoices {
-    Buy,
-    ReviewMore,
-    DontBuy
-}
+export type PasswordBankImprovePasswordItem = {
+  itemId: string;
+  kind: "improvePassword";
+  guide: string;
+  passwordStart: string;
+};
 
-// Task SocialMedia; What to do with a social media post: share, hold, check sources, or ask an adult?
-class TaskSocialMediaDTO extends TaskDTO {
-    imageurl: string = "";
-    choice: SocialMediaChoices = SocialMediaChoices.Share;
-}
+export type PasswordBankExercise =
+  | PasswordBankGuessItem
+  | PasswordBankMakePasswordItem
+  | PasswordBankImprovePasswordItem;
 
-enum SocialMediaChoices {
-    Share,
-    Hold,
-    CheckSources,
-    AskAdult
-}
+export type PasswordBankTask = BaseTask & {
+  kind: "passwordBank";
+  items: PasswordBankExercise[];
+};
 
-class TaskFinalBossDTO extends TaskDTO {
-    tasks: TaskDTO[] = [];
-}
 
-// Exporting all the classes and enums
-export {
-    TaskDTO,
-    TaskNewsStandDTO,
-    TaskPostOfficeDTO,
-    TaskPostSingleton,
-    TaskPasswordBankDTO,
-    TaskPasswordBankGuessDTO,
-    TaskPasswordBankImproveDTO,
-    TaskPasswordBankMakePasswordDTO,
-    TaskImageRecognitionDTO,
-    ImageRecognitionType,
-    TaskMarketplaceDTO,
-    TaskMarketplaceSingleton,
-    MarketplaceChoices,
-    TaskSocialMediaDTO,
-    SocialMediaChoices,
-    TaskFinalBossDTO
+//================= ImageRecognition =================
+
+export type ImageRecognitionItem = {
+  imageUrl: string;
+  type: ImageRecognitionType;
+};
+
+export type ImageRecognitionTask = BaseTask & {
+  kind: "imageRecognition";
+  images: ImageRecognitionItem[];
+};
+
+//================= Marketplace =================
+
+export type MarketplaceListing = {
+  imageUrl: string;
+  price: number;
+  expectedChoice: MarketplaceChoice;
+};
+
+export type MarketplaceTask = BaseTask & {
+  kind: "marketplace";
+  listings: MarketplaceListing[];
+};
+
+//================= SocialMedia =================
+
+export type SocialMediaPost = {
+  postId: string;
+  imageUrl: string;
+  expectedChoice: SocialMediaChoice;
+};
+
+export type SocialMediaTask = BaseTask & {
+  kind: "socialMedia";
+  posts: SocialMediaPost[];
+};
+
+//================= Boss =================
+export type NonFinalTask =
+  | NewsStandTask
+  | PostOfficeTask
+  | PasswordBankTask
+  | ImageRecognitionTask
+  | MarketplaceTask
+  | SocialMediaTask;
+
+export type FinalBossTask = BaseTask & {
+  kind: "finalBoss";
+  tasks: NonFinalTask[];
 };
