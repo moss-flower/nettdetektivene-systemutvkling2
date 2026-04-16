@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Level, LevelState } from "~/composables/types/local";
 import placeholderImage from "~/assets/images/placeholder.jpeg";
+import { getStationRoutePath } from "~/composables/mocks/stations";
 
 //Props, temporary hardcoded content
 const props = withDefaults(
@@ -15,6 +16,7 @@ const props = withDefaults(
         description:
           "Lær å skille mellom ekte nyheter, clickbait og emosjonelt språk.",
         image: placeholderImage,
+        route: getStationRoutePath("newsstand"),
         locked: false,
         state: {
           completed: false,
@@ -37,7 +39,8 @@ const props = withDefaults(
         description:
           "Øv på å avsløre falske e-poster, mistenkelige lenker og rare avsendere.",
         image: placeholderImage,
-        locked: true,
+        route: getStationRoutePath("postoffice"),
+        locked: false,
         state: {
           completed: false,
           stars: 0,
@@ -99,6 +102,16 @@ const createStarString = (number: number): string => {
 
   return "★".repeat(number) + "☆".repeat(3 - number);
 };
+
+const router = useRouter();
+
+const openLevel = (level: Level) => {
+  if (level.locked || !level.route) {
+    return;
+  }
+
+  router.push(level.route);
+};
 </script>
 
 <template>
@@ -107,7 +120,15 @@ const createStarString = (number: number): string => {
       v-for="level in props.levels"
       :key="level.name"
       class="levelCard"
-      :class="{ lockedCard: level.locked }"
+      :class="{
+        lockedCard: level.locked,
+        levelCardLink: level.route && !level.locked,
+      }"
+      :role="level.route && !level.locked ? 'link' : undefined"
+      :tabindex="level.route && !level.locked ? 0 : undefined"
+      @click="openLevel(level)"
+      @keydown.enter="openLevel(level)"
+      @keydown.space.prevent="openLevel(level)"
     >
       <img :src="level.image" alt="" class="levelImage">
 
@@ -136,6 +157,19 @@ const createStarString = (number: number): string => {
   justify-content: end;
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
+}
+
+.levelCardLink {
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.levelCardLink:hover,
+.levelCardLink:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 32px rgba(33, 47, 74, 0.18);
+  outline: none;
 }
 
 .levelImage {

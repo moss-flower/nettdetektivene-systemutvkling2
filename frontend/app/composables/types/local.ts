@@ -2,6 +2,7 @@ export type Level = {
   name: string,
   description: string,
   image: string,
+  route?: string,
   locked: boolean,
   state: LevelState
 }
