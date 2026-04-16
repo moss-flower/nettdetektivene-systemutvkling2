@@ -107,13 +107,15 @@ public class ClassroomService {
   public ClassroomResponse joinByCode(String code, UUID callerUuid) {
     Classroom c = classroomRepo.findByCode(code)
         .orElseThrow(() -> new NotFoundException("Classroom not found"));
+
     StudentUser member = studentRepo.findByPublicUuid(callerUuid)
         .orElseThrow(() -> new NotFoundException("Student not found"));
 
-    if (classroomRepo.existsByMembers_PublicUuid(callerUuid)) {
-      throw new ConflictException("Student is already a member");
+    if (member.getClassroom() != null) {
+      throw new ConflictException("Student is already a member of a classroom");
     }
 
+    member.setClassroom(c);
     c.getMembers().add(member);
     return ClassroomResponse.from(c);
   }
@@ -121,24 +123,33 @@ public class ClassroomService {
   @Transactional
   public ClassroomResponse removeMember(Long classroomId, UUID memberUuid, UUID callerUuid) {
     Classroom c = requireOwned(classroomId, callerUuid);
-    boolean removed = c.getMembers().removeIf(user -> user.getPublicUuid().equals(memberUuid));
 
-    if (!removed) {
+    StudentUser member = studentRepo.findByPublicUuid(memberUuid)
+        .orElseThrow(() -> new NotFoundException("Student not found"));
+
+    if (member.getClassroom() == null || !member.getClassroom().getId().equals(classroomId)) {
       throw new NotFoundException("Student is not a member of this classroom");
     }
+
+    member.setClassroom(null);
+    c.getMembers().remove(member);
     return ClassroomResponse.from(c);
   }
 
   @Transactional
   public void leaveClassroom(Long classroomId, UUID callerUuid) {
-    Classroom c = classroomRepo.findById(classroomId)
+    classroomRepo.findById(classroomId)
         .orElseThrow(() -> new NotFoundException("Could not find classroom"));
 
-    boolean removed = c.getMembers().removeIf(user -> user.getPublicUuid().equals(callerUuid));
+    StudentUser member = studentRepo.findByPublicUuid(callerUuid)
+        .orElseThrow(() -> new NotFoundException("Student not found"));
 
-    if (!removed) {
+    if (member.getClassroom() == null || !member.getClassroom().getId().equals(classroomId)) {
       throw new NotFoundException("Student is not a member of this classroom");
     }
+
+    member.setClassroom(null);
+    studentRepo.save(member);
   }
 
   private Classroom requireOwned(Long classroomId, UUID callerUuid) {

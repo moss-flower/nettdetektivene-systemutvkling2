@@ -18,5 +18,4 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
 
   Optional<Classroom> findByCode(String code);
 
-  boolean existsByMembers_PublicUuid(UUID memberUuid);
 }
