@@ -36,7 +36,7 @@ export type ClassroomTask = {
   level: string;
 };
 
-export type ClassroomMystery = {
+export type teacherClassroomMystery = {
   classroomId: string;
   title: string;
   description: string;
@@ -75,21 +75,21 @@ const studentExtras: Record<string, { badges: number; lastActive: string }> = {
   'jonas-moen': { badges: 1, lastActive: 'For 4 dager siden' }
 };
 
-const classroomNotifications: ClassroomNotification[] = [
+const teacherClassroomNotifications: ClassroomNotification[] = [
   { id: 'n1', classroomId: 'ronvik-6a', title: 'Ny innlevering', description: 'Ada Berg har fullført en ny oppgave.', timeLabel: 'For 10 minutter siden' },
   { id: 'n2', classroomId: 'ronvik-6a', title: 'Elev trenger hjelp', description: 'Tobias Solheim har prøvd samme nivå flere ganger.', timeLabel: 'I dag' },
   { id: 'n3', classroomId: 'ronvik-6b', title: 'Ukens mysterium', description: 'Tre elever har sendt inn forslag til ukens mysterium.', timeLabel: 'I dag' },
   { id: 'n4', classroomId: 'ronvik-6c', title: 'Høy aktivitet', description: 'Klassen har hatt ekstra høy aktivitet denne uken.', timeLabel: 'I går' }
 ];
 
-const classroomTasks: ClassroomTask[] = [
+const teacherClassroomTasks: ClassroomTask[] = [
   { id: 't1', classroomId: 'ronvik-6a', title: 'Skille ekte og falske nyheter', status: 'Aktiv', level: 'Nyhetskvartalet' },
   { id: 't2', classroomId: 'ronvik-6a', title: 'Oppdage mistenkelige e-poster', status: 'Kladd', level: 'Postkontoret' },
   { id: 't3', classroomId: 'ronvik-6b', title: 'Vurdere nettbutikker', status: 'Aktiv', level: 'Markedsplassen' },
   { id: 't4', classroomId: 'ronvik-6c', title: 'Sterke passord', status: 'Planlagt', level: 'Passordbanken' }
 ];
 
-const classroomMysteries: ClassroomMystery[] = [
+const classroomMysteries: teacherClassroomMystery[] = [
   { classroomId: 'ronvik-6a', title: 'Mysteriet om den rare overskriften', description: 'Elevene skal finne ut hvorfor en dramatisk overskrift ikke forteller hele sannheten.', status: 'Publisert' },
   { classroomId: 'ronvik-6b', title: 'Det forsvunne passordet', description: 'Klassen jobber med spor som handler om deling av passord og trygg innlogging.', status: 'Klargjøres' },
   { classroomId: 'ronvik-6c', title: 'Bildet som lurte alle', description: 'Et bilde sprer seg raskt, og elevene må finne ut om det er ekte, KI-laget eller manipulert.', status: 'Publisert' }
@@ -156,7 +156,7 @@ function getClassroomLeaderboard(classroomId: string) {
     });
 }
 
-function getClassroomStudents(classroomId: string): StudentOverviewEntry[] {
+function getteacherClassroomStudents(classroomId: string): StudentOverviewEntry[] {
   return mockStudents
     .filter((student) => student.classroomId === classroomId)
     .map((student) => ({
@@ -168,18 +168,18 @@ function getClassroomStudents(classroomId: string): StudentOverviewEntry[] {
 }
 
 function getStudentById(classroomId: string, studentId: string): StudentOverviewEntry | null {
-  return getClassroomStudents(classroomId).find((student) => student.id === studentId) ?? null;
+  return getteacherClassroomStudents(classroomId).find((student) => student.id === studentId) ?? null;
 }
 
-function getClassroomNotifications(classroomId: string): ClassroomNotification[] {
-  return classroomNotifications.filter((notification) => notification.classroomId === classroomId);
+function getteacherClassroomNotifications(classroomId: string): ClassroomNotification[] {
+  return teacherClassroomNotifications.filter((notification) => notification.classroomId === classroomId);
 }
 
-function getClassroomTasks(classroomId: string): ClassroomTask[] {
-  return classroomTasks.filter((task) => task.classroomId === classroomId);
+function getteacherClassroomTasks(classroomId: string): ClassroomTask[] {
+  return teacherClassroomTasks.filter((task) => task.classroomId === classroomId);
 }
 
-function getClassroomMystery(classroomId: string): ClassroomMystery | null {
+function getteacherClassroomMystery(classroomId: string): teacherClassroomMystery | null {
   return classroomMysteries.find((mystery) => mystery.classroomId === classroomId) ?? null;
 }
 
@@ -188,10 +188,10 @@ export function useTeacherDashboard() {
     getTeacherClassroomSummaries,
     getTeacherClassroomById,
     getClassroomLeaderboard,
-    getClassroomStudents,
+    getteacherClassroomStudents,
     getStudentById,
-    getClassroomNotifications,
-    getClassroomTasks,
-    getClassroomMystery,
+    getteacherClassroomNotifications,
+    getteacherClassroomTasks,
+    getteacherClassroomMystery,
   };
 }

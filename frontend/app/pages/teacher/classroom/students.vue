@@ -1,16 +1,16 @@
 <script setup lang="ts">
 const route = useRoute();
-const { getTeacherClassroomById, getClassroomStudents } = useTeacherDashboard();
+const { getTeacherClassroomById, getteacherClassroomStudents } = useTeacherDashboard();
 
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
 const classroom = computed(() => getTeacherClassroomById(classroomId.value));
-const students = computed(() => getClassroomStudents(classroomId.value));
+const students = computed(() => getteacherClassroomStudents(classroomId.value));
 </script>
 
 <template>
   <section class="pageShell">
     <header class="pageHeader">
-      <NuxtLink class="backLink" :to="routePathsWithString(routePaths.classroomOverview, `?classroomId=${classroomId}`)">Tilbake til klasserommet</NuxtLink>
+      <NuxtLink class="backLink" :to="routePathsWithString(routePaths.teacherClassroomOverview, `?classroomId=${classroomId}`)">Tilbake til klasserommet</NuxtLink>
       <p class="eyebrow">Elevoversikt</p>
       <h1>{{ classroom?.name ?? 'Ukjent klasserom' }}</h1>
       <p class="subtitle">Klikk på en elev for å se progresjonen.</p>
@@ -30,7 +30,7 @@ const students = computed(() => getClassroomStudents(classroomId.value));
         <tbody>
           <tr v-for="student in students" :key="student.id">
             <td>
-              <NuxtLink :to="routePathsWithString(routePaths.classroomStudentProgress, `?classroomId=${classroomId}&studentId=${student.id}`)">{{ student.name }}</NuxtLink>
+              <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, `?classroomId=${classroomId}&studentId=${student.id}`)">{{ student.name }}</NuxtLink>
             </td>
             <td>{{ Math.round((student.completedLevels / student.totalLevels) * 100) }} %</td>
             <td>{{ student.points }}</td>
