@@ -1,16 +1,16 @@
 <script setup lang="ts">
 const route = useRoute();
-const { getTeacherClassroomById, getClassroomMystery } = useTeacherDashboard();
+const { getTeacherClassroomById, getteacherClassroomMystery } = useTeacherDashboard();
 
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
 const classroom = computed(() => getTeacherClassroomById(classroomId.value));
-const mystery = computed(() => getClassroomMystery(classroomId.value));
+const mystery = computed(() => getteacherClassroomMystery(classroomId.value));
 </script>
 
 <template>
   <section class="pageShell">
     <header class="pageHeader">
-      <NuxtLink class="backLink" :to="routePathsWithString(routePaths.classroomOverview, `?classroomId=${classroomId}`)">Tilbake til klasserommet</NuxtLink>
+      <NuxtLink class="backLink" :to="routePathsWithString(routePaths.teacherClassroomOverview, `?classroomId=${classroomId}`)">Tilbake til klasserommet</NuxtLink>
       <p class="eyebrow">Ukens mysterium</p>
       <h1>{{ classroom?.name ?? 'Ukjent klasserom' }}</h1>
     </header>

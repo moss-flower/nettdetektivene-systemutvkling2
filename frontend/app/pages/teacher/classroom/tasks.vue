@@ -1,10 +1,10 @@
 <script setup lang="ts">
 const route = useRoute();
-const { getTeacherClassroomById, getClassroomTasks } = useTeacherDashboard();
+const { getTeacherClassroomById, getteacherClassroomTasks } = useTeacherDashboard();
 
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
 const classroom = computed(() => getTeacherClassroomById(classroomId.value));
-const tasks = computed(() => getClassroomTasks(classroomId.value));
+const tasks = computed(() => getteacherClassroomTasks(classroomId.value));
 </script>
 
 <template>

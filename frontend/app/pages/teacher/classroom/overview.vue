@@ -19,17 +19,17 @@ const leaderboard = computed(() => getClassroomLeaderboard(classroomId.value));
     </header>
 
     <div v-if="classroom" class="actionGrid">
-      <NuxtLink :to="routePathsWithString(routePaths.classroomStudents, `?classroomId=${classroom.id}`)" class="actionCard">
+      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudents, `?classroomId=${classroom.id}`)" class="actionCard">
         <span class="actionCard__title">Elever</span>
         <span class="actionCard__text">Se elevoversikt og åpne enkeltelevens progresjon.</span>
       </NuxtLink>
 
-      <NuxtLink :to="routePathsWithString(routePaths.classroomNotifications, `?classroomId=${classroom.id}`)" class="actionCard">
+      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomNotifications, `?classroomId=${classroom.id}`)" class="actionCard">
         <span class="actionCard__title">Varslingssenter</span>
         <span class="actionCard__text">Se varsler som bare gjelder dette klasserommet.</span>
       </NuxtLink>
 
-      <NuxtLink :to="routePathsWithString(routePaths.classroomTasks, `?classroomId=${classroom.id}`)" class="actionCard">
+      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomTasks, `?classroomId=${classroom.id}`)" class="actionCard">
         <span class="actionCard__title">Oppgaver</span>
         <span class="actionCard__text">Åpne oppgavene som brukes i dette klasserommet.</span>
       </NuxtLink>
@@ -39,7 +39,7 @@ const leaderboard = computed(() => getClassroomLeaderboard(classroomId.value));
         <span class="actionCard__text">Prøv spillet fra elevens perspektiv.</span>
       </NuxtLink>
 
-      <NuxtLink :to="routePathsWithString(routePaths.classroomMystery, `?classroomId=${classroom.id}`)" class="actionCard">
+      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomMystery, `?classroomId=${classroom.id}`)" class="actionCard">
         <span class="actionCard__title">Ukens mysterium</span>
         <span class="actionCard__text">Se og rediger ukens mysterium for dette rommet.</span>
       </NuxtLink>
