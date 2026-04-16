@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.HashSet;
 import java.util.Set;
@@ -48,19 +49,8 @@ public class Classroom {
   )
   private Set<User> owners = new HashSet<>();
 
-  //TODO:Should be
-  //@OneToMany(mappedBy = "classroom")
-  //while adding a field in StudentUser:
-  //@ManyToOne(fetch = FetchType.LAZY)
-  //@JoinColumn(name = "classroom_id")
-  //private Classroom classroom;
-  @ManyToMany(fetch = FetchType.LAZY)
-  @JoinTable(
-      name = "classroom_members",
-      joinColumns = @JoinColumn(name = "classroom_id"),
-      inverseJoinColumns = @JoinColumn(name = "user_id")
-  )
-  private Set<User> members = new HashSet<>();
+  @OneToMany(mappedBy = "classroom")
+  private Set<StudentUser> members = new HashSet<>();
 
   @Override
   public boolean equals(Object o) {

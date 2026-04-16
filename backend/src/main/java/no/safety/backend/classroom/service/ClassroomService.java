@@ -12,8 +12,8 @@ import no.safety.backend.exception.ForbiddenException;
 import no.safety.backend.exception.NotFoundException;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.model.TeacherUser;
-import no.safety.backend.user.model.User;
-import no.safety.backend.user.repository.UserRepository;
+import no.safety.backend.user.repository.StudentUserRepository;
+import no.safety.backend.user.repository.TeacherUserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,19 +22,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class ClassroomService {
 
   private final ClassroomRepository classroomRepo;
-  private final UserRepository userRepo;
+  private final TeacherUserRepository teacherRepo;
+  private final StudentUserRepository studentRepo;
   private final ClassroomCodeGenerator codegen;
 
   //TODO: Replace all UUID params with authentication eventually and use this to get the role.
   @Transactional
   public ClassroomResponse create(ClassroomRequest req, UUID callerUuid) {
-    User owner = userRepo.findByPublicUuid(callerUuid)
-        .orElseThrow(() -> new NotFoundException("User not found"));
-
-    //TODO: add better role check.
-    if (!(owner instanceof TeacherUser)) {
-      throw new ForbiddenException("User must be a teacher");
-    }
+    TeacherUser owner = teacherRepo.findByPublicUuid(callerUuid)
+        .orElseThrow(() -> new NotFoundException("Teacher not found"));
 
     Classroom c = new Classroom();
     c.getOwners().add(owner);
@@ -62,16 +58,11 @@ public class ClassroomService {
   @Transactional
   public ClassroomResponse addOwner(Long classroomId, UUID newOwnerUuid, UUID callerUuid) {
     Classroom c = requireOwned(classroomId, callerUuid);
-    User newOwner = userRepo.findByPublicUuid(newOwnerUuid)
-        .orElseThrow(() -> new NotFoundException("User not found"));
-
-    //TODO: Replace with better role check after user registration has implemented authentication tokens.
-    if (!(newOwner instanceof TeacherUser)) {
-      throw new ForbiddenException("New owner must be a teacher");
-    }
+    TeacherUser newOwner = teacherRepo.findByPublicUuid(newOwnerUuid)
+        .orElseThrow(() -> new NotFoundException("Teacher not found"));
 
     if (classroomRepo.existsByIdAndOwners_PublicUuid(classroomId, newOwnerUuid)) {
-      throw new ConflictException("User is already an owner");
+      throw new ConflictException("Teacher is already an owner");
     }
 
     c.getOwners().add(newOwner);
@@ -91,7 +82,7 @@ public class ClassroomService {
         .removeIf(user -> user.getPublicUuid().equals(ownerToRemoveUuid));
 
     if (!removed) {
-      throw new NotFoundException("User is not an owner of this classroom");
+      throw new NotFoundException("Teacher is not an owner of this classroom");
     }
 
     return ClassroomResponse.from(c);
@@ -116,15 +107,11 @@ public class ClassroomService {
   public ClassroomResponse joinByCode(String code, UUID callerUuid) {
     Classroom c = classroomRepo.findByCode(code)
         .orElseThrow(() -> new NotFoundException("Classroom not found"));
-    User member = userRepo.findByPublicUuid(callerUuid)
-        .orElseThrow(() -> new NotFoundException("User not found"));
-
-    if (!(member instanceof StudentUser)) {
-      throw new ForbiddenException("User must be a student");
-    }
+    StudentUser member = studentRepo.findByPublicUuid(callerUuid)
+        .orElseThrow(() -> new NotFoundException("Student not found"));
 
     if (classroomRepo.existsByMembers_PublicUuid(callerUuid)) {
-      throw new ConflictException("User is already a member");
+      throw new ConflictException("Student is already a member");
     }
 
     c.getMembers().add(member);
@@ -137,7 +124,7 @@ public class ClassroomService {
     boolean removed = c.getMembers().removeIf(user -> user.getPublicUuid().equals(memberUuid));
 
     if (!removed) {
-      throw new NotFoundException("User is not a member of this classroom");
+      throw new NotFoundException("Student is not a member of this classroom");
     }
     return ClassroomResponse.from(c);
   }
@@ -150,7 +137,7 @@ public class ClassroomService {
     boolean removed = c.getMembers().removeIf(user -> user.getPublicUuid().equals(callerUuid));
 
     if (!removed) {
-      throw new NotFoundException("User is not a member of this classroom");
+      throw new NotFoundException("Student is not a member of this classroom");
     }
   }
 
