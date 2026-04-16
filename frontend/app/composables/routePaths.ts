@@ -1,6 +1,6 @@
 export enum routePaths {
     home = '/',
-    levels = '/student/levels',
+    studentLevels = '/student/home/directions/levels',
     login = '/login/login',
     join = '/login/join',
     register = '/login/register',
@@ -11,11 +11,18 @@ export enum routePaths {
     teacherClassroomStudentProgress = '/teacher/classroom/student-progress',
     teacherClassroomStudents = '/teacher/classroom/students',
     teacherClassroomTasks = '/teacher/classroom/tasks',
-    studentHome = '/student/home',
-    studentProfile = '/student/profile',
-    studentAchievements = '/student/achievements',
+    studentHome = '/student/home/home',
+    studentProfile = '/student/home/directions/profile',
+    studentAchievements = '/student/home/directions/achievements',
+    
+    // to implement next
+    studentLeaderboard = '/student/home/directions/leaderboard',
+    studentMystery = '/student/home/directions/mystery',
+    studentNotes = '/student/home/directions/notes',
+    studentSettings = '/student/home/directions/settings',
+
     notYetImplemented = '/shared/notYetImplemented',
-    studentHelp = '/student/help',
+    studentHelp = '/student/home/directions/help',
 }
 
 export const routePathsWithString = (path: routePaths, string: string) => `${path}${string}`;
