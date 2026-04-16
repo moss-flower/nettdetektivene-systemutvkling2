@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import NewsStandExercise from '~/components/gameplay/newsstand/NewsStandExercise.vue'
 import CompletedPopup from '~/components/gameplay/shared/CompletedPopup.vue'
-import type { NewsStandTask } from '~/composables/types/TaskTypes'
+import XOrYExercise from '~/components/gameplay/shared/XOrYExercise.vue'
+import type { NewsStandTask, XOrYChoice, XOrYOptionContent, XOrYPair, XOrYResult } from '~/composables/types/TaskTypes'
 import { sampleAndShuffle } from '~/composables/utils/gameUtils'
 
 definePageMeta({
@@ -33,6 +33,39 @@ const correctCount = ref(0)
 const answerState = ref<{ correct: boolean, choice: 'correct' | 'fake' } | null>(null)
 
 const currentTask = computed(() => tasks[currentIndex.value] ?? null)
+const currentOptions = computed<XOrYPair<XOrYOptionContent> | null>(() => {
+  if (!currentTask.value) {
+    return null
+  }
+
+  return {
+    x: {
+      imageUrl: currentTask.value.correct.imageUrl,
+      imageAlt: `Bilde til artikkelen ${currentTask.value.correct.title}`,
+      eyebrow: currentTask.value.correct.author,
+      title: currentTask.value.correct.title,
+      text: currentTask.value.correct.text,
+    },
+    y: {
+      imageUrl: currentTask.value.fake.imageUrl,
+      imageAlt: `Bilde til artikkelen ${currentTask.value.fake.title}`,
+      eyebrow: currentTask.value.fake.author,
+      title: currentTask.value.fake.title,
+      text: currentTask.value.fake.text,
+    },
+  }
+})
+const selectedChoice = computed<XOrYChoice | null>(() => {
+  if (answerState.value?.choice === 'correct') {
+    return 'x'
+  }
+
+  if (answerState.value?.choice === 'fake') {
+    return 'y'
+  }
+
+  return null
+})
 const progressLabel = computed(() => `Sak ${currentIndex.value + 1} av ${tasks.length}`)
 const feedbackTitle = computed(() => {
   if (!answerState.value) {
@@ -54,8 +87,11 @@ const feedbackText = computed(() => {
   return `Denne gangen var det artikkelen fra ${currentTask.value.correct.author} som var mest troverdig. Se ekstra etter om overskriften virker overdrevet eller om avsenderen føles mindre pålitelig.`
 })
 
-const onAnswered = (result: { correct: boolean, choice: 'correct' | 'fake' }) => {
-  answerState.value = result
+const onAnswered = (result: XOrYResult) => {
+  answerState.value = {
+    correct: result.correct,
+    choice: result.choice === 'x' ? 'correct' : 'fake',
+  }
   if (result.correct) {
     correctCount.value++
     celebrateCorrectAnswer()
@@ -86,11 +122,12 @@ const next = () => {
     </header>
 
     <div class="newsstand-page__board">
-      <NewsStandExercise
-        v-if="currentTask"
-        :data="currentTask"
+      <XOrYExercise
+        v-if="currentOptions"
+        :options="currentOptions"
+        correct-choice="x"
         :disabled="Boolean(answerState)"
-        :selected-choice="answerState?.choice ?? null"
+        :selected-choice="selectedChoice"
         @answered="onAnswered"
       />
     </div>
