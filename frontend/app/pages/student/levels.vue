@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Level, LevelState } from "~/composables/types/local";
-import placeholderImage from "~/assets/placeholder.jpeg";
+import placeholderImage from "~/assets/images/placeholder.jpeg";
 
 //Props, temporary hardcoded content
 const props = withDefaults(

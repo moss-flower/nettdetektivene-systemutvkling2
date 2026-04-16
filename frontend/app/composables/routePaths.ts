@@ -10,8 +10,8 @@ export enum routePaths {
     studentHome = '/student/home',
     studentProfile = '/student/profile',
     studentAchievements = '/student/achievements',
-    studentHelp = '/student/help',
     notYetImplemented = '/shared/notYetImplemented',
+    studentHelp = '/student/help',
 }
 
 export const routePathsWithString = (path: routePaths, string: string) => `${path}${string}`;

@@ -1,62 +1,98 @@
 <script setup lang="ts">
+import StudentHomeMenuItem from '~/components/student/StudentHomeMenuItem.vue';
+import { routePaths } from '~/composables/routePaths';
+import mapImage from "~/assets/images/studentHome/Map.png";
+import helpImage from "~/assets/images/studentHome/Help.png";
+import profileImage from "~/assets/images/studentHome/Profile.png";
+import leaderboardImage from "~/assets/images/studentHome/Leaderboard.png";
+import medalsImage from "~/assets/images/studentHome/Medals.png";
+import mysteryImage from "~/assets/images/studentHome/Mystery.png";
+import notebookImage from "~/assets/images/studentHome/Notebook.png";
+import settingsImage from "~/assets/images/studentHome/Settings.png";
+
 type StudentHomeItem = {
   id: string;
   title: string;
   description: string;
   route: string;
-  badge?: string;
+  imagePath?: string;
+  rotation?: number;
+  tooltipPlacement?: "top" | "bottom";
 };
 
 const items: StudentHomeItem[] = [
   {
-    id: 'hjelp',
+    id: 'help',
     title: 'Hjelp',
     description: 'Få tips hvis du står fast eller lurer på hva du skal gjøre.',
     route: routePaths.studentHelp,
-    badge: '?'
+    imagePath: helpImage,
+    rotation: 4,
+    tooltipPlacement: "bottom",
   },
   {
     id: 'avatar',
     title: 'Avatar',
-    description: 'Se profilen din og etter hvert tilpass hvordan detektiven din ser ut.',
+    description: 'Se profilen din og tilpass hvordan detektiven din ser ut.',
     route: routePaths.studentProfile,
-    badge: 'A'
+    imagePath: profileImage,
+    rotation: -4,
+    tooltipPlacement: "top",
   },
   {
-    id: 'ledertavle',
+    id: 'leaderboard',
     title: 'Ledertavle',
     description: 'Se poeng, plassering og hvem som har samlet flest spor.',
     route: routePathsWithString(routePaths.notYetImplemented, `?backPath=${routePaths.studentHome}`),
-    badge: '#'
+    imagePath: leaderboardImage,
+    rotation: -2,
+    tooltipPlacement: "bottom",
   },
   {
-    id: 'kart',
+    id: 'map',
     title: 'Kartet',
     description: 'Her foregår spillet. Trykk her for å gå til stoppesteder og oppgaver.',
     route: routePaths.levels,
-    badge: 'K'
+    imagePath: mapImage,
+    rotation: -1,
+    tooltipPlacement: "bottom",
   },
   {
-    id: 'mysterium',
+    id: 'mystery',
     title: 'Ukens mysterium',
     description: 'Et eget mysterium med ferske spor og en ny sak å utforske.',
     route: routePathsWithString(routePaths.notYetImplemented, `?backPath=${routePaths.studentHome}`),
-    badge: '!'
+    imagePath: mysteryImage,
+    rotation: 1,
+    tooltipPlacement: "bottom",
   },
   {
-    id: 'medaljer',
+    id: 'medals',
     title: 'Medaljer',
     description: 'Se medaljene du har vunnet og hvilke du kan samle senere.',
     route: routePaths.studentAchievements,
-    badge: '*'
+    imagePath: medalsImage,
+    rotation: 2,
+    tooltipPlacement: "top",
   },
   {
-    id: 'notatblokk',
+    id: 'notebook',
     title: 'Notatblokk',
     description: 'Skriv ned spor, tanker og ting du vil huske til senere.',
     route: routePathsWithString(routePaths.notYetImplemented, `?backPath=${routePaths.studentHome}`),
-    badge: 'N'
-  }
+    imagePath: notebookImage,
+    rotation: 3,
+    tooltipPlacement: "top",
+  }, 
+  {
+    id: 'settings',
+    title: 'Innstillinger',
+    description: 'Endre innstillinger for spillet.',
+    route: routePathsWithString(routePaths.notYetImplemented, `?backPath=${routePaths.studentHome}`),
+    imagePath: settingsImage,
+    rotation: 1,
+    tooltipPlacement: "bottom",
+  },
 ];
 
 const router = useRouter();
@@ -72,31 +108,18 @@ function handleClick(item: StudentHomeItem) {
 
 <template>
   <section class="student-home">
-    <header class="student-home__header">
-      <p class="student-home__eyebrow">Elevens hjemskjerm</p>
-      <h2>En tittel her kanskje</h2>
-      <p class="student-home__intro">
-        Noe beskrivelse elns. her, kanskje en liten miniveiledning
-      </p>
-    </header>
-
-    <div class="student-home__board">
-      <button
+    <div class="student-home__board" aria-label="Elevens hjemskjerm">
+      <StudentHomeMenuItem
         v-for="item in items"
         :key="item.id"
-        type="button"
-        class="board-item"
-        :class="[
-          `board-item--${item.id}`,
-          { 'board-item--map': item.id === 'kart' }
-        ]"
-        :aria-label="`${item.title}: ${item.description}`"
-        @click="handleClick(item)"
-      >
-        <span class="board-item__badge">{{ item.badge }}</span>
-        <span class="board-item__title">{{ item.title }}</span>
-        <span class="board-item__tooltip">{{ item.description }}</span>
-      </button>
+        :image-path="item.imagePath"
+        :alt="item.title"
+        :tooltip-text="item.description"
+        :tooltip-placement="item.tooltipPlacement"
+        :rotation="item.rotation"
+        :onClick="() => handleClick(item)"
+        :class="['student-home__item', `student-home__item--${item.id}`]"
+        />
     </div>
   </section>
 </template>
@@ -105,181 +128,140 @@ function handleClick(item: StudentHomeItem) {
 .student-home {
   min-height: 100%;
   display: grid;
-  gap: var(--space-3);
-  padding: var(--space-3);
-}
-
-.student-home__header {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.student-home__eyebrow {
-  color: var(--primary);
-  font-size: 0.9rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.student-home__intro {
-  max-width: 65ch;
-  color: var(--muted);
-  line-height: 1.5;
+  gap: clamp(1.5rem, 2vw, 2.25rem);
+  padding: clamp(1rem, 2vw, 2rem);
 }
 
 .student-home__board {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-template-areas:
-    'hjelp avatar ledertavle mysterium'
-    'medaljer kart kart notatblokk';
-  gap: 1rem;
-}
-
-.board-item {
   position: relative;
-  display: grid;
-  gap: 0.5rem;
-  min-height: 9rem;
-  padding: 1rem;
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  color: var(--text);
-  text-align: left;
-  transition:
-    transform var(--transition),
-    border-color var(--transition),
-    background-color var(--transition);
+  min-height: clamp(32rem, 64vw, 44rem);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 0.45rem solid #a66f43;
+  border-radius: 1.75rem;
+  background:
+    linear-gradient(180deg, #b57d4d 0%, #a86f42 100%);
+  box-shadow:
+    0 1.4rem 3rem rgb(74 39 15 / 0.18),
+    inset 0 0 0 0.12rem rgb(111 66 33 / 0.22);
 }
 
-.board-item:hover,
-.board-item:focus-visible {
-  transform: translateY(-2px);
-  border-color: var(--primary);
-  background: var(--surface);
-  outline: none;
-}
-
-.board-item__badge {
-  width: 2.5rem;
-  height: 2.5rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: var(--bg);
-  color: var(--primary);
-  font-weight: 800;
-}
-
-.board-item__title {
-  font-size: 1.15rem;
-  font-weight: 800;
-}
-
-.board-item__tooltip {
+.student-home__board::before {
+  content: "";
   position: absolute;
-  left: 1rem;
-  right: 1rem;
-  bottom: calc(100% + 0.5rem);
-  z-index: 1;
-  padding: 0.65rem 0.8rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.4;
-  opacity: 0;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgb(255 255 255 / 0.05) 0, transparent 35%),
+    repeating-linear-gradient(
+      135deg,
+      rgb(123 73 34 / 0.03) 0,
+      rgb(123 73 34 / 0.03) 7px,
+      transparent 7px,
+      transparent 20px
+    );
   pointer-events: none;
-  transform: translateY(4px);
-  transition:
-    opacity var(--transition),
-    transform var(--transition);
 }
 
-.board-item:hover .board-item__tooltip,
-.board-item:focus-visible .board-item__tooltip {
-  opacity: 1;
-  transform: translateY(0);
+.student-home__board::after {
+  content: "";
+  position: absolute;
+  inset: 1rem;
+  border: 0.18rem solid rgb(125 79 42 / 0.52);
+  border-radius: 1.1rem;
+  pointer-events: none;
 }
 
-.board-item--hjelp {
-  grid-area: hjelp;
+.student-home__item {
+  position: absolute;
+  display: block;
 }
 
-.board-item--avatar {
-  grid-area: avatar;
+.student-home__item:hover {
+  z-index: 100;
+  transform: scale(1.15);
 }
 
-.board-item--ledertavle {
-  grid-area: ledertavle;
+.student-home__item--leaderboard {
+  top: 5%;
+  left: 3%;
+  width: 16%;
+  z-index: 3;
 }
 
-.board-item--mysterium {
-  grid-area: mysterium;
+.student-home__item--avatar {
+  left: 3%;
+  bottom: 19%;
+  width: 21%;
+  z-index: 4;
 }
 
-.board-item--medaljer {
-  grid-area: medaljer;
+.student-home__item--medals {
+  left: 6%;
+  bottom: 4.5%;
+  width: 14%;
+  z-index: 2;
 }
 
-.board-item--notatblokk {
-  grid-area: notatblokk;
+.student-home__item--map {
+  top: 19%;
+  left: 29%;
+  width: 39%;
+  z-index: 8;
 }
 
-.board-item--map {
-  grid-area: kart;
-  min-height: 16rem;
-  align-content: center;
-  justify-items: center;
-  text-align: center;
-  border-color: var(--primary);
-  background: var(--surface);
+.student-home__item--mystery {
+  top: 6%;
+  right: 19%;
+  width: 22%;
+  z-index: 5;
 }
 
-.board-item--map .board-item__badge {
-  width: 4rem;
-  height: 4rem;
-  font-size: 1.2rem;
+.student-home__item--help {
+  top: 5%;
+  right: 5%;
+  width: 16%;
+  z-index: 6;
 }
 
-.board-item--map .board-item__title {
-  font-size: 1.7rem;
+.student-home__item--notebook {
+  right: 3.5%;
+  bottom: 3.5%;
+  width: 15%;
+  z-index: 4;
 }
 
-@media (max-width: 900px) {
+.student-home__item--settings {
+  right: 3.5%;
+  bottom: 35%;
+  width: 20%;
+  z-index: 4;
+}
+
+@media (max-width: 980px) {
   .student-home__board {
+    min-height: auto;
+    aspect-ratio: auto;
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-areas:
-      'kart kart'
-      'hjelp avatar'
-      'ledertavle mysterium'
-      'medaljer notatblokk';
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+
+  .student-home__item {
+    position: relative;
+    inset: auto;
+    width: 100%;
+  }
+
+  .student-home__item--map {
+    grid-column: 1 / -1;
   }
 }
 
 @media (max-width: 560px) {
-  .student-home {
-    padding: var(--space-2);
-  }
-
   .student-home__board {
     grid-template-columns: 1fr;
-    grid-template-areas:
-      'kart'
-      'hjelp'
-      'avatar'
-      'ledertavle'
-      'mysterium'
-      'medaljer'
-      'notatblokk';
-  }
-
-  .board-item,
-  .board-item--map {
-    min-height: 10rem;
+    padding: 1rem;
   }
 }
 </style>
