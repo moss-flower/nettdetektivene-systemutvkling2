@@ -30,26 +30,64 @@ export type XOrYResult = {
   correct: boolean;
   choice: XOrYChoice;
 };
-
-//================= NewsStand =================
-
-export type NewsArticle = {
-  author: string;
-  title: string;
+export type ThreeOptionChoice = "a" | "b" | "c";
+export type ThreeOptionPromptContent = {
   imageUrl: string;
-  text: string;
+  imageAlt: string;
+  title?: string;
+  text?: string;
+};
+export type ThreeOptionCardContent = {
+  key: ThreeOptionChoice;
+  title: string;
+  text?: string;
+};
+export type ThreeOptionResult = {
+  correct: boolean;
+  choice: ThreeOptionChoice;
 };
 
-export type NewsStandPair = {
-  correct: NewsArticle;
-  fake: NewsArticle;
+export type ExerciseTemplateKind = "x-or-y" | "three-option-image";
+export type StationDifficulty = "easy" | "medium" | "hard";
+
+export type ExerciseBase = {
+  id: string;
+  templateKind: ExerciseTemplateKind;
+  introText: string;
+  feedbackCorrect: string;
+  feedbackIncorrect: string;
 };
 
-export type NewsStandTask = BaseTask & {
-  kind: "newsStand";
-  articles: NewsStandPair[];
+export type XOrYExerciseData = ExerciseBase & {
+  templateKind: "x-or-y";
+  prompt?: {
+    title?: string;
+    text?: string;
+  };
+  options: XOrYPair<XOrYOptionContent>;
+  correctChoice: XOrYChoice;
 };
 
+export type ThreeOptionImageExerciseData = ExerciseBase & {
+  templateKind: "three-option-image";
+  prompt: ThreeOptionPromptContent;
+  options: ThreeOptionCardContent[];
+  correctChoice: ThreeOptionChoice;
+};
+
+export type StationExercise =
+  | XOrYExerciseData
+  | ThreeOptionImageExerciseData;
+
+export type StationExercisesByDifficulty = Record<StationDifficulty, StationExercise[]>;
+
+export type StationMock = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  exercisesByDifficulty: StationExercisesByDifficulty;
+};
 
 //================= PostOffice =================
 
@@ -142,7 +180,6 @@ export type SocialMediaTask = BaseTask & {
 
 //================= Boss =================
 export type NonFinalTask =
-  | NewsStandTask
   | PostOfficeTask
   | PasswordBankTask
   | ImageRecognitionTask

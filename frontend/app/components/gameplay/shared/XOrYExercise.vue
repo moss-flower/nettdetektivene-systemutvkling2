@@ -2,6 +2,10 @@
 import type { XOrYChoice, XOrYOptionContent, XOrYPair, XOrYResult } from '~/composables/types/TaskTypes'
 
 const props = defineProps<{
+  prompt?: {
+    title?: string
+    text?: string
+  }
   options: XOrYPair<XOrYOptionContent>
   correctChoice: XOrYChoice
   disabled?: boolean
@@ -26,6 +30,18 @@ const choose = (choice: XOrYChoice) => {
 
 <template>
   <div class="x-or-y-exercise">
+    <header
+      v-if="props.prompt?.title || props.prompt?.text"
+      class="x-or-y-exercise__header"
+    >
+      <h2 v-if="props.prompt?.title" class="x-or-y-exercise__prompt-title">
+        {{ props.prompt.title }}
+      </h2>
+      <p v-if="props.prompt?.text" class="x-or-y-exercise__prompt-text">
+        {{ props.prompt.text }}
+      </p>
+    </header>
+
     <article
       class="x-or-y-exercise__option"
       :class="{
@@ -92,8 +108,27 @@ const choose = (choice: XOrYChoice) => {
 .x-or-y-exercise {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(1rem, 3vw, 2.5rem);
+  gap: clamp(0.9rem, 2vw, 1.5rem);
   align-items: start;
+}
+
+.x-or-y-exercise__header {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.x-or-y-exercise__prompt-title {
+  font-size: clamp(1.15rem, 1.8vw, 1.45rem);
+  line-height: 1.15;
+  color: #172033;
+}
+
+.x-or-y-exercise__prompt-text {
+  max-width: 48rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: #4b5563;
 }
 
 .x-or-y-exercise__option {
@@ -115,7 +150,7 @@ const choose = (choice: XOrYChoice) => {
 .x-or-y-exercise__card {
   min-height: 100%;
   border-radius: 1.6rem;
-  padding: 0.8rem;
+  padding: 0.7rem;
   background: #fffdfa;
   border: 2px solid #d6d3ce;
   box-shadow: 0 14px 26px rgba(47, 39, 28, 0.08);
@@ -131,7 +166,8 @@ const choose = (choice: XOrYChoice) => {
 
 .x-or-y-exercise__image {
   width: 100%;
-  aspect-ratio: 1.1 / 0.8;
+  aspect-ratio: 1.2 / 0.68;
+  max-height: min(25vh, 13rem);
   object-fit: cover;
   border-radius: 1rem 1rem 0 0;
   display: block;
@@ -139,12 +175,12 @@ const choose = (choice: XOrYChoice) => {
 
 .x-or-y-exercise__content {
   display: grid;
-  gap: 0.75rem;
-  padding: 1rem 1rem 1.2rem;
+  gap: 0.55rem;
+  padding: 0.8rem 0.85rem 0.95rem;
 }
 
 .x-or-y-exercise__eyebrow {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -153,15 +189,15 @@ const choose = (choice: XOrYChoice) => {
 
 .x-or-y-exercise__title {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.8rem, 3vw, 3.35rem);
-  line-height: 0.95;
+  font-size: clamp(1.35rem, 2.2vw, 2.2rem);
+  line-height: 1;
   color: #241713;
   text-wrap: balance;
 }
 
 .x-or-y-exercise__text {
-  font-size: 1rem;
-  line-height: 1.5;
+  font-size: 0.94rem;
+  line-height: 1.4;
   color: #47372e;
 }
 
@@ -180,7 +216,7 @@ const choose = (choice: XOrYChoice) => {
 
 @media (max-width: 900px) {
   .x-or-y-exercise__title {
-    font-size: clamp(1.6rem, 5vw, 2.6rem);
+    font-size: clamp(1.2rem, 4vw, 1.9rem);
   }
 }
 

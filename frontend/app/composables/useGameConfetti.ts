@@ -8,6 +8,14 @@ export interface GameConfettiController {
 }
 
 const gameConfettiKey: InjectionKey<GameConfettiController> = Symbol('game-confetti')
+const GAME_CONFETTI_COLORS = [
+  '#ff4d6d',
+  '#ff8a00',
+  '#ffd60a',
+  '#00c2ff',
+  '#7b61ff',
+  '#2dd4bf',
+]
 
 const createNoopController = (): GameConfettiController => ({
   celebrateCorrectAnswer: () => {},
@@ -43,7 +51,7 @@ export const provideGameConfetti = () => {
         particlesPerFrame: 4,
         defaultDropRate: 10,
         defaultSize: 10,
-        defaultColors: ['#4c7bb0', '#f2c94c', '#9ed8db', '#f2994a', '#d96c75'],
+        defaultColors: GAME_CONFETTI_COLORS,
         ...options,
       }, 1200)
     },
@@ -52,7 +60,7 @@ export const provideGameConfetti = () => {
         particlesPerFrame: 8,
         defaultDropRate: 17,
         defaultSize: 12,
-        defaultColors: ['#4c7bb0', '#f2c94c', '#9ed8db', '#f2994a', '#d96c75'],
+        defaultColors: GAME_CONFETTI_COLORS,
         ...options,
       }, 2600)
     },
