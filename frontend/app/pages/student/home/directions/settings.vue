@@ -10,7 +10,7 @@ const volumeLabel = computed(() => `${volume.value}%`)
       <p class="student-settings__eyebrow">Innstillinger</p>
       <h2>Volum på nettsiden</h2>
       <p class="student-settings__intro">
-        Midlertidig settings-side med kun volumkontroll. Selve lydintegrasjonen kan kobles på senere.
+        Midlertidig settings-side med volum.
       </p>
     </header>
 
@@ -32,7 +32,7 @@ const volumeLabel = computed(() => `${volume.value}%`)
       >
 
       <p class="student-settings__note">
-        Dette er en ren mal for volumjustering og kan kobles til faktisk lyd senere.
+        bare en mal rn.
       </p>
     </article>
   </section>
