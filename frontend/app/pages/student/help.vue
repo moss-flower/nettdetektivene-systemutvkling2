@@ -13,7 +13,7 @@ const replayHelp = () => {
 <template>
   <section class="student-help">
     <header class="student-help__header">
-      <NuxtLink class="student-help__back" to="/student/home">Tilbake til hjem</NuxtLink>
+      <NuxtLink class="student-help__back" :to="routePaths.studentHome">Tilbake til hjem</NuxtLink>
       <p class="student-help__eyebrow">Hjelp</p>
       <h2>Hjelpemeldinger for elev</h2>
       <p class="student-help__intro">

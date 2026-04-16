@@ -19,7 +19,7 @@ const progressPercent = computed(() => {
 <template>
   <section class="pageShell">
     <header class="pageHeader">
-      <NuxtLink class="backLink" :to="`/classroom/students?classroomId=${classroomId}`">Tilbake til elevoversikt</NuxtLink>
+      <NuxtLink class="backLink" :to="routePathsWithString(routePaths.classroomStudents, `?classroomId=${classroomId}`)">Tilbake til elevoversikt</NuxtLink>
       <p class="eyebrow">Enkeltelev</p>
       <h1>{{ student?.name ?? 'Ukjent elev' }}</h1>
       <p class="subtitle">{{ classroom?.name ?? 'Ukjent klasserom' }}</p>

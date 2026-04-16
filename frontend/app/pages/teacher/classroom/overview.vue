@@ -19,17 +19,17 @@ const leaderboard = computed(() => getClassroomLeaderboard(classroomId.value));
     </header>
 
     <div v-if="classroom" class="actionGrid">
-      <NuxtLink :to="`/classroom/students?classroomId=${classroom.id}`" class="actionCard">
+      <NuxtLink :to="routePathsWithString(routePaths.classroomStudents, `?classroomId=${classroom.id}`)" class="actionCard">
         <span class="actionCard__title">Elever</span>
         <span class="actionCard__text">Se elevoversikt og åpne enkeltelevens progresjon.</span>
       </NuxtLink>
 
-      <NuxtLink :to="`/classroom/notifications?classroomId=${classroom.id}`" class="actionCard">
+      <NuxtLink :to="routePathsWithString(routePaths.classroomNotifications, `?classroomId=${classroom.id}`)" class="actionCard">
         <span class="actionCard__title">Varslingssenter</span>
         <span class="actionCard__text">Se varsler som bare gjelder dette klasserommet.</span>
       </NuxtLink>
 
-      <NuxtLink :to="`/classroom/tasks?classroomId=${classroom.id}`" class="actionCard">
+      <NuxtLink :to="routePathsWithString(routePaths.classroomTasks, `?classroomId=${classroom.id}`)" class="actionCard">
         <span class="actionCard__title">Oppgaver</span>
         <span class="actionCard__text">Åpne oppgavene som brukes i dette klasserommet.</span>
       </NuxtLink>
