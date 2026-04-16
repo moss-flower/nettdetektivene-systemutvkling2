@@ -1,6 +1,7 @@
 package no.safety.backend.classroom.controller;
 
 import jakarta.validation.Valid;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.classroom.dto.ClassroomRequest;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -143,6 +145,46 @@ public class ClassroomController {
       @PathVariable Long classroomId,
       Authentication authentication) {
     return classroomService.regenerateCode(classroomId, getCallerUuid(authentication));
+  }
+
+  /**
+   * Gets all classrooms owned by the caller.
+   *
+   * @param authentication Spring Security context for the calling user.
+   * @return a set of responses containing classrooms the caller owns.
+   */
+  @GetMapping
+  public Set<ClassroomResponse> getOwnedClassrooms(Authentication authentication) {
+    return classroomService.getOwnedClassrooms(getCallerUuid(authentication));
+  }
+
+  /**
+   * Gets a classroom by its ID.
+   *
+   * @param classroomId    of the classroom to get.
+   * @param authentication Spring Security context for the calling user.
+   * @return a response containing the specified classroom.
+   * @throws no.safety.backend.exception.NotFoundException  if the classroom is not found
+   * @throws no.safety.backend.exception.ForbiddenException if the caller does not own the
+   *                                                        classroom.
+   */
+  @GetMapping("/{classroomId}")
+  public ClassroomResponse getClassroom(@PathVariable Long classroomId,
+      Authentication authentication) {
+    return classroomService.getClassroom(classroomId, getCallerUuid(authentication));
+  }
+
+  /**
+   * Gets a students classroom.
+   *
+   * @param authentication Spring Security context for the calling user.
+   * @return a response containing the classroom of the student.
+   * @throws no.safety.backend.exception.NotFoundException if the student is not found or if it is
+   *                                                       not in a classroom.
+   */
+  @GetMapping("/me")
+  public ClassroomResponse getMyClassroom(Authentication authentication) {
+    return classroomService.getMyClassroom(getCallerUuid(authentication));
   }
 
   /**

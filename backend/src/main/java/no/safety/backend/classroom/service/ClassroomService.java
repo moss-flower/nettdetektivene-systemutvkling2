@@ -1,6 +1,7 @@
 package no.safety.backend.classroom.service;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.classroom.dto.ClassroomRequest;
@@ -150,6 +151,31 @@ public class ClassroomService {
 
     member.setClassroom(null);
     studentRepo.save(member);
+  }
+
+  @Transactional(readOnly = true)
+  public Set<ClassroomResponse> getOwnedClassrooms(UUID callerUuid) {
+    return classroomRepo.findAllByOwners_PublicUuid(callerUuid).stream()
+        .map(ClassroomResponse::from)
+        .collect(java.util.stream.Collectors.toSet());
+  }
+
+  @Transactional(readOnly = true)
+  public ClassroomResponse getClassroom(Long classroomId, UUID callerUuid) {
+    Classroom c = requireOwned(classroomId, callerUuid);
+    return ClassroomResponse.from(c);
+  }
+
+  @Transactional(readOnly = true)
+  public ClassroomResponse getMyClassroom(UUID callerUuid) {
+    StudentUser student = studentRepo.findByPublicUuid(callerUuid)
+        .orElseThrow(() -> new NotFoundException("Student not found"));
+
+    if (student.getClassroom() == null) {
+      throw new NotFoundException("Student is not in a classroom");
+    }
+
+    return ClassroomResponse.from(student.getClassroom());
   }
 
   private Classroom requireOwned(Long classroomId, UUID callerUuid) {
