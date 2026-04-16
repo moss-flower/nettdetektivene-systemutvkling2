@@ -45,7 +45,7 @@ public class Classroom {
       joinColumns = @JoinColumn(name="classroom_id"),
       inverseJoinColumns = @JoinColumn(name = "user_id")
   )
-  private Set<User> owners = new HashSet<User>();
+  private Set<User> owners = new HashSet<>();
 
   @Override
   public boolean equals(Object o) {

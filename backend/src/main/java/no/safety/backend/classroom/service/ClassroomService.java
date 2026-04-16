@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ClassroomService {
 
   private final ClassroomRepository classroomRepo;
-  private final UserRepository<User, UUID> userRepo;
+  private final UserRepository userRepo;
   private final ClassroomCodeGenerator codegen;
 
   //TODO: Replace all UUID params with authentication eventually and use this to get the role.

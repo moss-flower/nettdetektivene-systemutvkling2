@@ -14,7 +14,7 @@ public record ClassroomResponse(
 
   public static ClassroomResponse from(Classroom c) {
     List<OwnerSummary> owners = c.getOwners().stream()
-        .map(u -> new OwnerSummary(u.getPublicUuid(), u.getName()))
+        .map(u -> new OwnerSummary(u.getPublicUuid(), u.getUsername()))
         .collect(Collectors.toList());
 
     return new ClassroomResponse(c.getId(), c.getName(), c.getDescription(), c.getCode(), owners);

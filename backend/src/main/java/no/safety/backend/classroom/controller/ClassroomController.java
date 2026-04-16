@@ -58,7 +58,7 @@ public class ClassroomController {
    * @throws no.safety.backend.exception.ForbiddenException if the calling user is not an owner of
    *                                                        the classroom.
    */
-  @PutMapping("/classrooms/{classroomId}")
+  @PutMapping("/{classroomId}")
   public ClassroomResponse update(
       @PathVariable Long classroomId,
       @Valid @RequestBody ClassroomRequest request,
@@ -76,7 +76,7 @@ public class ClassroomController {
    * @throws no.safety.backend.exception.ForbiddenException if the calling user is not an owner of
    *                                                        the classroom.
    */
-  @DeleteMapping("/classrooms/{classroomId}")
+  @DeleteMapping("/{classroomId}")
   public ResponseEntity<Void> delete(
       @PathVariable Long classroomId,
       Authentication authentication) {
@@ -100,7 +100,7 @@ public class ClassroomController {
    * @throws no.safety.backend.exception.ConflictException  if the new owner user is already an
    *                                                        owner.
    */
-  @PostMapping("/classrooms/{classroomId}/owners/{userUuid}")
+  @PostMapping("/{classroomId}/owners/{userUuid}")
   public ClassroomResponse addOwner(
       @PathVariable Long classroomId,
       @PathVariable UUID userUuid,
@@ -123,7 +123,7 @@ public class ClassroomController {
    * @throws no.safety.backend.exception.NotFoundException  if the user to remove is not an owner of
    *                                                        the classroom.
    */
-  @DeleteMapping("/classrooms/{classroomId}/owners/{userUuid}")
+  @DeleteMapping("/{classroomId}/owners/{userUuid}")
   public ClassroomResponse removeOwner(
       @PathVariable Long classroomId,
       @PathVariable UUID userUuid,
@@ -138,7 +138,7 @@ public class ClassroomController {
    * @param authentication Spring Security context for the calling user.
    * @return a response containing the classroom with the new join code.
    */
-  @PostMapping("/classrooms/{classroomId}/code")
+  @PostMapping("/{classroomId}/code")
   public ClassroomResponse regenerateCode(
       @PathVariable Long classroomId,
       Authentication authentication) {
