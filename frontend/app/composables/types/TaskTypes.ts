@@ -14,6 +14,22 @@ type BaseTask = {
 export type ImageRecognitionType = "real" | "AI" | "manipulated";
 export type MarketplaceChoice = "buy" | "reviewMore" | "dontBuy";
 export type SocialMediaChoice = "share" | "hold" | "checkSources" | "askAdult";
+export type XOrYChoice = "x" | "y";
+export type XOrYPair<T> = {
+  x: T;
+  y: T;
+};
+export type XOrYOptionContent = {
+  imageUrl: string;
+  imageAlt: string;
+  eyebrow?: string;
+  title: string;
+  text: string;
+};
+export type XOrYResult = {
+  correct: boolean;
+  choice: XOrYChoice;
+};
 
 //================= NewsStand =================
 

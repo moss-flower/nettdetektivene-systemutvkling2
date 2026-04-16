@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { NewsStandPair } from '~/composables/types/TaskTypes'
+import XOrYExercise from '~/components/gameplay/shared/XOrYExercise.vue'
+import type { NewsStandPair, XOrYChoice, XOrYOptionContent, XOrYPair, XOrYResult } from '~/composables/types/TaskTypes'
 
 const props = defineProps<{
   data: NewsStandPair
@@ -11,165 +12,49 @@ const emit = defineEmits<{
   (e: 'answered', payload: { correct: boolean, choice: 'correct' | 'fake' }): void
 }>()
 
-function answer(choice: 'correct' | 'fake') {
-  if (props.disabled) {
-    return
+const mappedPair = computed<XOrYPair<XOrYOptionContent>>(() => ({
+  x: {
+    imageUrl: props.data.correct.imageUrl,
+    imageAlt: `Bilde til artikkelen ${props.data.correct.title}`,
+    eyebrow: props.data.correct.author,
+    title: props.data.correct.title,
+    text: props.data.correct.text,
+  },
+  y: {
+    imageUrl: props.data.fake.imageUrl,
+    imageAlt: `Bilde til artikkelen ${props.data.fake.title}`,
+    eyebrow: props.data.fake.author,
+    title: props.data.fake.title,
+    text: props.data.fake.text,
+  },
+}))
+
+const mappedSelectedChoice = computed<XOrYChoice | null>(() => {
+  if (props.selectedChoice === 'correct') {
+    return 'x'
   }
 
-  emit('answered', { correct: choice === 'correct', choice })
+  if (props.selectedChoice === 'fake') {
+    return 'y'
+  }
+
+  return null
+})
+
+const onAnswered = (result: XOrYResult) => {
+  emit('answered', {
+    correct: result.correct,
+    choice: result.choice === 'x' ? 'correct' : 'fake',
+  })
 }
 </script>
 
 <template>
-  <div class="newsstand-board">
-    <article
-      class="news-card"
-      :class="{
-        'news-card--selected': props.selectedChoice === 'correct',
-        'news-card--locked': props.disabled && props.selectedChoice !== 'correct',
-      }"
-    >
-      <button class="news-card__surface" type="button" :disabled="props.disabled" @click="answer('correct')">
-        <div class="news-card__paper">
-          <img
-            :src="props.data.correct.imageUrl"
-            :alt="`Bilde til artikkelen ${props.data.correct.title}`"
-            class="news-card__image"
-          />
-          <div class="news-card__content">
-            <p class="news-card__source">{{ props.data.correct.author }}</p>
-            <h2 class="news-card__headline">{{ props.data.correct.title }}</h2>
-            <p class="news-card__summary">{{ props.data.correct.text }}</p>
-          </div>
-        </div>
-      </button>
-    </article>
-
-    <article
-      class="news-card"
-      :class="{
-        'news-card--selected': props.selectedChoice === 'fake',
-        'news-card--locked': props.disabled && props.selectedChoice !== 'fake',
-      }"
-    >
-      <button class="news-card__surface" type="button" :disabled="props.disabled" @click="answer('fake')">
-        <div class="news-card__paper">
-          <img
-            :src="props.data.fake.imageUrl"
-            :alt="`Bilde til artikkelen ${props.data.fake.title}`"
-            class="news-card__image"
-          />
-          <div class="news-card__content">
-            <p class="news-card__source">{{ props.data.fake.author }}</p>
-            <h2 class="news-card__headline">{{ props.data.fake.title }}</h2>
-            <p class="news-card__summary">{{ props.data.fake.text }}</p>
-          </div>
-        </div>
-      </button>
-    </article>
-  </div>
+  <XOrYExercise
+    :options="mappedPair"
+    :correct-choice="'x'"
+    :disabled="props.disabled"
+    :selected-choice="mappedSelectedChoice"
+    @answered="onAnswered"
+  />
 </template>
-
-<style scoped>
-.newsstand-board {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(1rem, 3vw, 2.5rem);
-  align-items: start;
-}
-
-.news-card {
-  display: grid;
-  gap: 1rem;
-}
-
-.news-card__surface {
-  width: 100%;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  text-align: left;
-}
-
-.news-card__paper {
-  min-height: 100%;
-  border-radius: 1.6rem;
-  padding: 0.8rem;
-  background: #fffdfa;
-  border: 2px solid #d6d3ce;
-  box-shadow: 0 14px 26px rgba(47, 39, 28, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.news-card__surface:hover:not(:disabled) .news-card__paper,
-.news-card__surface:focus-visible .news-card__paper {
-  transform: translateY(-3px);
-  border-color: #8ea7c4;
-  box-shadow: 0 18px 32px rgba(47, 39, 28, 0.12);
-}
-
-.news-card__surface:focus-visible {
-  outline: none;
-}
-
-.news-card__image {
-  width: 100%;
-  aspect-ratio: 1.1 / 0.8;
-  object-fit: cover;
-  border-radius: 1rem 1rem 0 0;
-  display: block;
-}
-
-.news-card__content {
-  display: grid;
-  gap: 0.75rem;
-  padding: 1rem 1rem 1.2rem;
-}
-
-.news-card__source {
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #6b7280;
-}
-
-.news-card__headline {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.8rem, 3vw, 3.35rem);
-  line-height: 0.95;
-  color: #241713;
-  text-wrap: balance;
-}
-
-.news-card__summary {
-  font-size: 1rem;
-  line-height: 1.5;
-  color: #47372e;
-}
-
-.news-card--selected .news-card__paper {
-  border-color: #4c7bb0;
-  box-shadow: 0 18px 34px rgba(65, 104, 150, 0.18);
-}
-
-.news-card--locked {
-  opacity: 0.82;
-}
-
-.news-card__surface:disabled {
-  cursor: default;
-}
-
-@media (max-width: 900px) {
-  .news-card__headline {
-    font-size: clamp(1.6rem, 5vw, 2.6rem);
-  }
-}
-
-@media (max-width: 760px) {
-  .newsstand-board {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
