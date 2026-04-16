@@ -15,7 +15,6 @@ type StudentHomeItem = {
   title: string;
   description: string;
   route: string;
-  badge?: string;
   imagePath?: string;
   rotation?: number;
   tooltipPlacement?: "top" | "bottom";
@@ -27,7 +26,6 @@ const items: StudentHomeItem[] = [
     title: 'Hjelp',
     description: 'Få tips hvis du står fast eller lurer på hva du skal gjøre.',
     route: routePaths.studentHelp,
-    badge: '?',
     imagePath: helpImage,
     rotation: 4,
     tooltipPlacement: "bottom",
@@ -37,7 +35,6 @@ const items: StudentHomeItem[] = [
     title: 'Avatar',
     description: 'Se profilen din og tilpass hvordan detektiven din ser ut.',
     route: routePaths.studentProfile,
-    badge: 'A',
     imagePath: profileImage,
     rotation: -4,
     tooltipPlacement: "top",
@@ -47,7 +44,6 @@ const items: StudentHomeItem[] = [
     title: 'Ledertavle',
     description: 'Se poeng, plassering og hvem som har samlet flest spor.',
     route: routePathsWithString(routePaths.notYetImplemented, `?backPath=${routePaths.studentHome}`),
-    badge: '#',
     imagePath: leaderboardImage,
     rotation: -2,
     tooltipPlacement: "bottom",
@@ -57,7 +53,6 @@ const items: StudentHomeItem[] = [
     title: 'Kartet',
     description: 'Her foregår spillet. Trykk her for å gå til stoppesteder og oppgaver.',
     route: routePaths.levels,
-    badge: 'K',
     imagePath: mapImage,
     rotation: -1,
     tooltipPlacement: "bottom",
@@ -67,7 +62,6 @@ const items: StudentHomeItem[] = [
     title: 'Ukens mysterium',
     description: 'Et eget mysterium med ferske spor og en ny sak å utforske.',
     route: routePathsWithString(routePaths.notYetImplemented, `?backPath=${routePaths.studentHome}`),
-    badge: '!',
     imagePath: mysteryImage,
     rotation: 1,
     tooltipPlacement: "bottom",
@@ -77,7 +71,6 @@ const items: StudentHomeItem[] = [
     title: 'Medaljer',
     description: 'Se medaljene du har vunnet og hvilke du kan samle senere.',
     route: routePaths.studentAchievements,
-    badge: '*',
     imagePath: medalsImage,
     rotation: 2,
     tooltipPlacement: "top",
@@ -87,7 +80,6 @@ const items: StudentHomeItem[] = [
     title: 'Notatblokk',
     description: 'Skriv ned spor, tanker og ting du vil huske til senere.',
     route: routePathsWithString(routePaths.notYetImplemented, `?backPath=${routePaths.studentHome}`),
-    badge: 'N',
     imagePath: notebookImage,
     rotation: 3,
     tooltipPlacement: "top",
@@ -96,8 +88,7 @@ const items: StudentHomeItem[] = [
     id: 'settings',
     title: 'Innstillinger',
     description: 'Endre innstillinger for spillet.',
-    route: '',
-    badge: 'S',
+    route: routePathsWithString(routePaths.notYetImplemented, `?backPath=${routePaths.studentHome}`),
     imagePath: settingsImage,
     rotation: 1,
     tooltipPlacement: "bottom",
