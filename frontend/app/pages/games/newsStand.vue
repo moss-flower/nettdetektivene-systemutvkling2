@@ -80,7 +80,7 @@ const next = () => {
         <p class="newsstand-page__eyebrow">Nyhetskvartalet</p>
         <h1>Nyhetskvartalet - {{ progressLabel }}</h1>
         <p class="newsstand-page__description">
-          I oppgaven under får du servert to nyhetsartikler. Velg den som virker mest troverdig.
+          I oppgaven under ser du to nyhetsartikler. Trykk på den som virker mest troverdig.
         </p>
       </div>
     </header>

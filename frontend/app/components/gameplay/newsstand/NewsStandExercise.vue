@@ -43,9 +43,6 @@ function answer(choice: 'correct' | 'fake') {
           </div>
         </div>
       </button>
-      <button class="news-card__action" type="button" :disabled="props.disabled" @click="answer('correct')">
-        Denne er ekte
-      </button>
     </article>
 
     <article
@@ -68,9 +65,6 @@ function answer(choice: 'correct' | 'fake') {
             <p class="news-card__summary">{{ props.data.fake.text }}</p>
           </div>
         </div>
-      </button>
-      <button class="news-card__action" type="button" :disabled="props.disabled" @click="answer('fake')">
-        Denne er ekte
       </button>
     </article>
   </div>
@@ -154,41 +148,16 @@ function answer(choice: 'correct' | 'fake') {
   color: #47372e;
 }
 
-.news-card__action {
-  justify-self: center;
-  min-width: min(100%, 13rem);
-  padding: 0.9rem 1.25rem;
-  border: 0;
-  background: #d9d9d9;
-  color: #1f2937;
-  font-size: 1.05rem;
-  border-radius: 0;
-  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.08);
-  transition: background-color 0.2s ease, transform 0.2s ease;
-}
-
-.news-card__action:hover:not(:disabled),
-.news-card__action:focus-visible {
-  background: #cdd5df;
-  transform: translateY(-1px);
-  outline: none;
-}
-
 .news-card--selected .news-card__paper {
   border-color: #4c7bb0;
   box-shadow: 0 18px 34px rgba(65, 104, 150, 0.18);
-}
-
-.news-card--selected .news-card__action {
-  background: #bdd1ea;
 }
 
 .news-card--locked {
   opacity: 0.82;
 }
 
-.news-card__surface:disabled,
-.news-card__action:disabled {
+.news-card__surface:disabled {
   cursor: default;
 }
 
@@ -201,10 +170,6 @@ function answer(choice: 'correct' | 'fake') {
 @media (max-width: 760px) {
   .newsstand-board {
     grid-template-columns: 1fr;
-  }
-
-  .news-card__action {
-    width: 100%;
   }
 }
 </style>
