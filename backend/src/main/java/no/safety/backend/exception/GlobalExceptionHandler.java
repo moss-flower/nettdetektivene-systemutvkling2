@@ -8,29 +8,31 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.net.URI;
 import java.time.Instant;
 import java.util.stream.Collectors;
 
+/**
+ * Defines a global exception handler to catch and handle custom exceptions from all sources.
+ * Allows for control over which error messages and data reach the user, so unintended information is not leaked from the backend.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     /**
-     * Handles business logic conflicts (e.g., Email already exists).
-     * Returns 409 Conflict.
+     * Handles {@link UserAlreadyExistsException} exceptions.
+     * @return Returns a {@link ProblemDetail} with HTTP status code: 409 Conflict.
      */
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ProblemDetail handleUserAlreadyExists(UserAlreadyExistsException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problem.setTitle("Account Conflict");
-        problem.setType(URI.create("https://api.safety.no/errors/user-already-exists"));
         problem.setProperty("timestamp", Instant.now());
         return problem;
     }
 
     /**
-     * Handles configuration issues (e.g., Missing Roles).
-     * Returns 500 Internal Server Error because the server is misconfigured.
+     * Handles {@link RoleNotFoundException} exceptions.
+     * @return Returns a {@link ProblemDetail} with HTTP status code: 500 INTERNAL_SERVER_ERROR.
      */
     @ExceptionHandler(RoleNotFoundException.class)
     public ProblemDetail handleRoleNotFound(RoleNotFoundException ex) {
@@ -41,8 +43,8 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles @Valid validation failures from your DTOs.
-     * Returns 400 Bad Request with a list of specific field errors.
+     * Handles {@link MethodArgumentNotValidException} exceptions.
+     * @return Returns a {@link ProblemDetail} with HTTP status code: 500 INTERNAL_SERVER_ERROR.
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidationErrors(MethodArgumentNotValidException ex) {
@@ -57,11 +59,12 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Catch-all for any other unexpected errors.
+     * Handles all {@link Exception} that are not specifically defined in this handler.
+     * Catches unhandled exceptions to protect against data leaks.
+     * @return Returns a {@link ProblemDetail} with HTTP status code: 500 INTERNAL_SERVER_ERROR.
      */
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleGeneralError(Exception ex) {
-        // Log the exception here (e.g., log.error("Unexpected error", ex))
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
             HttpStatus.INTERNAL_SERVER_ERROR, 
             "An unexpected error occurred. Please contact support."
