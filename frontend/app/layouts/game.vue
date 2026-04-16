@@ -1,3 +1,7 @@
+<script setup lang="ts">
+provideGameConfetti()
+</script>
+
 <template>
   <div class="game-layout">
     <aside class="game-layout__rail game-layout__rail--left" aria-label="Spillerpanel">
@@ -5,8 +9,8 @@
         <div class="game-layout__avatar-placeholder" aria-hidden="true">
           <span class="game-layout__avatar-face">:)</span>
         </div>
-        <p class="game-layout__rail-title">Detektiv</p>
-        <p class="game-layout__rail-text">Avatar og navn kommer her.</p>
+        <p class="game-layout__rail-title">Detektiv Navn</p>
+        <p class="game-layout__rail-text">Nivå her kanskje?</p>
       </div>
     </aside>
 

@@ -8,6 +8,8 @@ definePageMeta({
   layout: 'game',
 })
 
+const { celebrateCorrectAnswer, stop } = useGameConfetti()
+
 const mockData: NewsStandTask = {
   id: "1",
   kind: "newsStand",
@@ -54,10 +56,14 @@ const feedbackText = computed(() => {
 
 const onAnswered = (result: { correct: boolean, choice: 'correct' | 'fake' }) => {
   answerState.value = result
-  if (result.correct) correctCount.value++
+  if (result.correct) {
+    correctCount.value++
+    celebrateCorrectAnswer()
+  }
 }
 
 const next = () => {
+  stop()
   answerState.value = null
   if (currentIndex.value < tasks.length - 1) {
     currentIndex.value++
