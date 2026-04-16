@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Classroom controller that defines API endpoints for managing classrooms.
- * All endpoints require an authenticated caller, and mutating operations require the caller to
- * be an owner of the classroom.
+ * Classroom controller that defines API endpoints for managing classrooms. All endpoints require an
+ * authenticated caller, and mutating operations require the caller to be an owner of the
+ * classroom.
  */
 @RestController
 @RequestMapping("/classrooms")
@@ -143,6 +143,61 @@ public class ClassroomController {
       @PathVariable Long classroomId,
       Authentication authentication) {
     return classroomService.regenerateCode(classroomId, getCallerUuid(authentication));
+  }
+
+  /**
+   * Allows a student to join a classroom using the join code. A student can only be a member of one
+   * classroom at a time.
+   *
+   * @param code           the join code of the classroom.
+   * @param authentication Spring Security context for the calling user.
+   * @return a response containing the joined classroom.
+   * @throws no.safety.backend.exception.NotFoundException  if the classroom or user is not found.
+   * @throws no.safety.backend.exception.ForbiddenException if the caller is not a student.
+   * @throws no.safety.backend.exception.ConflictException  if the student is already in a
+   *                                                        classroom.
+   */
+  @PostMapping("/join/{code}")
+  public ClassroomResponse joinByCode(
+      @PathVariable String code,
+      Authentication authentication) {
+    return classroomService.joinByCode(code, getCallerUuid(authentication));
+  }
+
+  /**
+   * Removes a student member from a classroom. Requires the caller to be an owner.
+   *
+   * @param classroomId    the id of the classroom.
+   * @param userUuid       the UUID of the member to remove.
+   * @param authentication Spring Security context for the calling user.
+   * @return a response containing the classroom without the removed member.
+   * @throws no.safety.backend.exception.NotFoundException  if the classroom or member is not
+   *                                                        found.
+   * @throws no.safety.backend.exception.ForbiddenException if the caller is not an owner.
+   */
+  @DeleteMapping("/{classroomId}/members/{userUuid}")
+  public ClassroomResponse removeMember(
+      @PathVariable Long classroomId,
+      @PathVariable UUID userUuid,
+      Authentication authentication) {
+    return classroomService.removeMember(classroomId, userUuid, getCallerUuid(authentication));
+  }
+
+  /**
+   * Allows a student to leave a classroom they are a member of.
+   *
+   * @param classroomId    the id of the classroom to leave.
+   * @param authentication Spring Security context for the calling user.
+   * @return an empty 204 No Content response.
+   * @throws no.safety.backend.exception.NotFoundException if the classroom is not found or the
+   *                                                       caller is not a member.
+   */
+  @DeleteMapping("/{classroomId}/members/me")
+  public ResponseEntity<Void> leaveClassroom(
+      @PathVariable Long classroomId,
+      Authentication authentication) {
+    classroomService.leaveClassroom(classroomId, getCallerUuid(authentication));
+    return ResponseEntity.noContent().build();
   }
 
   private UUID getCallerUuid(Authentication authentication) {

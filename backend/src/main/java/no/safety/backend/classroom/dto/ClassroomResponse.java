@@ -9,7 +9,8 @@ public record ClassroomResponse(
     String name,
     String description,
     String code,
-    List<OwnerSummary> owners
+    List<OwnerSummary> owners,
+    List<MemberSummary> members
 ) {
 
   public static ClassroomResponse from(Classroom c) {
@@ -17,7 +18,12 @@ public record ClassroomResponse(
         .map(u -> new OwnerSummary(u.getPublicUuid(), u.getUsername()))
         .collect(Collectors.toList());
 
-    return new ClassroomResponse(c.getId(), c.getName(), c.getDescription(), c.getCode(), owners);
+    List<MemberSummary> members = c.getMembers().stream()
+        .map(u -> new MemberSummary(u.getPublicUuid(), u.getUsername()))
+        .collect(Collectors.toList());
+
+    return new ClassroomResponse(c.getId(), c.getName(), c.getDescription(), c.getCode(), owners,
+        members);
   }
 
 }

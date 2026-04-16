@@ -15,4 +15,8 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
   Optional<Classroom> findByIdAndOwners_PublicUuid(Long id, UUID ownerUuid);
 
   Set<Classroom> findAllByOwners_PublicUuid(UUID ownerUuid);
+
+  Optional<Classroom> findByCode(String code);
+
+  boolean existsByMembers_PublicUuid(UUID memberUuid);
 }

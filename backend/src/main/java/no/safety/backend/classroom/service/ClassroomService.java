@@ -10,6 +10,7 @@ import no.safety.backend.classroom.repository.ClassroomRepository;
 import no.safety.backend.exception.ConflictException;
 import no.safety.backend.exception.ForbiddenException;
 import no.safety.backend.exception.NotFoundException;
+import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.model.User;
 import no.safety.backend.user.repository.UserRepository;
@@ -69,10 +70,11 @@ public class ClassroomService {
       throw new ForbiddenException("New owner must be a teacher");
     }
 
-    boolean added = c.getOwners().add(newOwner);
-    if (!added) {
-      throw new ConflictException("User is already added");
+    if (classroomRepo.existsByIdAndOwners_PublicUuid(classroomId, newOwnerUuid)) {
+      throw new ConflictException("User is already an owner");
     }
+
+    c.getOwners().add(newOwner);
 
     return ClassroomResponse.from(c);
   }
@@ -82,7 +84,7 @@ public class ClassroomService {
     Classroom c = requireOwned(classroomId, callerUuid);
 
     if (c.getOwners().size() <= 1) {
-      throw new ConflictException("Cannot remove the last owner");
+      throw new ConflictException("Cannot remove the last owner of a classroom");
     }
 
     boolean removed = c.getOwners()
@@ -108,6 +110,48 @@ public class ClassroomService {
     c.setCode(codegen.generateUniqueCode());
     classroomRepo.save(c);
     return ClassroomResponse.from(c);
+  }
+
+  @Transactional
+  public ClassroomResponse joinByCode(String code, UUID callerUuid) {
+    Classroom c = classroomRepo.findByCode(code)
+        .orElseThrow(() -> new NotFoundException("Classroom not found"));
+    User member = userRepo.findByPublicUuid(callerUuid)
+        .orElseThrow(() -> new NotFoundException("User not found"));
+
+    if (!(member instanceof StudentUser)) {
+      throw new ForbiddenException("User must be a student");
+    }
+
+    if (classroomRepo.existsByMembers_PublicUuid(callerUuid)) {
+      throw new ConflictException("User is already a member");
+    }
+
+    c.getMembers().add(member);
+    return ClassroomResponse.from(c);
+  }
+
+  @Transactional
+  public ClassroomResponse removeMember(Long classroomId, UUID memberUuid, UUID callerUuid) {
+    Classroom c = requireOwned(classroomId, callerUuid);
+    boolean removed = c.getMembers().removeIf(user -> user.getPublicUuid().equals(memberUuid));
+
+    if (!removed) {
+      throw new NotFoundException("User is not a member of this classroom");
+    }
+    return ClassroomResponse.from(c);
+  }
+
+  @Transactional
+  public void leaveClassroom(Long classroomId, UUID callerUuid) {
+    Classroom c = classroomRepo.findById(classroomId)
+        .orElseThrow(() -> new NotFoundException("Could not find classroom"));
+
+    boolean removed = c.getMembers().removeIf(user -> user.getPublicUuid().equals(callerUuid));
+
+    if (!removed) {
+      throw new NotFoundException("User is not a member of this classroom");
+    }
   }
 
   private Classroom requireOwned(Long classroomId, UUID callerUuid) {

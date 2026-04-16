@@ -16,6 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.model.User;
 
 @Entity
@@ -46,6 +47,20 @@ public class Classroom {
       inverseJoinColumns = @JoinColumn(name = "user_id")
   )
   private Set<User> owners = new HashSet<>();
+
+  //TODO:Should be
+  //@OneToMany(mappedBy = "classroom")
+  //while adding a field in StudentUser:
+  //@ManyToOne(fetch = FetchType.LAZY)
+  //@JoinColumn(name = "classroom_id")
+  //private Classroom classroom;
+  @ManyToMany(fetch = FetchType.LAZY)
+  @JoinTable(
+      name = "classroom_members",
+      joinColumns = @JoinColumn(name = "classroom_id"),
+      inverseJoinColumns = @JoinColumn(name = "user_id")
+  )
+  private Set<User> members = new HashSet<>();
 
   @Override
   public boolean equals(Object o) {
