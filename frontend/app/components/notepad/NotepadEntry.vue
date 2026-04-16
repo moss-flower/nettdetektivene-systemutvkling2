@@ -1,0 +1,87 @@
+<script setup lang="ts">
+const props = defineProps<{
+  title: string;
+  date: string;
+  source: string;
+  type: "tip" | "info" | "observation";
+  content: string;
+}>();
+
+const titlePrefix = computed(() => {
+  if (props.type === "tip") return "Tip:";
+  if (props.type === "info") return "Info:";
+  if (props.type === "observation") return "Observation:";
+  return "";
+});
+
+
+</script>
+
+<template>
+  <article
+    :class="[
+      'notepadEntry',
+      {
+        tip: props.type === 'tip',
+        info: props.type === 'info',
+        observation: props.type === 'observation',
+      },
+    ]"
+  >
+    <div class="meta">
+      <h3 class="date">{{ date }}</h3>
+      <h3 class="source">{{ source }}</h3>
+    </div>
+    <h4 class="title">{{ titlePrefix }} {{ props.title }}</h4>
+    <p class="content">{{ props.content }}</p>
+  </article>
+</template>
+
+<style scoped>
+.notepadEntry {
+  width: 100%;
+  border-radius: 1.75rem;
+  padding: 1.5rem 1.5rem 1.25rem 1.5rem;
+  box-sizing: border-box;
+  color: black;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.date,
+.source {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.content {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.tip {
+  border: 3px limegreen;
+  background-color: rgb(169, 228, 153, 0.3);
+}
+
+.info {
+  border: 3px crimson;
+  background-color: rgba(228, 153, 153, 0.3);
+}
+
+.observation {
+  border: 3px gray;
+  background-color: rgba(218, 218, 218, 0.3);
+}
+</style>
