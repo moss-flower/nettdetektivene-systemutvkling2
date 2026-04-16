@@ -5,13 +5,21 @@ provideGameConfetti()
 <template>
   <div class="game-layout">
     <aside class="game-layout__rail game-layout__rail--left" aria-label="Spillerpanel">
-      <div class="game-layout__rail-card game-layout__rail-card--avatar">
+      <NuxtLink
+        to="/student/profile"
+        class="game-layout__rail-card game-layout__rail-card--avatar game-layout__rail-link"
+        aria-label="Gå til elevprofil"
+      >
         <div class="game-layout__avatar-placeholder" aria-hidden="true">
-          <span class="game-layout__avatar-face">:)</span>
+          <img
+            src="/assets/images/elev_avatar.png"
+            alt="Elev avatar"
+            class="game-layout__avatar-image"
+          />
         </div>
         <p class="game-layout__rail-title">Detektiv Navn</p>
         <p class="game-layout__rail-text">Nivå her kanskje?</p>
-      </div>
+      </NuxtLink>
     </aside>
 
     <main class="game-layout__content" aria-label="Spillinnhold">
@@ -24,31 +32,40 @@ provideGameConfetti()
 
 <style scoped>
 .game-layout {
-  min-height: 100vh;
+  height: 100dvh;
   display: grid;
   grid-template-columns: clamp(7rem, 16vw, 13rem) minmax(0, 1fr) clamp(6rem, 14vw, 12rem);
   background:
     linear-gradient(90deg, #cfe9ff 0, #cfe9ff 18%, #f8fbff 18%, #f8fbff 82%, #cfe9ff 82%, #cfe9ff 100%);
+  overflow: hidden;
 }
 
 .game-layout__rail,
 .game-layout__content {
-  min-height: 100vh;
+  min-height: 0;
+  height: 100dvh;
 }
 
 .game-layout__rail {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  padding: 1.5rem 1rem;
+  padding:0  1rem 5rem;
+  overflow: hidden;
+}
+
+.game-layout__content {
+  padding: 0;
+  overflow: hidden;
 }
 
 .game-layout__content-shell {
-  min-height: calc(100vh - 3rem);
+  height: 100%;
   background: #ffffff;
-  box-shadow: 0 8px 30px rgb(0 0 0 / 0.5);
+  box-shadow: none;
   padding: 2rem;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .game-layout__rail-card {
@@ -62,9 +79,22 @@ provideGameConfetti()
   box-shadow: 0 10px 24px rgba(34, 74, 126, 0.12);
 }
 
+.game-layout__rail-link {
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.game-layout__rail-link:hover,
+.game-layout__rail-link:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(34, 74, 126, 0.16);
+  outline: none;
+}
+
 .game-layout__rail-card--avatar {
   display: grid;
   gap: 0.75rem;
+  margin-top: 0;
 }
 
 .game-layout__avatar-placeholder {
@@ -78,9 +108,12 @@ provideGameConfetti()
   background: #fff;
 }
 
-.game-layout__avatar-face {
-  font-size: 1.35rem;
-  font-weight: 700;
+.game-layout__avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  background: #e3eefa;
 }
 
 .game-layout__rail-title {
@@ -115,17 +148,17 @@ provideGameConfetti()
 @media (max-width: 780px) {
   .game-layout {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto minmax(0, 1fr);
     background: #cfe9ff;
   }
 
   .game-layout__rail,
   .game-layout__content {
-    min-height: auto;
+    height: auto;
   }
 
   .game-layout__rail {
-    padding: 1rem;
+    padding: 2rem 1rem 1rem;
   }
 
   .game-layout__content {
@@ -133,8 +166,8 @@ provideGameConfetti()
   }
 
   .game-layout__content-shell {
-    min-height: auto;
-    border-radius: 1.5rem;
+    height: 100%;
+    border-radius: 0;
   }
 
   .game-layout__rail-card {
