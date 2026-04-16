@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import CompletedPopup from '~/components/gameplay/shared/CompletedPopup.vue'
+import EmailHotspotsExercise from '~/components/gameplay/shared/EmailHotspotsExercise.vue'
 import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDialog.vue'
 import ThreeOptionImageExercise from '~/components/gameplay/shared/ThreeOptionImageExercise.vue'
 import XOrYExercise from '~/components/gameplay/shared/XOrYExercise.vue'
 import { getStationMockBySlug } from '~/composables/mocks/stations'
 import type {
+  EmailHotspotResult,
   StationDifficulty,
   ThreeOptionChoice,
   ThreeOptionResult,
@@ -87,9 +89,15 @@ const feedbackTitle = computed(() => {
   }
 
   if (!answerState.value) {
-    return currentTask.value.templateKind === 'three-option-image'
-      ? 'Hva avslører den falske saken?'
-      : 'Velg avisen du stoler mest på'
+    if (currentTask.value.templateKind === 'three-option-image') {
+      return 'Hva avslører den falske saken?'
+    }
+
+    if (currentTask.value.templateKind === 'email-hotspots') {
+      return 'Trykk på det som virker mistenkelig'
+    }
+
+    return 'Velg avisen du stoler mest på'
   }
 
   return answerState.value.correct ? 'Riktig svar' : 'Ikke helt'
@@ -137,6 +145,18 @@ const onAnsweredThreeOption = (result: ThreeOptionResult) => {
   }
 }
 
+const onAnsweredEmailHotspots = (result: EmailHotspotResult) => {
+  answerState.value = {
+    correct: result.correct,
+    choice: result.selectedTargetIds.join(','),
+  }
+
+  if (result.correct) {
+    correctCount.value++
+    celebrateCorrectAnswer()
+  }
+}
+
 const next = () => {
   stop()
   answerState.value = null
@@ -166,6 +186,7 @@ const next = () => {
     <div class="station-page__board">
       <XOrYExercise
         v-if="currentTask?.templateKind === 'x-or-y' && currentOptions"
+        :key="`${currentTask.id}-xory`"
         :prompt="currentTask.prompt"
         :options="currentOptions"
         :correct-choice="currentTask.correctChoice"
@@ -175,12 +196,23 @@ const next = () => {
       />
       <ThreeOptionImageExercise
         v-else-if="currentTask?.templateKind === 'three-option-image'"
+        :key="`${currentTask.id}-three-option`"
         :prompt="currentTask.prompt"
         :options="currentTask.options"
         :correct-choice="currentTask.correctChoice"
         :disabled="Boolean(answerState)"
         :selected-choice="selectedThreeOptionChoice"
         @answered="onAnsweredThreeOption"
+      />
+      <EmailHotspotsExercise
+        v-else-if="currentTask?.templateKind === 'email-hotspots'"
+        :key="`${currentTask.id}-email-hotspots`"
+        :prompt="currentTask.prompt"
+        :email="currentTask.email"
+        :targets="currentTask.targets"
+        :required-correct-selections="currentTask.requiredCorrectSelections"
+        :disabled="Boolean(answerState)"
+        @answered="onAnsweredEmailHotspots"
       />
     </div>
 

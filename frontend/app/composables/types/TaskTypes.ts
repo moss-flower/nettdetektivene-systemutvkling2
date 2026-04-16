@@ -46,8 +46,59 @@ export type ThreeOptionResult = {
   correct: boolean;
   choice: ThreeOptionChoice;
 };
+export type EmailHotspotTarget = {
+  id: string;
+  isSuspicious: boolean;
+};
+export type EmailHotspotBodyTextBlock = {
+  id: string;
+  type: "text";
+  text: string;
+  targetId?: string;
+};
+export type EmailHotspotBodyLinkBlock = {
+  id: string;
+  type: "link";
+  label: string;
+  urlText: string;
+  helperText?: string;
+  targetId?: string;
+};
+export type EmailHotspotBodyBlock =
+  | EmailHotspotBodyTextBlock
+  | EmailHotspotBodyLinkBlock;
+export type EmailHotspotAttachment = {
+  id: string;
+  name: string;
+  details?: string;
+  targetId?: string;
+};
+export type EmailHotspotActionButton = {
+  label: string;
+  helperText?: string;
+  targetId?: string;
+};
+export type EmailHotspotContent = {
+  senderName: string;
+  senderAddress: string;
+  senderAddressTargetId?: string;
+  subject: string;
+  subjectTargetId?: string;
+  senderAvatarText?: string;
+  receivedLabel?: string;
+  greeting?: string;
+  bodyBlocks: EmailHotspotBodyBlock[];
+  actionButton?: EmailHotspotActionButton;
+  attachments?: EmailHotspotAttachment[];
+  closing?: string;
+};
+export type EmailHotspotResult = {
+  correct: boolean;
+  selectedTargetIds: string[];
+  incorrectTargetId?: string;
+};
 
-export type ExerciseTemplateKind = "x-or-y" | "three-option-image";
+export type ExerciseTemplateKind = "x-or-y" | "three-option-image" | "email-hotspots";
 export type StationDifficulty = "easy" | "medium" | "hard";
 
 export type ExerciseBase = {
@@ -75,9 +126,21 @@ export type ThreeOptionImageExerciseData = ExerciseBase & {
   correctChoice: ThreeOptionChoice;
 };
 
+export type EmailHotspotExerciseData = ExerciseBase & {
+  templateKind: "email-hotspots";
+  prompt?: {
+    title?: string;
+    text?: string;
+  };
+  email: EmailHotspotContent;
+  targets: EmailHotspotTarget[];
+  requiredCorrectSelections?: number;
+};
+
 export type StationExercise =
   | XOrYExerciseData
-  | ThreeOptionImageExerciseData;
+  | ThreeOptionImageExerciseData
+  | EmailHotspotExerciseData;
 
 export type StationExercisesByDifficulty = Record<StationDifficulty, StationExercise[]>;
 
