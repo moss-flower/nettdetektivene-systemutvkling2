@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import NewsStandExercise from '~/components/gameplay/newsstand/NewsStandExercise.vue'
 import CompletedPopup from '~/components/gameplay/shared/CompletedPopup.vue'
-import SelectedPopup from '~/components/gameplay/shared/SelectedPopup.vue'
 import type { NewsStandTask } from '~/composables/types/TaskTypes'
 import { sampleAndShuffle } from '~/composables/utils/gameUtils'
 
@@ -27,19 +26,39 @@ const mockData: NewsStandTask = {
 
 const tasks = sampleAndShuffle(mockData.articles, mockData.articles.length)
 const currentIndex = ref(0)
-const showResultPopup = ref(false)
 const showCompletedPopup = ref(false)
-const lastAnswerCorrect = ref(false)
 const correctCount = ref(0)
+const answerState = ref<{ correct: boolean, choice: 'correct' | 'fake' } | null>(null)
 
-const onAnswered = (correct: boolean) => {
-  lastAnswerCorrect.value = correct
-  if (correct) correctCount.value++
-  showResultPopup.value = true
+const currentTask = computed(() => tasks[currentIndex.value] ?? null)
+const progressLabel = computed(() => `Sak ${currentIndex.value + 1} av ${tasks.length}`)
+const feedbackTitle = computed(() => {
+  if (!answerState.value) {
+    return 'Velg avisen du stoler mest på'
+  }
+
+  return answerState.value.correct ? 'Riktig svar' : 'Ikke helt'
+})
+
+const feedbackText = computed(() => {
+  if (!answerState.value || !currentTask.value) {
+    return 'Se etter hvem som er avsender, om overskriften prøver å lure deg, og om innholdet virker troverdig.'
+  }
+
+  if (answerState.value.correct) {
+    return `Bra observert. Artikkelen fra ${currentTask.value.correct.author} virker mest troverdig her, fordi avsenderen og presentasjonen ser mer seriøse ut.`
+  }
+
+  return `Denne gangen var det artikkelen fra ${currentTask.value.correct.author} som var mest troverdig. Se ekstra etter om overskriften virker overdrevet eller om avsenderen føles mindre pålitelig.`
+})
+
+const onAnswered = (result: { correct: boolean, choice: 'correct' | 'fake' }) => {
+  answerState.value = result
+  if (result.correct) correctCount.value++
 }
 
 const next = () => {
-  showResultPopup.value = false
+  answerState.value = null
   if (currentIndex.value < tasks.length - 1) {
     currentIndex.value++
   } else {
@@ -50,28 +69,40 @@ const next = () => {
 
 <template>
   <section class="newsstand-page">
-    <header class="newsstand-page__header">
-      <p class="newsstand-page__eyebrow">Nyhetskvartalet</p>
-      <h1>Aviskiosken</h1>
-      <p class="newsstand-page__description">
-        Se på de to artiklene og velg hvilken som virker mest troverdig.
-      </p>
+    <header class="newsstand-page__hero">
+      <div class="newsstand-page__header">
+        <p class="newsstand-page__eyebrow">Nyhetskvartalet</p>
+        <h1>Nyhetskvartalet - {{ progressLabel }}</h1>
+        <p class="newsstand-page__description">
+          I oppgaven under får du servert to nyhetsartikler. Velg den som virker mest troverdig.
+        </p>
+      </div>
     </header>
 
     <div class="newsstand-page__board">
       <NewsStandExercise
-        v-if="tasks[currentIndex]"
-        :data="mockData.articles[currentIndex]!"
+        v-if="currentTask"
+        :data="currentTask"
+        :disabled="Boolean(answerState)"
+        :selected-choice="answerState?.choice ?? null"
         @answered="onAnswered"
       />
     </div>
 
-    <SelectedPopup
-      v-if="showResultPopup"
-      :correct="lastAnswerCorrect"
-      :is-last="currentIndex >= tasks.length - 1"
-      @next="next"
-    />
+    <section class="newsstand-page__feedback" :class="{ 'newsstand-page__feedback--answered': Boolean(answerState) }">
+      <div class="newsstand-page__feedback-copy">
+        <p class="newsstand-page__feedback-title">{{ feedbackTitle }}</p>
+        <p class="newsstand-page__feedback-text">{{ feedbackText }}</p>
+      </div>
+      <button
+        v-if="answerState"
+        class="newsstand-page__next-button"
+        type="button"
+        @click="next"
+      >
+        {{ currentIndex >= tasks.length - 1 ? 'Fullfør' : 'Neste sak' }}
+      </button>
+    </section>
 
     <CompletedPopup
       v-if="showCompletedPopup"
@@ -86,13 +117,21 @@ const next = () => {
   max-width: 72rem;
   margin: 0 auto;
   display: grid;
-  gap: 1.5rem;
+  gap: 1.75rem;
   color: #111827;
+}
+
+.newsstand-page__hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
 }
 
 .newsstand-page__header {
   display: grid;
-  gap: 0.5rem;
+  gap: 0.6rem;
+  max-width: 48rem;
 }
 
 .newsstand-page__eyebrow {
@@ -104,26 +143,88 @@ const next = () => {
 }
 
 .newsstand-page h1 {
-  font-size: clamp(2rem, 4vw, 3rem);
-  line-height: 1.1;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1;
+  color: #171717;
 }
 
 .newsstand-page__description {
-  max-width: 44rem;
-  font-size: 1.05rem;
+  max-width: 46rem;
+  font-size: 1.08rem;
   line-height: 1.5;
+  color: #374151;
 }
 
 .newsstand-page__board {
-  padding: 1.5rem;
-  border: 1px solid #d7e5f6;
-  border-radius: 1.5rem;
-  background: #f8fbff;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border-radius: 1.6rem;
+  background: #fdf9f2;
+}
+
+.newsstand-page__feedback {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.35rem;
+  background: #ede7e2;
+  border-radius: 0.5rem;
+  color: #34251f;
+}
+
+.newsstand-page__feedback--answered {
+  background: #e5ddd7;
+}
+
+.newsstand-page__feedback-copy {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.newsstand-page__feedback-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.newsstand-page__feedback-text {
+  line-height: 1.45;
+}
+
+.newsstand-page__next-button {
+  flex-shrink: 0;
+  padding: 0.85rem 1.2rem;
+  border: 0;
+  border-radius: 999px;
+  background: #1f3657;
+  color: #f9fbff;
+  font-weight: 700;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.newsstand-page__next-button:hover,
+.newsstand-page__next-button:focus-visible {
+  background: #27456f;
+  transform: translateY(-1px);
+  outline: none;
 }
 
 @media (max-width: 780px) {
+  .newsstand-page__hero,
+  .newsstand-page__feedback {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .newsstand-page__progress-card {
+    min-width: 0;
+  }
+
   .newsstand-page__board {
     padding: 1rem;
+  }
+
+  .newsstand-page__next-button {
+    width: 100%;
   }
 }
 </style>

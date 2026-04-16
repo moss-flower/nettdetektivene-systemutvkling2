@@ -15,13 +15,6 @@
         <slot />
       </div>
     </main>
-
-    <aside class="game-layout__rail game-layout__rail--right" aria-label="Ekstrainformasjon">
-      <div class="game-layout__rail-card">
-        <p class="game-layout__rail-title">På vei</p>
-        <p class="game-layout__rail-text">Her kan vi senere vise flere spillvalg eller annen info.</p>
-      </div>
-    </aside>
   </div>
 </template>
 
@@ -46,15 +39,10 @@
   padding: 1.5rem 1rem;
 }
 
-.game-layout__content {
-  padding: 1.5rem 0;
-}
-
 .game-layout__content-shell {
   min-height: calc(100vh - 3rem);
   background: #ffffff;
-  border-radius: 1.75rem;
-  box-shadow: 0 16px 40px rgba(29, 56, 96, 0.18);
+  box-shadow: 0 8px 30px rgb(0 0 0 / 0.5);
   padding: 2rem;
   overflow: hidden;
 }
