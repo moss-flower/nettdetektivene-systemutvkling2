@@ -29,13 +29,13 @@ const star = computed(() => ({
   >
     <p class="difficultyLabel">{{ title }}</p>
     <h2 class="difficultyHeading">{{ difficultyText }}</h2>
-    <div class="difficultyStars" aria-hidden="true">
-      <img :src="star.src" :alt="star.alt" class="difficultyStarImage">
-    </div>
     <p class="difficultyDescription">{{ description }}</p>
     <p class="difficultyState">
       {{ isUnlocked ? (isCompleted ? "Spill igjen" : "Start oppgave") : "Låst" }}
     </p>
+    <div class="difficultyStars" aria-hidden="true">
+      <img :src="star.src" :alt="star.alt" class="difficultyStarImage">
+    </div>
     <p v-if="!isUnlocked" class="difficultyLock">🔒</p>
   </component>
 </template>
@@ -95,18 +95,22 @@ a.difficultyCard:focus-visible {
 }
 
 .difficultyStars {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
   display: flex;
   align-items: center;
   gap: 0.25rem;
 }
 
 .difficultyStarImage {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
 }
 
 .difficultyState {
   margin: auto 0 0;
+  padding-right: 2.75rem;
   font-weight: 700;
 }
 
