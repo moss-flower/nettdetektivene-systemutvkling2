@@ -79,6 +79,8 @@ function selectFilter(level: string) {
   margin: auto;
   font-size: 1rem;
   border-radius: 10px;
+  background-color: white;
+  
 }
 
 

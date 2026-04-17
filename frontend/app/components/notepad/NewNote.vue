@@ -30,5 +30,6 @@ const emit = defineEmits<{
 
 .newNoteButton {
   width: fit-content;
+  background-color: white;
 }
 </style>
