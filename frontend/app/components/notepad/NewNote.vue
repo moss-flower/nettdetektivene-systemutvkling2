@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import pencil from "~/assets/images/pencil.png";
 
+//Emits plain click event
 const emit = defineEmits<{
   (e: "click"): void;
 }>();

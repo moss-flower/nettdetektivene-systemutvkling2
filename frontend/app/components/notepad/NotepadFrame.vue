@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import type { NotepadEntry as NotepadEntryType } from "~/composables/types/local";
+import type { NotepadEntry } from "~/composables/types/local";
 
+//Takes in a list of NotepadEntry; to be dynamically allocated into NotepadEntry elements
 const props = defineProps<{
-  notes: NotepadEntryType[];
+  notes: NotepadEntry[];
 }>();
 </script>
 

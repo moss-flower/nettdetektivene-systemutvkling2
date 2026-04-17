@@ -5,8 +5,10 @@ import NotepadFilters from "~/components/notepad/NotepadFilters.vue";
 import NotepadFrame from "~/components/notepad/NotepadFrame.vue";
 import type { NotepadEntry } from "~/composables/types/local";
 
+//Holds selected filter as string
 const selectedFilter = ref<string | null>(null);
 
+//Temporary mockdata
 const mockEntries: NotepadEntry[] = [
   {
     title: "Se etter rare lenker",
@@ -50,6 +52,7 @@ const mockEntries: NotepadEntry[] = [
   },
 ];
 
+//Dynamically updates entries based on current selectedFilter value
 const filteredEntries = computed(() => {
   if (!selectedFilter.value) {
     return mockEntries;
@@ -58,6 +61,7 @@ const filteredEntries = computed(() => {
   return mockEntries.filter((entry) => entry.source === selectedFilter.value);
 });
 
+//Called on filter button click, updates selectedFilter value
 function handleFilterSelect(level: string | null) {
   selectedFilter.value = level;
 }

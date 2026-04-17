@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import type { NotepadEntry } from '~/composables/types/local';
 
+//Takes in a single NotepadEntry
 const props = defineProps<{
   entry: NotepadEntry
 }>();
 
+//Changes title masking based on entry type
 const titlePrefix = computed(() => {
   if (props.entry.type === "tip") return "Tip:";
   if (props.entry.type === "info") return "Info:";
   if (props.entry.type === "observation") return "Observation:";
   return "";
 });
-
 
 </script>
 

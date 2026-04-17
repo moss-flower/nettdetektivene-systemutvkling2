@@ -1,4 +1,6 @@
 <script setup lang="ts">
+
+//Temporary hardcoded level values
 const levels = ref<string[]>([
   "Passordbanken",
   "Sosiale møteplassen",
@@ -9,14 +11,17 @@ const levels = ref<string[]>([
   "Datasenteret",
 ]);
 
+//Active filter, string or null (unfiltered)
 const props = defineProps<{
   activeFilter: string | null;
 }>();
 
+//Emits select + selected filter in string or null
 const emit = defineEmits<{
   (e: "select", level: string | null): void;
 }>();
 
+//Called on filter button click. If current active filter is the same as clicked, return null, otherwise, return filter. 
 function selectFilter(level: string) {
   const nextValue = props.activeFilter === level ? null : level;
   emit("select", nextValue);
