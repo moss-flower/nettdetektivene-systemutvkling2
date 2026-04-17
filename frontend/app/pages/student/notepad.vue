@@ -1,0 +1,135 @@
+<script setup lang="ts">
+import leftArrow from "~/assets/images/leftArrow.png";
+import NewNote from "~/components/notepad/NewNote.vue";
+import NotepadFilters from "~/components/notepad/NotepadFilters.vue";
+import NotepadFrame from "~/components/notepad/NotepadFrame.vue";
+import type { NotepadEntry } from "~/composables/types/local";
+
+const selectedFilter = ref<string | null>(null);
+
+const mockEntries: NotepadEntry[] = [
+  {
+    title: "Se etter rare lenker",
+    date: "2026-04-17 09:15",
+    source: "Postkontoret",
+    type: "tip",
+    content:
+      "Sjekk alltid lenken før du klikker. Rare bokstaver, tall eller feilstavede nettadresser kan være tegn på svindel.",
+  },
+  {
+    title: "Ikke del alt med en gang",
+    date: "2026-04-17 10:40",
+    source: "Den sosiale møteplassen",
+    type: "info",
+    content:
+      "Innlegg som gjør deg veldig sint eller redd, prøver ofte å få deg til å dele raskt. Stopp opp og sjekk kilden først.",
+  },
+  {
+    title: "Jeg la merke til et svakt passord",
+    date: "2026-04-17 11:20",
+    source: "Passordbanken",
+    type: "observation",
+    content:
+      "Passord som bare inneholder navn eller fødselsår er lette å gjette. Det er tryggere å bruke flere ulike tegn.",
+  },
+  {
+    title: "Bilder kan være manipulerte",
+    date: "2026-04-17 12:05",
+    source: "Fotografen",
+    type: "tip",
+    content:
+      "Se etter detaljer som hender, bakgrunner eller skygger som ser unaturlige ut. Det kan være tegn på KI eller manipulering.",
+  },
+  {
+    title: "Vurder nettbutikken nøye",
+    date: "2026-04-17 13:30",
+    source: "Markedsplassen",
+    type: "info",
+    content:
+      "Hvis en butikk har ekstremt lave priser, dårlige anmeldelser eller ukjente betalingsmåter, bør du undersøke mer før du handler.",
+  },
+];
+
+const filteredEntries = computed(() => {
+  if (!selectedFilter.value) {
+    return mockEntries;
+  }
+
+  return mockEntries.filter((entry) => entry.source === selectedFilter.value);
+});
+
+function handleFilterSelect(level: string | null) {
+  selectedFilter.value = level;
+}
+
+function handleNewNoteClick() {
+  // TODO:
+  // Open "new note" input bubble / modal when that feature is implemented.
+}
+</script>
+
+<template>
+  <section class="notepadPage">
+    <div class="leftColumn">
+      <div></div>
+      <p>PLACEHOLDER FOR PROFILE</p>
+      <NuxtLink to="/student/home" class="arrowButton">
+        <img :src="leftArrow" alt="Back" />
+      </NuxtLink>
+    </div>
+
+    <div class="notepadWrapper">
+      <NotepadFrame :notes="filteredEntries" />
+    </div>
+
+    <div class="rightColumn">
+      <NewNote @click="handleNewNoteClick" />
+
+      <NotepadFilters
+        :active-filter="selectedFilter"
+        @select="handleFilterSelect"
+      />
+    </div>
+  </section>
+</template>
+
+<style scoped>
+.notepadPage {
+  display: grid;
+  grid-template-columns: 0.2fr 1fr 0.2fr;
+  gap: 1rem;
+  height: 100%;
+}
+
+.notepadWrapper {
+  min-width: 0;
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  background-color: rgb(68, 68, 255);
+  height: 100%;
+}
+
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 1rem;
+  background-color: rgb(68, 68, 255);
+  height: 100%;
+}
+
+.arrowButton {
+  padding: 0.3rem;
+  width: 70%;
+  margin: 0 auto 15%;
+}
+
+.arrowButton img {
+  max-width: 100%;
+}
+</style>

@@ -1,16 +1,14 @@
 <script setup lang="ts">
+import type { NotepadEntry } from '~/composables/types/local';
+
 const props = defineProps<{
-  title: string;
-  date: string;
-  source: string;
-  type: "tip" | "info" | "observation";
-  content: string;
+  entry: NotepadEntry
 }>();
 
 const titlePrefix = computed(() => {
-  if (props.type === "tip") return "Tip:";
-  if (props.type === "info") return "Info:";
-  if (props.type === "observation") return "Observation:";
+  if (props.entry.type === "tip") return "Tip:";
+  if (props.entry.type === "info") return "Info:";
+  if (props.entry.type === "observation") return "Observation:";
   return "";
 });
 
@@ -22,18 +20,18 @@ const titlePrefix = computed(() => {
     :class="[
       'notepadEntry',
       {
-        tip: props.type === 'tip',
-        info: props.type === 'info',
-        observation: props.type === 'observation',
+        tip: props.entry.type === 'tip',
+        info: props.entry.type === 'info',
+        observation: props.entry.type === 'observation',
       },
     ]"
   >
     <div class="meta">
-      <h3 class="date">{{ date }}</h3>
-      <h3 class="source">{{ source }}</h3>
+      <h3 class="date">{{ entry.date }}</h3>
+      <h3 class="source">{{ entry.source }}</h3>
     </div>
-    <h4 class="title">{{ titlePrefix }} {{ props.title }}</h4>
-    <p class="content">{{ props.content }}</p>
+    <h4 class="title">{{ titlePrefix }} {{ props.entry.title }}</h4>
+    <p class="content">{{ props.entry.content }}</p>
   </article>
 </template>
 
@@ -41,7 +39,7 @@ const titlePrefix = computed(() => {
 .notepadEntry {
   width: 100%;
   border-radius: 1.75rem;
-  padding: 1.5rem 1.5rem 1.25rem 1.5rem;
+  padding: 1.25rem 1.5rem 1.25rem 1.5rem;
   box-sizing: border-box;
   color: black;
 }
@@ -71,17 +69,17 @@ const titlePrefix = computed(() => {
 }
 
 .tip {
-  border: 3px limegreen;
+  border: 3px limegreen solid;
   background-color: rgb(169, 228, 153, 0.3);
 }
 
 .info {
-  border: 3px crimson;
+  border: 3px crimson solid;
   background-color: rgba(228, 153, 153, 0.3);
 }
 
 .observation {
-  border: 3px gray;
+  border: 3px gray solid;
   background-color: rgba(218, 218, 218, 0.3);
 }
 </style>

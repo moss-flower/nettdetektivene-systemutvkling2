@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import pencil from "~/assets/images/image.png";
+import pencil from "~/assets/images/pencil.png";
 
 const emit = defineEmits<{
   (e: "click"): void;
@@ -16,13 +16,14 @@ const emit = defineEmits<{
 <style scoped>
 .newNote {
   display: flex;
+  flex-direction: column;
   align-items: center;
+  font-size: 2rem;
   gap: 0.5rem;
 }
 
 .newNoteImage {
-  width: 2rem;
-  height: 2rem;
+  width: 80%;
   object-fit: contain;
 }
 
