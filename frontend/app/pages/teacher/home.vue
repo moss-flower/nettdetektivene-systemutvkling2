@@ -45,6 +45,19 @@ const classroomSummaries = computed(() => getTeacherClassroomSummaries());
         <p>Start et nytt klasserom og inviter elever.</p>
         <button type="button">+ Opprett klasserom</button>
       </article>
+
+      <article class="panel panel--highlight">
+        <h2>Opprett nye ressurser</h2>
+        <p>Opprett og administrer øvelser og stasjoner.</p>
+        <div class="factoryActions">
+          <NuxtLink class="buttonLink" :to="routePaths.teacherFactoryExercise">
+            + Lag og rediger øvelser
+          </NuxtLink>
+          <NuxtLink class="buttonLink buttonLink--secondary" :to="routePaths.teacherFactoryStation">
+            + Lag og rediger stasjoner
+          </NuxtLink>
+        </div>
+      </article>
     </div>
   </section>
 </template>
@@ -161,6 +174,31 @@ button {
   color: var(--bg);
   font-weight: 600;
   cursor: pointer;
+}
+
+.factoryActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+}
+
+.buttonLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius);
+  background: var(--primary);
+  color: var(--bg);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.buttonLink--secondary {
+  background: transparent;
+  color: var(--primary);
 }
 
 @media (max-width: 900px) {

@@ -30,20 +30,20 @@ export type XOrYResult = {
   correct: boolean;
   choice: XOrYChoice;
 };
-export type ThreeOptionChoice = "a" | "b" | "c";
-export type ThreeOptionPromptContent = {
+export type MultipleChoiceOptionKey = string;
+export type MultipleChoicePromptContent = {
   imageUrl: string;
   imageAlt: string;
   title?: string;
   text?: string;
 };
-export type ThreeOptionCardContent = {
-  key: ThreeOptionChoice;
+export type MultipleChoiceOptionContent = {
+  key: MultipleChoiceOptionKey;
   title: string;
 };
-export type ThreeOptionResult = {
+export type MultipleChoiceResult = {
   correct: boolean;
-  choice: ThreeOptionChoice;
+  choice: MultipleChoiceOptionKey;
 };
 export type EmailHotspotTarget = {
   id: string;
@@ -97,7 +97,7 @@ export type EmailHotspotResult = {
   incorrectTargetId?: string;
 };
 
-export type ExerciseTemplateKind = "x-or-y" | "three-option-image" | "email-hotspots";
+export type ExerciseTemplateKind = "x-or-y" | "multiple-choice" | "email-hotspots";
 
 export type TaskBase = {
   id: string;
@@ -117,11 +117,11 @@ export type XOrYTaskData = TaskBase & {
   correctChoice: XOrYChoice;
 };
 
-export type ThreeOptionImageTaskData = TaskBase & {
-  templateKind: "three-option-image";
-  prompt: ThreeOptionPromptContent;
-  options: ThreeOptionCardContent[];
-  correctChoice: ThreeOptionChoice;
+export type MultipleChoiceTaskData = TaskBase & {
+  templateKind: "multiple-choice";
+  prompt: MultipleChoicePromptContent;
+  options: MultipleChoiceOptionContent[];
+  correctChoice: MultipleChoiceOptionKey;
 };
 
 export type EmailHotspotTaskData = TaskBase & {
@@ -137,7 +137,7 @@ export type EmailHotspotTaskData = TaskBase & {
 
 export type ExerciseTask =
   | XOrYTaskData
-  | ThreeOptionImageTaskData
+  | MultipleChoiceTaskData
   | EmailHotspotTaskData;
 
 //================= PostOffice =================

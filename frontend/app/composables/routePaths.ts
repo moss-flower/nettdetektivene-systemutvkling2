@@ -11,6 +11,8 @@ export enum routePaths {
     teacherClassroomStudentProgress = '/teacher/classroom/student-progress',
     teacherClassroomStudents = '/teacher/classroom/students',
     teacherClassroomExercises = '/teacher/classroom/tasks',
+    teacherFactoryExercise = '/teacher/factory/exerciseFactory',
+    teacherFactoryStation = '/teacher/factory/stationFactory',
     studentHome = '/student/home/home',
     studentProfile = '/student/home/directions/profile',
     studentAchievements = '/student/home/directions/achievements',

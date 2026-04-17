@@ -3,14 +3,14 @@ import { getExerciseMockById } from '~/composables/mocks/exercises'
 import EmailHotspotsTemplate from '~/components/gameplay/templates/EmailHotspotsTemplate.vue'
 import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDialog.vue'
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
-import ThreeOptionImageTemplate from '~/components/gameplay/templates/ThreeOptionImageTemplate.vue'
+import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoiceTemplate.vue'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
 import { getStationMockBySlug } from '~/composables/mocks/stations'
 
 import type {
   EmailHotspotResult,
-  ThreeOptionChoice,
-  ThreeOptionResult,
+  MultipleChoiceOptionKey,
+  MultipleChoiceResult,
   XOrYChoice,
   XOrYResult,
 } from '~/composables/types/TaskTypes'
@@ -71,12 +71,8 @@ const selectedChoice = computed<XOrYChoice | null>(() => {
   return null
 })
 
-const selectedThreeOptionChoice = computed<ThreeOptionChoice | null>(() => {
-  if (
-    answerState.value?.choice === 'a'
-    || answerState.value?.choice === 'b'
-    || answerState.value?.choice === 'c'
-  ) {
+const selectedMultipleChoiceOption = computed<MultipleChoiceOptionKey | null>(() => {
+  if (currentTask.value?.templateKind === 'multiple-choice' && answerState.value) {
     return answerState.value.choice
   }
 
@@ -97,7 +93,7 @@ const feedbackTitle = computed(() => {
   }
 
   if (!answerState.value) {
-    if (currentTask.value.templateKind === 'three-option-image') {
+    if (currentTask.value.templateKind === 'multiple-choice') {
       return 'Hva avslører den falske saken?'
     }
 
@@ -141,7 +137,7 @@ const onAnswered = (result: XOrYResult) => {
   }
 }
 
-const onAnsweredThreeOption = (result: ThreeOptionResult) => {
+const onAnsweredMultipleChoice = (result: MultipleChoiceResult) => {
   answerState.value = {
     correct: result.correct,
     choice: result.choice,
@@ -205,15 +201,15 @@ const next = () => {
         :selected-choice="selectedChoice"
         @answered="onAnswered"
       />
-      <ThreeOptionImageTemplate
-        v-else-if="currentTask?.templateKind === 'three-option-image'"
+      <MultipleChoiceTemplate
+        v-else-if="currentTask?.templateKind === 'multiple-choice'"
         :key="`${currentTask.id}-three-option`"
         :prompt="currentTask.prompt"
         :options="currentTask.options"
         :correct-choice="currentTask.correctChoice"
         :disabled="Boolean(answerState)"
-        :selected-choice="selectedThreeOptionChoice"
-        @answered="onAnsweredThreeOption"
+        :selected-choice="selectedMultipleChoiceOption"
+        @answered="onAnsweredMultipleChoice"
       />
       <EmailHotspotsTemplate
         v-else-if="currentTask?.templateKind === 'email-hotspots'"
