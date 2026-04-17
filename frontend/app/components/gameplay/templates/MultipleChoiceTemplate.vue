@@ -1,24 +1,24 @@
 <script setup lang="ts">
 import type {
-  ThreeOptionCardContent,
-  ThreeOptionChoice,
-  ThreeOptionPromptContent,
-  ThreeOptionResult,
+  MultipleChoiceOptionContent,
+  MultipleChoiceOptionKey,
+  MultipleChoicePromptContent,
+  MultipleChoiceResult,
 } from '~/composables/types/TaskTypes'
 
 const props = defineProps<{
-  prompt: ThreeOptionPromptContent
-  options: ThreeOptionCardContent[]
-  correctChoice: ThreeOptionChoice
+  prompt: MultipleChoicePromptContent
+  options: MultipleChoiceOptionContent[]
+  correctChoice: MultipleChoiceOptionKey
   disabled?: boolean
-  selectedChoice?: ThreeOptionChoice | null
+  selectedChoice?: MultipleChoiceOptionKey | null
 }>()
 
 const emit = defineEmits<{
-  (e: 'answered', payload: ThreeOptionResult): void
+  (e: 'answered', payload: MultipleChoiceResult): void
 }>()
 
-const choose = (choice: ThreeOptionChoice) => {
+const choose = (choice: MultipleChoiceOptionKey) => {
   if (props.disabled) {
     return
   }
