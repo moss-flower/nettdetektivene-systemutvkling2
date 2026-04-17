@@ -11,6 +11,7 @@ type ExerciseOption = {
   difficultyText: string;
   description: string;
   isUnlocked: boolean;
+  isCompleted: boolean;
   to: {
     path: string;
     query: {
@@ -47,6 +48,7 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
     title: exercise.title,
     difficultyText: exercise.difficultyText,
     description: exercise.description ?? currentStation.description ?? "",
+    isCompleted: stationStatus.value.completedExercises[index] ?? false,
     isUnlocked: stationIsUnlocked.value
       && stationStatus.value.completedExercises.slice(0, index).every(Boolean),
     to: {
@@ -77,6 +79,7 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
           :title="option.title"
           :difficulty-text="option.difficultyText"
           :description="option.description"
+          :is-completed="option.isCompleted"
           :is-unlocked="option.isUnlocked"
           :to="option.to"
         />

@@ -5,6 +5,7 @@ import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDia
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoiceTemplate.vue'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
+import { routePaths } from '~/composables/routePaths'
 import { getStationMockBySlug } from '~/composables/mocks/stations'
 
 import type {
@@ -86,6 +87,11 @@ const progressLabel = computed(() => {
 
   return `Sak ${currentIndex.value + 1} av ${tasks.length}`
 })
+
+const exerciseSelectRoute = computed(() => ({
+  path: routePaths.studentExerciseDifficultySelect,
+  query: { id: station.id },
+}))
 
 const feedbackTitle = computed(() => {
   if (!currentTask.value) {
@@ -236,6 +242,7 @@ const next = () => {
       v-if="showExerciseResultDialog"
       :correct-count="correctCount"
       :total="tasks.length"
+      :to="exerciseSelectRoute"
     />
   </section>
 </template>

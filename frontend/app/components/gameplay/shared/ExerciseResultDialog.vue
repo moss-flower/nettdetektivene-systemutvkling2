@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { NuxtLink } from '#components'
+import type { RouteLocationRaw } from 'vue-router'
 import DialogTemplate from '~/components/gameplay/shared/DialogTemplate.vue'
 
 const props = withDefaults(defineProps<{
@@ -6,6 +8,7 @@ const props = withDefaults(defineProps<{
   total: number
   msgCompleted?: string
   msgFailed?: string
+  to?: RouteLocationRaw
 }>(), {
   msgCompleted: 'Ferdig, du klarte det!',
   msgFailed: 'Ikke helt, bedre lykke neste gang!',
@@ -36,7 +39,15 @@ const emit = defineEmits<{
     <p class="exercise-result-dialog__message">Du fikk {{ correctCount }} / {{ total }} riktig.</p>
 
     <template #actions>
-      <button class="exercise-result-dialog__button" @click="emit('next')">Gå Tilbake</button>
+      <component
+        :is="to ? NuxtLink : 'button'"
+        class="exercise-result-dialog__button"
+        :to="to"
+        :type="to ? undefined : 'button'"
+        @click="to ? undefined : emit('next')"
+      >
+        Gå tilbake
+      </component>
     </template>
   </DialogTemplate>
 </template>
@@ -73,12 +84,16 @@ const emit = defineEmits<{
 }
 
 .exercise-result-dialog__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 0.85rem 1.2rem;
   border: 0;
   border-radius: 999px;
   background: #1f3657;
   color: #f9fbff;
   font-weight: 700;
+  text-decoration: none;
   transition: transform 0.2s ease, background-color 0.2s ease;
 }
 

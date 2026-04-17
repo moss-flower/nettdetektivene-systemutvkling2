@@ -1,16 +1,23 @@
 <script setup lang="ts">
 import { NuxtLink } from "#components";
+import starEmpty from "~/assets/images/star/spStarEmpty.png";
+import starFilled from "~/assets/images/star/spStarFilled.png";
 import type { RouteLocationRaw } from "vue-router";
 
 const props = defineProps<{
   title: string;
   difficultyText: string;
   description: string;
+  isCompleted: boolean;
   isUnlocked: boolean;
   to?: RouteLocationRaw;
 }>();
 
 const cardTag = computed(() => (props.isUnlocked && props.to ? NuxtLink : "div"));
+const star = computed(() => ({
+  src: props.isCompleted ? starFilled : starEmpty,
+  alt: props.isCompleted ? `${props.difficultyText} fullført` : `${props.difficultyText} ikke fullført`,
+}));
 </script>
 
 <template>
@@ -22,9 +29,12 @@ const cardTag = computed(() => (props.isUnlocked && props.to ? NuxtLink : "div")
   >
     <p class="difficultyLabel">{{ title }}</p>
     <h2 class="difficultyHeading">{{ difficultyText }}</h2>
+    <div class="difficultyStars" aria-hidden="true">
+      <img :src="star.src" :alt="star.alt" class="difficultyStarImage">
+    </div>
     <p class="difficultyDescription">{{ description }}</p>
     <p class="difficultyState">
-      {{ isUnlocked ? "Start oppgave" : "Låst" }}
+      {{ isUnlocked ? (isCompleted ? "Spill igjen" : "Start oppgave") : "Låst" }}
     </p>
     <p v-if="!isUnlocked" class="difficultyLock">🔒</p>
   </component>
@@ -82,6 +92,17 @@ a.difficultyCard:focus-visible {
   margin: 0;
   max-width: 26ch;
   line-height: 1.45;
+}
+
+.difficultyStars {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.difficultyStarImage {
+  width: 24px;
+  height: 24px;
 }
 
 .difficultyState {
