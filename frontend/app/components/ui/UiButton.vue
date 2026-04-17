@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, useSlots } from 'vue'
-import { RouteLocationRaw } from 'vue-router'
+import type { RouteLocationRaw } from 'vue-router'
 
 type Variant = 'primary' | 'reward' | 'ghost' | 'danger'
 type Size = 'sm' | 'md' | 'lg'
