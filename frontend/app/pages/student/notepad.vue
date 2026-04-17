@@ -50,6 +50,30 @@ const mockEntries: NotepadEntry[] = [
     content:
       "Hvis en butikk har ekstremt lave priser, dårlige anmeldelser eller ukjente betalingsmåter, bør du undersøke mer før du handler.",
   },
+  {
+    title: "Vurder nettbutikken nøye",
+    date: "2026-04-17 13:30",
+    source: "Markedsplassen",
+    type: "info",
+    content:
+      "Hvis en butikk har ekstremt lave priser, dårlige anmeldelser eller ukjente betalingsmåter, bør du undersøke mer før du handler.",
+  },
+  {
+    title: "Vurder nettbutikken nøye",
+    date: "2026-04-17 13:30",
+    source: "Markedsplassen",
+    type: "info",
+    content:
+      "Hvis en butikk har ekstremt lave priser, dårlige anmeldelser eller ukjente betalingsmåter, bør du undersøke mer før du handler.",
+  },
+  {
+    title: "Vurder nettbutikken nøye",
+    date: "2026-04-17 13:30",
+    source: "Markedsplassen",
+    type: "info",
+    content:
+      "Hvis en butikk har ekstremt lave priser, dårlige anmeldelser eller ukjente betalingsmåter, bør du undersøke mer før du handler.",
+  },
 ];
 
 //Dynamically updates entries based on current selectedFilter value
@@ -103,10 +127,15 @@ function handleNewNoteClick() {
   grid-template-columns: 0.2fr 1fr 0.2fr;
   gap: 1rem;
   height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .notepadWrapper {
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 .leftColumn {
@@ -116,6 +145,7 @@ function handleNewNoteClick() {
   gap: 1rem;
   background-color: rgb(68, 68, 255);
   height: 100%;
+  min-height: 0;
 }
 
 .rightColumn {
@@ -125,6 +155,7 @@ function handleNewNoteClick() {
   gap: 1rem;
   background-color: rgb(68, 68, 255);
   height: 100%;
+  min-height: 0;
 }
 
 .arrowButton {
