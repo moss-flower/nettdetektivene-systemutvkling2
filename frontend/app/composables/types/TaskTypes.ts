@@ -97,7 +97,7 @@ export type EmailHotspotResult = {
   incorrectTargetId?: string;
 };
 
-export type ExerciseTemplateKind = "x-or-y" | "three-option-image" | "email-hotspots";
+export type ExerciseTemplateKind = "x-or-y" | "multiple-choice" | "email-hotspots";
 
 export type TaskBase = {
   id: string;
@@ -118,7 +118,7 @@ export type XOrYTaskData = TaskBase & {
 };
 
 export type MultipleChoiceTaskData = TaskBase & {
-  templateKind: "three-option-image";
+  templateKind: "multiple-choice";
   prompt: MultipleChoicePromptContent;
   options: MultipleChoiceOptionContent[];
   correctChoice: MultipleChoiceOptionKey;

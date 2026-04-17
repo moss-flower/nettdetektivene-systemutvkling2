@@ -66,7 +66,7 @@ const selectedChoice = computed<XOrYChoice | null>(() => {
 })
 
 const selectedMultipleChoiceOption = computed<MultipleChoiceOptionKey | null>(() => {
-  if (currentTask.value?.templateKind === 'three-option-image' && answerState.value) {
+  if (currentTask.value?.templateKind === 'multiple-choice' && answerState.value) {
     return answerState.value.choice
   }
 
@@ -87,7 +87,7 @@ const feedbackTitle = computed(() => {
   }
 
   if (!answerState.value) {
-    if (currentTask.value.templateKind === 'three-option-image') {
+    if (currentTask.value.templateKind === 'multiple-choice') {
       return 'Hva avslører den falske saken?'
     }
 
@@ -196,7 +196,7 @@ const next = () => {
         @answered="onAnswered"
       />
       <MultipleChoiceTemplate
-        v-else-if="currentTask?.templateKind === 'three-option-image'"
+        v-else-if="currentTask?.templateKind === 'multiple-choice'"
         :key="`${currentTask.id}-three-option`"
         :prompt="currentTask.prompt"
         :options="currentTask.options"

@@ -7,7 +7,7 @@ export const newsStandExerciseMock: Exercise = {
   tasks: [
     {
       id: 'newsstand-task-1',
-      templateKind: 'three-option-image',
+      templateKind: 'multiple-choice',
       prompt: {
         title: 'Hvilken forklaring passer best?',
         text: 'Se på skjermbildet og velg det beste tegnet på at saken virker troverdig.',
@@ -25,7 +25,7 @@ export const newsStandExerciseMock: Exercise = {
     },
     {
       id: 'newsstand-task-2',
-      templateKind: 'three-option-image',
+      templateKind: 'multiple-choice',
       introText: 'Se på skjermbildet og velg den beste grunnen til at saken virker falsk.',
       feedbackCorrect: 'Riktig. Når en overskrift prøver å sjokkere og du ikke kjenner avsenderen, bør du stoppe opp og sjekke mer.',
       feedbackIncorrect: 'Tenk på hvilke tegn som faktisk svekker troverdigheten, ikke bare hvordan saken ser ut visuelt.',
@@ -44,7 +44,7 @@ export const newsStandExerciseMock: Exercise = {
     },
     {
       id: 'newsstand-task-3',
-      templateKind: 'three-option-image',
+      templateKind: 'multiple-choice',
       prompt: {
         title: 'Hva er det største varselsignalet?',
         text: 'Se på saken og velg det alternativet som best forklarer hvorfor du bør være skeptisk.',
