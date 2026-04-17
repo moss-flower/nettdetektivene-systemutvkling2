@@ -1,8 +1,8 @@
-import type { StationMock } from '~/composables/types/TaskTypes'
+import type { Station } from '~/composables/types/StationType'
 import { newsStandStationMock } from '~/composables/mocks/stations/newsStandStation'
 import { postOfficeStationMock } from '~/composables/mocks/stations/postOfficeStation'
 
-export const stationMocks: StationMock[] = [
+export const stationMocks: Station[] = [
   newsStandStationMock,
   postOfficeStationMock,
 ]

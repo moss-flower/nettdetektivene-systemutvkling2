@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getExerciseMockById } from '~/composables/mocks/exercises'
 import CompletedPopup from '~/components/gameplay/shared/CompletedPopup.vue'
 import EmailHotspotsExercise from '~/components/gameplay/shared/EmailHotspotsExercise.vue'
 import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDialog.vue'
@@ -33,7 +34,8 @@ if (!station) {
 
 const { celebrateCorrectAnswer, stop } = useGameConfetti()
 
-const activeExercise = station.exercises[0] ?? null
+const activeExerciseId = station.exerciseIds[0] ?? null
+const activeExercise = activeExerciseId ? getExerciseMockById(activeExerciseId) : null
 const tasks = activeExercise
   ? sampleAndShuffle(activeExercise.tasks, activeExercise.tasks.length)
   : []

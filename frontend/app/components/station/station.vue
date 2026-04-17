@@ -3,11 +3,13 @@ import { NuxtLink } from "#components";
 import starEmpty from "~/assets/images/star/spStarEmpty.png";
 import starFilled from "~/assets/images/star/spStarFilled.png";
 import { routePaths } from "~/composables/routePaths";
-import type { StationBase } from "~/composables/types/StationType";
+import type { Station } from "~/composables/types/StationType";
 
 const props = defineProps<{
-  station: StationBase;
+  station: Station;
 }>();
+
+const stationStatus = computed(() => props.station.getMockStatus());
 
 const stationPath = computed(() => ({
   path: routePaths.studentTaskDifficultySelect,
@@ -16,7 +18,7 @@ const stationPath = computed(() => ({
 
 const stars = computed(() =>
   Array.from({ length: 3 }, (_, index) => {
-    const isCompleted = props.station.completedTasks[index] ?? false;
+    const isCompleted = stationStatus.value.completedTasks[index] ?? false;
 
     return {
       id: `${props.station.id}-star-${index}`,
@@ -28,11 +30,11 @@ const stars = computed(() =>
 </script>
 
 <template>
-  <component
-    :is="station.isUnlocked ? NuxtLink : 'div'"
+    <component
+    :is="stationStatus.isUnlocked ? NuxtLink : 'div'"
     class="levelCard"
-    :class="{ lockedCard: !station.isUnlocked }"
-    :to="station.isUnlocked ? stationPath : undefined"
+    :class="{ lockedCard: !stationStatus.isUnlocked }"
+    :to="stationStatus.isUnlocked ? stationPath : undefined"
   >
     <img :src="station.image" :alt="station.name" class="levelImage">
 
@@ -46,7 +48,7 @@ const stars = computed(() =>
         class="starImage"
       >
     </div>
-    <p v-if="!station.isUnlocked" class="lock">🔒</p>
+    <p v-if="!stationStatus.isUnlocked" class="lock">🔒</p>
   </component>
 </template>
 

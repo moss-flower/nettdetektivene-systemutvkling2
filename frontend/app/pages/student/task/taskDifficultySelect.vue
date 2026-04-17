@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import DifficultySelect from "~/components/station/difficultySelect.vue";
 import { routePaths } from "~/composables/routePaths";
-import { StationFactory } from "~/composables/types/StationType";
+import { Station } from "~/composables/types/StationType";
 
 type DifficultyOption = {
   level: "easy" | "medium" | "hard";
@@ -22,23 +22,27 @@ const stationId = computed(() =>
   typeof route.query.id === "string" ? route.query.id : "",
 );
 
-const station = computed(() => StationFactory.findById(stationId.value));
+const station = computed(() => Station.findById(stationId.value));
+const stationStatus = computed(() => station.value?.getMockStatus() ?? {
+  isUnlocked: false,
+  completedTasks: [],
+});
 
 const difficultyOptions = computed<DifficultyOption[]>(() => {
   if (!station.value) {
     return [];
   }
 
-  const [easyCompleted = false, mediumCompleted = false] = station.value.completedTasks;
+  const [easyCompleted = false, mediumCompleted = false] = stationStatus.value.completedTasks;
 
   return [
     {
       level: "easy",
       title: "Lett",
       description: "Start med grunnoppgaven og bli kjent med stasjonen.",
-      isUnlocked: true,
+      isUnlocked: stationStatus.value.isUnlocked,
       to: {
-        path: `/games/${station.value.id}`,
+        path: `/games/${station.value.slug}`,
         query: { difficulty: "easy" },
       },
     },
@@ -48,7 +52,7 @@ const difficultyOptions = computed<DifficultyOption[]>(() => {
       description: "Neste steg åpnes når lett er fullført.",
       isUnlocked: easyCompleted,
       to: {
-        path: `/games/${station.value.id}`,
+        path: `/games/${station.value.slug}`,
         query: { difficulty: "medium" },
       },
     },
@@ -58,7 +62,7 @@ const difficultyOptions = computed<DifficultyOption[]>(() => {
       description: "Den siste utfordringen åpnes når middels er fullført.",
       isUnlocked: easyCompleted && mediumCompleted,
       to: {
-        path: `/games/${station.value.id}`,
+        path: `/games/${station.value.slug}`,
         query: { difficulty: "hard" },
       },
     },
