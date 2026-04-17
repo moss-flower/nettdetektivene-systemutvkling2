@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import StationCard from "~/components/station/station.vue";
-import { getStationMockById, stationMocks } from "~/composables/mocks/stations";
 import { routePaths } from "~/composables/routePaths";
 import { Station } from "~/composables/types/StationType";
 
-const stations = Station.mockData().map((station) => getStationMockById(station.id) ?? station);
+const stations = Station.backendFetchAllStations();
 const router = useRouter();
 
 function goBack() {

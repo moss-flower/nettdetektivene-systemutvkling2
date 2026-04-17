@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import DifficultySelect from "~/components/station/difficultySelect.vue";
-import { getExerciseMocksByIds } from "~/composables/mocks/exercises";
-import { getStationMockById } from "~/composables/mocks/stations";
 import { routePaths } from "~/composables/routePaths";
+import { Exercise } from "~/composables/types/ExerciseType";
 import { Station } from "~/composables/types/StationType";
 
 type ExerciseOption = {
@@ -26,14 +25,16 @@ const stationId = computed(() =>
   typeof route.query.id === "string" ? route.query.id : "",
 );
 
-const station = computed(() => getStationMockById(stationId.value) ?? Station.findById(stationId.value));
+const station = computed(() =>
+  stationId.value ? Station.backendFetchStationById(stationId.value) : null,
+);
 const stationStatus = computed(() => station.value?.getMockStatus() ?? {
   completedExercises: [],
 });
 const stationIsUnlocked = computed(() => station.value?.isUnlocked() ?? false);
 
 const stationExercises = computed(() =>
-  getExerciseMocksByIds(station.value?.exerciseIds ?? []),
+  station.value ? Exercise.backendFetchExercisesByIds(station.value.exerciseIds) : [],
 );
 
 const exerciseOptions = computed<ExerciseOption[]>(() => {

@@ -1,12 +1,8 @@
 import placeholderImage from "~/assets/images/placeholder.jpeg";
-import type { Exercise } from "~/composables/types/ExerciseType";
+import { Exercise } from "~/composables/types/ExerciseType";
 
 export type StationStatus = {
   completedExercises: boolean[];
-};
-
-type StationStatusMock = {
-  completedExercises?: boolean[];
 };
 
 export type StationData = {
@@ -18,20 +14,8 @@ export type StationData = {
   exerciseIds?: Exercise["id"][];
 };
 
-const STATION_STATUS_MOCKS: Record<string, StationStatusMock> = {
-  "station-newsstand": {
-    completedExercises: [true, false],
-  },
-  "station-photograph": {},
-  "station-postoffice": {},
-  "station-passwordbank": {},
-  "station-marketplace": {},
-  "station-socialmedia": {},
-  "station-datacenter": {},
-};
-
-const buildCompletedExercises = (exerciseCount: number, completedExercises: boolean[] = []) =>
-  Array.from({ length: exerciseCount }, (_, index) => completedExercises[index] ?? false);
+const buildCompletedExercises = (exerciseCount: number) =>
+  Array.from({ length: exerciseCount }, () => false);
 
 export class Station {
   id: string;
@@ -59,14 +43,12 @@ export class Station {
   }
 
   getMockStatus(): StationStatus {
-    return Station.getMockStatusById(this.id, this.exerciseIds.length);
+    return Station.getMockStatusById(this.exerciseIds.length);
   }
 
-  static getMockStatusById(id: string, exerciseCount = 0): StationStatus {
-    const mockStatus = STATION_STATUS_MOCKS[id];
-
+  static getMockStatusById(exerciseCount = 0): StationStatus {
     return {
-      completedExercises: buildCompletedExercises(exerciseCount, mockStatus?.completedExercises),
+      completedExercises: buildCompletedExercises(exerciseCount),
     };
   }
 
@@ -78,6 +60,7 @@ export class Station {
         title: "Nyhetskvartalet",
         description: "Laer a skille mellom ekte nyheter, clickbait og emosjonelt spraak.",
         image: placeholderImage,
+        exerciseIds: ["newsstand-exercise-1"],
       }),
       new Station({
         id: "station-photograph",
@@ -92,6 +75,7 @@ export class Station {
         title: "Postkontoret",
         description: "Ov pa a avslore falske e-poster, mistenkelige lenker og rare avsendere.",
         image: placeholderImage,
+        exerciseIds: ["postoffice-exercise-1"],
       }),
       new Station({
         id: "station-passwordbank",
@@ -124,7 +108,33 @@ export class Station {
     ];
   }
 
-  static findById(id: string): Station | undefined {
-    return this.mockData().find((station) => station.id === id);
+  static findById(id: string): Station | null {
+    return this.mockData().find((station) => station.id === id) ?? null;
+  }
+
+  static findBySlug(slug: string): Station | null {
+    const normalizedSlug = slug.trim().toLowerCase();
+
+    return this.mockData().find((station) => station.slug.trim().toLowerCase() === normalizedSlug) ?? null;
+  }
+
+  static backendFetchAllStations(): Station[] {
+    return this.mockData();
+  }
+
+  // push a station to backend and retriev a id from backend, then return the id
+  static backendCreateStation(station: Station): string {
+    if (station.id) {
+      throw new Error("Station already has an id. Cannot create station with existing id.");
+    }
+    return "some id here from backend";
+  }
+
+  static backendFetchStationById(id: string): Station | null {
+    return this.findById(id);
+  }
+
+  static backendFetchStationBySlug(slug: string): Station | null {
+    return this.findBySlug(slug);
   }
 }
