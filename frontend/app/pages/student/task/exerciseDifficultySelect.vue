@@ -50,8 +50,7 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
     difficultyText: exercise.difficultyText,
     description: exercise.description ?? currentStation.description ?? "",
     isCompleted: stationStatus.value.completedExercises[index] ?? false,
-    isUnlocked: stationIsUnlocked.value
-      && stationStatus.value.completedExercises.slice(0, index).every(Boolean),
+    isUnlocked: currentStation.isExerciseUnlocked(exercise.id),
     to: {
       path: `/games/${currentStation.slug}`,
       query: { exerciseId: exercise.id },

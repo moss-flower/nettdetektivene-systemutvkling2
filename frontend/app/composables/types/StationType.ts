@@ -42,6 +42,24 @@ export class Station {
     return true;
   }
 
+  isExerciseUnlocked(exerciseId: Exercise["id"]): boolean {
+    if (!this.isUnlocked()) {
+      return false;
+    }
+
+    const exerciseIndex = this.exerciseIds.findIndex((id) => id === exerciseId);
+
+    if (exerciseIndex === -1) {
+      return false;
+    }
+
+    if (exerciseIndex === 0) {
+      return true;
+    }
+
+    return this.getMockStatus().completedExercises.slice(0, exerciseIndex).every(Boolean);
+  }
+
   getMockStatus(): StationStatus {
     return Station.getMockStatusById(this.exerciseIds.length);
   }
