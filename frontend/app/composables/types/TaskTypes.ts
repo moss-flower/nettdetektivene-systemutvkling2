@@ -132,7 +132,6 @@ export type EmailHotspotTaskData = TaskBase & {
   };
   email: EmailHotspotContent;
   targets: EmailHotspotTarget[];
-  requiredCorrectSelections?: number;
 };
 
 export type ExerciseTask =

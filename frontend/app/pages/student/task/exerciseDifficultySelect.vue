@@ -47,7 +47,7 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
   return stationExercises.value.map((exercise, index) => ({
     id: exercise.id,
     title: exercise.title,
-    difficultyText: exercise.difficultyText,
+    difficultyText: exercise.entryName,
     description: exercise.description ?? currentStation.description ?? "",
     isCompleted: stationStatus.value.completedExercises[index] ?? false,
     isUnlocked: currentStation.isExerciseUnlocked(exercise.id),

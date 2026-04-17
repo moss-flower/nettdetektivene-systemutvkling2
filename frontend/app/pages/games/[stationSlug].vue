@@ -223,7 +223,6 @@ const next = () => {
         :prompt="currentTask.prompt"
         :email="currentTask.email"
         :targets="currentTask.targets"
-        :required-correct-selections="currentTask.requiredCorrectSelections"
         :disabled="Boolean(answerState)"
         @answered="onAnsweredEmailHotspots"
       />

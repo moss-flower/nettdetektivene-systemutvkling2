@@ -12,7 +12,6 @@ const props = defineProps<{
   }
   email: EmailHotspotContent
   targets: EmailHotspotTarget[]
-  requiredCorrectSelections?: number
   disabled?: boolean
 }>()
 
@@ -25,15 +24,7 @@ const incorrectTargetId = ref<string | null>(null)
 
 const targetMap = computed(() => new Map(props.targets.map((target) => [target.id, target])))
 const suspiciousTargetCount = computed(() => props.targets.filter((target) => target.isSuspicious).length)
-const requiredCorrectSelections = computed(() => {
-  const fallback = suspiciousTargetCount.value
-
-  if (!props.requiredCorrectSelections) {
-    return Math.max(1, fallback)
-  }
-
-  return Math.max(1, Math.min(props.requiredCorrectSelections, Math.max(1, fallback)))
-})
+const requiredCorrectSelections = computed(() => Math.max(1, suspiciousTargetCount.value))
 
 const progressText = computed(() => `Du har funnet ${foundTargetIds.value.length} av ${requiredCorrectSelections.value}`)
 const needsMultipleSelections = computed(() => requiredCorrectSelections.value > 1)

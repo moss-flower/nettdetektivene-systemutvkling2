@@ -12,14 +12,14 @@ export type ExerciseTask =
 export class Exercise {
   id: string;
   title: string;
-  difficultyText: string;
+  entryName: string;
   description?: string;
   tasks: ExerciseTask[];
 
-  constructor(data: { id: string; title: string; difficultyText: string; description?: string; tasks: ExerciseTask[] }) {
+  constructor(data: { id: string; title: string; entryName: string; description?: string; tasks: ExerciseTask[] }) {
     this.id = data.id;
     this.title = data.title;
-    this.difficultyText = data.difficultyText;
+    this.entryName = data.entryName;
     this.description = data.description;
     this.tasks = data.tasks;
   }
@@ -29,7 +29,7 @@ export class Exercise {
       new Exercise({
         id: "newsstand-exercise-1",
         title: "Troverdige nyheter",
-        difficultyText: "Lett",
+        entryName: "Lett",
         description: "Undersøk hvilke nyhetssaker som virker ekte, og hvilke faresignaler som bør sjekkes ekstra godt.",
         tasks: [
           {
@@ -94,7 +94,7 @@ export class Exercise {
       new Exercise({
         id: "postoffice-exercise-1",
         title: "Mistenkelige e-poster",
-        difficultyText: "Lett",
+        entryName: "Lett",
         description: "Se etter rare avsendere, farlige lenker og andre tegn på at en e-post ikke er trygg.",
         tasks: [
           {
