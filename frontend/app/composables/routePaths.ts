@@ -1,6 +1,6 @@
 export enum routePaths {
     home = '/',
-    studentLevels = '/student/home/directions/levels',
+    studentLevels = '/student/home/directions/stations',
     login = '/login/login',
     join = '/login/join',
     register = '/login/register',
@@ -14,6 +14,7 @@ export enum routePaths {
     studentHome = '/student/home/home',
     studentProfile = '/student/home/directions/profile',
     studentAchievements = '/student/home/directions/achievements',
+    studentTaskDifficultySelect = '/student/task/taskDifficultySelect',
     
     // to implement next
     studentLeaderboard = '/student/home/directions/leaderboard',
