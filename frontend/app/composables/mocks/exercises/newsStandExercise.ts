@@ -65,3 +65,68 @@ export const newsStandExerciseMock: Exercise = {
     },
   ],
 }
+
+export const newsStandMediumExerciseMock: Exercise = {
+  id: 'newsstand-exercise-2',
+  title: 'Troverdige nyheter',
+  difficultyText: 'Medium',
+  description: 'Sammenlign to nyhetssaker og finn den du har best grunn til å stole på.',
+  tasks: [
+    {
+      id: 'newsstand-medium-task-1',
+      templateKind: 'x-or-y',
+      prompt: {
+        title: 'Hvilken sak virker mest troverdig?',
+        text: 'Velg saken som har tydeligst avsender og mest realistisk språk.',
+      },
+      introText: 'Sammenlign de to sakene og velg den du ville stolt mest på.',
+      feedbackCorrect: 'Riktig. Den troverdige saken har en kjent avsender, et roligere språk og mer konkret informasjon.',
+      feedbackIncorrect: 'Se etter hvem som står bak saken, og om overskriften prøver å sjokkere deg før den forklarer noe.',
+      options: {
+        x: {
+          imageUrl: 'https://placehold.co/600x400?text=Skoleavisen',
+          imageAlt: 'Sak fra skoleavisen om ny leseuke på biblioteket',
+          eyebrow: 'Skoleavisen',
+          title: 'Biblioteket inviterer til leseuke for hele mellomtrinnet',
+          text: 'Saken forklarer hva som skjer, når det skjer, og hvem som arrangerer opplegget.',
+        },
+        y: {
+          imageUrl: 'https://placehold.co/600x400?text=Sensasjon24',
+          imageAlt: 'Mistenkelig nyhetssak med dramatisk overskrift om skoleforbud',
+          eyebrow: 'Sensasjon24',
+          title: 'Alle bøker blir forbudt i norske skoler neste uke',
+          text: 'Overskriften er dramatisk og forklarer nesten ingenting om hvem som vet dette.',
+        },
+      },
+      correctChoice: 'x',
+    },
+    {
+      id: 'newsstand-medium-task-2',
+      templateKind: 'x-or-y',
+      prompt: {
+        title: 'Hvilken overskrift bør du stole mest på?',
+        text: 'Se etter en overskrift som forklarer saken rolig, i stedet for å prøve å sjokkere deg.',
+      },
+      introText: 'Velg overskriften som virker mest troverdig.',
+      feedbackCorrect: 'Bra. Den beste overskriften lover ikke noe utrolig, og den gir en konkret forklaring på hva saken handler om.',
+      feedbackIncorrect: 'Tenk på om overskriften prøver å gjøre deg redd eller stresset med en gang, i stedet for å forklare saken.',
+      options: {
+        x: {
+          imageUrl: 'https://placehold.co/600x400?text=Kommunenytt',
+          imageAlt: 'Nyhetssak fra Kommunenytt om nye refleksvester til elever',
+          eyebrow: 'Kommunenytt',
+          title: 'Elever får nye refleksvester før mørketiden starter',
+          text: 'Saken beskriver tiltaket, hvem som deler ut vestene og hvorfor det gjøres nå.',
+        },
+        y: {
+          imageUrl: 'https://placehold.co/600x400?text=AlarmNorge',
+          imageAlt: 'Mistenkelig nyhetssak med dramatisk overskrift om farlig skolevei',
+          eyebrow: 'AlarmNorge',
+          title: 'Barn i hele landet livsfare på vei til skolen i morgen',
+          text: 'Overskriften er dramatisk, men sier lite om hvem som vet dette eller hva som faktisk har skjedd.',
+        },
+      },
+      correctChoice: 'x',
+    },
+  ],
+}

@@ -1,9 +1,10 @@
 import type { Exercise } from '~/composables/types/ExerciseType'
-import { newsStandExerciseMock } from '~/composables/mocks/exercises/newsStandExercise'
+import { newsStandExerciseMock, newsStandMediumExerciseMock } from '~/composables/mocks/exercises/newsStandExercise'
 import { postOfficeExerciseMock } from '~/composables/mocks/exercises/postOfficeExercise'
 
 export const exerciseMocks: Exercise[] = [
   newsStandExerciseMock,
+  newsStandMediumExerciseMock,
   postOfficeExerciseMock,
 ]
 

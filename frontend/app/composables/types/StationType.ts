@@ -19,7 +19,9 @@ export type StationData = {
 };
 
 const STATION_STATUS_MOCKS: Record<string, StationStatusMock> = {
-  "station-newsstand": {},
+  "station-newsstand": {
+    completedExercises: [true, false],
+  },
   "station-photograph": {},
   "station-postoffice": {},
   "station-passwordbank": {},
