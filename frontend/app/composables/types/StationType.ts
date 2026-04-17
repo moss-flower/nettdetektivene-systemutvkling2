@@ -78,7 +78,7 @@ export class Station {
         title: "Nyhetskvartalet",
         description: "Laer a skille mellom ekte nyheter, clickbait og emosjonelt spraak.",
         image: placeholderImage,
-        exerciseIds: ["newsstand-exercise-1"],
+        exerciseIds: ["newsstand-exercise-1", "newsstand-exercise-2"],
       }),
       new Station({
         id: "station-photograph",
