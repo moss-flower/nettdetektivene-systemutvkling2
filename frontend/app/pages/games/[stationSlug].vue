@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { getExerciseMockById } from '~/composables/mocks/exercises'
 import EmailHotspotsTemplate from '~/components/gameplay/templates/EmailHotspotsTemplate.vue'
 import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDialog.vue'
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoiceTemplate.vue'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
-import { getStationMockBySlug } from '~/composables/mocks/stations'
+import { Exercise } from '~/composables/types/ExerciseType'
+import { Station } from '~/composables/types/StationType'
 
 import type {
   EmailHotspotResult,
@@ -27,7 +27,7 @@ const requestedStationSlug = Array.isArray(route.params.stationSlug)
 const requestedExerciseId = typeof route.query.exerciseId === 'string'
   ? route.query.exerciseId
   : ''
-const station = getStationMockBySlug(requestedStationSlug)
+const station = Station.backendFetchStationBySlug(requestedStationSlug)
 
 if (!station) {
   throw createError({
@@ -41,7 +41,7 @@ const { celebrateCorrectAnswer, stop } = useGameConfetti()
 const activeExerciseId = station.exerciseIds.includes(requestedExerciseId)
   ? requestedExerciseId
   : station.exerciseIds[0] ?? null
-const activeExercise = activeExerciseId ? getExerciseMockById(activeExerciseId) : null
+const activeExercise = activeExerciseId ? Exercise.backendFetchExerciseById(activeExerciseId) : null
 const tasks = activeExercise
   ? sampleAndShuffle(activeExercise.tasks, activeExercise.tasks.length)
   : []
