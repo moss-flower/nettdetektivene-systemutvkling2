@@ -11,6 +11,8 @@ import no.safety.backend.classroom.repository.ClassroomRepository;
 import no.safety.backend.exception.ConflictException;
 import no.safety.backend.exception.ForbiddenException;
 import no.safety.backend.exception.NotFoundException;
+import no.safety.backend.exception.domain.NotClassroomOwnerException;
+import no.safety.backend.exception.domain.StudentNotInClassException;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.repository.StudentUserRepository;
@@ -83,7 +85,7 @@ public class ClassroomService {
         .removeIf(user -> user.getPublicUuid().equals(ownerToRemoveUuid));
 
     if (!removed) {
-      throw new NotFoundException("Teacher is not an owner of this classroom");
+      throw new NotClassroomOwnerException("Teacher is not an owner of this classroom");
     }
 
     return ClassroomResponse.from(c);
@@ -129,7 +131,7 @@ public class ClassroomService {
         .orElseThrow(() -> new NotFoundException("Student not found"));
 
     if (member.getClassroom() == null || !member.getClassroom().getId().equals(classroomId)) {
-      throw new NotFoundException("Student is not a member of this classroom");
+      throw new StudentNotInClassException("Student is not a member of this classroom");
     }
 
     member.setClassroom(null);
@@ -146,7 +148,7 @@ public class ClassroomService {
         .orElseThrow(() -> new NotFoundException("Student not found"));
 
     if (member.getClassroom() == null || !member.getClassroom().getId().equals(classroomId)) {
-      throw new NotFoundException("Student is not a member of this classroom");
+      throw new StudentNotInClassException("Student is not a member of this classroom");
     }
 
     member.setClassroom(null);
@@ -172,7 +174,7 @@ public class ClassroomService {
         .orElseThrow(() -> new NotFoundException("Student not found"));
 
     if (student.getClassroom() == null) {
-      throw new NotFoundException("Student is not in a classroom");
+      throw new StudentNotInClassException("Student is not in a classroom");
     }
 
     return ClassroomResponse.from(student.getClassroom());
@@ -184,7 +186,7 @@ public class ClassroomService {
     }
     Optional<Classroom> c = classroomRepo.findByIdAndOwners_PublicUuid(classroomId, callerUuid);
     if (c.isEmpty()) {
-      throw new ForbiddenException("Caller is not an owner of the classroom");
+      throw new NotClassroomOwnerException("Caller is not an owner of the classroom");
     }
     return c.get();
   }
