@@ -158,7 +158,7 @@ export class Exercise {
                 imageUrl: "https://placehold.co/1200x720?text=Klassen+vant+miljopris",
                 imageAlt: "Skjermbilde av en konkret og rolig overskrift",
                 eyebrow: "Overskrift Y",
-                title: "Klassen vant miljoepris etter ryddeaksjon",
+                title: "Klassen vant miljøpris etter ryddeaksjon",
                 text: "Overskriften sier tydelig hva som skjedde og bruker et rolig, forklarende språk.",
               },
             },
@@ -169,7 +169,7 @@ export class Exercise {
       new Exercise({
         id: "newsstand-exercise-2",
         title: "Nyhetsdetektiv",
-        difficultyText: "Middels",
+        entryName: "Middels",
         description: "Sammenlign nyhetssaker, oppdag clickbait og finn ut hva du bør undersøke før du tror eller deler noe.",
         tasks: [
           {
