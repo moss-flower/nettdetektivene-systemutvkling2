@@ -47,6 +47,14 @@ public class UserServiceTest {
     }
 
     @Test
+    void existsByUsername_success() {
+        when(userRepository.existsByUsername("joe")).thenReturn(true);
+        
+        Boolean bool = userService.existsByUsername("joe");
+        assertThat(bool).isEqualTo(true);
+    }
+
+    @Test
     void existsByEmail_success() {
         when(userRepository.existsByEmail("test@test.com")).thenReturn(true);
         
