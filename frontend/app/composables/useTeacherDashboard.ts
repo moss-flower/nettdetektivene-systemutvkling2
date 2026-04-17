@@ -28,7 +28,7 @@ export type ClassroomNotification = {
   timeLabel: string;
 };
 
-export type ClassroomTask = {
+export type ClassroomExercise = {
   id: string;
   classroomId: string;
   title: string;
@@ -82,7 +82,7 @@ const teacherClassroomNotifications: ClassroomNotification[] = [
   { id: 'n4', classroomId: 'ronvik-6c', title: 'Høy aktivitet', description: 'Klassen har hatt ekstra høy aktivitet denne uken.', timeLabel: 'I går' }
 ];
 
-const teacherClassroomTasks: ClassroomTask[] = [
+const teacherClassroomExercises: ClassroomExercise[] = [
   { id: 't1', classroomId: 'ronvik-6a', title: 'Skille ekte og falske nyheter', status: 'Aktiv', level: 'Nyhetskvartalet' },
   { id: 't2', classroomId: 'ronvik-6a', title: 'Oppdage mistenkelige e-poster', status: 'Kladd', level: 'Postkontoret' },
   { id: 't3', classroomId: 'ronvik-6b', title: 'Vurdere nettbutikker', status: 'Aktiv', level: 'Markedsplassen' },
@@ -175,8 +175,8 @@ function getteacherClassroomNotifications(classroomId: string): ClassroomNotific
   return teacherClassroomNotifications.filter((notification) => notification.classroomId === classroomId);
 }
 
-function getteacherClassroomTasks(classroomId: string): ClassroomTask[] {
-  return teacherClassroomTasks.filter((task) => task.classroomId === classroomId);
+function getTeacherClassroomExercises(classroomId: string): ClassroomExercise[] {
+  return teacherClassroomExercises.filter((exercise) => exercise.classroomId === classroomId);
 }
 
 function getteacherClassroomMystery(classroomId: string): teacherClassroomMystery | null {
@@ -191,7 +191,7 @@ export function useTeacherDashboard() {
     getteacherClassroomStudents,
     getStudentById,
     getteacherClassroomNotifications,
-    getteacherClassroomTasks,
+    getTeacherClassroomExercises,
     getteacherClassroomMystery,
   };
 }

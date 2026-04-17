@@ -1,75 +1,58 @@
 <script setup lang="ts">
-defineProps<{
-  title: string
-  message: string
-  isLast: boolean
-  correct: boolean
-}>()
+import { NuxtLink } from '#components'
+import type { RouteLocationRaw } from 'vue-router'
+import DialogTemplate from '~/components/gameplay/shared/DialogTemplate.vue'
 
-defineEmits<{
+const props = withDefaults(defineProps<{
+  correctCount: number
+  total: number
+  msgCompleted?: string
+  msgFailed?: string
+  to?: RouteLocationRaw
+}>(), {
+  msgCompleted: 'Ferdig, du klarte det!',
+  msgFailed: 'Ikke helt, bedre lykke neste gang!',
+})
+
+const isComplete = computed(() => props.correctCount === props.total)
+
+const emit = defineEmits<{
   (e: 'next'): void
 }>()
 </script>
 
 <template>
-  <div class="exercise-result-dialog">
-    <div class="exercise-result-dialog__backdrop" />
-    <div
-      class="exercise-result-dialog__panel"
-      role="dialog"
-      aria-modal="true"
-      :aria-label="title"
-    >
+  <DialogTemplate :aria-label="isComplete ? msgCompleted : msgFailed">
+    <template #badge>
       <p
         class="exercise-result-dialog__badge"
         :class="{
-          'exercise-result-dialog__badge--correct': correct,
-          'exercise-result-dialog__badge--incorrect': !correct,
+          'exercise-result-dialog__badge--complete': isComplete,
+          'exercise-result-dialog__badge--incomplete': !isComplete,
         }"
       >
-        {{ correct ? 'Riktig svar' : 'Ikke helt' }}
+        {{ isComplete ? 'Øvelse fullført' : 'Prøv igjen' }}
       </p>
-      <h2 class="exercise-result-dialog__title">{{ title }}</h2>
-      <p class="exercise-result-dialog__message">{{ message }}</p>
-      <button
+    </template>
+
+    <h2 class="exercise-result-dialog__title">{{ isComplete ? msgCompleted : msgFailed }}</h2>
+    <p class="exercise-result-dialog__message">Du fikk {{ correctCount }} / {{ total }} riktig.</p>
+
+    <template #actions>
+      <component
+        :is="to ? NuxtLink : 'button'"
         class="exercise-result-dialog__button"
-        type="button"
-        @click="$emit('next')"
+        :to="to"
+        :type="to ? undefined : 'button'"
+        @click="to ? undefined : emit('next')"
       >
-        {{ isLast ? 'Fullfør' : 'Neste sak' }}
-      </button>
-    </div>
-  </div>
+        Gå tilbake
+      </component>
+    </template>
+  </DialogTemplate>
 </template>
 
 <style scoped>
-.exercise-result-dialog {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  display: grid;
-  place-items: center;
-  padding: 1.5rem;
-}
-
-.exercise-result-dialog__backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(17, 24, 39, 0.34);
-  backdrop-filter: blur(3px);
-}
-
-.exercise-result-dialog__panel {
-  position: relative;
-  width: min(100%, 32rem);
-  display: grid;
-  gap: 0.9rem;
-  padding: 1.4rem;
-  border-radius: 1.2rem;
-  background: #fffdf9;
-  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
-}
-
 .exercise-result-dialog__badge {
   justify-self: start;
   padding: 0.35rem 0.7rem;
@@ -78,12 +61,12 @@ defineEmits<{
   font-weight: 700;
 }
 
-.exercise-result-dialog__badge--correct {
+.exercise-result-dialog__badge--complete {
   background: #dcfce7;
   color: #166534;
 }
 
-.exercise-result-dialog__badge--incorrect {
+.exercise-result-dialog__badge--incomplete {
   background: #fee2e2;
   color: #991b1b;
 }
@@ -101,13 +84,16 @@ defineEmits<{
 }
 
 .exercise-result-dialog__button {
-  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 0.85rem 1.2rem;
   border: 0;
   border-radius: 999px;
   background: #1f3657;
   color: #f9fbff;
   font-weight: 700;
+  text-decoration: none;
   transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
@@ -119,17 +105,8 @@ defineEmits<{
 }
 
 @media (max-width: 640px) {
-  .exercise-result-dialog {
-    padding: 1rem;
-  }
-
-  .exercise-result-dialog__panel {
-    padding: 1.2rem;
-  }
-
   .exercise-result-dialog__button {
     width: 100%;
-    justify-self: stretch;
   }
 }
 </style>

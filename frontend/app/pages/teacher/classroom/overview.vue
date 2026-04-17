@@ -29,7 +29,7 @@ const leaderboard = computed(() => getClassroomLeaderboard(classroomId.value));
         <span class="actionCard__text">Se varsler som bare gjelder dette klasserommet.</span>
       </NuxtLink>
 
-      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomTasks, `?classroomId=${classroom.id}`)" class="actionCard">
+      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomExercises, `?classroomId=${classroom.id}`)" class="actionCard">
         <span class="actionCard__title">Oppgaver</span>
         <span class="actionCard__text">Åpne oppgavene som brukes i dette klasserommet.</span>
       </NuxtLink>

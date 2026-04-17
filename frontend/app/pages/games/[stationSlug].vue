@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import CompletedPopup from '~/components/gameplay/shared/CompletedPopup.vue'
-import EmailHotspotsExercise from '~/components/gameplay/shared/EmailHotspotsExercise.vue'
+import EmailHotspotsTemplate from '~/components/gameplay/templates/EmailHotspotsTemplate.vue'
 import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDialog.vue'
-import ThreeOptionImageExercise from '~/components/gameplay/shared/ThreeOptionImageExercise.vue'
-import XOrYExercise from '~/components/gameplay/shared/XOrYExercise.vue'
-import { getStationMockBySlug } from '~/composables/mocks/stations'
+import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
+import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoiceTemplate.vue'
+import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
+import { routePaths } from '~/composables/routePaths'
+import { Exercise } from '~/composables/types/ExerciseType'
+import { Station } from '~/composables/types/StationType'
+
 import type {
   EmailHotspotResult,
-  ThreeOptionChoice,
-  ThreeOptionResult,
+  MultipleChoiceOptionKey,
+  MultipleChoiceResult,
   XOrYChoice,
   XOrYResult,
 } from '~/composables/types/TaskTypes'
@@ -22,7 +25,10 @@ const route = useRoute()
 const requestedStationSlug = Array.isArray(route.params.stationSlug)
   ? route.params.stationSlug[0] ?? ''
   : route.params.stationSlug ?? ''
-const station = getStationMockBySlug(requestedStationSlug)
+const requestedExerciseId = typeof route.query.exerciseId === 'string'
+  ? route.query.exerciseId
+  : ''
+const station = Station.backendFetchStationBySlug(requestedStationSlug)
 
 if (!station) {
   throw createError({
@@ -33,12 +39,15 @@ if (!station) {
 
 const { celebrateCorrectAnswer, stop } = useGameConfetti()
 
-const activeExercise = station.exercises[0] ?? null
+const activeExerciseId = station.exerciseIds.includes(requestedExerciseId)
+  ? requestedExerciseId
+  : station.exerciseIds[0] ?? null
+const activeExercise = activeExerciseId ? Exercise.backendFetchExerciseById(activeExerciseId) : null
 const tasks = activeExercise
   ? sampleAndShuffle(activeExercise.tasks, activeExercise.tasks.length)
   : []
 const currentIndex = ref(0)
-const showCompletedPopup = ref(false)
+const showExerciseResultDialog = ref(false)
 const correctCount = ref(0)
 const answerState = ref<{ correct: boolean, choice: string } | null>(null)
 
@@ -63,12 +72,8 @@ const selectedChoice = computed<XOrYChoice | null>(() => {
   return null
 })
 
-const selectedThreeOptionChoice = computed<ThreeOptionChoice | null>(() => {
-  if (
-    answerState.value?.choice === 'a'
-    || answerState.value?.choice === 'b'
-    || answerState.value?.choice === 'c'
-  ) {
+const selectedMultipleChoiceOption = computed<MultipleChoiceOptionKey | null>(() => {
+  if (currentTask.value?.templateKind === 'multiple-choice' && answerState.value) {
     return answerState.value.choice
   }
 
@@ -83,13 +88,18 @@ const progressLabel = computed(() => {
   return `Sak ${currentIndex.value + 1} av ${tasks.length}`
 })
 
+const exerciseSelectRoute = computed(() => ({
+  path: routePaths.studentExerciseDifficultySelect,
+  query: { id: station.id },
+}))
+
 const feedbackTitle = computed(() => {
   if (!currentTask.value) {
     return 'Ingen oppgaver ennå'
   }
 
   if (!answerState.value) {
-    if (currentTask.value.templateKind === 'three-option-image') {
+    if (currentTask.value.templateKind === 'multiple-choice') {
       return 'Hva avslører den falske saken?'
     }
 
@@ -133,7 +143,7 @@ const onAnswered = (result: XOrYResult) => {
   }
 }
 
-const onAnsweredThreeOption = (result: ThreeOptionResult) => {
+const onAnsweredMultipleChoice = (result: MultipleChoiceResult) => {
   answerState.value = {
     correct: result.correct,
     choice: result.choice,
@@ -164,7 +174,7 @@ const next = () => {
   if (currentIndex.value < tasks.length - 1) {
     currentIndex.value++
   } else {
-    showCompletedPopup.value = true
+    showExerciseResultDialog.value = true
   }
 }
 </script>
@@ -187,7 +197,7 @@ const next = () => {
     </header>
 
     <div class="station-page__board">
-      <XOrYExercise
+      <XOrYTemplate
         v-if="currentTask?.templateKind === 'x-or-y' && currentOptions"
         :key="`${currentTask.id}-xory`"
         :prompt="currentTask.prompt"
@@ -197,29 +207,28 @@ const next = () => {
         :selected-choice="selectedChoice"
         @answered="onAnswered"
       />
-      <ThreeOptionImageExercise
-        v-else-if="currentTask?.templateKind === 'three-option-image'"
+      <MultipleChoiceTemplate
+        v-else-if="currentTask?.templateKind === 'multiple-choice'"
         :key="`${currentTask.id}-three-option`"
         :prompt="currentTask.prompt"
         :options="currentTask.options"
         :correct-choice="currentTask.correctChoice"
         :disabled="Boolean(answerState)"
-        :selected-choice="selectedThreeOptionChoice"
-        @answered="onAnsweredThreeOption"
+        :selected-choice="selectedMultipleChoiceOption"
+        @answered="onAnsweredMultipleChoice"
       />
-      <EmailHotspotsExercise
+      <EmailHotspotsTemplate
         v-else-if="currentTask?.templateKind === 'email-hotspots'"
         :key="`${currentTask.id}-email-hotspots`"
         :prompt="currentTask.prompt"
         :email="currentTask.email"
         :targets="currentTask.targets"
-        :required-correct-selections="currentTask.requiredCorrectSelections"
         :disabled="Boolean(answerState)"
         @answered="onAnsweredEmailHotspots"
       />
     </div>
 
-    <ExerciseResultDialog
+    <TaskResultDialog
       v-if="showAnswerDialog && answerState"
       :title="feedbackTitle"
       :message="feedbackText"
@@ -228,10 +237,11 @@ const next = () => {
       @next="next"
     />
 
-    <CompletedPopup
-      v-if="showCompletedPopup"
+    <ExerciseResultDialog
+      v-if="showExerciseResultDialog"
       :correct-count="correctCount"
       :total="tasks.length"
+      :to="exerciseSelectRoute"
     />
   </section>
 </template>

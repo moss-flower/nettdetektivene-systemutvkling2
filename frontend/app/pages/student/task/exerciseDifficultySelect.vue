@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import DifficultySelect from "~/components/station/difficultySelect.vue";
 import { routePaths } from "~/composables/routePaths";
-import { StationFactory } from "~/composables/types/StationType";
+import { Exercise } from "~/composables/types/ExerciseType";
+import { Station } from "~/composables/types/StationType";
 
-type DifficultyOption = {
-  level: "easy" | "medium" | "hard";
+type ExerciseOption = {
+  id: string;
   title: string;
+  difficultyText: string;
   description: string;
   isUnlocked: boolean;
+  isCompleted: boolean;
   to: {
     path: string;
     query: {
-      difficulty: string;
+      exerciseId: string;
     };
   };
 };
@@ -22,47 +25,37 @@ const stationId = computed(() =>
   typeof route.query.id === "string" ? route.query.id : "",
 );
 
-const station = computed(() => StationFactory.findById(stationId.value));
+const station = computed(() =>
+  stationId.value ? Station.backendFetchStationById(stationId.value) : null,
+);
+const stationStatus = computed(() => station.value?.getMockStatus() ?? {
+  completedExercises: [],
+});
+const stationIsUnlocked = computed(() => station.value?.isUnlocked() ?? false);
 
-const difficultyOptions = computed<DifficultyOption[]>(() => {
+const stationExercises = computed(() =>
+  station.value ? Exercise.backendFetchExercisesByIds(station.value.exerciseIds) : [],
+);
+
+const exerciseOptions = computed<ExerciseOption[]>(() => {
   if (!station.value) {
     return [];
   }
 
-  const [easyCompleted = false, mediumCompleted = false] = station.value.completedTasks;
+  const currentStation = station.value;
 
-  return [
-    {
-      level: "easy",
-      title: "Lett",
-      description: "Start med grunnoppgaven og bli kjent med stasjonen.",
-      isUnlocked: true,
-      to: {
-        path: `/games/${station.value.id}`,
-        query: { difficulty: "easy" },
-      },
+  return stationExercises.value.map((exercise, index) => ({
+    id: exercise.id,
+    title: exercise.title,
+    difficultyText: exercise.entryName,
+    description: exercise.description ?? currentStation.description ?? "",
+    isCompleted: stationStatus.value.completedExercises[index] ?? false,
+    isUnlocked: currentStation.isExerciseUnlocked(exercise.id),
+    to: {
+      path: `/games/${currentStation.slug}`,
+      query: { exerciseId: exercise.id },
     },
-    {
-      level: "medium",
-      title: "Middels",
-      description: "Neste steg åpnes når lett er fullført.",
-      isUnlocked: easyCompleted,
-      to: {
-        path: `/games/${station.value.id}`,
-        query: { difficulty: "medium" },
-      },
-    },
-    {
-      level: "hard",
-      title: "Vanskelig",
-      description: "Den siste utfordringen åpnes når middels er fullført.",
-      isUnlocked: easyCompleted && mediumCompleted,
-      to: {
-        path: `/games/${station.value.id}`,
-        query: { difficulty: "hard" },
-      },
-    },
-  ];
+  }));
 });
 </script>
 
@@ -74,22 +67,28 @@ const difficultyOptions = computed<DifficultyOption[]>(() => {
 
     <template v-if="station">
       <header class="difficultyHero">
-        <p class="difficultyEyebrow">Velg vanskelighetsgrad</p>
+        <p class="difficultyEyebrow">Velg oppgave</p>
         <h1 class="difficultyTitle">{{ station.name }}</h1>
         <p class="difficultySummary">{{ station.description }}</p>
       </header>
 
-      <div class="difficultyGrid">
+      <div v-if="exerciseOptions.length > 0" class="difficultyGrid">
         <DifficultySelect
-          v-for="option in difficultyOptions"
-          :key="option.level"
+          v-for="option in exerciseOptions"
+          :key="option.id"
           :title="option.title"
+          :difficulty-text="option.difficultyText"
           :description="option.description"
-          :level="option.level"
+          :is-completed="option.isCompleted"
           :is-unlocked="option.isUnlocked"
           :to="option.to"
         />
       </div>
+
+      <section v-else class="missingStation">
+        <h1>Ingen oppgaver klare ennå</h1>
+        <p>Denne stasjonen har ikke noen tilgjengelige øvelser enda.</p>
+      </section>
     </template>
 
     <section v-else class="missingStation">

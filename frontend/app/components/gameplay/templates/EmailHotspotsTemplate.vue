@@ -12,7 +12,6 @@ const props = defineProps<{
   }
   email: EmailHotspotContent
   targets: EmailHotspotTarget[]
-  requiredCorrectSelections?: number
   disabled?: boolean
 }>()
 
@@ -25,15 +24,7 @@ const incorrectTargetId = ref<string | null>(null)
 
 const targetMap = computed(() => new Map(props.targets.map((target) => [target.id, target])))
 const suspiciousTargetCount = computed(() => props.targets.filter((target) => target.isSuspicious).length)
-const requiredCorrectSelections = computed(() => {
-  const fallback = suspiciousTargetCount.value
-
-  if (!props.requiredCorrectSelections) {
-    return Math.max(1, fallback)
-  }
-
-  return Math.max(1, Math.min(props.requiredCorrectSelections, Math.max(1, fallback)))
-})
+const requiredCorrectSelections = computed(() => Math.max(1, suspiciousTargetCount.value))
 
 const progressText = computed(() => `Du har funnet ${foundTargetIds.value.length} av ${requiredCorrectSelections.value}`)
 const needsMultipleSelections = computed(() => requiredCorrectSelections.value > 1)
@@ -82,76 +73,76 @@ const activateTarget = (targetId?: string) => {
 </script>
 
 <template>
-  <section class="email-hotspots-exercise">
+  <section class="email-hotspots-template">
     <header
       v-if="props.prompt?.title || props.prompt?.text"
-      class="email-hotspots-exercise__header"
+      class="email-hotspots-template__header"
     >
-      <div class="email-hotspots-exercise__heading">
-        <h2 v-if="props.prompt?.title" class="email-hotspots-exercise__title">
+      <div class="email-hotspots-template__heading">
+        <h2 v-if="props.prompt?.title" class="email-hotspots-template__title">
           {{ props.prompt.title }}
         </h2>
-        <p v-if="props.prompt?.text" class="email-hotspots-exercise__text">
+        <p v-if="props.prompt?.text" class="email-hotspots-template__text">
           {{ props.prompt.text }}
         </p>
       </div>
-      <p v-if="needsMultipleSelections" class="email-hotspots-exercise__progress-pill">
+      <p v-if="needsMultipleSelections" class="email-hotspots-template__progress-pill">
         {{ progressText }}
       </p>
     </header>
 
-    <article class="email-hotspots-exercise__mail">
-      <header class="email-hotspots-exercise__mail-header">
-        <div class="email-hotspots-exercise__sender">
-          <div class="email-hotspots-exercise__avatar" aria-hidden="true">
+    <article class="email-hotspots-template__mail">
+      <header class="email-hotspots-template__mail-header">
+        <div class="email-hotspots-template__sender">
+          <div class="email-hotspots-template__avatar" aria-hidden="true">
             {{ props.email.senderAvatarText ?? props.email.senderName.slice(0, 2).toUpperCase() }}
           </div>
-          <div class="email-hotspots-exercise__sender-copy">
-            <p class="email-hotspots-exercise__sender-name">{{ props.email.senderName }}</p>
+          <div class="email-hotspots-template__sender-copy">
+            <p class="email-hotspots-template__sender-name">{{ props.email.senderName }}</p>
             <button
               v-if="props.email.senderAddressTargetId"
               type="button"
-              class="email-hotspots-exercise__target email-hotspots-exercise__target--inline"
+              class="email-hotspots-template__target email-hotspots-template__target--inline"
               :class="{
-                'email-hotspots-exercise__target--found': isFound(props.email.senderAddressTargetId),
-                'email-hotspots-exercise__target--incorrect': isIncorrect(props.email.senderAddressTargetId),
+                'email-hotspots-template__target--found': isFound(props.email.senderAddressTargetId),
+                'email-hotspots-template__target--incorrect': isIncorrect(props.email.senderAddressTargetId),
               }"
               :disabled="props.disabled"
               @click="activateTarget(props.email.senderAddressTargetId)"
             >
               {{ props.email.senderAddress }}
             </button>
-            <p v-else class="email-hotspots-exercise__sender-address">
+            <p v-else class="email-hotspots-template__sender-address">
               {{ props.email.senderAddress }}
             </p>
           </div>
         </div>
-        <p v-if="props.email.receivedLabel" class="email-hotspots-exercise__received-label">
+        <p v-if="props.email.receivedLabel" class="email-hotspots-template__received-label">
           {{ props.email.receivedLabel }}
         </p>
       </header>
 
-      <div class="email-hotspots-exercise__subject-row">
+      <div class="email-hotspots-template__subject-row">
         <button
           v-if="props.email.subjectTargetId"
           type="button"
-          class="email-hotspots-exercise__target email-hotspots-exercise__target--subject"
+          class="email-hotspots-template__target email-hotspots-template__target--subject"
           :class="{
-            'email-hotspots-exercise__target--found': isFound(props.email.subjectTargetId),
-            'email-hotspots-exercise__target--incorrect': isIncorrect(props.email.subjectTargetId),
+            'email-hotspots-template__target--found': isFound(props.email.subjectTargetId),
+            'email-hotspots-template__target--incorrect': isIncorrect(props.email.subjectTargetId),
           }"
           :disabled="props.disabled"
           @click="activateTarget(props.email.subjectTargetId)"
         >
           {{ props.email.subject }}
         </button>
-        <h3 v-else class="email-hotspots-exercise__subject">
+        <h3 v-else class="email-hotspots-template__subject">
           {{ props.email.subject }}
         </h3>
       </div>
 
-      <div class="email-hotspots-exercise__body">
-        <p v-if="props.email.greeting" class="email-hotspots-exercise__greeting">
+      <div class="email-hotspots-template__body">
+        <p v-if="props.email.greeting" class="email-hotspots-template__greeting">
           {{ props.email.greeting }}
         </p>
 
@@ -159,10 +150,10 @@ const activateTarget = (targetId?: string) => {
           <button
             v-if="block.targetId && block.type === 'text'"
             type="button"
-            class="email-hotspots-exercise__target email-hotspots-exercise__target--paragraph"
+            class="email-hotspots-template__target email-hotspots-template__target--paragraph"
             :class="{
-              'email-hotspots-exercise__target--found': isFound(block.targetId),
-              'email-hotspots-exercise__target--incorrect': isIncorrect(block.targetId),
+              'email-hotspots-template__target--found': isFound(block.targetId),
+              'email-hotspots-template__target--incorrect': isIncorrect(block.targetId),
             }"
             :disabled="props.disabled"
             @click="activateTarget(block.targetId)"
@@ -171,7 +162,7 @@ const activateTarget = (targetId?: string) => {
           </button>
           <p
             v-else-if="block.type === 'text'"
-            class="email-hotspots-exercise__paragraph"
+            class="email-hotspots-template__paragraph"
           >
             {{ block.text }}
           </p>
@@ -179,80 +170,80 @@ const activateTarget = (targetId?: string) => {
           <button
             v-if="block.type === 'link' && block.targetId"
             type="button"
-            class="email-hotspots-exercise__target email-hotspots-exercise__target--link"
+            class="email-hotspots-template__target email-hotspots-template__target--link"
             :class="{
-              'email-hotspots-exercise__target--found': isFound(block.targetId),
-              'email-hotspots-exercise__target--incorrect': isIncorrect(block.targetId),
+              'email-hotspots-template__target--found': isFound(block.targetId),
+              'email-hotspots-template__target--incorrect': isIncorrect(block.targetId),
             }"
             :disabled="props.disabled"
             @click="activateTarget(block.targetId)"
           >
-            <span class="email-hotspots-exercise__link-label">{{ block.label }}</span>
-            <span class="email-hotspots-exercise__link-url">{{ block.urlText }}</span>
-            <span v-if="block.helperText" class="email-hotspots-exercise__link-helper">{{ block.helperText }}</span>
+            <span class="email-hotspots-template__link-label">{{ block.label }}</span>
+            <span class="email-hotspots-template__link-url">{{ block.urlText }}</span>
+            <span v-if="block.helperText" class="email-hotspots-template__link-helper">{{ block.helperText }}</span>
           </button>
           <div
             v-else-if="block.type === 'link'"
-            class="email-hotspots-exercise__link-card"
+            class="email-hotspots-template__link-card"
           >
-            <span class="email-hotspots-exercise__link-label">{{ block.label }}</span>
-            <span class="email-hotspots-exercise__link-url">{{ block.urlText }}</span>
-            <span v-if="block.helperText" class="email-hotspots-exercise__link-helper">{{ block.helperText }}</span>
+            <span class="email-hotspots-template__link-label">{{ block.label }}</span>
+            <span class="email-hotspots-template__link-url">{{ block.urlText }}</span>
+            <span v-if="block.helperText" class="email-hotspots-template__link-helper">{{ block.helperText }}</span>
           </div>
         </template>
 
         <button
           v-if="props.email.actionButton?.targetId"
           type="button"
-          class="email-hotspots-exercise__target email-hotspots-exercise__target--cta"
+          class="email-hotspots-template__target email-hotspots-template__target--cta"
           :class="{
-            'email-hotspots-exercise__target--found': isFound(props.email.actionButton.targetId),
-            'email-hotspots-exercise__target--incorrect': isIncorrect(props.email.actionButton.targetId),
+            'email-hotspots-template__target--found': isFound(props.email.actionButton.targetId),
+            'email-hotspots-template__target--incorrect': isIncorrect(props.email.actionButton.targetId),
           }"
           :disabled="props.disabled"
           @click="activateTarget(props.email.actionButton.targetId)"
         >
           <span>{{ props.email.actionButton.label }}</span>
-          <span v-if="props.email.actionButton.helperText" class="email-hotspots-exercise__cta-helper">
+          <span v-if="props.email.actionButton.helperText" class="email-hotspots-template__cta-helper">
             {{ props.email.actionButton.helperText }}
           </span>
         </button>
         <button
           v-else-if="props.email.actionButton"
           type="button"
-          class="email-hotspots-exercise__cta-static"
+          class="email-hotspots-template__cta-static"
         >
           <span>{{ props.email.actionButton.label }}</span>
-          <span v-if="props.email.actionButton.helperText" class="email-hotspots-exercise__cta-helper">
+          <span v-if="props.email.actionButton.helperText" class="email-hotspots-template__cta-helper">
             {{ props.email.actionButton.helperText }}
           </span>
         </button>
 
         <div
           v-if="props.email.attachments?.length"
-          class="email-hotspots-exercise__attachments"
+          class="email-hotspots-template__attachments"
         >
           <button
             v-for="attachment in props.email.attachments"
             :key="attachment.id"
             type="button"
-            class="email-hotspots-exercise__attachment"
+            class="email-hotspots-template__attachment"
             :class="{
-              'email-hotspots-exercise__attachment--interactive': Boolean(attachment.targetId),
-              'email-hotspots-exercise__target--found': isFound(attachment.targetId),
-              'email-hotspots-exercise__target--incorrect': isIncorrect(attachment.targetId),
+              'email-hotspots-template__attachment--interactive': Boolean(attachment.targetId),
+              'email-hotspots-template__target--found': isFound(attachment.targetId),
+              'email-hotspots-template__target--incorrect': isIncorrect(attachment.targetId),
             }"
             :disabled="props.disabled || !attachment.targetId"
             @click="activateTarget(attachment.targetId)"
           >
-            <span class="email-hotspots-exercise__attachment-name">{{ attachment.name }}</span>
-            <span v-if="attachment.details" class="email-hotspots-exercise__attachment-details">
+            <span class="email-hotspots-template__attachment-name">{{ attachment.name }}</span>
+            <span v-if="attachment.details" class="email-hotspots-template__attachment-details">
               {{ attachment.details }}
             </span>
           </button>
         </div>
 
-        <p v-if="props.email.closing" class="email-hotspots-exercise__closing">
+        <p v-if="props.email.closing" class="email-hotspots-template__closing">
           {{ props.email.closing }}
         </p>
       </div>
@@ -261,38 +252,38 @@ const activateTarget = (targetId?: string) => {
 </template>
 
 <style scoped>
-.email-hotspots-exercise {
+.email-hotspots-template {
   display: grid;
   gap: 1rem;
   color: #223044;
 }
 
-.email-hotspots-exercise__header {
+.email-hotspots-template__header {
   display: flex;
   align-items: start;
   justify-content: space-between;
   gap: 1rem;
 }
 
-.email-hotspots-exercise__heading {
+.email-hotspots-template__heading {
   display: grid;
   gap: 0.35rem;
 }
 
-.email-hotspots-exercise__title {
+.email-hotspots-template__title {
   font-size: clamp(1.15rem, 1.8vw, 1.45rem);
   line-height: 1.15;
   color: #172033;
 }
 
-.email-hotspots-exercise__text {
+.email-hotspots-template__text {
   max-width: 46rem;
   font-size: 0.95rem;
   line-height: 1.45;
   color: #4b5563;
 }
 
-.email-hotspots-exercise__progress-pill {
+.email-hotspots-template__progress-pill {
   flex-shrink: 0;
   padding: 0.45rem 0.8rem;
   border-radius: 999px;
@@ -302,7 +293,7 @@ const activateTarget = (targetId?: string) => {
   font-weight: 700;
 }
 
-.email-hotspots-exercise__mail {
+.email-hotspots-template__mail {
   border-radius: 1.6rem;
   background: #fffdfa;
   border: 2px solid #d6dce6;
@@ -310,7 +301,7 @@ const activateTarget = (targetId?: string) => {
   overflow: hidden;
 }
 
-.email-hotspots-exercise__mail-header {
+.email-hotspots-template__mail-header {
   display: flex;
   align-items: start;
   justify-content: space-between;
@@ -320,13 +311,13 @@ const activateTarget = (targetId?: string) => {
   border-bottom: 1px solid #d9e2ef;
 }
 
-.email-hotspots-exercise__sender {
+.email-hotspots-template__sender {
   display: flex;
   gap: 0.85rem;
   min-width: 0;
 }
 
-.email-hotspots-exercise__avatar {
+.email-hotspots-template__avatar {
   display: grid;
   place-items: center;
   width: 2.8rem;
@@ -337,49 +328,49 @@ const activateTarget = (targetId?: string) => {
   font-weight: 800;
 }
 
-.email-hotspots-exercise__sender-copy {
+.email-hotspots-template__sender-copy {
   display: grid;
   gap: 0.2rem;
   min-width: 0;
 }
 
-.email-hotspots-exercise__sender-name {
+.email-hotspots-template__sender-name {
   font-weight: 700;
   color: #172033;
 }
 
-.email-hotspots-exercise__sender-address,
-.email-hotspots-exercise__received-label {
+.email-hotspots-template__sender-address,
+.email-hotspots-template__received-label {
   font-size: 0.9rem;
   color: #617083;
 }
 
-.email-hotspots-exercise__subject-row {
+.email-hotspots-template__subject-row {
   padding: 1rem 1.15rem 0;
 }
 
-.email-hotspots-exercise__subject {
+.email-hotspots-template__subject {
   font-size: clamp(1.2rem, 1.9vw, 1.6rem);
   line-height: 1.15;
   color: #172033;
 }
 
-.email-hotspots-exercise__body {
+.email-hotspots-template__body {
   display: grid;
   gap: 0.8rem;
   padding: 1rem 1.15rem 1.2rem;
 }
 
-.email-hotspots-exercise__greeting,
-.email-hotspots-exercise__paragraph,
-.email-hotspots-exercise__closing {
+.email-hotspots-template__greeting,
+.email-hotspots-template__paragraph,
+.email-hotspots-template__closing {
   font-size: 1rem;
   line-height: 1.55;
   color: #334155;
 }
 
-.email-hotspots-exercise__link-card,
-.email-hotspots-exercise__target {
+.email-hotspots-template__link-card,
+.email-hotspots-template__target {
   display: grid;
   gap: 0.2rem;
   width: 100%;
@@ -387,24 +378,24 @@ const activateTarget = (targetId?: string) => {
   border-radius: 1rem;
 }
 
-.email-hotspots-exercise__target {
+.email-hotspots-template__target {
   padding: 0.8rem 0.9rem;
   border: 2px dashed #b9cae1;
   background: #f8fbff;
   transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.email-hotspots-exercise__target:hover:not(:disabled),
-.email-hotspots-exercise__target:focus-visible,
-.email-hotspots-exercise__attachment--interactive:hover:not(:disabled),
-.email-hotspots-exercise__attachment--interactive:focus-visible {
+.email-hotspots-template__target:hover:not(:disabled),
+.email-hotspots-template__target:focus-visible,
+.email-hotspots-template__attachment--interactive:hover:not(:disabled),
+.email-hotspots-template__attachment--interactive:focus-visible {
   transform: translateY(-1px);
   border-color: #7ea1ca;
   box-shadow: 0 12px 24px rgba(71, 107, 153, 0.12);
   outline: none;
 }
 
-.email-hotspots-exercise__target--inline {
+.email-hotspots-template__target--inline {
   justify-self: start;
   width: auto;
   padding: 0;
@@ -418,7 +409,7 @@ const activateTarget = (targetId?: string) => {
   box-shadow: none;
 }
 
-.email-hotspots-exercise__target--subject {
+.email-hotspots-template__target--subject {
   padding: 0;
   border: 0;
   background: transparent;
@@ -428,38 +419,38 @@ const activateTarget = (targetId?: string) => {
   box-shadow: none;
 }
 
-.email-hotspots-exercise__target--paragraph {
+.email-hotspots-template__target--paragraph {
   font-size: 1rem;
   line-height: 1.55;
   color: #334155;
 }
 
-.email-hotspots-exercise__link-card {
+.email-hotspots-template__link-card {
   padding: 0.85rem 0.95rem;
   background: #eef5ff;
   border: 1px solid #d3e1f4;
 }
 
-.email-hotspots-exercise__target--link {
+.email-hotspots-template__target--link {
   border-style: solid;
 }
 
-.email-hotspots-exercise__link-label,
-.email-hotspots-exercise__attachment-name {
+.email-hotspots-template__link-label,
+.email-hotspots-template__attachment-name {
   font-weight: 700;
   color: #173556;
 }
 
-.email-hotspots-exercise__link-url,
-.email-hotspots-exercise__link-helper,
-.email-hotspots-exercise__attachment-details,
-.email-hotspots-exercise__cta-helper {
+.email-hotspots-template__link-url,
+.email-hotspots-template__link-helper,
+.email-hotspots-template__attachment-details,
+.email-hotspots-template__cta-helper {
   font-size: 0.88rem;
   color: #5f7289;
 }
 
-.email-hotspots-exercise__target--cta,
-.email-hotspots-exercise__cta-static {
+.email-hotspots-template__target--cta,
+.email-hotspots-template__cta-static {
   justify-self: start;
   padding: 0.9rem 1.1rem;
   border-radius: 999px;
@@ -469,23 +460,23 @@ const activateTarget = (targetId?: string) => {
   font-weight: 700;
 }
 
-.email-hotspots-exercise__target--cta {
+.email-hotspots-template__target--cta {
   transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-.email-hotspots-exercise__target--cta:hover:not(:disabled),
-.email-hotspots-exercise__target--cta:focus-visible {
+.email-hotspots-template__target--cta:hover:not(:disabled),
+.email-hotspots-template__target--cta:focus-visible {
   background: #3468a7;
   box-shadow: 0 12px 24px rgba(52, 104, 167, 0.22);
   outline: none;
 }
 
-.email-hotspots-exercise__attachments {
+.email-hotspots-template__attachments {
   display: grid;
   gap: 0.7rem;
 }
 
-.email-hotspots-exercise__attachment {
+.email-hotspots-template__attachment {
   display: grid;
   gap: 0.15rem;
   justify-items: start;
@@ -496,30 +487,30 @@ const activateTarget = (targetId?: string) => {
   text-align: left;
 }
 
-.email-hotspots-exercise__attachment--interactive {
+.email-hotspots-template__attachment--interactive {
   border: 2px dashed #b9cae1;
   transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.email-hotspots-exercise__target--found {
+.email-hotspots-template__target--found {
   border-color: #4c7bb0;
   background: #eef5ff;
 }
 
-.email-hotspots-exercise__target--incorrect {
+.email-hotspots-template__target--incorrect {
   border-color: #d66363;
   background: #fff0f0;
 }
 
 @media (max-width: 760px) {
-  .email-hotspots-exercise__header,
-  .email-hotspots-exercise__mail-header {
+  .email-hotspots-template__header,
+  .email-hotspots-template__mail-header {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .email-hotspots-exercise__target--cta,
-  .email-hotspots-exercise__cta-static {
+  .email-hotspots-template__target--cta,
+  .email-hotspots-template__cta-static {
     width: 100%;
     justify-self: stretch;
   }
