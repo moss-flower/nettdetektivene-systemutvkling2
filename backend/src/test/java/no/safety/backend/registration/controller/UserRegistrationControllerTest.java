@@ -61,7 +61,10 @@ public class UserRegistrationControllerTest {
             "jane", "jane@test.com", "sup");
         savedTeacher = TeacherUser.builder()
             .username("jane")
-            .email("jane@test.com")
+            .email("jane@test.com").password("sup")
+            .internalId(1l)
+            .publicUuid(new UUID(0, 0))
+            .roles(Set.of())
             .build();
         
     }
@@ -101,9 +104,60 @@ public class UserRegistrationControllerTest {
     }
 
     @Test
+    @WithMockUser
+    void StudentRegistration_shouldReturn500WhenServiceThrows() {
+        when(mockService.registerStudent(any(StudentUserRegistrationRequest.class)))
+                .thenThrow(new RuntimeException("Role not found"));
+
+        client.post().uri("/api/v1/register/student")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(validRequest)
+                .exchange()
+                .expectStatus().is5xxServerError();
+    }
+
+    @Test
     void TeacherRegistration_successful() {
         // Arrange, Act, Assert (AAA)
+        when(mockService.registerTeacher(any(TeacherUserRegistrationRequest.class)))
+            .thenReturn(savedTeacher);
 
+        client.post().uri("/api/v1/register/teacher")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(validRequest)
+            .exchange()
+            .expectStatus().isCreated()
+            .expectBody(TeacherUserRegistrationResponse.class)
+            .value(response -> {
+                assertThat(response.username()).isEqualTo("jane");
+                assertThat(response.message()).isEqualTo("Teacher account registered successfully.");
+            });
+    }
 
+    @Test
+    void TeacherRegistration_shouldReturn400OnInvalidRequest() {
+        TeacherUserRegistrationRequest invalidRequest =
+                new TeacherUserRegistrationRequest("", "", "");
+
+        client.post().uri("/api/v1/register/teacher")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(invalidRequest)
+            .exchange()
+            .expectStatus().isBadRequest();
+
+        verifyNoInteractions(mockService);
+    }
+
+    @Test
+    @WithMockUser
+    void TeacherRegistration_shouldReturn500WhenServiceThrows() {
+        when(mockService.registerTeacher(any(TeacherUserRegistrationRequest.class)))
+                .thenThrow(new RuntimeException("Role not found"));
+
+        client.post().uri("/api/v1/register/teacher")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(validTeacherRequest)
+                .exchange()
+                .expectStatus().is5xxServerError();
     }
 }
