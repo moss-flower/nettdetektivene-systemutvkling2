@@ -71,7 +71,10 @@ function handleLogin() {
 
       <p class="registerText">
         Har du ikke en konto?
-        <NuxtLink to="/register" class="registerLink">Registrer deg nå</NuxtLink>
+        <NuxtLink :to="routePaths.register" class="registerLink">Registrer deg nå</NuxtLink>
+      </p>
+      <p class="dev-skip-link">
+        <NuxtLink :to="routePaths.studentHome" class="registerLink">Hopp over login (dev)</NuxtLink>
       </p>
     </div>
   </section>

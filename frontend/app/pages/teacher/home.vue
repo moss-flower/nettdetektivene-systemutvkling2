@@ -1,3 +1,9 @@
+<script setup lang="ts">
+const { getTeacherClassroomSummaries } = useTeacherDashboard();
+
+const classroomSummaries = computed(() => getTeacherClassroomSummaries());
+</script>
+
 <template>
   <section class="overviewPage">
     <header class="overviewHeader">
@@ -9,17 +15,17 @@
     <div class="dashboardGrid">
       <article class="panel classesPanel">
         <h2>Dine klasserom</h2>
-        <ul class="classList">
-          <li>
-            <NuxtLink to="/classroomOverview?classroomId=ronvik-6a">Ronvik skole 6A</NuxtLink>
-          </li>
-          <li>
-            <NuxtLink to="/classroomOverview?classroomId=ronvik-6b">Ronvik skole 6B</NuxtLink>
-          </li>
-          <li>
-            <NuxtLink to="/classroomOverview?classroomId=ronvik-6c">Ronvik skole 6C</NuxtLink>
-          </li>
-        </ul>
+        <div class="classroomCards">
+          <article
+            v-for="(classroom, index) in classroomSummaries"
+            :key="classroom.id"
+            class="classroomCard"
+            :class="`classroomCard--${(index % 3) + 1}`"
+          >
+            <NuxtLink :to="routePathsWithString(routePaths.classroomOverview, `?classroomId=${classroom.id}`)">{{ classroom.name }}</NuxtLink>
+            <span class="classScore">{{ classroom.totalScore }} poeng</span>
+          </article>
+        </div>
       </article>
 
       <article class="panel">
@@ -81,8 +87,8 @@ h1 {
 
 .panel {
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: #fff;
+  border-radius: var(--radius);
+  background: var(--surface);
   padding: var(--space-4);
 }
 
@@ -94,7 +100,6 @@ h2 {
   margin: 0 0 0.75rem 0;
 }
 
-.classList,
 .notificationList {
   margin: 0;
   padding-left: 1rem;
@@ -102,22 +107,58 @@ h2 {
   gap: 0.4rem;
 }
 
-.classList a {
+.classroomCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.classroomCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 120px;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.classroomCard--1 {
+  background: rgba(101, 240, 175, 0.08);
+}
+
+.classroomCard--2 {
+  background: rgba(96, 165, 250, 0.1);
+}
+
+.classroomCard--3 {
+  background: rgba(244, 114, 182, 0.1);
+}
+
+.classroomCard a {
+  font-weight: 700;
   color: var(--primary);
-  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.classScore {
+  color: var(--muted);
+  font-size: 0.95rem;
+  white-space: nowrap;
 }
 
 .panel--highlight {
-  background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+  background: var(--surface);
 }
 
 button {
   margin-top: 0.9rem;
   padding: 0.65rem 1rem;
   border: 1px solid var(--primary);
-  border-radius: 0.5rem;
+  border-radius: var(--radius);
   background: var(--primary);
-  color: #fff;
+  color: var(--bg);
   font-weight: 600;
   cursor: pointer;
 }
