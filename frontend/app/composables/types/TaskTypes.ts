@@ -136,16 +136,16 @@ export type EmailHotspotTaskData = TaskBase & {
   requiredCorrectSelections?: number;
 };
 
-export type StationTask =
+export type ExerciseTask =
   | XOrYTaskData
   | ThreeOptionImageTaskData
   | EmailHotspotTaskData;
 
-export type StationExercise = {
+export type Exercise = {
   id: string;
   title: string;
   description?: string;
-  tasks: StationTask[];
+  tasks: ExerciseTask[];
 };
 
 export type StationMock = {
@@ -153,7 +153,7 @@ export type StationMock = {
   slug: string;
   title: string;
   description: string;
-  exercises: StationExercise[];
+  exercises: Exercise[];
 };
 
 //================= PostOffice =================
