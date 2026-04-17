@@ -3,7 +3,7 @@ import leftArrow from "~/assets/images/leftArrow.png";
 import NewNote from "~/components/notepad/NewNote.vue";
 import NotepadFilters from "~/components/notepad/NotepadFilters.vue";
 import NotepadFrame from "~/components/notepad/NotepadFrame.vue";
-import type { NotepadEntry } from "~/composables/types/local";
+import type { NotepadEntry } from "~/composables/types/NotepadTypes.ts";
 
 //Holds selected filter as string
 const selectedFilter = ref<string | null>(null);

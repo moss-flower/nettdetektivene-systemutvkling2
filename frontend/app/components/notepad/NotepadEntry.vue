@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { NotepadEntry } from '~/composables/types/local';
+import type { NotepadEntry } from '~/composables/types/NotepadTypes.ts';
 
 //Takes in a single NotepadEntry
 const props = defineProps<{
