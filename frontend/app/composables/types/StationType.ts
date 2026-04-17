@@ -17,7 +17,7 @@ export class StationFactory {
         name: "Nyhetskvartalet",
         description:
           "Laer a skille mellom ekte nyheter, clickbait og emosjonelt spraak.",
-        image: placeholderImage,
+        image: "https://placehold.co/400x400?text=NY",
         isUnlocked: true,
         completedTasks: [false, false, false],
       },
@@ -26,7 +26,7 @@ export class StationFactory {
         name: "Fotografen",
         description:
           "Laer a kjenne igjen ekte, KI-genererte og manipulerte bilder.",
-        image: placeholderImage,
+        image: "https://placehold.co/400x400?text=PH",
         isUnlocked: false,
         completedTasks: [false, false, false],
       },
@@ -35,7 +35,7 @@ export class StationFactory {
         name: "Postkontoret",
         description:
           "Ov pa a avslore falske e-poster, mistenkelige lenker og rare avsendere.",
-        image: placeholderImage,
+        image: "https://placehold.co/400x400?text=PO",
         isUnlocked: false,
         completedTasks: [false, false, false],
       },
@@ -44,7 +44,7 @@ export class StationFactory {
         name: "Passordbanken",
         description:
           "Laer hva som gjor et passord sterkt, trygt og lett a huske.",
-        image: placeholderImage,
+        image: "https://placehold.co/400x400?text=PB",
         isUnlocked: false,
         completedTasks: [false, false, false],
       },
@@ -53,7 +53,7 @@ export class StationFactory {
         name: "Markedsplassen",
         description:
           "Laer a vurdere om nettsider og nettbutikker er trygge eller mistenkelige.",
-        image: placeholderImage,
+        image: "https://placehold.co/400x400?text=MP",
         isUnlocked: false,
         completedTasks: [false, false, false],
       },
@@ -62,7 +62,7 @@ export class StationFactory {
         name: "Den sosiale moteplassen",
         description:
           "Laer a tenke for du deler, og a oppdage manipulering og gruppepress.",
-        image: placeholderImage,
+        image: "https://placehold.co/400x400?text=SM",
         isUnlocked: false,
         completedTasks: [false, false, false],
       },
@@ -71,7 +71,7 @@ export class StationFactory {
         name: "Datasenteret",
         description:
           "Finalebanen der du bruker det du har laert for a bekjempe datatyven.",
-        image: placeholderImage,
+        image: "https://placehold.co/400x400?text=DC",
         isUnlocked: false,
         completedTasks: [false, false, false],
       },

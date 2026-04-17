@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { NuxtLink } from "#components";
+import starEmpty from "~/assets/images/star/spStarEmpty.png";
+import starFilled from "~/assets/images/star/spStarFilled.png";
 import { routePaths } from "~/composables/routePaths";
 import type { StationBase } from "~/composables/types/StationType";
 
@@ -11,6 +13,18 @@ const stationPath = computed(() => ({
   path: routePaths.studentTaskDifficultySelect,
   query: { id: props.station.id },
 }));
+
+const stars = computed(() =>
+  Array.from({ length: 3 }, (_, index) => {
+    const isCompleted = props.station.completedTasks[index] ?? false;
+
+    return {
+      id: `${props.station.id}-star-${index}`,
+      src: isCompleted ? starFilled : starEmpty,
+      alt: isCompleted ? `Completed star ${index + 1}` : `Empty star ${index + 1}`,
+    };
+  }),
+);
 </script>
 
 <template>
@@ -23,90 +37,69 @@ const stationPath = computed(() => ({
     <img :src="station.image" :alt="station.name" class="levelImage">
 
     <h4 class="levelName">{{ station.name }}</h4>
+    <div class="starRow">
+      <img
+        v-for="star in stars"
+        :key="star.id"
+        :src="star.src"
+        :alt="star.alt"
+        class="starImage"
+      >
+    </div>
     <p v-if="!station.isUnlocked" class="lock">🔒</p>
   </component>
 </template>
 
 <style scoped>
 .levelCard {
-  position: relative;
-  min-height: 220px;
-  overflow: hidden;
-  border-radius: 1rem;
-  padding: 1rem;
-  text-decoration: none;
   display: flex;
   flex-direction: column;
-  justify-content: end;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  transition:
-    transform 160ms ease,
-    box-shadow 160ms ease;
-}
-
-a.levelCard {
-  cursor: pointer;
-}
-
-a.levelCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 1rem 2rem rgb(0 0 0 / 0.18);
-}
-
-a.levelCard:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--primary) 65%, white);
-  outline-offset: 0.2rem;
-}
-
-.levelImage {
-  position: absolute;
-  inset: 0;
+  align-items: center;
+  gap: 0.75rem;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 0;
-}
-
-.levelCard::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.75) 0%,
-    rgba(0, 0, 0, 0.25) 55%,
-    rgba(0, 0, 0, 0.05) 100%
-  );
-}
-
-.levelName {
-  position: relative;
-  z-index: 2;
-  font-size: 2rem;
-  color: white;
-  margin: 0;
-}
-
-.lock {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  z-index: 3;
-  font-size: 3rem;
+  max-width: 220px;
+  padding: 1rem;
+  border: 1px solid #d6d6d6;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #1f2937;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .lockedCard {
-  color: #d1d5db;
-  cursor: default;
+  opacity: 0.5;
 }
 
-.lockedCard .levelImage {
-  filter: grayscale(100%) brightness(0.65);
+.levelImage {
+  width: 100%;
+  max-width: 140px;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover;
 }
 
-.lockedCard .levelName {
-  color: #d1d5db;
+.levelName {
+  margin: 0;
+  text-align: center;
+  font-size: 1rem;
 }
+
+.starRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.starImage {
+  width: 24px;
+  height: 24px;
+}
+
+.lock {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
 </style>
