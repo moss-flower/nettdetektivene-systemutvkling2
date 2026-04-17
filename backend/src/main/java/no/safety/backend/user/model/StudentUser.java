@@ -1,12 +1,16 @@
 package no.safety.backend.user.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import no.safety.backend.classroom.model.Classroom;
 
 /**
  * Defines a student user entity which extends {@link User}
@@ -19,5 +23,9 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @SuperBuilder
 public class StudentUser extends User {
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "classroom_id")
+  private Classroom classroom;
 
 }
