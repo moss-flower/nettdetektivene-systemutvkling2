@@ -40,7 +40,6 @@ export type ThreeOptionPromptContent = {
 export type ThreeOptionCardContent = {
   key: ThreeOptionChoice;
   title: string;
-  text?: string;
 };
 export type ThreeOptionResult = {
   correct: boolean;

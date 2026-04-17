@@ -65,7 +65,6 @@ const choose = (choice: ThreeOptionChoice) => {
         <span class="three-option-image-exercise__option-badge">{{ option.key.toUpperCase() }}</span>
         <span class="three-option-image-exercise__option-copy">
           <span class="three-option-image-exercise__option-title">{{ option.title }}</span>
-          <span v-if="option.text" class="three-option-image-exercise__option-text">{{ option.text }}</span>
         </span>
       </button>
     </div>
@@ -123,7 +122,7 @@ const choose = (choice: ThreeOptionChoice) => {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 1rem;
-  align-items: start;
+  align-items: center;
   width: 100%;
   padding: 1rem 1.15rem;
   border: 2px solid #d8dde5;
@@ -157,19 +156,13 @@ const choose = (choice: ThreeOptionChoice) => {
 
 .three-option-image-exercise__option-copy {
   display: grid;
-  gap: 0.25rem;
+  align-self: center;
 }
 
 .three-option-image-exercise__option-title {
   font-size: 1.05rem;
   font-weight: 700;
   line-height: 1.35;
-}
-
-.three-option-image-exercise__option-text {
-  font-size: 0.96rem;
-  line-height: 1.45;
-  color: #556170;
 }
 
 .three-option-image-exercise__option--selected {

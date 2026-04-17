@@ -46,9 +46,9 @@ export const newsStandExerciseMock: Exercise = {
         imageAlt: 'Skjermbilde av en tvilsom nyhetsartikkel',
       },
       options: [
-        { key: 'a', title: 'Den har en tydelig avsender og gode kilder', text: 'Dette gjør vanligvis en sak mer troverdig, ikke mindre.' },
-        { key: 'b', title: 'Overskriften prøver å sjokkere og avsenderen virker ukjent', text: 'Sterk følelsesbruk og uklar avsender er vanlige varselsignaler.' },
-        { key: 'c', title: 'Bildet er stort og fargerikt', text: 'Et stort bilde alene sier ikke noe sikkert om troverdighet.' },
+        { key: 'a', title: 'Den har en tydelig avsender og gode kilder' },
+        { key: 'b', title: 'Overskriften prøver å sjokkere og avsenderen virker ukjent' },
+        { key: 'c', title: 'Bildet er stort og fargerikt' },
       ],
       correctChoice: 'b',
     },
