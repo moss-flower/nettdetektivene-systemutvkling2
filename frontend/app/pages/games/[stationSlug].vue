@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { getExerciseMockById } from '~/composables/mocks/exercises'
+import EmailHotspotsTemplate from '~/components/gameplay/templates/EmailHotspotsTemplate.vue'
 import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDialog.vue'
-import EmailHotspotsExercise from '~/components/gameplay/shared/EmailHotspotsExercise.vue'
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
-import ThreeOptionImageExercise from '~/components/gameplay/shared/ThreeOptionImageExercise.vue'
-import XOrYExercise from '~/components/gameplay/shared/XOrYExercise.vue'
+import ThreeOptionImageTemplate from '~/components/gameplay/templates/ThreeOptionImageTemplate.vue'
+import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
 import { getStationMockBySlug } from '~/composables/mocks/stations'
 import type {
   EmailHotspotResult,
@@ -189,7 +189,7 @@ const next = () => {
     </header>
 
     <div class="station-page__board">
-      <XOrYExercise
+      <XOrYTemplate
         v-if="currentTask?.templateKind === 'x-or-y' && currentOptions"
         :key="`${currentTask.id}-xory`"
         :prompt="currentTask.prompt"
@@ -199,7 +199,7 @@ const next = () => {
         :selected-choice="selectedChoice"
         @answered="onAnswered"
       />
-      <ThreeOptionImageExercise
+      <ThreeOptionImageTemplate
         v-else-if="currentTask?.templateKind === 'three-option-image'"
         :key="`${currentTask.id}-three-option`"
         :prompt="currentTask.prompt"
@@ -209,7 +209,7 @@ const next = () => {
         :selected-choice="selectedThreeOptionChoice"
         @answered="onAnsweredThreeOption"
       />
-      <EmailHotspotsExercise
+      <EmailHotspotsTemplate
         v-else-if="currentTask?.templateKind === 'email-hotspots'"
         :key="`${currentTask.id}-email-hotspots`"
         :prompt="currentTask.prompt"
