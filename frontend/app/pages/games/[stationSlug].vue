@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { getExerciseMockById } from '~/composables/mocks/exercises'
-import CompletedPopup from '~/components/gameplay/shared/CompletedPopup.vue'
-import EmailHotspotsExercise from '~/components/gameplay/shared/EmailHotspotsExercise.vue'
 import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDialog.vue'
+import EmailHotspotsExercise from '~/components/gameplay/shared/EmailHotspotsExercise.vue'
+import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import ThreeOptionImageExercise from '~/components/gameplay/shared/ThreeOptionImageExercise.vue'
 import XOrYExercise from '~/components/gameplay/shared/XOrYExercise.vue'
 import { getStationMockBySlug } from '~/composables/mocks/stations'
@@ -40,7 +40,7 @@ const tasks = activeExercise
   ? sampleAndShuffle(activeExercise.tasks, activeExercise.tasks.length)
   : []
 const currentIndex = ref(0)
-const showCompletedPopup = ref(false)
+const showExerciseResultDialog = ref(false)
 const correctCount = ref(0)
 const answerState = ref<{ correct: boolean, choice: string } | null>(null)
 
@@ -166,7 +166,7 @@ const next = () => {
   if (currentIndex.value < tasks.length - 1) {
     currentIndex.value++
   } else {
-    showCompletedPopup.value = true
+    showExerciseResultDialog.value = true
   }
 }
 </script>
@@ -221,7 +221,7 @@ const next = () => {
       />
     </div>
 
-    <ExerciseResultDialog
+    <TaskResultDialog
       v-if="showAnswerDialog && answerState"
       :title="feedbackTitle"
       :message="feedbackText"
@@ -230,8 +230,8 @@ const next = () => {
       @next="next"
     />
 
-    <CompletedPopup
-      v-if="showCompletedPopup"
+    <ExerciseResultDialog
+      v-if="showExerciseResultDialog"
       :correct-count="correctCount"
       :total="tasks.length"
     />
