@@ -14,26 +14,147 @@ type BaseTask = {
 export type ImageRecognitionType = "real" | "AI" | "manipulated";
 export type MarketplaceChoice = "buy" | "reviewMore" | "dontBuy";
 export type SocialMediaChoice = "share" | "hold" | "checkSources" | "askAdult";
-
-//================= NewsStand =================
-
-export type NewsArticle = {
-  author: string;
-  title: string;
+export type XOrYChoice = "x" | "y";
+export type XOrYPair<T> = {
+  x: T;
+  y: T;
+};
+export type XOrYOptionContent = {
   imageUrl: string;
+  imageAlt: string;
+  eyebrow?: string;
+  title: string;
   text: string;
 };
-
-export type NewsStandPair = {
-  correct: NewsArticle;
-  fake: NewsArticle;
+export type XOrYResult = {
+  correct: boolean;
+  choice: XOrYChoice;
+};
+export type ThreeOptionChoice = "a" | "b" | "c";
+export type ThreeOptionPromptContent = {
+  imageUrl: string;
+  imageAlt: string;
+  title?: string;
+  text?: string;
+};
+export type ThreeOptionCardContent = {
+  key: ThreeOptionChoice;
+  title: string;
+  text?: string;
+};
+export type ThreeOptionResult = {
+  correct: boolean;
+  choice: ThreeOptionChoice;
+};
+export type EmailHotspotTarget = {
+  id: string;
+  isSuspicious: boolean;
+};
+export type EmailHotspotBodyTextBlock = {
+  id: string;
+  type: "text";
+  text: string;
+  targetId?: string;
+};
+export type EmailHotspotBodyLinkBlock = {
+  id: string;
+  type: "link";
+  label: string;
+  urlText: string;
+  helperText?: string;
+  targetId?: string;
+};
+export type EmailHotspotBodyBlock =
+  | EmailHotspotBodyTextBlock
+  | EmailHotspotBodyLinkBlock;
+export type EmailHotspotAttachment = {
+  id: string;
+  name: string;
+  details?: string;
+  targetId?: string;
+};
+export type EmailHotspotActionButton = {
+  label: string;
+  helperText?: string;
+  targetId?: string;
+};
+export type EmailHotspotContent = {
+  senderName: string;
+  senderAddress: string;
+  senderAddressTargetId?: string;
+  subject: string;
+  subjectTargetId?: string;
+  senderAvatarText?: string;
+  receivedLabel?: string;
+  greeting?: string;
+  bodyBlocks: EmailHotspotBodyBlock[];
+  actionButton?: EmailHotspotActionButton;
+  attachments?: EmailHotspotAttachment[];
+  closing?: string;
+};
+export type EmailHotspotResult = {
+  correct: boolean;
+  selectedTargetIds: string[];
+  incorrectTargetId?: string;
 };
 
-export type NewsStandTask = BaseTask & {
-  kind: "newsStand";
-  articles: NewsStandPair[];
+export type ExerciseTemplateKind = "x-or-y" | "three-option-image" | "email-hotspots";
+
+export type TaskBase = {
+  id: string;
+  templateKind: ExerciseTemplateKind;
+  introText: string;
+  feedbackCorrect: string;
+  feedbackIncorrect: string;
 };
 
+export type XOrYTaskData = TaskBase & {
+  templateKind: "x-or-y";
+  prompt?: {
+    title?: string;
+    text?: string;
+  };
+  options: XOrYPair<XOrYOptionContent>;
+  correctChoice: XOrYChoice;
+};
+
+export type ThreeOptionImageTaskData = TaskBase & {
+  templateKind: "three-option-image";
+  prompt: ThreeOptionPromptContent;
+  options: ThreeOptionCardContent[];
+  correctChoice: ThreeOptionChoice;
+};
+
+export type EmailHotspotTaskData = TaskBase & {
+  templateKind: "email-hotspots";
+  prompt?: {
+    title?: string;
+    text?: string;
+  };
+  email: EmailHotspotContent;
+  targets: EmailHotspotTarget[];
+  requiredCorrectSelections?: number;
+};
+
+export type StationTask =
+  | XOrYTaskData
+  | ThreeOptionImageTaskData
+  | EmailHotspotTaskData;
+
+export type StationExercise = {
+  id: string;
+  title: string;
+  description?: string;
+  tasks: StationTask[];
+};
+
+export type StationMock = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  exercises: StationExercise[];
+};
 
 //================= PostOffice =================
 
@@ -126,7 +247,6 @@ export type SocialMediaTask = BaseTask & {
 
 //================= Boss =================
 export type NonFinalTask =
-  | NewsStandTask
   | PostOfficeTask
   | PasswordBankTask
   | ImageRecognitionTask

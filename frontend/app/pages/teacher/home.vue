@@ -22,7 +22,7 @@ const classroomSummaries = computed(() => getTeacherClassroomSummaries());
             class="classroomCard"
             :class="`classroomCard--${(index % 3) + 1}`"
           >
-            <NuxtLink :to="routePathsWithString(routePaths.classroomOverview, `?classroomId=${classroom.id}`)">{{ classroom.name }}</NuxtLink>
+            <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomOverview, `?classroomId=${classroom.id}`)">{{ classroom.name }}</NuxtLink>
             <span class="classScore">{{ classroom.totalScore }} poeng</span>
           </article>
         </div>
