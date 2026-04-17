@@ -3,7 +3,7 @@ import type { Exercise } from "~/composables/types/ExerciseType";
 
 export type StationStatus = {
   isUnlocked: boolean;
-  completedTasks: boolean[];
+  completedExercises: boolean[];
 };
 
 export type StationData = {
@@ -18,31 +18,31 @@ export type StationData = {
 const STATION_STATUS_MOCKS: Record<string, StationStatus> = {
   "station-newsstand": {
     isUnlocked: true,
-    completedTasks: [false, false, false],
+    completedExercises: [false, false, false],
   },
   "station-photograph": {
     isUnlocked: false,
-    completedTasks: [false, false, false],
+    completedExercises: [false, false, false],
   },
   "station-postoffice": {
     isUnlocked: false,
-    completedTasks: [false, false, false],
+    completedExercises: [false, false, false],
   },
   "station-passwordbank": {
     isUnlocked: false,
-    completedTasks: [false, false, false],
+    completedExercises: [false, false, false],
   },
   "station-marketplace": {
     isUnlocked: false,
-    completedTasks: [false, false, false],
+    completedExercises: [false, false, false],
   },
   "station-socialmedia": {
     isUnlocked: false,
-    completedTasks: [false, false, false],
+    completedExercises: [false, false, false],
   },
   "station-datacenter": {
     isUnlocked: false,
-    completedTasks: [false, false, false],
+    completedExercises: [false, false, false],
   },
 };
 
@@ -74,7 +74,7 @@ export class Station {
   static getMockStatusById(id: string): StationStatus {
     return STATION_STATUS_MOCKS[id] ?? {
       isUnlocked: false,
-      completedTasks: [],
+      completedExercises: [],
     };
   }
 

@@ -25,7 +25,7 @@ const stationId = computed(() =>
 const station = computed(() => Station.findById(stationId.value));
 const stationStatus = computed(() => station.value?.getMockStatus() ?? {
   isUnlocked: false,
-  completedTasks: [],
+  completedExercises: [],
 });
 
 const difficultyOptions = computed<DifficultyOption[]>(() => {
@@ -33,7 +33,7 @@ const difficultyOptions = computed<DifficultyOption[]>(() => {
     return [];
   }
 
-  const [easyCompleted = false, mediumCompleted = false] = stationStatus.value.completedTasks;
+  const [easyCompleted = false, mediumCompleted = false] = stationStatus.value.completedExercises;
 
   return [
     {

@@ -12,13 +12,13 @@ const props = defineProps<{
 const stationStatus = computed(() => props.station.getMockStatus());
 
 const stationPath = computed(() => ({
-  path: routePaths.studentTaskDifficultySelect,
+  path: routePaths.studentExerciseDifficultySelect,
   query: { id: props.station.id },
 }));
 
 const stars = computed(() =>
   Array.from({ length: 3 }, (_, index) => {
-    const isCompleted = stationStatus.value.completedTasks[index] ?? false;
+    const isCompleted = stationStatus.value.completedExercises[index] ?? false;
 
     return {
       id: `${props.station.id}-star-${index}`,

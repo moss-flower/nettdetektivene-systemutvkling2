@@ -1,17 +1,11 @@
 import type {
-  EmailHotspotTaskData,
-  ThreeOptionImageTaskData,
-  XOrYTaskData,
+  TaskBase,
 } from "~/composables/types/TaskTypes";
-
-export type ExerciseTask =
-  | XOrYTaskData
-  | ThreeOptionImageTaskData
-  | EmailHotspotTaskData;
 
 export type Exercise = {
   id: string;
   title: string;
+  difficultyName: string;
   description?: string;
-  tasks: ExerciseTask[];
+  tasks: TaskBase[];
 };
