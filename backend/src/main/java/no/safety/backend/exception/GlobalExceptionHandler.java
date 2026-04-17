@@ -4,19 +4,35 @@ import no.safety.backend.exception.domain.RoleNotFoundException;
 import no.safety.backend.exception.domain.UserAlreadyExistsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.time.Instant;
 import java.util.stream.Collectors;
+
+
 
 /**
  * Defines a global exception handler to catch and handle custom exceptions from all sources.
  * Allows for control over which error messages and data reach the user, so unintended information is not leaked from the backend.
  */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * Handles {@link BadCredentialsException} exceptions.
+     * @param ex
+     * @return Returns a {@link ProblemDetail} with HTTP status code: 401 UNAUTHORIZED.
+     */
+    @ExceptionHandler(BadCredentialsException.class)
+    public ProblemDetail handleBadCredentials(BadCredentialsException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Invalid email or password");
+    }
 
     /**
      * Handles {@link UserAlreadyExistsException} exceptions.
@@ -65,6 +81,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleGeneralError(Exception ex) {
+        log.error("Exception: ", ex);
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
             HttpStatus.INTERNAL_SERVER_ERROR, 
             "An unexpected error occurred. Please contact support."

@@ -16,7 +16,6 @@ import no.safety.backend.user.repository.UserRepository;
  * Acts as the bridge between controllers and the persistence layer for all {@link User} subtypes.
  */
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class UserService {
 
@@ -71,6 +70,7 @@ public class UserService {
      * @param publicUuid the identifier of the user to remove
      * @throws RuntimeException if the user is not found
      */
+    @Transactional
     public void deleteByPublicUuid(UUID publicUuid) {
         User user = userRepository.findByPublicUuid(publicUuid)
                 .orElseThrow(() -> new RuntimeException("User not found with UUID: " + publicUuid));
