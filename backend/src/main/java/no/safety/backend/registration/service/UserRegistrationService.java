@@ -41,6 +41,13 @@ public class UserRegistrationService {
      */
     public StudentUser registerStudent(StudentUserRegistrationRequest request) {
 
+        if(userService.existsByEmail(request.email())) {
+            throw new RuntimeException("A user already exists with that email.");
+        }
+        if(userService.existsByUsername(request.username())) {
+            throw new RuntimeException("A user already exists with that username.");
+        }
+
         StudentUser studentUser = StudentUser.builder()
             .username(request.username())
             .email(request.email())
@@ -48,8 +55,6 @@ public class UserRegistrationService {
             .roles(Set.of(roleRepository.findByType(RoleType.ROLE_STUDENT)
                 .orElseThrow(() -> new RuntimeException("Role not found"))))
             .build();
-
-        validateUniqueUserCredentials(studentUser);
 
         return studentUserRepository.save(studentUser);
     }
@@ -62,6 +67,13 @@ public class UserRegistrationService {
      * @throws RuntimeException if the required {@code ROLE_TEACHER} is not present in the database
      */
     public TeacherUser registerTeacher(TeacherUserRegistrationRequest request) {
+        if(userService.existsByEmail(request.email())) {
+            throw new RuntimeException("A user already exists with that email.");
+        }
+        if(userService.existsByUsername(request.username())) {
+            throw new RuntimeException("A user already exists with that username.");
+        }
+
         TeacherUser teacherUser = TeacherUser.builder()
             .username(request.username())
             .email(request.email())
@@ -70,24 +82,6 @@ public class UserRegistrationService {
                 .orElseThrow(() -> new RuntimeException("Role not found"))))
             .build();
 
-        validateUniqueUserCredentials(teacherUser);
-
         return teacherUserRepository.save(teacherUser);
-    }
-
-    /**
-     * Validates that the user details are unique and do not exist in the database
-     */
-    private void validateUniqueUserCredentials(User user) {
-        if (user == null){
-            throw new NullPointerException("User object is null.");
-        }
-
-        if (userService.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("Email already in use"); 
-        }
-        if (userService.existsByUsername(user.getUsername())) {
-            throw new RuntimeException("Username already taken");
-        }
     }
 }
