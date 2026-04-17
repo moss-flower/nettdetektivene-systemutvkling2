@@ -6,6 +6,7 @@ import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import ThreeOptionImageTemplate from '~/components/gameplay/templates/ThreeOptionImageTemplate.vue'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
 import { getStationMockBySlug } from '~/composables/mocks/stations'
+
 import type {
   EmailHotspotResult,
   ThreeOptionChoice,
@@ -23,6 +24,9 @@ const route = useRoute()
 const requestedStationSlug = Array.isArray(route.params.stationSlug)
   ? route.params.stationSlug[0] ?? ''
   : route.params.stationSlug ?? ''
+const requestedExerciseId = typeof route.query.exerciseId === 'string'
+  ? route.query.exerciseId
+  : ''
 const station = getStationMockBySlug(requestedStationSlug)
 
 if (!station) {
@@ -34,7 +38,9 @@ if (!station) {
 
 const { celebrateCorrectAnswer, stop } = useGameConfetti()
 
-const activeExerciseId = station.exerciseIds[0] ?? null
+const activeExerciseId = station.exerciseIds.includes(requestedExerciseId)
+  ? requestedExerciseId
+  : station.exerciseIds[0] ?? null
 const activeExercise = activeExerciseId ? getExerciseMockById(activeExerciseId) : null
 const tasks = activeExercise
   ? sampleAndShuffle(activeExercise.tasks, activeExercise.tasks.length)

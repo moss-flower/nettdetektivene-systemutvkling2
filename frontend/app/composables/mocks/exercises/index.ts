@@ -10,3 +10,9 @@ export const exerciseMocks: Exercise[] = [
 export const getExerciseMockById = (exerciseId: string) => {
   return exerciseMocks.find((exercise) => exercise.id === exerciseId) ?? null
 }
+
+export const getExerciseMocksByIds = (exerciseIds: string[]) => {
+  return exerciseIds
+    .map((exerciseId) => getExerciseMockById(exerciseId))
+    .filter((exercise): exercise is Exercise => exercise !== null)
+}

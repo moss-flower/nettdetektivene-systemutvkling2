@@ -2,8 +2,11 @@ import placeholderImage from "~/assets/images/placeholder.jpeg";
 import type { Exercise } from "~/composables/types/ExerciseType";
 
 export type StationStatus = {
-  isUnlocked: boolean;
   completedExercises: boolean[];
+};
+
+type StationStatusMock = {
+  completedExercises?: boolean[];
 };
 
 export type StationData = {
@@ -15,36 +18,18 @@ export type StationData = {
   exerciseIds?: Exercise["id"][];
 };
 
-const STATION_STATUS_MOCKS: Record<string, StationStatus> = {
-  "station-newsstand": {
-    isUnlocked: true,
-    completedExercises: [false, false, false],
-  },
-  "station-photograph": {
-    isUnlocked: false,
-    completedExercises: [false, false, false],
-  },
-  "station-postoffice": {
-    isUnlocked: false,
-    completedExercises: [false, false, false],
-  },
-  "station-passwordbank": {
-    isUnlocked: false,
-    completedExercises: [false, false, false],
-  },
-  "station-marketplace": {
-    isUnlocked: false,
-    completedExercises: [false, false, false],
-  },
-  "station-socialmedia": {
-    isUnlocked: false,
-    completedExercises: [false, false, false],
-  },
-  "station-datacenter": {
-    isUnlocked: false,
-    completedExercises: [false, false, false],
-  },
+const STATION_STATUS_MOCKS: Record<string, StationStatusMock> = {
+  "station-newsstand": {},
+  "station-photograph": {},
+  "station-postoffice": {},
+  "station-passwordbank": {},
+  "station-marketplace": {},
+  "station-socialmedia": {},
+  "station-datacenter": {},
 };
+
+const buildCompletedExercises = (exerciseCount: number, completedExercises: boolean[] = []) =>
+  Array.from({ length: exerciseCount }, (_, index) => completedExercises[index] ?? false);
 
 export class Station {
   id: string;
@@ -67,14 +52,19 @@ export class Station {
     return this.title;
   }
 
-  getMockStatus(): StationStatus {
-    return Station.getMockStatusById(this.id);
+  isUnlocked(): boolean {
+    return true;
   }
 
-  static getMockStatusById(id: string): StationStatus {
-    return STATION_STATUS_MOCKS[id] ?? {
-      isUnlocked: false,
-      completedExercises: [],
+  getMockStatus(): StationStatus {
+    return Station.getMockStatusById(this.id, this.exerciseIds.length);
+  }
+
+  static getMockStatusById(id: string, exerciseCount = 0): StationStatus {
+    const mockStatus = STATION_STATUS_MOCKS[id];
+
+    return {
+      completedExercises: buildCompletedExercises(exerciseCount, mockStatus?.completedExercises),
     };
   }
 

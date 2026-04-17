@@ -135,6 +135,11 @@ export type EmailHotspotTaskData = TaskBase & {
   requiredCorrectSelections?: number;
 };
 
+export type ExerciseTask =
+  | XOrYTaskData
+  | ThreeOptionImageTaskData
+  | EmailHotspotTaskData;
+
 //================= PostOffice =================
 
 export type PostOfficeMail = {

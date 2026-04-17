@@ -10,14 +10,23 @@ const props = defineProps<{
 }>();
 
 const stationStatus = computed(() => props.station.getMockStatus());
+const stationIsUnlocked = computed(() => props.station.isUnlocked());
 
 const stationPath = computed(() => ({
   path: routePaths.studentExerciseDifficultySelect,
   query: { id: props.station.id },
 }));
 
+const totalExercises = computed(() => {
+  if (props.station.exerciseIds.length > 0) {
+    return props.station.exerciseIds.length;
+  }
+
+  return stationStatus.value.completedExercises.length;
+});
+
 const stars = computed(() =>
-  Array.from({ length: 3 }, (_, index) => {
+  Array.from({ length: totalExercises.value }, (_, index) => {
     const isCompleted = stationStatus.value.completedExercises[index] ?? false;
 
     return {
@@ -31,10 +40,10 @@ const stars = computed(() =>
 
 <template>
     <component
-    :is="stationStatus.isUnlocked ? NuxtLink : 'div'"
+  :is="stationIsUnlocked ? NuxtLink : 'div'"
     class="levelCard"
-    :class="{ lockedCard: !stationStatus.isUnlocked }"
-    :to="stationStatus.isUnlocked ? stationPath : undefined"
+  :class="{ lockedCard: !stationIsUnlocked }"
+  :to="stationIsUnlocked ? stationPath : undefined"
   >
     <img :src="station.image" :alt="station.name" class="levelImage">
 
@@ -48,7 +57,7 @@ const stars = computed(() =>
         class="starImage"
       >
     </div>
-    <p v-if="!stationStatus.isUnlocked" class="lock">🔒</p>
+    <p v-if="!stationIsUnlocked" class="lock">🔒</p>
   </component>
 </template>
 

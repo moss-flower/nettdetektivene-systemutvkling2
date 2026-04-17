@@ -2,12 +2,10 @@
 import { NuxtLink } from "#components";
 import type { RouteLocationRaw } from "vue-router";
 
-type DifficultyLevel = "easy" | "medium" | "hard";
-
 const props = defineProps<{
   title: string;
+  difficultyText: string;
   description: string;
-  level: DifficultyLevel;
   isUnlocked: boolean;
   to?: RouteLocationRaw;
 }>();
@@ -19,14 +17,11 @@ const cardTag = computed(() => (props.isUnlocked && props.to ? NuxtLink : "div")
   <component
     :is="cardTag"
     class="difficultyCard"
-    :class="[
-      `difficultyCard--${level}`,
-      { difficultyCardLocked: !isUnlocked },
-    ]"
+    :class="{ difficultyCardLocked: !isUnlocked }"
     :to="isUnlocked ? to : undefined"
   >
     <p class="difficultyLabel">{{ title }}</p>
-    <h2 class="difficultyHeading">{{ level }}</h2>
+    <h2 class="difficultyHeading">{{ difficultyText }}</h2>
     <p class="difficultyDescription">{{ description }}</p>
     <p class="difficultyState">
       {{ isUnlocked ? "Start oppgave" : "Låst" }}
@@ -46,23 +41,12 @@ const cardTag = computed(() => (props.isUnlocked && props.to ? NuxtLink : "div")
   border-radius: 1.25rem;
   text-decoration: none;
   color: #1d2433;
+  background: linear-gradient(180deg, #f9f5ea 0%, #efe2bf 100%);
   box-shadow: var(--shadow);
   transition:
     transform 160ms ease,
     box-shadow 160ms ease,
     border-color 160ms ease;
-}
-
-.difficultyCard--easy {
-  background: linear-gradient(180deg, #ecfdf3 0%, #c9f2d9 100%);
-}
-
-.difficultyCard--medium {
-  background: linear-gradient(180deg, #fff8e6 0%, #ffd98b 100%);
-}
-
-.difficultyCard--hard {
-  background: linear-gradient(180deg, #ffe9e7 0%, #ffb2aa 100%);
 }
 
 a.difficultyCard {

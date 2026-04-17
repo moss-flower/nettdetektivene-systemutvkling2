@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import StationCard from "~/components/station/station.vue";
+import { getStationMockById, stationMocks } from "~/composables/mocks/stations";
 import { routePaths } from "~/composables/routePaths";
 import { Station } from "~/composables/types/StationType";
 
-//Props, temporary hardcoded content
-const mockData = Station.mockData();
+const stations = Station.mockData().map((station) => getStationMockById(station.id) ?? station);
 const router = useRouter();
 
 function goBack() {
@@ -29,7 +29,7 @@ function goBack() {
 
     <div class="stationGrid">
       <StationCard
-        v-for="station in mockData"
+        v-for="station in stations"
         :key="station.id"
         :station="station"
       />

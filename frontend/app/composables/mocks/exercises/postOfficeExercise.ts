@@ -3,6 +3,7 @@ import type { Exercise } from '~/composables/types/ExerciseType'
 export const postOfficeExerciseMock: Exercise = {
   id: 'postoffice-exercise-1',
   title: 'Mistenkelige e-poster',
+  difficultyText: 'Lett',
   description: 'Se etter rare avsendere, farlige lenker og andre tegn på at en e-post ikke er trygg.',
   tasks: [
     {

@@ -3,6 +3,7 @@ import type { Exercise } from '~/composables/types/ExerciseType'
 export const newsStandExerciseMock: Exercise = {
   id: 'newsstand-exercise-1',
   title: 'Troverdige nyheter',
+  difficultyText: 'Lett',
   description: 'Undersøk hvilke nyhetssaker som virker ekte, og hvilke faresignaler som bør sjekkes ekstra godt.',
   tasks: [
     {

@@ -1,11 +1,11 @@
 import type {
-  TaskBase,
+  ExerciseTask,
 } from "~/composables/types/TaskTypes";
 
 export type Exercise = {
   id: string;
   title: string;
-  difficultyName: string;
+  difficultyText: string;
   description?: string;
-  tasks: TaskBase[];
+  tasks: ExerciseTask[];
 };

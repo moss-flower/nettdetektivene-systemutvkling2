@@ -15,4 +15,8 @@ export const getStationMockBySlug = (slug: string) => {
   return stationMocks.find((station) => normalizeStationSlug(station.slug) === normalizedSlug) ?? null
 }
 
+export const getStationMockById = (stationId: string) => {
+  return stationMocks.find((station) => station.id === stationId) ?? null
+}
+
 export const getStationRoutePath = (slug: string) => `/games/${normalizeStationSlug(slug)}`
