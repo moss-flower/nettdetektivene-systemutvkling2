@@ -1,5 +1,7 @@
 package no.safety.backend.classroom.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.Set;
 import java.util.UUID;
@@ -41,6 +43,11 @@ public class ClassroomController {
    * @throws no.safety.backend.exception.NotFoundException  if the calling user is not found
    * @throws no.safety.backend.exception.ForbiddenException if the calling user is not a teacher
    */
+  @Operation(
+      summary = "Create a new classroom",
+      description = "Creates a new classroom owned by the caller. A join code is automatically generated.",
+      tags = {"Classroom management for teachers"}
+  )
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public ClassroomResponse create(
@@ -60,6 +67,11 @@ public class ClassroomController {
    * @throws no.safety.backend.exception.ForbiddenException if the calling user is not an owner of
    *                                                        the classroom.
    */
+  @Operation(
+      summary = "Update a classroom",
+      description = "Updates the name and description of an existing classroom. Requires the caller to be an owner.",
+      tags = {"Classroom management for teachers"}
+  )
   @PutMapping("/{classroomId}")
   public ClassroomResponse update(
       @PathVariable Long classroomId,
@@ -78,6 +90,11 @@ public class ClassroomController {
    * @throws no.safety.backend.exception.ForbiddenException if the calling user is not an owner of
    *                                                        the classroom.
    */
+  @Operation(
+      summary = "Delete a classroom",
+      description = "Deletes an existing classroom. Requires the caller to be an owner.",
+      tags = {"Classroom management for teachers"}
+  )
   @DeleteMapping("/{classroomId}")
   public ResponseEntity<Void> delete(
       @PathVariable Long classroomId,
@@ -102,6 +119,11 @@ public class ClassroomController {
    * @throws no.safety.backend.exception.ConflictException  if the new owner user is already an
    *                                                        owner.
    */
+  @Operation(
+      summary = "Add an owner to a classroom",
+      description = "Adds a teacher as an owner of the classroom. Requires the caller to be an existing owner.",
+      tags = {"Classroom management for teachers"}
+  )
   @PostMapping("/{classroomId}/owners/{userUuid}")
   public ClassroomResponse addOwner(
       @PathVariable Long classroomId,
@@ -125,6 +147,11 @@ public class ClassroomController {
    * @throws no.safety.backend.exception.NotFoundException  if the user to remove is not an owner of
    *                                                        the classroom.
    */
+  @Operation(
+      summary = "Remove an owner from a classroom",
+      description = "Removes a teacher as an owner of the classroom. The last owner cannot be removed. Requires the caller to be an owner.",
+      tags = {"Classroom management for teachers"}
+  )
   @DeleteMapping("/{classroomId}/owners/{userUuid}")
   public ClassroomResponse removeOwner(
       @PathVariable Long classroomId,
@@ -140,6 +167,11 @@ public class ClassroomController {
    * @param authentication Spring Security context for the calling user.
    * @return a response containing the classroom with the new join code.
    */
+  @Operation(
+      summary = "Regenerate join code",
+      description = "Generates a new join code for the classroom, replacing the old one. Requires the caller to be an owner.",
+      tags = {"Classroom management for teachers"}
+  )
   @PostMapping("/{classroomId}/code")
   public ClassroomResponse regenerateCode(
       @PathVariable Long classroomId,
@@ -153,6 +185,11 @@ public class ClassroomController {
    * @param authentication Spring Security context for the calling user.
    * @return a set of responses containing classrooms the caller owns.
    */
+  @Operation(
+      summary = "Get all owned classrooms",
+      description = "Returns all classrooms owned by the logged-in teacher.",
+      tags = {"Classroom management for teachers"}
+  )
   @GetMapping
   public Set<ClassroomResponse> getOwnedClassrooms(Authentication authentication) {
     return classroomService.getOwnedClassrooms(getCallerUuid(authentication));
@@ -168,6 +205,11 @@ public class ClassroomController {
    * @throws no.safety.backend.exception.ForbiddenException if the caller does not own the
    *                                                        classroom.
    */
+  @Operation(
+      summary = "Get a classroom by ID",
+      description = "Returns a specific classroom by its ID. Requires the caller to be an owner.",
+      tags = {"Classroom management for teachers"}
+  )
   @GetMapping("/{classroomId}")
   public ClassroomResponse getClassroom(@PathVariable Long classroomId,
       Authentication authentication) {
@@ -182,6 +224,11 @@ public class ClassroomController {
    * @throws no.safety.backend.exception.NotFoundException if the student is not found or if it is
    *                                                       not in a classroom.
    */
+  @Operation(
+      summary = "Get my classroom",
+      description = "Returns the classroom that the logged-in student is a member of.",
+      tags = {"Classroom management for students"}
+  )
   @GetMapping("/me")
   public ClassroomResponse getMyClassroom(Authentication authentication) {
     return classroomService.getMyClassroom(getCallerUuid(authentication));
@@ -199,6 +246,11 @@ public class ClassroomController {
    * @throws no.safety.backend.exception.ConflictException  if the student is already in a
    *                                                        classroom.
    */
+  @Operation(
+      summary = "Join a classroom",
+      description = "Allows a student to join a classroom using a join code. A student can only be a member of one classroom at a time.",
+      tags = {"Classroom management for students"}
+  )
   @PostMapping("/join/{code}")
   public ClassroomResponse joinByCode(
       @PathVariable String code,
@@ -217,6 +269,11 @@ public class ClassroomController {
    *                                                        found.
    * @throws no.safety.backend.exception.ForbiddenException if the caller is not an owner.
    */
+  @Operation(
+      summary = "Remove a student from a classroom",
+      description = "Removes a student member from a classroom. Requires the caller to be an owner.",
+      tags = {"Classroom management for teachers"}
+  )
   @DeleteMapping("/{classroomId}/members/{userUuid}")
   public ClassroomResponse removeMember(
       @PathVariable Long classroomId,
@@ -234,6 +291,11 @@ public class ClassroomController {
    * @throws no.safety.backend.exception.NotFoundException if the classroom is not found or the
    *                                                       caller is not a member.
    */
+  @Operation(
+      summary = "Leave a classroom",
+      description = "Allows the logged-in student to leave a classroom they are a member of.",
+      tags = {"Classroom management for students"}
+  )
   @DeleteMapping("/{classroomId}/members/me")
   public ResponseEntity<Void> leaveClassroom(
       @PathVariable Long classroomId,
