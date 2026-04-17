@@ -1,104 +1,259 @@
-// TaskTypes.ts
-class TaskDTO {
-    taskId: string = "";
-    description: string = "";
-}
+type BaseTask = {
+  id: string;
+  kind:
+    | "newsStand"
+    | "postOffice"
+    | "passwordBank"
+    | "imageRecognition"
+    | "marketplace"
+    | "socialMedia"
+    | "finalBoss";
+  description: string;
+};
+
+export type ImageRecognitionType = "real" | "AI" | "manipulated";
+export type MarketplaceChoice = "buy" | "reviewMore" | "dontBuy";
+export type SocialMediaChoice = "share" | "hold" | "checkSources" | "askAdult";
+export type XOrYChoice = "x" | "y";
+export type XOrYPair<T> = {
+  x: T;
+  y: T;
+};
+export type XOrYOptionContent = {
+  imageUrl: string;
+  imageAlt: string;
+  eyebrow?: string;
+  title: string;
+  text: string;
+};
+export type XOrYResult = {
+  correct: boolean;
+  choice: XOrYChoice;
+};
+export type ThreeOptionChoice = "a" | "b" | "c";
+export type ThreeOptionPromptContent = {
+  imageUrl: string;
+  imageAlt: string;
+  title?: string;
+  text?: string;
+};
+export type ThreeOptionCardContent = {
+  key: ThreeOptionChoice;
+  title: string;
+  text?: string;
+};
+export type ThreeOptionResult = {
+  correct: boolean;
+  choice: ThreeOptionChoice;
+};
+export type EmailHotspotTarget = {
+  id: string;
+  isSuspicious: boolean;
+};
+export type EmailHotspotBodyTextBlock = {
+  id: string;
+  type: "text";
+  text: string;
+  targetId?: string;
+};
+export type EmailHotspotBodyLinkBlock = {
+  id: string;
+  type: "link";
+  label: string;
+  urlText: string;
+  helperText?: string;
+  targetId?: string;
+};
+export type EmailHotspotBodyBlock =
+  | EmailHotspotBodyTextBlock
+  | EmailHotspotBodyLinkBlock;
+export type EmailHotspotAttachment = {
+  id: string;
+  name: string;
+  details?: string;
+  targetId?: string;
+};
+export type EmailHotspotActionButton = {
+  label: string;
+  helperText?: string;
+  targetId?: string;
+};
+export type EmailHotspotContent = {
+  senderName: string;
+  senderAddress: string;
+  senderAddressTargetId?: string;
+  subject: string;
+  subjectTargetId?: string;
+  senderAvatarText?: string;
+  receivedLabel?: string;
+  greeting?: string;
+  bodyBlocks: EmailHotspotBodyBlock[];
+  actionButton?: EmailHotspotActionButton;
+  attachments?: EmailHotspotAttachment[];
+  closing?: string;
+};
+export type EmailHotspotResult = {
+  correct: boolean;
+  selectedTargetIds: string[];
+  incorrectTargetId?: string;
+};
+
+export type ExerciseTemplateKind = "x-or-y" | "three-option-image" | "email-hotspots";
+
+export type TaskBase = {
+  id: string;
+  templateKind: ExerciseTemplateKind;
+  introText: string;
+  feedbackCorrect: string;
+  feedbackIncorrect: string;
+};
+
+export type XOrYTaskData = TaskBase & {
+  templateKind: "x-or-y";
+  prompt?: {
+    title?: string;
+    text?: string;
+  };
+  options: XOrYPair<XOrYOptionContent>;
+  correctChoice: XOrYChoice;
+};
+
+export type ThreeOptionImageTaskData = TaskBase & {
+  templateKind: "three-option-image";
+  prompt: ThreeOptionPromptContent;
+  options: ThreeOptionCardContent[];
+  correctChoice: ThreeOptionChoice;
+};
+
+export type EmailHotspotTaskData = TaskBase & {
+  templateKind: "email-hotspots";
+  prompt?: {
+    title?: string;
+    text?: string;
+  };
+  email: EmailHotspotContent;
+  targets: EmailHotspotTarget[];
+  requiredCorrectSelections?: number;
+};
+
+export type StationTask =
+  | XOrYTaskData
+  | ThreeOptionImageTaskData
+  | EmailHotspotTaskData;
+
+export type StationExercise = {
+  id: string;
+  title: string;
+  description?: string;
+  tasks: StationTask[];
+};
+
+export type StationMock = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  exercises: StationExercise[];
+};
+
+//================= PostOffice =================
+
+export type PostOfficeMail = {
+  avatarImageUrl: string;
+  sender: string;
+  subject: string;
+  content: string;
+  isValid: boolean;
+};
+
+export type PostOfficeTask = BaseTask & {
+  kind: "postOffice";
+  mails: PostOfficeMail[];
+};
 
 
-// Task NewsStand; Which of these news articles are real and which are fake?
-class TaskNewsStandDTO extends TaskDTO {
-    correct: string[] = [];
-    faulty: string[] = [];
-}
+//================= PasswordBank =================
 
-// Task PostOffice; Which email is a scam and which is not?
-class TaskPostOfficeDTO extends TaskDTO {
-    tasks: TaskPostSingleton[] = [];
-}
+export type PasswordBankGuessItem = {
+  itemId: string;
+  kind: "guess";
+  guide: string;
+  weakPasswords: string[];
+  strongPasswords: string[];
+};
 
-class TaskPostSingleton {
-    imageurl: string = "";
-    isGood: boolean = false;
-}
+export type PasswordBankMakePasswordItem = {
+  itemId: string;
+  kind: "makePassword";
+  guide: string;
+  inputPassword: string;
+};
 
-// Task PasswordBank; Which passwords are weak and which are strong?
-abstract class TaskPasswordBankDTO extends TaskDTO { }
+export type PasswordBankImprovePasswordItem = {
+  itemId: string;
+  kind: "improvePassword";
+  guide: string;
+  passwordStart: string;
+};
 
-class TaskPasswordBankGuessDTO extends TaskPasswordBankDTO {
-    passwordWeak: string[] = [];
-    passwordStrong: string[] = [];
-}
+export type PasswordBankExercise =
+  | PasswordBankGuessItem
+  | PasswordBankMakePasswordItem
+  | PasswordBankImprovePasswordItem;
 
-class TaskPasswordBankImproveDTO extends TaskPasswordBankDTO {
-    passwordStart: string = "";
-}
-
-class TaskPasswordBankMakePasswordDTO extends TaskPasswordBankDTO {
-    password: string = "";
-}
-
-// Task ImageRecognition; Which images are real, AI-generated, or manipulated?
-class TaskImageRecognitionDTO extends TaskDTO {
-    imageurl: string = "";
-    type: ImageRecognitionType = ImageRecognitionType.Real;
-}
+export type PasswordBankTask = BaseTask & {
+  kind: "passwordBank";
+  items: PasswordBankExercise[];
+};
 
 
-enum ImageRecognitionType {
-    Real,
-    AI,
-    Manipulated
-}
+//================= ImageRecognition =================
 
-// Task Marketplace; Which products should be bought, reviewed more, or not bought?
-class TaskMarketplaceDTO extends TaskDTO {
-    tasks: TaskMarketplaceSingleton[] = [];
-}
+export type ImageRecognitionItem = {
+  imageUrl: string;
+  type: ImageRecognitionType;
+};
 
-class TaskMarketplaceSingleton {
-    imageurl: string = "";
-    type: MarketplaceChoices = MarketplaceChoices.Buy;
-}
+export type ImageRecognitionTask = BaseTask & {
+  kind: "imageRecognition";
+  images: ImageRecognitionItem[];
+};
 
-enum MarketplaceChoices {
-    Buy,
-    ReviewMore,
-    DontBuy
-}
+//================= Marketplace =================
 
-// Task SocialMedia; What to do with a social media post: share, hold, check sources, or ask an adult?
-class TaskSocialMediaDTO extends TaskDTO {
-    imageurl: string = "";
-    choice: SocialMediaChoices = SocialMediaChoices.Share;
-}
+export type MarketplaceListing = {
+  imageUrl: string;
+  price: number;
+  expectedChoice: MarketplaceChoice;
+};
 
-enum SocialMediaChoices {
-    Share,
-    Hold,
-    CheckSources,
-    AskAdult
-}
+export type MarketplaceTask = BaseTask & {
+  kind: "marketplace";
+  listings: MarketplaceListing[];
+};
 
-class TaskFinalBossDTO extends TaskDTO {
-    tasks: TaskDTO[] = [];
-}
+//================= SocialMedia =================
 
-// Exporting all the classes and enums
-export {
-    TaskDTO,
-    TaskNewsStandDTO,
-    TaskPostOfficeDTO,
-    TaskPostSingleton,
-    TaskPasswordBankDTO,
-    TaskPasswordBankGuessDTO,
-    TaskPasswordBankImproveDTO,
-    TaskPasswordBankMakePasswordDTO,
-    TaskImageRecognitionDTO,
-    ImageRecognitionType,
-    TaskMarketplaceDTO,
-    TaskMarketplaceSingleton,
-    MarketplaceChoices,
-    TaskSocialMediaDTO,
-    SocialMediaChoices,
-    TaskFinalBossDTO
+export type SocialMediaPost = {
+  postId: string;
+  imageUrl: string;
+  expectedChoice: SocialMediaChoice;
+};
+
+export type SocialMediaTask = BaseTask & {
+  kind: "socialMedia";
+  posts: SocialMediaPost[];
+};
+
+//================= Boss =================
+export type NonFinalTask =
+  | PostOfficeTask
+  | PasswordBankTask
+  | ImageRecognitionTask
+  | MarketplaceTask
+  | SocialMediaTask;
+
+export type FinalBossTask = BaseTask & {
+  kind: "finalBoss";
+  tasks: NonFinalTask[];
 };
