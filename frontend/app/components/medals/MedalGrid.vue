@@ -15,15 +15,13 @@ const props = defineProps<{
       :medal="medal"
     />
   </section>
-</template>
+</template> 
 
 <style scoped>
 .medalGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  margin: auto;
-  gap: 5rem;
+  gap: 30px;
   width: 100%;
-  min-width: 70%;
 }
 </style>
