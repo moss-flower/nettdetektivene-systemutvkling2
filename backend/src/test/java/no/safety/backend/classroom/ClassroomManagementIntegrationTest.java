@@ -78,13 +78,14 @@ class ClassroomManagementIntegrationTest {
     client.post().uri("/classrooms")
         .header("X-Test-User", teacher.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Math 101", "Intro to math"))
+        .body(new ClassroomRequest("Klasse 5B", "Har mange tullinger"))
         .exchange()
         .expectStatus().isCreated()
         .expectBody(ClassroomResponse.class)
         .value(r -> {
-          assertThat(r.name()).isEqualTo("Math 101");
-          assertThat(r.description()).isEqualTo("Intro to math");
+          assert r != null;
+          assertThat(r.name()).isEqualTo("Klasse 5B");
+          assertThat(r.description()).isEqualTo("Har mange tullinger");
           assertThat(r.code()).isNotBlank();
           assertThat(r.owners()).hasSize(1);
           assertThat(r.owners().getFirst().publicUuid()).isEqualTo(teacher.getPublicUuid());
@@ -99,7 +100,7 @@ class ClassroomManagementIntegrationTest {
     client.post().uri("/classrooms")
         .header("X-Test-User", student.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Math 101", "Intro to math"))
+        .body(new ClassroomRequest("Klasse 5B", "Har mange tullinger"))
         .exchange()
         .expectStatus().isNotFound();
   }
@@ -109,7 +110,7 @@ class ClassroomManagementIntegrationTest {
     client.post().uri("/classrooms")
         .header("X-Test-User", UUID.randomUUID().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Math 101", "Intro to math"))
+        .body(new ClassroomRequest("Klasse 5B", "Har mange tullinger"))
         .exchange()
         .expectStatus().isNotFound();
   }
@@ -117,18 +118,18 @@ class ClassroomManagementIntegrationTest {
   @Test
   void updateClassroom_asOwner_updatesSuccessfully() {
     TeacherUser teacher = saveTeacher("teacher1");
-    ClassroomResponse created = createClassroom(teacher, "Math 101");
+    ClassroomResponse created = createClassroom(teacher, "Klasse 5B");
 
     client.put().uri("/classrooms/{id}", created.id())
         .header("X-Test-User", teacher.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Math 201", "Advanced math"))
+        .body(new ClassroomRequest("Klasse 7C", "En seriøs klasse"))
         .exchange()
         .expectStatus().isOk()
         .expectBody(ClassroomResponse.class)
         .value(r -> {
-          assertThat(r.name()).isEqualTo("Math 201");
-          assertThat(r.description()).isEqualTo("Advanced math");
+          assertThat(r.name()).isEqualTo("Klasse 7C");
+          assertThat(r.description()).isEqualTo("En seriøs klasse");
         });
   }
 
@@ -136,7 +137,7 @@ class ClassroomManagementIntegrationTest {
   void updateClassroom_asNonOwner_returnsForbidden() {
     TeacherUser owner = saveTeacher("teacher1");
     TeacherUser other = saveTeacher("teacher2");
-    ClassroomResponse created = createClassroom(owner, "Math 101");
+    ClassroomResponse created = createClassroom(owner, "Klasse 5B");
 
     client.put().uri("/classrooms/{id}", created.id())
         .header("X-Test-User", other.getPublicUuid().toString())
@@ -153,7 +154,7 @@ class ClassroomManagementIntegrationTest {
     client.put().uri("/classrooms/{id}", 9999)
         .header("X-Test-User", teacher.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Math 201", "Advanced math"))
+        .body(new ClassroomRequest("Klasse 7C", "En seriøs klasse"))
         .exchange()
         .expectStatus().isNotFound();
   }
@@ -161,7 +162,7 @@ class ClassroomManagementIntegrationTest {
   @Test
   void deleteClassroom_asOwner_returnsNoContent() {
     TeacherUser teacher = saveTeacher("teacher1");
-    ClassroomResponse created = createClassroom(teacher, "Math 101");
+    ClassroomResponse created = createClassroom(teacher, "Klasse 5B");
 
     client.delete().uri("/classrooms/{id}", created.id())
         .header("X-Test-User", teacher.getPublicUuid().toString())
@@ -173,7 +174,7 @@ class ClassroomManagementIntegrationTest {
   void deleteClassroom_asNonOwner_returnsForbidden() {
     TeacherUser owner = saveTeacher("teacher1");
     TeacherUser other = saveTeacher("teacher2");
-    ClassroomResponse created = createClassroom(owner, "Math 101");
+    ClassroomResponse created = createClassroom(owner, "Klasse 5B");
 
     client.delete().uri("/classrooms/{id}", created.id())
         .header("X-Test-User", other.getPublicUuid().toString())
@@ -196,7 +197,7 @@ class ClassroomManagementIntegrationTest {
   void addOwner_asOwner_addsSuccessfully() {
     TeacherUser owner = saveTeacher("teacher1");
     TeacherUser newOwner = saveTeacher("teacher2");
-    ClassroomResponse created = createClassroom(owner, "Math 101");
+    ClassroomResponse created = createClassroom(owner, "Klasse 5B");
 
     client.post().uri("/classrooms/{id}/owners/{uuid}", created.id(), newOwner.getPublicUuid())
         .header("X-Test-User", owner.getPublicUuid().toString())
@@ -211,7 +212,7 @@ class ClassroomManagementIntegrationTest {
     TeacherUser owner = saveTeacher("teacher1");
     TeacherUser other = saveTeacher("teacher2");
     TeacherUser third = saveTeacher("teacher3");
-    ClassroomResponse created = createClassroom(owner, "Math 101");
+    ClassroomResponse created = createClassroom(owner, "Klasse 5B");
 
     client.post().uri("/classrooms/{id}/owners/{uuid}", created.id(), third.getPublicUuid())
         .header("X-Test-User", other.getPublicUuid().toString())
@@ -223,7 +224,7 @@ class ClassroomManagementIntegrationTest {
   void joinByCode_asStudent_returnsOk() {
     TeacherUser teacher = saveTeacher("teacher1");
     StudentUser student = saveStudent("student1");
-    ClassroomResponse created = createClassroom(teacher, "Math 101");
+    ClassroomResponse created = createClassroom(teacher, "Klasse 5B");
 
     client.post().uri("/classrooms/join/{code}", created.code())
         .header("X-Test-User", student.getPublicUuid().toString())
@@ -240,7 +241,7 @@ class ClassroomManagementIntegrationTest {
   void joinByCode_asTeacher_returnsNotFound() {
     TeacherUser owner = saveTeacher("teacher1");
     TeacherUser other = saveTeacher("teacher2");
-    ClassroomResponse created = createClassroom(owner, "Math 101");
+    ClassroomResponse created = createClassroom(owner, "Klasse 5B");
 
     client.post().uri("/classrooms/join/{code}", created.code())
         .header("X-Test-User", other.getPublicUuid().toString())
@@ -253,8 +254,8 @@ class ClassroomManagementIntegrationTest {
     TeacherUser teacher1 = saveTeacher("teacher1");
     TeacherUser teacher2 = saveTeacher("teacher2");
     StudentUser student = saveStudent("student1");
-    ClassroomResponse first = createClassroom(teacher1, "Math 101");
-    ClassroomResponse second = createClassroom(teacher2, "Science 101");
+    ClassroomResponse first = createClassroom(teacher1, "Klasse 5B");
+    ClassroomResponse second = createClassroom(teacher2, "Science 5B");
 
     client.post().uri("/classrooms/join/{code}", first.code())
         .header("X-Test-User", student.getPublicUuid().toString())
@@ -281,7 +282,7 @@ class ClassroomManagementIntegrationTest {
   void removeMember_asOwner_removesMember() {
     TeacherUser teacher = saveTeacher("teacher1");
     StudentUser student = saveStudent("student1");
-    ClassroomResponse created = createClassroom(teacher, "Math 101");
+    ClassroomResponse created = createClassroom(teacher, "Klasse 5B");
 
     client.post().uri("/classrooms/join/{code}", created.code())
         .header("X-Test-User", student.getPublicUuid().toString())
@@ -301,7 +302,7 @@ class ClassroomManagementIntegrationTest {
     TeacherUser owner = saveTeacher("teacher1");
     TeacherUser other = saveTeacher("teacher2");
     StudentUser student = saveStudent("student1");
-    ClassroomResponse created = createClassroom(owner, "Math 101");
+    ClassroomResponse created = createClassroom(owner, "Klasse 5B");
 
     client.post().uri("/classrooms/join/{code}", created.code())
         .header("X-Test-User", student.getPublicUuid().toString())
@@ -318,7 +319,7 @@ class ClassroomManagementIntegrationTest {
   void leaveClassroom_asMember_returnsNoContent() {
     TeacherUser teacher = saveTeacher("teacher1");
     StudentUser student = saveStudent("student1");
-    ClassroomResponse created = createClassroom(teacher, "Math 101");
+    ClassroomResponse created = createClassroom(teacher, "Klasse 5B");
 
     client.post().uri("/classrooms/join/{code}", created.code())
         .header("X-Test-User", student.getPublicUuid().toString())
@@ -335,12 +336,48 @@ class ClassroomManagementIntegrationTest {
   void leaveClassroom_notAMember_returnsNotFound() {
     TeacherUser teacher = saveTeacher("teacher1");
     StudentUser student = saveStudent("student1");
-    ClassroomResponse created = createClassroom(teacher, "Math 101");
+    ClassroomResponse created = createClassroom(teacher, "Klasse 5B");
 
     client.delete().uri("/classrooms/{id}/members/me", created.id())
         .header("X-Test-User", student.getPublicUuid().toString())
         .exchange()
         .expectStatus().isNotFound();
+  }
+
+  @Test
+  void regenerateCode_asOwner_returnsSuccessful() {
+    TeacherUser owner = saveTeacher("teacher1");
+    ClassroomResponse created = createClassroom(owner, "Klasse 5B");
+    String oldCode = created.code();
+
+    client.post().uri("/classrooms/{id}/code", created.id())
+        .header("X-Test-User", owner.getPublicUuid().toString()).exchange().expectStatus()
+        .isOk()
+        .expectBody(ClassroomResponse.class).value(r -> {
+          assert r != null;
+          assertThat(!r.code().equals(oldCode));
+        });
+  }
+
+  @Test
+  void regenerateCode_asNonOwner_returnsForbidden() {
+    TeacherUser owner = saveTeacher("teacher1");
+    TeacherUser other = saveTeacher("teacher2");
+
+    ClassroomResponse created = createClassroom(owner, "Klasse 5B");
+
+    client.post().uri("/classrooms/{id}/code", created.id())
+        .header("X-Test-User", other.getPublicUuid().toString()).exchange().expectStatus()
+        .isForbidden();
+  }
+
+  @Test
+  void regenerateCode_whenClassroomNotFound_returnsNotFound() {
+    TeacherUser teacher = saveTeacher("teacher1");
+
+    client.post().uri("/classrooms/{id}/code", 6767)
+        .header("X-Test-User", teacher.getPublicUuid().toString()).exchange().expectStatus()
+        .isNotFound();
   }
 
   private TeacherUser saveTeacher(String name) {
