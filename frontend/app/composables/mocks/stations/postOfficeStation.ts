@@ -5,10 +5,14 @@ export const postOfficeStationMock: StationMock = {
   slug: "postoffice",
   title: "Postkontoret",
   description: "Her trener du på å oppdage rare e-poster. Trykk på det som virker mistenkelig før du bestemmer deg for hva du skal gjøre videre.",
-  exercisesByDifficulty: {
-    easy: [
+  exercises: [
+    {
+      id: "postoffice-exercise-1",
+      title: "Mistenkelige e-poster",
+      description: "Se etter rare avsendere, farlige lenker og andre tegn på at en e-post ikke er trygg.",
+      tasks: [
       {
-        id: "postoffice-easy-1",
+        id: "postoffice-task-1",
         templateKind: "email-hotspots",
         prompt: {
           title: "Finn den ene tingen som virker rar",
@@ -60,10 +64,8 @@ export const postOfficeStationMock: StationMock = {
           { id: "easy-attachment", isSuspicious: false },
         ],
       },
-    ],
-    medium: [
       {
-        id: "postoffice-medium-1",
+        id: "postoffice-task-2",
         templateKind: "email-hotspots",
         prompt: {
           title: "Finn to ting som gjør e-posten utrygg",
@@ -114,7 +116,7 @@ export const postOfficeStationMock: StationMock = {
         ],
       },
       {
-        id: "postoffice-medium-2",
+        id: "postoffice-task-3",
         templateKind: "email-hotspots",
         prompt: {
           title: "Finn de to faresignalene i skolemeldingen",
@@ -164,10 +166,8 @@ export const postOfficeStationMock: StationMock = {
           { id: "medium-two-attachment", isSuspicious: true },
         ],
       },
-    ],
-    hard: [
       {
-        id: "postoffice-hard-1",
+        id: "postoffice-task-4",
         templateKind: "email-hotspots",
         prompt: {
           title: "Finn tre faresignaler i meldingen",
@@ -222,6 +222,7 @@ export const postOfficeStationMock: StationMock = {
           { id: "hard-attachment", isSuspicious: true },
         ],
       },
-    ],
-  },
+      ],
+    },
+  ],
 }

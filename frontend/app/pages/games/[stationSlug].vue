@@ -7,7 +7,6 @@ import XOrYExercise from '~/components/gameplay/shared/XOrYExercise.vue'
 import { getStationMockBySlug } from '~/composables/mocks/stations'
 import type {
   EmailHotspotResult,
-  StationDifficulty,
   ThreeOptionChoice,
   ThreeOptionResult,
   XOrYChoice,
@@ -34,9 +33,10 @@ if (!station) {
 
 const { celebrateCorrectAnswer, stop } = useGameConfetti()
 
-const activeDifficulty: StationDifficulty = 'easy'
-const activeExercises = station.exercisesByDifficulty[activeDifficulty]
-const tasks = sampleAndShuffle(activeExercises, activeExercises.length)
+const activeExercise = station.exercises[0] ?? null
+const tasks = activeExercise
+  ? sampleAndShuffle(activeExercise.tasks, activeExercise.tasks.length)
+  : []
 const currentIndex = ref(0)
 const showCompletedPopup = ref(false)
 const correctCount = ref(0)
@@ -177,8 +177,11 @@ const next = () => {
           <p class="station-page__eyebrow">{{ station.title }}</p>
           <p class="station-page__progress-pill">{{ progressLabel }}</p>
         </div>
+        <p v-if="activeExercise" class="station-page__exercise-title">
+          {{ activeExercise.title }}
+        </p>
         <p class="station-page__description">
-          {{ station.description }}
+          {{ activeExercise?.description ?? station.description }}
         </p>
       </div>
     </header>
@@ -286,6 +289,12 @@ const next = () => {
   font-size: 0.9rem;
   line-height: 1.5;
   color: #374151;
+}
+
+.station-page__exercise-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f2937;
 }
 
 .station-page__board {

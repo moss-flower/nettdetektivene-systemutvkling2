@@ -99,9 +99,8 @@ export type EmailHotspotResult = {
 };
 
 export type ExerciseTemplateKind = "x-or-y" | "three-option-image" | "email-hotspots";
-export type StationDifficulty = "easy" | "medium" | "hard";
 
-export type ExerciseBase = {
+export type TaskBase = {
   id: string;
   templateKind: ExerciseTemplateKind;
   introText: string;
@@ -109,7 +108,7 @@ export type ExerciseBase = {
   feedbackIncorrect: string;
 };
 
-export type XOrYExerciseData = ExerciseBase & {
+export type XOrYTaskData = TaskBase & {
   templateKind: "x-or-y";
   prompt?: {
     title?: string;
@@ -119,14 +118,14 @@ export type XOrYExerciseData = ExerciseBase & {
   correctChoice: XOrYChoice;
 };
 
-export type ThreeOptionImageExerciseData = ExerciseBase & {
+export type ThreeOptionImageTaskData = TaskBase & {
   templateKind: "three-option-image";
   prompt: ThreeOptionPromptContent;
   options: ThreeOptionCardContent[];
   correctChoice: ThreeOptionChoice;
 };
 
-export type EmailHotspotExerciseData = ExerciseBase & {
+export type EmailHotspotTaskData = TaskBase & {
   templateKind: "email-hotspots";
   prompt?: {
     title?: string;
@@ -137,19 +136,24 @@ export type EmailHotspotExerciseData = ExerciseBase & {
   requiredCorrectSelections?: number;
 };
 
-export type StationExercise =
-  | XOrYExerciseData
-  | ThreeOptionImageExerciseData
-  | EmailHotspotExerciseData;
+export type StationTask =
+  | XOrYTaskData
+  | ThreeOptionImageTaskData
+  | EmailHotspotTaskData;
 
-export type StationExercisesByDifficulty = Record<StationDifficulty, StationExercise[]>;
+export type StationExercise = {
+  id: string;
+  title: string;
+  description?: string;
+  tasks: StationTask[];
+};
 
 export type StationMock = {
   id: string;
   slug: string;
   title: string;
   description: string;
-  exercisesByDifficulty: StationExercisesByDifficulty;
+  exercises: StationExercise[];
 };
 
 //================= PostOffice =================
