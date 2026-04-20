@@ -1,6 +1,5 @@
 package no.safety.backend.classroom.service;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +8,6 @@ import no.safety.backend.classroom.dto.ClassroomResponse;
 import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.classroom.repository.ClassroomRepository;
 import no.safety.backend.exception.ConflictException;
-import no.safety.backend.exception.ForbiddenException;
 import no.safety.backend.exception.NotFoundException;
 import no.safety.backend.exception.domain.NotClassroomOwnerException;
 import no.safety.backend.exception.domain.StudentNotInClassException;
@@ -29,11 +27,9 @@ public class ClassroomService {
   private final StudentUserRepository studentRepo;
   private final ClassroomCodeGenerator codegen;
 
-  //TODO: Replace all UUID params with authentication eventually and use this to get the role.
   @Transactional
   public ClassroomResponse create(ClassroomRequest req, UUID callerUuid) {
-    TeacherUser owner = teacherRepo.findByPublicUuid(callerUuid)
-        .orElseThrow(() -> new NotFoundException("Teacher not found"));
+    TeacherUser owner = requireTeacher(callerUuid);
 
     Classroom c = new Classroom();
     c.getOwners().add(owner);
@@ -63,8 +59,7 @@ public class ClassroomService {
   @Transactional
   public ClassroomResponse addOwner(Long classroomId, UUID newOwnerUuid, UUID callerUuid) {
     Classroom c = requireOwned(classroomId, callerUuid);
-    TeacherUser newOwner = teacherRepo.findByPublicUuid(newOwnerUuid)
-        .orElseThrow(() -> new NotFoundException("Teacher not found"));
+    TeacherUser newOwner = requireTeacher(newOwnerUuid);
 
     if (classroomRepo.existsByIdAndOwners_PublicUuid(classroomId, newOwnerUuid)) {
       throw new ConflictException("Teacher is already an owner");
@@ -113,8 +108,7 @@ public class ClassroomService {
     Classroom c = classroomRepo.findByCode(code)
         .orElseThrow(() -> new NotFoundException("Classroom not found"));
 
-    StudentUser member = studentRepo.findByPublicUuid(callerUuid)
-        .orElseThrow(() -> new NotFoundException("Student not found"));
+    StudentUser member = requireStudent(callerUuid);
 
     if (member.getClassroom() != null) {
       throw new ConflictException("Student is already a member of a classroom");
@@ -129,8 +123,7 @@ public class ClassroomService {
   public ClassroomResponse removeMember(Long classroomId, UUID memberUuid, UUID callerUuid) {
     Classroom c = requireOwned(classroomId, callerUuid);
 
-    StudentUser member = studentRepo.findByPublicUuid(memberUuid)
-        .orElseThrow(() -> new NotFoundException("Student not found"));
+    StudentUser member = requireStudent(memberUuid);
 
     if (member.getClassroom() == null || !member.getClassroom().getId().equals(classroomId)) {
       throw new StudentNotInClassException("Student is not a member of this classroom");
@@ -186,10 +179,14 @@ public class ClassroomService {
     if (classroomRepo.findById(classroomId).isEmpty()) {
       throw new NotFoundException("Could not find classroom");
     }
-    Optional<Classroom> c = classroomRepo.findByIdAndOwners_PublicUuid(classroomId, callerUuid);
-    if (c.isEmpty()) {
-      throw new NotClassroomOwnerException("Caller is not an owner of the classroom");
-    }
-    return c.get();
+    return classroomRepo.findByIdAndOwners_PublicUuid(classroomId, callerUuid).orElseThrow(() -> new NotClassroomOwnerException("Caller is not an owner of the classroom"));
+  }
+
+  private TeacherUser requireTeacher(UUID uuid) {
+    return teacherRepo.findByPublicUuid(uuid).orElseThrow(() -> new NotFoundException("Teacher not found"));
+  }
+
+  private StudentUser requireStudent(UUID uuid) {
+    return studentRepo.findByPublicUuid(uuid).orElseThrow(() -> new NotFoundException("Student not found"));
   }
 }
