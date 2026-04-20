@@ -1,13 +1,17 @@
 import type {
   EmailHotspotTaskData,
   MultipleChoiceTaskData,
+  PasswordStrengthTaskData,
+  SortIntoBucketsTaskData,
   XOrYTaskData,
 } from "~/composables/types/TaskTypes";
 
 export type ExerciseTask =
   | XOrYTaskData
   | MultipleChoiceTaskData
-  | EmailHotspotTaskData;
+  | EmailHotspotTaskData
+  | SortIntoBucketsTaskData
+  | PasswordStrengthTaskData;
 
 export class Exercise {
   uid: string;
@@ -818,6 +822,199 @@ export class Exercise {
               { id: "postoffice-medium-4-attachment-target", isSuspicious: true },
               { id: "postoffice-medium-4-closing", isSuspicious: false },
             ],
+          },
+        ],
+      }),
+      new Exercise({
+        uid: "passwordbank-exercise-1",
+        title: "Passorddetektiv",
+        entryName: "Lett",
+        description: "Sorter passord, oppdag svake valg og ov pa a lage passord som er trygge og lette a huske.",
+        tasks: [
+          {
+            id: "passwordbank-light-task-1",
+            templateKind: "sort-into-buckets",
+            introText: "Dra passordene til riktig boks. Et trygt passord er langt og vanskelig a gjette.",
+            feedbackCorrect: "Bra jobbet. Du fant forskjellen pa passord som er lette a gjette og passord som gir bedre beskyttelse.",
+            feedbackIncorrect: "Se etter navn, arstall og vanlige monstre. Trygge passord er lengre og mindre personlige.",
+            prompt: {
+              title: "Sorter passordene",
+              text: "Hvilke passord virker trygge, og hvilke virker utrygge?",
+            },
+            unplacedLabel: "Passord som skal sorteres",
+            buckets: [
+              {
+                key: "safe",
+                title: "Trygge passord",
+                description: "Lange passord som ikke avslorer noe personlig.",
+                backgroundColor: "#edf9f0",
+              },
+              {
+                key: "unsafe",
+                title: "Utrygge passord",
+                description: "Korte eller lette a gjette passord.",
+                backgroundColor: "#fff1f1",
+              },
+            ],
+            items: [
+              {
+                id: "passwordbank-light-sort-1",
+                label: "123456",
+                correctBucketKey: "unsafe",
+                explanation: "Dette er et veldig vanlig passord som mange prover forst.",
+              },
+              {
+                id: "passwordbank-light-sort-2",
+                label: "Emma2016",
+                correctBucketKey: "unsafe",
+                explanation: "Navn og arstall er personlig informasjon som er lettere a gjette.",
+              },
+              {
+                id: "passwordbank-light-sort-3",
+                label: "SolFisk!27",
+                correctBucketKey: "safe",
+                explanation: "Dette er lengre og blander bokstaver, tall og symbol.",
+              },
+              {
+                id: "passwordbank-light-sort-4",
+                label: "KattOgTaco#9",
+                correctBucketKey: "safe",
+                explanation: "Flere ord og et symbol gjor passordet sterkere og lettere a huske.",
+              },
+            ],
+          },
+          {
+            id: "passwordbank-light-task-2",
+            templateKind: "multiple-choice",
+            prompt: {
+              title: "Hva gjor passordet utrygt?",
+              text: "Oskar bruker passordet Oskar2015 pa spillkontoen sin. Hva er det storste problemet?",
+              imageUrl: "https://placehold.co/1200x720?text=Passord+med+navn+og+arstall",
+              imageAlt: "Illustrasjon av et passord med navn og arstall",
+            },
+            introText: "Velg den forklaringen som best viser hvorfor passordet er svakt.",
+            feedbackCorrect: "Riktig. Navn og arstall er personlig informasjon som andre lettere kan gjette.",
+            feedbackIncorrect: "Tenk pa hva som gjor passordet lett a gjette, ikke bare hvor langt det er.",
+            options: [
+              { key: "a", title: "Det bruker navn og arstall som andre kan kjenne til" },
+              { key: "b", title: "Det har en stor bokstav forst" },
+              { key: "c", title: "Det inneholder bare ett ord" },
+            ],
+            correctChoice: "a",
+          },
+          {
+            id: "passwordbank-light-task-3",
+            templateKind: "password-strength",
+            introText: "Gjor passordet tryggere ved a unnga personlige spor og bruke flere tegn eller ord.",
+            feedbackCorrect: "Bra forbedret. Det nye passordet er mindre personlig og mye vanskeligere a gjette.",
+            feedbackIncorrect: "Passordet trenger litt mer arbeid. Prov med flere tegn, og unnga fodselsar, vanlige monster og gjentakelser.",
+            prompt: {
+              title: "Forbedre et svakt passord",
+              text: "Bytt ut et lett passord med noe tryggere som du fortsatt kan huske.",
+              helperText: "Tips: bruk mange tegn, bland bokstaver, tall og symbol, og unnga fodselsar og gjentakelser.",
+            },
+            mode: "improve",
+            startingPassword: "Luna2015",
+            placeholder: "Skriv et tryggere passord her",
+            minLength: 10,
+            minScoreToPass: 3,
+            commonPatterns: ["123", "qwerty", "passord"],
+          },
+        ],
+      }),
+      new Exercise({
+        uid: "passwordbank-exercise-2",
+        title: "Passordmester",
+        entryName: "Middels",
+        description: "Sammenlign passordvalg, forsta hvorfor gjenbruk er risikabelt, og bygg et sterkt passord fra bunnen av.",
+        tasks: [
+          {
+            id: "passwordbank-medium-task-1",
+            templateKind: "sort-into-buckets",
+            introText: "Noen passord ser sterke ut ved forste blikk, men kan fortsatt vare utrygge hvis de inneholder personlige spor.",
+            feedbackCorrect: "Bra sett. Du oppdaget at et passord kan se avansert ut og likevel vare lett a gjette hvis det bruker navn eller favorittlag.",
+            feedbackIncorrect: "Se etter om passordet bygger pa noe andre kan vite om deg, selv om det har symbol eller tall.",
+            prompt: {
+              title: "Sorter de litt vanskeligere passordene",
+              text: "Hvilke passord er trygge nok, og hvilke avslorer for mye?",
+            },
+            unplacedLabel: "Passord som skal sorteres",
+            buckets: [
+              {
+                key: "safe",
+                title: "Trygge passord",
+                description: "Passord som er lange og ikke bygger pa lett gjettbar info.",
+                backgroundColor: "#edf9f0",
+              },
+              {
+                key: "unsafe",
+                title: "Utrygge passord",
+                description: "Passord som andre fortsatt kan gjette seg fram til.",
+                backgroundColor: "#fff1f1",
+              },
+            ],
+            items: [
+              {
+                id: "passwordbank-medium-sort-1",
+                label: "Ada!Fotball09",
+                correctBucketKey: "unsafe",
+                explanation: "Navn og favorittaktivitet kan vare kjent for andre.",
+              },
+              {
+                id: "passwordbank-medium-sort-2",
+                label: "SkyBanan!Tog14",
+                correctBucketKey: "safe",
+                explanation: "Dette bruker flere ord og blander tegn uten a avslore noe personlig.",
+              },
+              {
+                id: "passwordbank-medium-sort-3",
+                label: "qwerty!",
+                correctBucketKey: "unsafe",
+                explanation: "Selv med symbol er dette et kjent tastaturmonster.",
+              },
+              {
+                id: "passwordbank-medium-sort-4",
+                label: "Manesykkel#28",
+                correctBucketKey: "safe",
+                explanation: "Dette er lengre, har flere deler og er vanskeligere a gjette.",
+              },
+            ],
+          },
+          {
+            id: "passwordbank-medium-task-2",
+            templateKind: "multiple-choice",
+            prompt: {
+              title: "Hvorfor er passord-gjenbruk dumt?",
+              text: "Mia bruker samme passord pa spillkontoen, e-posten og skolekontoen. Hva kan skje hvis noen finner ett av passordene hennes?",
+              imageUrl: "https://placehold.co/1200x720?text=Samme+passord+overalt",
+              imageAlt: "Illustrasjon av samme passord brukt pa flere kontoer",
+            },
+            introText: "Velg det beste svaret pa hvorfor det er lurt a ha forskjellige passord flere steder.",
+            feedbackCorrect: "Riktig. Hvis samme passord brukes overalt, kan ett lekket passord gi tilgang til mange kontoer.",
+            feedbackIncorrect: "Tenk pa hva som skjer hvis noen klarer a gjette eller stjele ett passord som brukes flere steder.",
+            options: [
+              { key: "a", title: "Da kan noen prove samme passord pa flere kontoer" },
+              { key: "b", title: "Da blir passordet vanskeligere a skrive feil" },
+              { key: "c", title: "Da ser alle kontoene mer like ut" },
+            ],
+            correctChoice: "a",
+          },
+          {
+            id: "passwordbank-medium-task-3",
+            templateKind: "password-strength",
+            introText: "Lag et nytt passord som er trygt nok til a beskytte en viktig konto og fortsatt lett nok a huske.",
+            feedbackCorrect: "Supert. Du laget et passord som er langt, mindre gjettbart og bedre egnet til a brukes bare ett sted.",
+            feedbackIncorrect: "Prov igjen med flere tegn, et symbol eller tall, og unnga fodselsar, vanlige monster og gjentakelser.",
+            prompt: {
+              title: "Lag et sterkt og huskbart passord",
+              text: "Tenk deg at du lager et nytt passord til skolekontoen din. Skriv et passord som er trygt og mulig a huske.",
+              helperText: "Tips: bruk mange tegn, bland bokstaver, tall og symbol, og unnga gjentakelser.",
+            },
+            mode: "create",
+            placeholder: "Skriv det nye passordet ditt her",
+            minLength: 10,
+            minScoreToPass: 3,
+            commonPatterns: ["123", "qwerty", "passord", "abc"],
           },
         ],
       }),
