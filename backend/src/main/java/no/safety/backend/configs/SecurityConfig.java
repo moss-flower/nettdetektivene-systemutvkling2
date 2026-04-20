@@ -40,7 +40,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-                .ignoringRequestMatchers("/api/v1/auth/**", "/api/v1/register/**")
+                .ignoringRequestMatchers("/api/v1/auth/**", "/api/v1/register/**", "/api/v1/notepad/**")
             )
 
             .headers(headers -> headers
