@@ -1,10 +1,9 @@
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
-  const apiBase = String(config.public.apiBase)
 
   const api = $fetch.create({
-    baseURL: apiBase,
-
+    baseURL: "/api",
+    
     onRequest({ options }) {
       const token = sessionStorage.getItem('token')
 

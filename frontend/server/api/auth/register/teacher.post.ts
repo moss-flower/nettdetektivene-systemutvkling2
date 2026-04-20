@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   const api = getBackendAPI(event);
   const body = await readBody<RegisterRequest>(event);
 
-  return await api<AuthResponse>("/auth/register/teacher", {
+  return await api<AuthResponse>("v1/auth/register/teacher", {
     method: "POST",
     body,
   });

@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
 
   console.log("REACHED ROUTE")
 
-  const response = await api.raw<AuthResponse>("/auth/login", {
+  const response = await api.raw<AuthResponse>("v1/auth/login", {
     method: "POST",
     body,
   });

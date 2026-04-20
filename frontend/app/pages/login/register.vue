@@ -1,56 +1,81 @@
 <script setup lang="ts">
 import TextInput from "~/components/ui/TextInput.vue";
-import type { RegisterRequest } from "~/composables/types/AuthTypes";
+import { routePaths } from "~/composables/routePaths";
 import { useAuth } from "~/composables/useAuth";
 
-//Holds current email and password fields
-const username = ref('')
+// Holds current form fields
+const username = ref("");
 const email = ref("");
 const password = ref("");
-const repeatPassword = ref("")
+const repeatPassword = ref("");
 
-//Tracks validity of fields
+// Tracks validity of fields
 const emailValid = ref(false);
 const passwordValid = ref(false);
-const repeatPasswordValid = ref(false); //Does not reflect if passwords match, only if it complies with the minimum length limit
+const repeatPasswordValid = ref(false);
 
-const formError = ref("") //Displays user feedback on failed login attemp
+const formError = ref("");
+const loading = ref(false);
 
-//REGEX restrics email form
+// Regex restricts email form
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-//Dynamically checks if passwords match
+// Username check
+const usernameValid = computed(() => username.value.trim().length > 0);
+
+// Dynamically checks if passwords match
 const passwordsMatch = computed(() => password.value === repeatPassword.value);
 
-//Dynamically updates full form validity based on both email and password being currently valid
+// Dynamically updates full form validity
 const formValid = computed(() =>
+  usernameValid.value &&
   emailValid.value &&
   passwordValid.value &&
   repeatPasswordValid.value &&
-  passwordsMatch.value
+  passwordsMatch.value,
 );
 
 const { registerStudent } = useAuth();
 
-//Temporary placeholder handleLogin
-function handleRegister() {
+async function handleRegister() {
   formError.value = "";
 
   if (!formValid.value) {
-    if (!passwordsMatch.value) {
-      formError.value = "Passwords do not match";
+    if (!usernameValid.value) {
+      formError.value = "Brukernavn må fylles ut";
+    } else if (!passwordsMatch.value) {
+      formError.value = "Passordene matcher ikke";
     } else {
-      formError.value = "Invalid credentials";
+      formError.value = "Fyll ut skjemaet riktig";
     }
     return;
   }
 
-  // console.log("Register payload:", {
-  //   email: email.value,
-  //   password: password.value,
-  // });
-}
+  loading.value = true;
 
+  try {
+    await registerStudent(
+      username.value.trim(),
+      email.value.trim(),
+      password.value,
+    );
+
+    /**
+     * Assumes register creates the user, but does not automatically log them in.
+     * If backend also logs the user in and sets JWT-Cookie here,
+     * you can change this to routePaths.studentHome instead.
+     */
+    await navigateTo(routePaths.login);
+  } catch (error: any) {
+    formError.value =
+      error?.data?.message ||
+      error?.data?.error ||
+      error?.statusMessage ||
+      "Registrering mislyktes";
+  } finally {
+    loading.value = false;
+  }
+}
 </script>
 
 <template>
@@ -61,12 +86,13 @@ function handleRegister() {
 
       <form class="registerForm" @submit.prevent="handleRegister">
         <TextInput
-            name="username"
-            label="username"
-            placeholder="username"
-            :required="true"
-            @update:modelValue="username = $event"
-          />
+          name="username"
+          label="Brukernavn"
+          placeholder="brukernavn"
+          :required="true"
+          @update:modelValue="username = $event"
+        />
+
         <TextInput
           name="email"
           label="E-post"
@@ -99,8 +125,8 @@ function handleRegister() {
           @update:isValid="repeatPasswordValid = $event"
         />
 
-        <button type="submit" class="registerButton" :disabled="!formValid">
-          Registrer
+        <button type="submit" class="registerButton" :disabled="!formValid || loading">
+          {{ loading ? "Registrerer..." : "Registrer" }}
         </button>
 
         <p v-if="formError" class="formError">{{ formError }}</p>
@@ -108,7 +134,7 @@ function handleRegister() {
 
       <p class="registerText">
         Har du allerede en konto?
-        <NuxtLink :to="routePaths.login" class="loginLink">Logg in</NuxtLink>
+        <NuxtLink :to="routePaths.login" class="loginLink">Logg inn</NuxtLink>
       </p>
     </div>
   </section>
