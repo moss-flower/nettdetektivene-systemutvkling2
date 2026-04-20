@@ -231,12 +231,6 @@ const next = () => {
           <p class="station-page__eyebrow">{{ station.title }}</p>
           <p class="station-page__progress-pill">{{ progressLabel }}</p>
         </div>
-        <p v-if="activeExercise" class="station-page__exercise-title">
-          {{ activeExercise.title }}
-        </p>
-        <p class="station-page__description">
-          {{ activeExercise?.description ?? station.description }}
-        </p>
       </div>
     </header>
 
