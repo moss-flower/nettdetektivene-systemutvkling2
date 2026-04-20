@@ -79,17 +79,21 @@ export type EmailHotspotActionButton = {
 };
 export type EmailHotspotContent = {
   senderName: string;
+  senderNameTargetId?: string;
   senderAddress: string;
   senderAddressTargetId?: string;
   subject: string;
   subjectTargetId?: string;
   senderAvatarText?: string;
   receivedLabel?: string;
+  receivedLabelTargetId?: string;
   greeting?: string;
+  greetingTargetId?: string;
   bodyBlocks: EmailHotspotBodyBlock[];
   actionButton?: EmailHotspotActionButton;
   attachments?: EmailHotspotAttachment[];
   closing?: string;
+  closingTargetId?: string;
 };
 export type EmailHotspotResult = {
   correct: boolean;
