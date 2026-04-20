@@ -3,7 +3,6 @@ type BaseTask = {
   kind:
     | "newsStand"
     | "postOffice"
-    | "passwordBank"
     | "imageRecognition"
     | "marketplace"
     | "socialMedia"
@@ -218,42 +217,6 @@ export type PostOfficeTask = BaseTask & {
   mails: PostOfficeMail[];
 };
 
-
-//================= PasswordBank =================
-
-export type PasswordBankGuessItem = {
-  itemId: string;
-  kind: "guess";
-  guide: string;
-  weakPasswords: string[];
-  strongPasswords: string[];
-};
-
-export type PasswordBankMakePasswordItem = {
-  itemId: string;
-  kind: "makePassword";
-  guide: string;
-  inputPassword: string;
-};
-
-export type PasswordBankImprovePasswordItem = {
-  itemId: string;
-  kind: "improvePassword";
-  guide: string;
-  passwordStart: string;
-};
-
-export type PasswordBankExercise =
-  | PasswordBankGuessItem
-  | PasswordBankMakePasswordItem
-  | PasswordBankImprovePasswordItem;
-
-export type PasswordBankTask = BaseTask & {
-  kind: "passwordBank";
-  items: PasswordBankExercise[];
-};
-
-
 //================= ImageRecognition =================
 
 export type ImageRecognitionItem = {
@@ -295,7 +258,6 @@ export type SocialMediaTask = BaseTask & {
 //================= Boss =================
 export type NonFinalTask =
   | PostOfficeTask
-  | PasswordBankTask
   | ImageRecognitionTask
   | MarketplaceTask
   | SocialMediaTask;
