@@ -33,10 +33,12 @@ public class NotepadEntryService {
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
-    public Page<NotepadEntryResponse> findAll(@NonNull NotepadEntryReadRequest request) {
+    public Page<NotepadEntryResponse> findAll(@NonNull UserPrincipal principal, @NonNull NotepadEntryReadRequest request) {
         log.debug("Fetching page of notepad entries with request: {}", request);
 
-        return notepadEntryRepository.findAll(request.toPageable())
+        User user = userRepository.getReferenceById(principal.user().getInternalId());
+
+        return notepadEntryRepository.findAllByUsers_InternalId(user.getInternalId(), request.toPageable())
                 .map(NotepadEntryResponse::fromEntity);
     }
 
@@ -53,11 +55,11 @@ public class NotepadEntryService {
     }
 
     @Transactional
-    public NotepadEntryResponse create(@NonNull UserPrincipal userPrincipal, @NonNull NotepadEntryCreateRequest request) {
+    public NotepadEntryResponse create(@NonNull UserPrincipal principal, @NonNull NotepadEntryCreateRequest request) {
 
-        log.info("Creating new notepad entry for user: {}, gameId: {}", userPrincipal.getUsername(), request.gameId());
+        log.info("Creating new notepad entry for user: {}, request: {}", principal.getUsername(), request);
 
-        User user = userRepository.getReferenceById(userPrincipal.user().getInternalId());
+        User user = userRepository.getReferenceById(principal.user().getInternalId());
 
         var entry = new NotepadEntry();
 

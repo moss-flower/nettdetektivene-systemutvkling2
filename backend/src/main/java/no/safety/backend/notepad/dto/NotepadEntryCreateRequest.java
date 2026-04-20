@@ -1,5 +1,7 @@
 package no.safety.backend.notepad.dto;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -18,7 +20,7 @@ public record NotepadEntryCreateRequest(
     @Size(max = 128) 
     String title,
 
-    @NotNull 
+    @NotNull
     NotepadEntryType type,
 
     @NotBlank 

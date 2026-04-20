@@ -17,15 +17,6 @@ import org.springframework.data.domain.PageRequest;
  * Defines a {@link NotepadEntry} request for GET requests.
  */
 public record NotepadEntryReadRequest(
-    @NotNull
-    Long gameId,
-    
-    @Nullable
-    String sortBy,
-    
-    @Nullable
-    String direction,
-    
     @PositiveOrZero 
     Integer page,
     
@@ -39,14 +30,10 @@ public record NotepadEntryReadRequest(
     public NotepadEntryReadRequest {
         page = (page == null) ? 0 : page;
         size = (size == null) ? 20 : size;
-        sortBy = (sortBy == null) ? "dateCreated" : sortBy;
-        direction = (direction == null) ? "desc" : direction;
     }
 
     public Pageable toPageable() {
-        Sort sort = "asc".equalsIgnoreCase(direction) 
-            ? Sort.by(sortBy).ascending() 
-            : Sort.by(sortBy).descending();
+        Sort sort = Sort.by(Sort.Direction.DESC, "dateCreated");
         return PageRequest.of(page, size, sort);
     }
 }
