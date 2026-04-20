@@ -1,9 +1,34 @@
 <script setup lang="ts">
+import { Station } from '~/composables/types/StationType'
+
 provideGameConfetti()
+
+const route = useRoute()
+
+const stationUid = computed(() => {
+  const routeParam = route.params.stationUid
+
+  if (Array.isArray(routeParam)) {
+    return routeParam[0] ?? ''
+  }
+
+  return typeof routeParam === 'string' ? routeParam : ''
+})
+
+const station = computed(() => stationUid.value ? Station.backendFetchStationByUid(stationUid.value) : null)
+
+const layoutStyle = computed(() => {
+  const backgroundColor = station.value?.backgroundColor ?? '#cfe9ff'
+
+  return {
+    '--game-layout-side-color': backgroundColor,
+    '--game-layout-center-color': `color-mix(in srgb, ${backgroundColor} 22%, white)`,
+  }
+})
 </script>
 
 <template>
-  <div class="game-layout">
+  <div class="game-layout" :style="layoutStyle">
     <aside class="game-layout__rail game-layout__rail--left" aria-label="Spillerpanel">
       <NuxtLink
         to="/student/profile"
@@ -36,7 +61,15 @@ provideGameConfetti()
   display: grid;
   grid-template-columns: clamp(7rem, 16vw, 13rem) minmax(0, 1fr) clamp(6rem, 14vw, 12rem);
   background:
-    linear-gradient(90deg, #cfe9ff 0, #cfe9ff 18%, #f8fbff 18%, #f8fbff 82%, #cfe9ff 82%, #cfe9ff 100%);
+    linear-gradient(
+      90deg,
+      var(--game-layout-side-color) 0,
+      var(--game-layout-side-color) 18%,
+      var(--game-layout-center-color) 18%,
+      var(--game-layout-center-color) 82%,
+      var(--game-layout-side-color) 82%,
+      var(--game-layout-side-color) 100%
+    );
   overflow: hidden;
 }
 
@@ -149,7 +182,7 @@ provideGameConfetti()
   .game-layout {
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
-    background: #cfe9ff;
+    background: var(--game-layout-side-color);
   }
 
   .game-layout__rail,

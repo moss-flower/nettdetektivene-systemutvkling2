@@ -363,7 +363,7 @@ const next = () => {
 .station-page__board {
   padding: clamp(0.8rem, 1.4vw, 1.1rem);
   border-radius: 1.6rem;
-  background: #f7fbff;
+  background: #f5f5f4;
 }
 
 @media (max-width: 780px) {
