@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import EmailHotspotsTemplate from '~/components/gameplay/templates/EmailHotspotsTemplate.vue'
 import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDialog.vue'
+import PasswordStrengthTemplate from '~/components/gameplay/templates/PasswordStrengthTemplate.vue'
+import SortIntoBucketsTemplate from '~/components/gameplay/templates/SortIntoBucketsTemplate.vue'
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoiceTemplate.vue'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
@@ -12,6 +14,8 @@ import type {
   EmailHotspotResult,
   MultipleChoiceOptionKey,
   MultipleChoiceResult,
+  PasswordStrengthResult,
+  SortIntoBucketsResult,
   XOrYChoice,
   XOrYResult,
 } from '~/composables/types/TaskTypes'
@@ -107,6 +111,14 @@ const feedbackTitle = computed(() => {
       return 'Trykk på det som virker mistenkelig'
     }
 
+    if (currentTask.value.templateKind === 'sort-into-buckets') {
+      return 'Sorter alle passordene'
+    }
+
+    if (currentTask.value.templateKind === 'password-strength') {
+      return 'Bygg et tryggere passord'
+    }
+
     return 'Velg avisen du stoler mest på'
   }
 
@@ -159,6 +171,30 @@ const onAnsweredEmailHotspots = (result: EmailHotspotResult) => {
   answerState.value = {
     correct: result.correct,
     choice: result.selectedTargetIds.join(','),
+  }
+
+  if (result.correct) {
+    correctCount.value++
+    celebrateCorrectAnswer()
+  }
+}
+
+const onAnsweredSortIntoBuckets = (result: SortIntoBucketsResult) => {
+  answerState.value = {
+    correct: result.correct,
+    choice: Object.values(result.placements).flat().join(','),
+  }
+
+  if (result.correct) {
+    correctCount.value++
+    celebrateCorrectAnswer()
+  }
+}
+
+const onAnsweredPasswordStrength = (result: PasswordStrengthResult) => {
+  answerState.value = {
+    correct: result.correct,
+    choice: result.password,
   }
 
   if (result.correct) {
@@ -225,6 +261,23 @@ const next = () => {
         :targets="currentTask.targets"
         :disabled="Boolean(answerState)"
         @answered="onAnsweredEmailHotspots"
+      />
+      <SortIntoBucketsTemplate
+        v-else-if="currentTask?.templateKind === 'sort-into-buckets'"
+        :key="`${currentTask.id}-sort-into-buckets`"
+        :prompt="currentTask.prompt"
+        :items="currentTask.items"
+        :buckets="currentTask.buckets"
+        :unplaced-label="currentTask.unplacedLabel"
+        :disabled="Boolean(answerState)"
+        @answered="onAnsweredSortIntoBuckets"
+      />
+      <PasswordStrengthTemplate
+        v-else-if="currentTask?.templateKind === 'password-strength'"
+        :key="`${currentTask.id}-password-strength`"
+        :task="currentTask"
+        :disabled="Boolean(answerState)"
+        @answered="onAnsweredPasswordStrength"
       />
     </div>
 

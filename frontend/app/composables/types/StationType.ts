@@ -94,6 +94,7 @@ export class Station {
         title: "Passordbanken",
         description: "Laer hva som gjor et passord sterkt, trygt og lett a huske.",
         image: placeholderImage,
+        exerciseUids: ["passwordbank-exercise-1", "passwordbank-exercise-2"],
       }),
       new Station({
         uid: "marketplace",

@@ -101,7 +101,42 @@ export type EmailHotspotResult = {
   incorrectTargetId?: string;
 };
 
-export type ExerciseTemplateKind = "x-or-y" | "multiple-choice" | "email-hotspots";
+export type SortBucket = {
+  key: string;
+  title: string;
+  description?: string;
+};
+
+export type SortableItem = {
+  id: string;
+  label: string;
+  correctBucketKey: string;
+  explanation?: string;
+};
+
+export type SortIntoBucketsResult = {
+  correct: boolean;
+  placements: Record<string, string[]>;
+};
+
+export type PasswordStrengthPromptContent = {
+  title?: string;
+  text?: string;
+  helperText?: string;
+};
+
+export type PasswordStrengthResult = {
+  correct: boolean;
+  password: string;
+  score: number;
+};
+
+export type ExerciseTemplateKind =
+  | "x-or-y"
+  | "multiple-choice"
+  | "email-hotspots"
+  | "sort-into-buckets"
+  | "password-strength";
 
 export type TaskBase = {
   id: string;
@@ -138,10 +173,35 @@ export type EmailHotspotTaskData = TaskBase & {
   targets: EmailHotspotTarget[];
 };
 
+export type SortIntoBucketsTaskData = TaskBase & {
+  templateKind: "sort-into-buckets";
+  prompt?: {
+    title?: string;
+    text?: string;
+  };
+  unplacedLabel?: string;
+  buckets: SortBucket[];
+  items: SortableItem[];
+};
+
+export type PasswordStrengthTaskData = TaskBase & {
+  templateKind: "password-strength";
+  prompt?: PasswordStrengthPromptContent;
+  mode: "create" | "improve";
+  placeholder?: string;
+  startingPassword?: string;
+  minLength?: number;
+  minScoreToPass: number;
+  blockedTerms?: string[];
+  commonPatterns?: string[];
+};
+
 export type ExerciseTask =
   | XOrYTaskData
   | MultipleChoiceTaskData
-  | EmailHotspotTaskData;
+  | EmailHotspotTaskData
+  | SortIntoBucketsTaskData
+  | PasswordStrengthTaskData;
 
 //================= PostOffice =================
 
