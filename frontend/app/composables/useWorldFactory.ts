@@ -33,7 +33,7 @@ export type WorldFactorySelectableOption = {
 export const worldFactoryNewSelectionKey = "__new_world__";
 
 const storageKey = "teacher.worldFactory.records";
-const legacyStorageKey = "teacher.worldFactory.payloadsByClassroom";
+const previousStorageKey = "teacher.worldFactory.payloadsByClassroom";
 const defaultImage = "https://placehold.co/1200x720?text=Verden";
 
 export const worldFactoryDefaultImage = defaultImage;
@@ -113,12 +113,12 @@ const normalizeWorldRecord = (record: Record<string, unknown>, uidFallback = "")
 	};
 };
 
-const readLegacyWorldDrafts = (): WorldFactoryStoredRecord[] => {
+const readPreviousWorldDrafts = (): WorldFactoryStoredRecord[] => {
 	if (!canUseStorage()) {
 		return [];
 	}
 
-	const raw = window.localStorage.getItem(legacyStorageKey);
+	const raw = window.localStorage.getItem(previousStorageKey);
 
 	if (!raw) {
 		return [];
@@ -164,7 +164,7 @@ export const readWorldFactoryStore = (): WorldFactoryStore => {
 	if (!raw) {
 		return {
 			overrides: {},
-			drafts: readLegacyWorldDrafts(),
+			drafts: readPreviousWorldDrafts(),
 		};
 	}
 
@@ -174,7 +174,7 @@ export const readWorldFactoryStore = (): WorldFactoryStore => {
 		if (!parsed || typeof parsed !== "object") {
 			return {
 				overrides: {},
-				drafts: readLegacyWorldDrafts(),
+				drafts: readPreviousWorldDrafts(),
 			};
 		}
 
@@ -213,7 +213,7 @@ export const readWorldFactoryStore = (): WorldFactoryStore => {
 	} catch {
 		return {
 			overrides: {},
-			drafts: readLegacyWorldDrafts(),
+			drafts: readPreviousWorldDrafts(),
 		};
 	}
 };
@@ -224,7 +224,7 @@ const writeWorldFactoryStore = (store: WorldFactoryStore) => {
 	}
 
 	window.localStorage.setItem(storageKey, JSON.stringify(store));
-	window.localStorage.removeItem(legacyStorageKey);
+	window.localStorage.removeItem(previousStorageKey);
 };
 
 export const saveWorldFactoryOverride = (sourceUid: string, payload: WorldFactoryPayload): WorldFactoryStoredRecord => {

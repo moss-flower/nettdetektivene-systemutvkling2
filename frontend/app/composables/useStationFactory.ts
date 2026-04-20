@@ -9,11 +9,6 @@ export type StationFactoryPayload = {
 	exerciseUids: Exercise["uid"][];
 };
 
-type LegacyStoredStationFactoryPayload = StationFactoryPayload & {
-	localId: string;
-	createdAt: string;
-};
-
 export type StationFactoryStoredRecord = {
 	localId: string;
 	sourceUid?: string;
@@ -38,7 +33,7 @@ export type StationFactorySelectableOption = {
 export const stationFactoryNewSelectionKey = "__new_station__";
 
 const storageKey = "teacher.stationFactory.records";
-const legacyStorageKey = "teacher.stationFactory.payloads";
+const previousStorageKey = "teacher.stationFactory.payloads";
 const defaultImage = "https://placehold.co/1200x720?text=Stasjon";
 
 export const stationFactoryDefaultImage = defaultImage;
@@ -116,7 +111,7 @@ const normalizeStationRecord = (record: Record<string, unknown>): StationFactory
 	};
 };
 
-const normalizeLegacyStationRecord = (record: Record<string, unknown>): StationFactoryStoredRecord | null => {
+const normalizePreviousStationRecord = (record: Record<string, unknown>): StationFactoryStoredRecord | null => {
 	const payload = normalizeStationPayload(record);
 
 	if (!payload) {
@@ -132,14 +127,14 @@ const normalizeLegacyStationRecord = (record: Record<string, unknown>): StationF
 		createdAt,
 		updatedAt: createdAt,
 	};
-	};
+};
 
-const readLegacyStationDrafts = (): StationFactoryStoredRecord[] => {
+const readPreviousStationDrafts = (): StationFactoryStoredRecord[] => {
 	if (!canUseStorage()) {
 		return [];
 	}
 
-	const raw = window.localStorage.getItem(legacyStorageKey);
+	const raw = window.localStorage.getItem(previousStorageKey);
 
 	if (!raw) {
 		return [];
@@ -153,7 +148,7 @@ const readLegacyStationDrafts = (): StationFactoryStoredRecord[] => {
 		}
 
 		return parsed
-			.map((record) => normalizeLegacyStationRecord(record))
+			.map((record) => normalizePreviousStationRecord(record))
 			.filter((record): record is StationFactoryStoredRecord => record !== null);
 	} catch {
 		return [];
@@ -173,7 +168,7 @@ export const readStationFactoryStore = (): StationFactoryStore => {
 	if (!raw) {
 		return {
 			overrides: {},
-			drafts: readLegacyStationDrafts(),
+			drafts: readPreviousStationDrafts(),
 		};
 	}
 
@@ -183,7 +178,7 @@ export const readStationFactoryStore = (): StationFactoryStore => {
 		if (!parsed || typeof parsed !== "object") {
 			return {
 				overrides: {},
-				drafts: readLegacyStationDrafts(),
+				drafts: readPreviousStationDrafts(),
 			};
 		}
 
@@ -222,7 +217,7 @@ export const readStationFactoryStore = (): StationFactoryStore => {
 	} catch {
 		return {
 			overrides: {},
-			drafts: readLegacyStationDrafts(),
+			drafts: readPreviousStationDrafts(),
 		};
 	}
 };
@@ -233,7 +228,7 @@ const writeStationFactoryStore = (store: StationFactoryStore) => {
 	}
 
 	window.localStorage.setItem(storageKey, JSON.stringify(store));
-	window.localStorage.removeItem(legacyStorageKey);
+	window.localStorage.removeItem(previousStorageKey);
 };
 
 export const saveStationFactoryOverride = (sourceUid: string, payload: StationFactoryPayload): StationFactoryStoredRecord => {
