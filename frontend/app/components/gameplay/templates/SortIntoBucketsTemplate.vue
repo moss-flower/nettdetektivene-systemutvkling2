@@ -127,51 +127,12 @@ watch(
       </p>
     </header>
 
-    <section class="sort-template__tray">
-      <div class="sort-template__section-head">
-        <div>
-          <h3>{{ props.unplacedLabel ?? 'Elementer som skal sorteres' }}</h3>
-          <p>Dra kortene, eller trykk pa et kort og plasser det i riktig boks.</p>
-        </div>
-
-        <button
-          v-if="selectedItemId"
-          class="sort-template__ghost-button"
-          type="button"
-          :disabled="props.disabled"
-          @click="moveSelectedTo(null)"
-        >
-          Flytt valgt tilbake
-        </button>
-      </div>
-
-      <draggable
-        v-model="unplacedItems"
-        class="sort-template__item-list"
-        item-key="id"
-        :group="'sort-buckets'"
-        :disabled="props.disabled"
-      >
-        <template #item="{ element }">
-          <button
-            class="sort-template__item"
-            :class="{ 'sort-template__item--selected': selectedItemId === element.id }"
-            type="button"
-            :disabled="props.disabled"
-            @click="selectItem(element.id)"
-          >
-            {{ element.label }}
-          </button>
-        </template>
-      </draggable>
-    </section>
-
-    <div class="sort-template__bucket-grid">
-      <article v-for="bucket in props.buckets" :key="bucket.key" class="sort-template__bucket-card">
-        <div class="sort-template__section-head sort-template__section-head--bucket">
+    <div class="sort-template__workspace">
+      <section class="sort-template__tray">
+        <div class="sort-template__section-head">
           <div>
-            <h3>{{ bucket.title }}</h3>
-            <p>{{ bucket.description }}</p>
+            <h3>{{ props.unplacedLabel ?? 'Elementer som skal sorteres' }}</h3>
+            <p>Dra kortene, eller trykk pa et kort og plasser det i riktig boks.</p>
           </div>
 
           <button
@@ -179,15 +140,15 @@ watch(
             class="sort-template__ghost-button"
             type="button"
             :disabled="props.disabled"
-            @click="moveSelectedTo(bucket.key)"
+            @click="moveSelectedTo(null)"
           >
-            Plasser valgt her
+            Flytt valgt tilbake
           </button>
         </div>
 
         <draggable
-          v-model="bucketItems[bucket.key]"
-          class="sort-template__bucket-dropzone"
+          v-model="unplacedItems"
+          class="sort-template__item-list"
           item-key="id"
           :group="'sort-buckets'"
           :disabled="props.disabled"
@@ -203,14 +164,55 @@ watch(
               {{ element.label }}
             </button>
           </template>
-
-          <template #footer>
-            <p v-if="(bucketItems[bucket.key] ?? []).length === 0" class="sort-template__empty-state">
-              Slipp kort her
-            </p>
-          </template>
         </draggable>
-      </article>
+      </section>
+
+      <div class="sort-template__bucket-grid">
+        <article v-for="bucket in props.buckets" :key="bucket.key" class="sort-template__bucket-card">
+          <div class="sort-template__section-head sort-template__section-head--bucket">
+            <div>
+              <h3>{{ bucket.title }}</h3>
+              <p>{{ bucket.description }}</p>
+            </div>
+
+            <button
+              v-if="selectedItemId"
+              class="sort-template__ghost-button"
+              type="button"
+              :disabled="props.disabled"
+              @click="moveSelectedTo(bucket.key)"
+            >
+              Plasser valgt her
+            </button>
+          </div>
+
+          <draggable
+            v-model="bucketItems[bucket.key]"
+            class="sort-template__bucket-dropzone"
+            item-key="id"
+            :group="'sort-buckets'"
+            :disabled="props.disabled"
+          >
+            <template #item="{ element }">
+              <button
+                class="sort-template__item"
+                :class="{ 'sort-template__item--selected': selectedItemId === element.id }"
+                type="button"
+                :disabled="props.disabled"
+                @click="selectItem(element.id)"
+              >
+                {{ element.label }}
+              </button>
+            </template>
+
+            <template #footer>
+              <p v-if="(bucketItems[bucket.key] ?? []).length === 0" class="sort-template__empty-state">
+                Slipp kort her
+              </p>
+            </template>
+          </draggable>
+        </article>
+      </div>
     </div>
 
     <div class="sort-template__actions">
@@ -238,6 +240,13 @@ watch(
   gap: 0.45rem;
 }
 
+.sort-template__workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.9fr);
+  align-items: stretch;
+  gap: 1rem;
+}
+
 .sort-template__title {
   font-size: clamp(1.35rem, 2.5vw, 2rem);
   line-height: 1.1;
@@ -257,6 +266,12 @@ watch(
   border: 2px solid #d7dfeb;
   background: #fbfdff;
   box-shadow: 0 12px 24px rgba(52, 77, 115, 0.08);
+}
+
+.sort-template__tray {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
 }
 
 .sort-template__section-head {
@@ -289,9 +304,13 @@ watch(
   gap: 0.75rem;
 }
 
+.sort-template__item-list {
+  flex: 1;
+  align-content: start;
+}
+
 .sort-template__bucket-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -361,6 +380,7 @@ watch(
 }
 
 @media (max-width: 760px) {
+  .sort-template__workspace,
   .sort-template__bucket-grid {
     grid-template-columns: 1fr;
   }
