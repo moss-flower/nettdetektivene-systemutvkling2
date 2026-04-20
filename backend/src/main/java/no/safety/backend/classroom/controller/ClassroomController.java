@@ -50,7 +50,7 @@ public class ClassroomController {
       description = "Creates a new classroom owned by the caller. A join code is automatically generated.",
       tags = {"Classroom management for teachers"}
   )
-  @PreAuthorize("hasRole('ROLE_TEACHER')")
+  @PreAuthorize("hasRole('TEACHER')")
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public ClassroomResponse create(
@@ -75,7 +75,7 @@ public class ClassroomController {
       description = "Updates the name and description of an existing classroom. Requires the caller to be an owner.",
       tags = {"Classroom management for teachers"}
   )
-  @PreAuthorize("hasRole('ROLE_TEACHER')")
+  @PreAuthorize("hasRole('TEACHER')")
   @PutMapping("/{classroomId}")
   public ClassroomResponse update(
       @PathVariable Long classroomId,
@@ -99,7 +99,7 @@ public class ClassroomController {
       description = "Deletes an existing classroom. Requires the caller to be an owner.",
       tags = {"Classroom management for teachers"}
   )
-  @PreAuthorize("hasRole('ROLE_TEACHER')")
+  @PreAuthorize("hasRole('TEACHER')")
   @DeleteMapping("/{classroomId}")
   public ResponseEntity<Void> delete(
       @PathVariable Long classroomId,
@@ -129,7 +129,7 @@ public class ClassroomController {
       description = "Adds a teacher as an owner of the classroom. Requires the caller to be an existing owner.",
       tags = {"Classroom management for teachers"}
   )
-  @PreAuthorize("hasRole('ROLE_TEACHER')")
+  @PreAuthorize("hasRole('TEACHER')")
   @PostMapping("/{classroomId}/owners/{userUuid}")
   public ClassroomResponse addOwner(
       @PathVariable Long classroomId,
@@ -158,7 +158,7 @@ public class ClassroomController {
       description = "Removes a teacher as an owner of the classroom. The last owner cannot be removed. Requires the caller to be an owner.",
       tags = {"Classroom management for teachers"}
   )
-  @PreAuthorize("hasRole('ROLE_TEACHER')")
+  @PreAuthorize("hasRole('TEACHER')")
   @DeleteMapping("/{classroomId}/owners/{userUuid}")
   public ClassroomResponse removeOwner(
       @PathVariable Long classroomId,
@@ -179,7 +179,7 @@ public class ClassroomController {
       description = "Generates a new join code for the classroom, replacing the old one. Requires the caller to be an owner.",
       tags = {"Classroom management for teachers"}
   )
-  @PreAuthorize("hasRole('ROLE_TEACHER')")
+  @PreAuthorize("hasRole('TEACHER')")
   @PostMapping("/{classroomId}/code")
   public ClassroomResponse regenerateCode(
       @PathVariable Long classroomId,
@@ -198,7 +198,7 @@ public class ClassroomController {
       description = "Returns all classrooms owned by the logged-in teacher.",
       tags = {"Classroom management for teachers"}
   )
-  @PreAuthorize("hasRole('ROLE_TEACHER')")
+  @PreAuthorize("hasRole('TEACHER')")
   @GetMapping
   public Set<ClassroomResponse> getOwnedClassrooms(@AuthenticationPrincipal UserPrincipal principal) {
     return classroomService.getOwnedClassrooms(getCallerUuid(principal));
@@ -219,7 +219,7 @@ public class ClassroomController {
       description = "Returns a specific classroom by its ID. Requires the caller to be an owner.",
       tags = {"Classroom management for teachers"}
   )
-  @PreAuthorize("hasRole('ROLE_TEACHER')")
+  @PreAuthorize("hasRole('TEACHER')")
   @GetMapping("/{classroomId}")
   public ClassroomResponse getClassroom(@PathVariable Long classroomId,
       @AuthenticationPrincipal UserPrincipal principal) {
@@ -239,7 +239,7 @@ public class ClassroomController {
       description = "Returns the classroom that the logged-in student is a member of.",
       tags = {"Classroom management for students"}
   )
-  @PreAuthorize("hasRole('ROLE_STUDENT')")
+  @PreAuthorize("hasRole('STUDENT')")
   @GetMapping("/me")
   public ClassroomResponse getMyClassroom(@AuthenticationPrincipal UserPrincipal principal) {
     return classroomService.getMyClassroom(getCallerUuid(principal));
@@ -262,7 +262,7 @@ public class ClassroomController {
       description = "Allows a student to join a classroom using a join code. A student can only be a member of one classroom at a time.",
       tags = {"Classroom management for students"}
   )
-  @PreAuthorize("hasRole('ROLE_STUDENT')")
+  @PreAuthorize("hasRole('STUDENT')")
   @PostMapping("/join/{code}")
   public ClassroomResponse joinByCode(
       @PathVariable String code,
@@ -286,7 +286,7 @@ public class ClassroomController {
       description = "Removes a student member from a classroom. Requires the caller to be an owner.",
       tags = {"Classroom management for teachers"}
   )
-  @PreAuthorize("hasRole('ROLE_TEACHER')")
+  @PreAuthorize("hasRole('TEACHER')")
   @DeleteMapping("/{classroomId}/members/{userUuid}")
   public ClassroomResponse removeMember(
       @PathVariable Long classroomId,
@@ -309,7 +309,7 @@ public class ClassroomController {
       description = "Allows the logged-in student to leave a classroom they are a member of.",
       tags = {"Classroom management for students"}
   )
-  @PreAuthorize("hasRole('ROLE_STUDENT')")
+  @PreAuthorize("hasRole('STUDENT')")
   @DeleteMapping("/{classroomId}/members/me")
   public ResponseEntity<Void> leaveClassroom(
       @PathVariable Long classroomId,
