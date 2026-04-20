@@ -22,13 +22,13 @@ definePageMeta({
 })
 
 const route = useRoute()
-const requestedStationSlug = Array.isArray(route.params.stationSlug)
-  ? route.params.stationSlug[0] ?? ''
-  : route.params.stationSlug ?? ''
-const requestedExerciseId = typeof route.query.exerciseId === 'string'
-  ? route.query.exerciseId
+const requestedStationUid = Array.isArray(route.params.stationUid)
+  ? route.params.stationUid[0] ?? ''
+  : route.params.stationUid ?? ''
+const requestedExerciseUid = typeof route.query.exerciseUid === 'string'
+  ? route.query.exerciseUid
   : ''
-const station = Station.backendFetchStationBySlug(requestedStationSlug)
+const station = Station.backendFetchStationByUid(requestedStationUid)
 
 if (!station) {
   throw createError({
@@ -39,10 +39,10 @@ if (!station) {
 
 const { celebrateCorrectAnswer, stop } = useGameConfetti()
 
-const activeExerciseId = station.exerciseIds.includes(requestedExerciseId)
-  ? requestedExerciseId
-  : station.exerciseIds[0] ?? null
-const activeExercise = activeExerciseId ? Exercise.backendFetchExerciseById(activeExerciseId) : null
+const activeExerciseUid = station.exerciseUids.includes(requestedExerciseUid)
+  ? requestedExerciseUid
+  : station.exerciseUids[0] ?? null
+const activeExercise = activeExerciseUid ? Exercise.backendFetchExerciseByUid(activeExerciseUid) : null
 const tasks = activeExercise
   ? sampleAndShuffle(activeExercise.tasks, activeExercise.tasks.length)
   : []
@@ -90,7 +90,7 @@ const progressLabel = computed(() => {
 
 const exerciseSelectRoute = computed(() => ({
   path: routePaths.studentExerciseDifficultySelect,
-  query: { id: station.id },
+  query: { uid: station.uid },
 }))
 
 const feedbackTitle = computed(() => {

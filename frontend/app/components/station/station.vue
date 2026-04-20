@@ -14,12 +14,12 @@ const stationIsUnlocked = computed(() => props.station.isUnlocked());
 
 const stationPath = computed(() => ({
   path: routePaths.studentExerciseDifficultySelect,
-  query: { id: props.station.id },
+  query: { uid: props.station.uid },
 }));
 
 const totalExercises = computed(() => {
-  if (props.station.exerciseIds.length > 0) {
-    return props.station.exerciseIds.length;
+  if (props.station.exerciseUids.length > 0) {
+    return props.station.exerciseUids.length;
   }
 
   return stationStatus.value.completedExercises.length;
@@ -30,7 +30,7 @@ const stars = computed(() =>
     const isCompleted = stationStatus.value.completedExercises[index] ?? false;
 
     return {
-      id: `${props.station.id}-star-${index}`,
+      id: `${props.station.uid}-star-${index}`,
       src: isCompleted ? starFilled : starEmpty,
       alt: isCompleted ? `Completed star ${index + 1}` : `Empty star ${index + 1}`,
     };

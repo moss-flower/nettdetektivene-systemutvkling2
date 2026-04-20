@@ -10,14 +10,14 @@ export type ExerciseTask =
   | EmailHotspotTaskData;
 
 export class Exercise {
-  id: string;
+  uid: string;
   title: string;
   entryName: string;
   description?: string;
   tasks: ExerciseTask[];
 
-  constructor(data: { id: string; title: string; entryName: string; description?: string; tasks: ExerciseTask[] }) {
-    this.id = data.id;
+  constructor(data: { uid: string; title: string; entryName: string; description?: string; tasks: ExerciseTask[] }) {
+    this.uid = data.uid;
     this.title = data.title;
     this.entryName = data.entryName;
     this.description = data.description;
@@ -27,7 +27,7 @@ export class Exercise {
   static mockData(): Exercise[] {
     return [
       new Exercise({
-        id: "newsstand-exercise-1",
+        uid: "newsstand-exercise-1",
         title: "Troverdige nyheter",
         entryName: "Lett",
         description: "Undersøk hvilke nyhetssaker som virker ekte, og hvilke faresignaler som bør sjekkes ekstra godt.",
@@ -167,7 +167,7 @@ export class Exercise {
         ],
       }),
       new Exercise({
-        id: "newsstand-exercise-2",
+        uid: "newsstand-exercise-2",
         title: "Nyhetsdetektiv",
         entryName: "Middels",
         description: "Sammenlign nyhetssaker, oppdag clickbait og finn ut hva du bør undersøke før du tror eller deler noe.",
@@ -270,7 +270,7 @@ export class Exercise {
         ],
       }),
       new Exercise({
-        id: "postoffice-exercise-1",
+        uid: "postoffice-exercise-1",
         title: "Mistenkelige e-poster",
         entryName: "Lett",
         description: "Se etter rare avsendere, farlige lenker og andre tegn på at en e-post ikke er trygg.",
@@ -491,21 +491,21 @@ export class Exercise {
     ];
   }
 
-  static findById(id: string): Exercise | null {
-    return this.mockData().find((exercise) => exercise.id === id) ?? null;
+  static findByUid(uid: string): Exercise | null {
+    return this.mockData().find((exercise) => exercise.uid === uid) ?? null;
   }
 
-  static findByIds(ids: string[]): Exercise[] {
-    return ids
-      .map((id) => this.findById(id))
+  static findByUids(uids: string[]): Exercise[] {
+    return uids
+      .map((uid) => this.findByUid(uid))
       .filter((exercise): exercise is Exercise => exercise !== null);
   }
 
-  static backendFetchExerciseById(id: string): Exercise | null {
-    return this.findById(id);
+  static backendFetchExerciseByUid(uid: string): Exercise | null {
+    return this.findByUid(uid);
   }
 
-  static backendFetchExercisesByIds(ids: string[]): Exercise[] {
-    return this.findByIds(ids);
+  static backendFetchExercisesByUids(uids: string[]): Exercise[] {
+    return this.findByUids(uids);
   }
 }

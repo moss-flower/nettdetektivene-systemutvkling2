@@ -29,7 +29,7 @@ export type ClassroomNotification = {
 };
 
 export type ClassroomExercise = {
-  id: string;
+  uid: string;
   classroomId: string;
   title: string;
   status: string;
@@ -83,10 +83,10 @@ const teacherClassroomNotifications: ClassroomNotification[] = [
 ];
 
 const teacherClassroomExercises: ClassroomExercise[] = [
-  { id: 't1', classroomId: 'ronvik-6a', title: 'Skille ekte og falske nyheter', status: 'Aktiv', level: 'Nyhetskvartalet' },
-  { id: 't2', classroomId: 'ronvik-6a', title: 'Oppdage mistenkelige e-poster', status: 'Kladd', level: 'Postkontoret' },
-  { id: 't3', classroomId: 'ronvik-6b', title: 'Vurdere nettbutikker', status: 'Aktiv', level: 'Markedsplassen' },
-  { id: 't4', classroomId: 'ronvik-6c', title: 'Sterke passord', status: 'Planlagt', level: 'Passordbanken' }
+  { uid: 't1', classroomId: 'ronvik-6a', title: 'Skille ekte og falske nyheter', status: 'Aktiv', level: 'Nyhetskvartalet' },
+  { uid: 't2', classroomId: 'ronvik-6a', title: 'Oppdage mistenkelige e-poster', status: 'Kladd', level: 'Postkontoret' },
+  { uid: 't3', classroomId: 'ronvik-6b', title: 'Vurdere nettbutikker', status: 'Aktiv', level: 'Markedsplassen' },
+  { uid: 't4', classroomId: 'ronvik-6c', title: 'Sterke passord', status: 'Planlagt', level: 'Passordbanken' }
 ];
 
 const classroomMysteries: teacherClassroomMystery[] = [
