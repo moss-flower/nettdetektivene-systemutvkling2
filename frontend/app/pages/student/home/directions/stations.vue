@@ -29,7 +29,7 @@ function goBack() {
     <div class="stationGrid">
       <StationCard
         v-for="station in stations"
-        :key="station.id"
+        :key="station.uid"
         :station="station"
       />
     </div>

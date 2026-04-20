@@ -5,7 +5,7 @@ import { Exercise } from "~/composables/types/ExerciseType";
 import { Station } from "~/composables/types/StationType";
 
 type ExerciseOption = {
-  id: string;
+  uid: string;
   title: string;
   difficultyText: string;
   description: string;
@@ -14,19 +14,19 @@ type ExerciseOption = {
   to: {
     path: string;
     query: {
-      exerciseId: string;
+      exerciseUid: string;
     };
   };
 };
 
 const route = useRoute();
 
-const stationId = computed(() =>
-  typeof route.query.id === "string" ? route.query.id : "",
+const stationUid = computed(() =>
+  typeof route.query.uid === "string" ? route.query.uid : "",
 );
 
 const station = computed(() =>
-  stationId.value ? Station.backendFetchStationById(stationId.value) : null,
+  stationUid.value ? Station.backendFetchStationByUid(stationUid.value) : null,
 );
 const stationStatus = computed(() => station.value?.getMockStatus() ?? {
   completedExercises: [],
@@ -34,7 +34,7 @@ const stationStatus = computed(() => station.value?.getMockStatus() ?? {
 const stationIsUnlocked = computed(() => station.value?.isUnlocked() ?? false);
 
 const stationExercises = computed(() =>
-  station.value ? Exercise.backendFetchExercisesByIds(station.value.exerciseIds) : [],
+  station.value ? Exercise.backendFetchExercisesByUids(station.value.exerciseUids) : [],
 );
 
 const exerciseOptions = computed<ExerciseOption[]>(() => {
@@ -45,15 +45,15 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
   const currentStation = station.value;
 
   return stationExercises.value.map((exercise, index) => ({
-    id: exercise.id,
+    uid: exercise.uid,
     title: exercise.title,
     difficultyText: exercise.entryName,
     description: exercise.description ?? currentStation.description ?? "",
     isCompleted: stationStatus.value.completedExercises[index] ?? false,
-    isUnlocked: currentStation.isExerciseUnlocked(exercise.id),
+    isUnlocked: currentStation.isExerciseUnlocked(exercise.uid),
     to: {
-      path: `/games/${currentStation.slug}`,
-      query: { exerciseId: exercise.id },
+      path: `/games/${currentStation.uid}`,
+      query: { exerciseUid: exercise.uid },
     },
   }));
 });
@@ -75,7 +75,7 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
       <div v-if="exerciseOptions.length > 0" class="difficultyGrid">
         <DifficultySelect
           v-for="option in exerciseOptions"
-          :key="option.id"
+          :key="option.uid"
           :title="option.title"
           :difficulty-text="option.difficultyText"
           :description="option.description"

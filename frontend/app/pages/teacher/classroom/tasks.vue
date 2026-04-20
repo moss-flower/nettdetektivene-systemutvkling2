@@ -16,7 +16,7 @@ const exercises = computed(() => getTeacherClassroomExercises(classroomId.value)
     </header>
 
     <div class="stack">
-      <article v-for="exercise in exercises" :key="exercise.id" class="card">
+      <article v-for="exercise in exercises" :key="exercise.uid" class="card">
         <h2>{{ exercise.title }}</h2>
         <p>{{ exercise.level }}</p>
         <span>{{ exercise.status }}</span>

@@ -2,7 +2,6 @@
 import {
 	createExerciseDraft,
 	createTaskDraft,
-	emailHotspotTargetIds,
 	readStoredExercisePayloads,
 	removeStoredExercisePayload,
 	storeExercisePayload,
@@ -11,12 +10,10 @@ import {
 } from "~/composables/useExerciseFactory";
 
 import type {
-	EmailHotspotBodyLinkBlock,
-	EmailHotspotBodyTextBlock,
-	EmailHotspotTaskData,
 	ExerciseTask,
 	ExerciseTemplateKind,
 	MultipleChoiceTaskData,
+	EmailHotspotTaskData,
 	XOrYTaskData,
 } from "~/composables/types/TaskTypes";
 
@@ -60,38 +57,6 @@ const taskLabel = (task: ExerciseTask, index: number) => {
 const multipleChoiceTask = (task: ExerciseTask) => task as MultipleChoiceTaskData;
 const xOrYTask = (task: ExerciseTask) => task as XOrYTaskData;
 const emailTask = (task: ExerciseTask) => task as EmailHotspotTaskData;
-const emailTextBlock = (task: ExerciseTask) => emailTask(task).email.bodyBlocks[0] as EmailHotspotBodyTextBlock;
-const emailLinkBlock = (task: ExerciseTask) => emailTask(task).email.bodyBlocks[1] as EmailHotspotBodyLinkBlock;
-const emailActionButton = (task: ExerciseTask) => emailTask(task).email.actionButton;
-const emailAttachment = (task: ExerciseTask) => emailTask(task).email.attachments?.[0];
-
-const getEmailTarget = (task: ExerciseTask, targetId: string) => {
-	return emailTask(task).targets.find((target) => target.id === targetId);
-};
-
-const ensureEmailTarget = (task: ExerciseTask, targetId: string) => {
-	const existingTarget = getEmailTarget(task, targetId);
-
-	if (existingTarget) {
-		return existingTarget;
-	}
-
-	const nextTarget = {
-		id: targetId,
-		isSuspicious: false,
-	};
-
-	emailTask(task).targets.push(nextTarget);
-	return nextTarget;
-};
-
-const isEmailHotspotSuspicious = (task: ExerciseTask, targetId: string) => {
-	return getEmailTarget(task, targetId)?.isSuspicious ?? false;
-};
-
-const setEmailHotspotSuspicious = (task: ExerciseTask, targetId: string, isSuspicious: boolean) => {
-	ensureEmailTarget(task, targetId).isSuspicious = isSuspicious;
-};
 
 const refreshSavedPayloads = () => {
 	savedPayloads.value = readStoredExercisePayloads();
@@ -293,309 +258,19 @@ watch(payloadPreviewText, () => {
 						</div>
 
 						<template v-if="task.templateKind === 'multiple-choice'">
-							<div class="templateSection">
-								<h4>Flervalg</h4>
-								<div class="fieldGrid">
-									<label class="field">
-										<span>Prompt-tittel</span>
-										<input v-model="multipleChoiceTask(task).prompt.title" type="text" >
-									</label>
-
-									<label class="field field--full">
-										<span>Prompt-tekst</span>
-										<textarea v-model="multipleChoiceTask(task).prompt.text" rows="2"></textarea>
-									</label>
-
-									<label class="field">
-										<span>Bilde-URL</span>
-										<input v-model="multipleChoiceTask(task).prompt.imageUrl" type="url" >
-									</label>
-
-									<label class="field">
-										<span>Bildetekst</span>
-										<input v-model="multipleChoiceTask(task).prompt.imageAlt" type="text" >
-									</label>
-
-									<label class="field">
-										<span>Riktig svar</span>
-										<select v-model="multipleChoiceTask(task).correctChoice">
-											<option v-for="option in multipleChoiceTask(task).options" :key="option.key" :value="option.key">
-												{{ option.key.toUpperCase() }}
-											</option>
-										</select>
-									</label>
-								</div>
-
-								<div class="optionList">
-									<div
-										v-for="(option, optionIndex) in multipleChoiceTask(task).options"
-										:key="`${task.id}-${option.key}`"
-										class="optionCard"
-									>
-										<label class="field optionField">
-											<span>Alternativ {{ option.key.toUpperCase() }}</span>
-											<input v-model="option.title" type="text" >
-										</label>
-										<button
-											type="button"
-											class="deleteButton"
-											:disabled="multipleChoiceTask(task).options.length <= 2"
-											@click="removeOption(taskIndex, optionIndex)"
-										>
-											Fjern
-										</button>
-									</div>
-								</div>
-
-								<button type="button" class="ghostButton" @click="addOption(taskIndex)">
-									+ Legg til svaralternativ
-								</button>
-							</div>
+							<TeacherFactoryMultipleChoiceEditor
+								:task="multipleChoiceTask(task)"
+								@add-option="addOption(taskIndex)"
+								@remove-option="removeOption(taskIndex, $event)"
+							/>
 						</template>
 
 						<template v-else-if="task.templateKind === 'x-or-y'">
-							<div class="templateSection">
-								<h4>X eller Y</h4>
-								<div class="fieldGrid">
-									<label class="field">
-										<span>Prompt-tittel</span>
-										<input v-model="xOrYTask(task).prompt!.title" type="text" >
-									</label>
-
-									<label class="field field--full">
-										<span>Prompt-tekst</span>
-										<textarea v-model="xOrYTask(task).prompt!.text" rows="2"></textarea>
-									</label>
-
-									<label class="field">
-										<span>Riktig valg</span>
-										<select v-model="xOrYTask(task).correctChoice">
-											<option value="x">X</option>
-											<option value="y">Y</option>
-										</select>
-									</label>
-								</div>
-
-								<div class="splitGrid">
-									<article class="splitCard">
-										<h5>Alternativ X</h5>
-										<label class="field">
-											<span>Eyebrow</span>
-											<input v-model="xOrYTask(task).options.x.eyebrow" type="text" >
-										</label>
-										<label class="field">
-											<span>Tittel</span>
-											<input v-model="xOrYTask(task).options.x.title" type="text" >
-										</label>
-										<label class="field">
-											<span>Tekst</span>
-											<textarea v-model="xOrYTask(task).options.x.text" rows="3"></textarea>
-										</label>
-										<label class="field">
-											<span>Bilde-URL</span>
-											<input v-model="xOrYTask(task).options.x.imageUrl" type="url" >
-										</label>
-										<label class="field">
-											<span>Bildetekst</span>
-											<input v-model="xOrYTask(task).options.x.imageAlt" type="text" >
-										</label>
-									</article>
-
-									<article class="splitCard">
-										<h5>Alternativ Y</h5>
-										<label class="field">
-											<span>Eyebrow</span>
-											<input v-model="xOrYTask(task).options.y.eyebrow" type="text" >
-										</label>
-										<label class="field">
-											<span>Tittel</span>
-											<input v-model="xOrYTask(task).options.y.title" type="text" >
-										</label>
-										<label class="field">
-											<span>Tekst</span>
-											<textarea v-model="xOrYTask(task).options.y.text" rows="3"></textarea>
-										</label>
-										<label class="field">
-											<span>Bilde-URL</span>
-											<input v-model="xOrYTask(task).options.y.imageUrl" type="url" >
-										</label>
-										<label class="field">
-											<span>Bildetekst</span>
-											<input v-model="xOrYTask(task).options.y.imageAlt" type="text" >
-										</label>
-									</article>
-								</div>
-							</div>
+							<TeacherFactoryXOrYEditor :task="xOrYTask(task)" />
 						</template>
 
 						<template v-else>
-							<div class="templateSection">
-								<h4>E-post hotspots</h4>
-								<div class="fieldGrid">
-									<label class="field">
-										<span>Prompt-tittel</span>
-										<input v-model="emailTask(task).prompt!.title" type="text" >
-									</label>
-
-									<label class="field field--full">
-										<span>Prompt-tekst</span>
-										<textarea v-model="emailTask(task).prompt!.text" rows="2"></textarea>
-									</label>
-
-									<label class="field">
-										<span>Avsendernavn</span>
-										<input v-model="emailTask(task).email.senderName" type="text" >
-									</label>
-
-									<div class="hotspotCard">
-										<div class="hotspotCardHeader">
-											<span class="hotspotCardTitle">Avsender-hotspot</span>
-											<div class="hotspotToggleRow">
-												<label class="hotspotToggle">
-													<input
-														:checked="isEmailHotspotSuspicious(task, emailHotspotTargetIds.senderAddress)"
-														type="checkbox"
-														@change="setEmailHotspotSuspicious(task, emailHotspotTargetIds.senderAddress, ($event.target as HTMLInputElement).checked)"
-													>
-													<span>Mistenkelig</span>
-												</label>
-											</div>
-										</div>
-
-										<label class="field">
-											<span>Avsenderadresse</span>
-											<input v-model="emailTask(task).email.senderAddress" type="email" >
-										</label>
-									</div>
-
-									<div class="hotspotCard hotspotCard--full">
-										<div class="hotspotCardHeader">
-											<span class="hotspotCardTitle">Emne-hotspot</span>
-											<div class="hotspotToggleRow">
-												<label class="hotspotToggle">
-													<input
-														:checked="isEmailHotspotSuspicious(task, emailHotspotTargetIds.subject)"
-														type="checkbox"
-														@change="setEmailHotspotSuspicious(task, emailHotspotTargetIds.subject, ($event.target as HTMLInputElement).checked)"
-													>
-													<span>Mistenkelig</span>
-												</label>
-											</div>
-										</div>
-
-										<label class="field field--full">
-											<span>Emne</span>
-											<input v-model="emailTask(task).email.subject" type="text" >
-										</label>
-									</div>
-
-									<div class="hotspotCard hotspotCard--full">
-										<div class="hotspotCardHeader">
-											<span class="hotspotCardTitle">Tekst-hotspot</span>
-											<div class="hotspotToggleRow">
-												<label class="hotspotToggle">
-													<input
-														:checked="isEmailHotspotSuspicious(task, emailHotspotTargetIds.bodyText)"
-														type="checkbox"
-														@change="setEmailHotspotSuspicious(task, emailHotspotTargetIds.bodyText, ($event.target as HTMLInputElement).checked)"
-													>
-													<span>Mistenkelig</span>
-												</label>
-											</div>
-										</div>
-
-										<label class="field field--full">
-											<span>Brødtekst</span>
-											<textarea v-model="emailTextBlock(task).text" rows="3"></textarea>
-										</label>
-									</div>
-
-									<div class="hotspotCard hotspotCard--full">
-										<div class="hotspotCardHeader">
-											<span class="hotspotCardTitle">Lenke-hotspot</span>
-											<div class="hotspotToggleRow">
-												<label class="hotspotToggle">
-													<input
-														:checked="isEmailHotspotSuspicious(task, emailHotspotTargetIds.bodyLink)"
-														type="checkbox"
-														@change="setEmailHotspotSuspicious(task, emailHotspotTargetIds.bodyLink, ($event.target as HTMLInputElement).checked)"
-													>
-													<span>Mistenkelig</span>
-												</label>
-											</div>
-										</div>
-
-										<div class="hotspotCardFields">
-											<label class="field">
-												<span>Lenketekst</span>
-												<input v-model="emailLinkBlock(task).label" type="text" >
-											</label>
-
-											<label class="field">
-												<span>Lenke-URL</span>
-												<input v-model="emailLinkBlock(task).urlText" type="text" >
-											</label>
-										</div>
-									</div>
-
-									<div class="hotspotCard hotspotCard--full">
-										<div class="hotspotCardHeader">
-											<span class="hotspotCardTitle">Knapp-hotspot</span>
-											<div class="hotspotToggleRow">
-												<label class="hotspotToggle">
-													<input
-														:checked="isEmailHotspotSuspicious(task, emailHotspotTargetIds.actionButton)"
-														type="checkbox"
-														@change="setEmailHotspotSuspicious(task, emailHotspotTargetIds.actionButton, ($event.target as HTMLInputElement).checked)"
-													>
-													<span>Mistenkelig</span>
-												</label>
-											</div>
-										</div>
-
-										<div class="hotspotCardFields">
-											<label class="field">
-												<span>Knappetekst</span>
-												<input v-model="emailActionButton(task)!.label" type="text" >
-											</label>
-
-											<label class="field">
-												<span>Knapp-hjelpetekst</span>
-												<input v-model="emailActionButton(task)!.helperText" type="text" >
-											</label>
-										</div>
-									</div>
-
-									<div class="hotspotCard hotspotCard--full">
-										<div class="hotspotCardHeader">
-											<span class="hotspotCardTitle">Vedlegg-hotspot</span>
-											<div class="hotspotToggleRow">
-												<label class="hotspotToggle">
-													<input
-														:checked="isEmailHotspotSuspicious(task, emailHotspotTargetIds.attachment)"
-														type="checkbox"
-														@change="setEmailHotspotSuspicious(task, emailHotspotTargetIds.attachment, ($event.target as HTMLInputElement).checked)"
-													>
-													<span>Mistenkelig</span>
-												</label>
-											</div>
-										</div>
-
-										<div class="hotspotCardFields">
-											<label class="field">
-												<span>Vedleggsnavn</span>
-												<input v-model="emailAttachment(task)!.name" type="text" >
-											</label>
-
-											<label class="field">
-												<span>Vedleggsdetaljer</span>
-												<input v-model="emailAttachment(task)!.details" type="text" >
-											</label>
-										</div>
-									</div>
-
-								</div>
-							</div>
+							<TeacherFactoryEmailHotspotsEditor :task="emailTask(task)" />
 						</template>
 					</article>
 				</section>
@@ -764,10 +439,6 @@ h1 {
 	gap: 0.9rem;
 }
 
-.hotspotCard--full {
-	grid-column: 1 / -1;
-}
-
 .field,
 .toggleField {
 	display: grid;
@@ -779,9 +450,7 @@ h1 {
 }
 
 .field span,
-.toggleField span,
-.splitCard h5,
-.templateSection h4 {
+.toggleField span {
 	font-weight: 700;
 }
 
@@ -801,56 +470,6 @@ h1 {
 	resize: vertical;
 }
 
-.hotspotCard {
-	display: grid;
-	gap: 0.85rem;
-	padding: 0.85rem;
-	border: 1px solid var(--border);
-	border-radius: 0.9rem;
-	background: rgba(255, 255, 255, 0.03);
-}
-
-.hotspotCardHeader {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 0.75rem;
-}
-
-.hotspotToggleRow {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: flex-end;
-	gap: 0.5rem;
-}
-
-.hotspotCardTitle {
-	font-weight: 700;
-	color: var(--text);
-}
-
-.hotspotCardFields {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 0.9rem;
-}
-
-.hotspotToggle {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.5rem;
-	padding: 0.45rem 0.75rem;
-	border: 1px solid var(--border);
-	border-radius: 999px;
-	background: rgba(255, 255, 255, 0.03);
-	font-weight: 700;
-	color: var(--text);
-}
-
-.hotspotToggle input {
-	margin: 0;
-}
-
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
@@ -866,8 +485,6 @@ h1 {
 }
 
 .taskCard,
-.splitCard,
-.optionCard,
 .savedCard {
 	border: 1px solid var(--border);
 	border-radius: 1rem;
@@ -883,7 +500,6 @@ h1 {
 }
 
 .taskCardHeader,
-.optionCard,
 .savedCard {
 	display: flex;
 	align-items: flex-start;
@@ -891,41 +507,13 @@ h1 {
 	gap: 0.75rem;
 }
 
-.templateSection {
-	margin-top: 1rem;
-	padding-top: 1rem;
-	border-top: 1px solid var(--border);
-}
-
-.templateSection h4 {
-	margin: 0 0 0.8rem;
-}
-
-.optionList,
 .savedList {
 	display: grid;
 	gap: 0.75rem;
 }
 
-.optionCard,
 .savedCard {
 	padding: 0.85rem 1rem;
-}
-
-.optionField {
-	flex: 1;
-}
-
-.splitGrid {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 0.9rem;
-}
-
-.splitCard {
-	padding: 1rem;
-	display: grid;
-	gap: 0.75rem;
 }
 
 .payloadPreview {
@@ -1018,22 +606,15 @@ h1 {
 }
 
 @media (max-width: 800px) {
-	.fieldGrid,
-	.splitGrid,
-	.hotspotCardFields {
+	.fieldGrid {
 		grid-template-columns: 1fr;
 	}
 
 	.sectionHeading--inline,
 	.taskCardHeader,
-	.savedCard,
-	.hotspotCardHeader {
+	.savedCard {
 		flex-direction: column;
 		align-items: flex-start;
-	}
-
-	.hotspotToggleRow {
-		justify-content: flex-start;
 	}
 }
 </style>
