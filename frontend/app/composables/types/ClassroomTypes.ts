@@ -7,6 +7,7 @@ export type Classroom = {
   id: number;
   name: string;
   description: string;
+  worldUid: string;
   code: string;
   owners: ClassroomUser[];
   members: ClassroomUser[];
@@ -15,4 +16,5 @@ export type Classroom = {
 export type ClassroomRequest = {
   name: string;
   description: string;
+  worldUid: string;
 };
