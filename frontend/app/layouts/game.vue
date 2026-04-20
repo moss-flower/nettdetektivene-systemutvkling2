@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import {useThemeAttributes} from "~/composables/useThemeAttributes";
+
 provideGameConfetti()
+useThemeAttributes("game")
 </script>
 
 <template>
