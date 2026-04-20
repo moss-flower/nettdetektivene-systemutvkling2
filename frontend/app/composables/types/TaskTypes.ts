@@ -191,7 +191,6 @@ export type PasswordStrengthTaskData = TaskBase & {
   startingPassword?: string;
   minLength?: number;
   minScoreToPass: number;
-  blockedTerms?: string[];
   commonPatterns?: string[];
 };
 
