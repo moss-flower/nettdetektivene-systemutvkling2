@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { Station } from '~/composables/types/StationType'
+import { useThemeAttributes } from '~/composables/useThemeAttributes'
 
 provideGameConfetti()
+useThemeAttributes('game')
 
 const route = useRoute()
 
