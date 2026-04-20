@@ -87,7 +87,7 @@ export class Station {
         title: "Postkontoret",
         description: "Ov pa a avslore falske e-poster, mistenkelige lenker og rare avsendere.",
         image: placeholderImage,
-        exerciseUids: ["postoffice-exercise-1"],
+        exerciseUids: ["postoffice-exercise-1", "postoffice-exercise-2"],
       }),
       new Station({
         uid: "passwordbank",
