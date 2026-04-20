@@ -98,120 +98,119 @@ const activateTarget = (targetId?: string) => {
             {{ props.email.senderAvatarText ?? props.email.senderName.slice(0, 2).toUpperCase() }}
           </div>
           <div class="email-hotspots-template__sender-copy">
-            <p class="email-hotspots-template__sender-name">{{ props.email.senderName }}</p>
             <button
-              v-if="props.email.senderAddressTargetId"
               type="button"
-              class="email-hotspots-template__target email-hotspots-template__target--inline"
+              class="email-hotspots-template__target email-hotspots-template__target--plain email-hotspots-template__target--sender-name"
+              :class="{
+                'email-hotspots-template__target--found': isFound(props.email.senderNameTargetId),
+                'email-hotspots-template__target--incorrect': isIncorrect(props.email.senderNameTargetId),
+              }"
+              :disabled="props.disabled || !props.email.senderNameTargetId"
+              @click="activateTarget(props.email.senderNameTargetId)"
+            >
+              {{ props.email.senderName }}
+            </button>
+            <button
+              type="button"
+              class="email-hotspots-template__target email-hotspots-template__target--plain email-hotspots-template__target--inline"
               :class="{
                 'email-hotspots-template__target--found': isFound(props.email.senderAddressTargetId),
                 'email-hotspots-template__target--incorrect': isIncorrect(props.email.senderAddressTargetId),
               }"
-              :disabled="props.disabled"
+              :disabled="props.disabled || !props.email.senderAddressTargetId"
               @click="activateTarget(props.email.senderAddressTargetId)"
             >
               {{ props.email.senderAddress }}
             </button>
-            <p v-else class="email-hotspots-template__sender-address">
-              {{ props.email.senderAddress }}
-            </p>
           </div>
         </div>
-        <p v-if="props.email.receivedLabel" class="email-hotspots-template__received-label">
+        <button
+          v-if="props.email.receivedLabel"
+          type="button"
+          class="email-hotspots-template__target email-hotspots-template__target--plain email-hotspots-template__target--received-label"
+          :class="{
+            'email-hotspots-template__target--found': isFound(props.email.receivedLabelTargetId),
+            'email-hotspots-template__target--incorrect': isIncorrect(props.email.receivedLabelTargetId),
+          }"
+          :disabled="props.disabled || !props.email.receivedLabelTargetId"
+          @click="activateTarget(props.email.receivedLabelTargetId)"
+        >
           {{ props.email.receivedLabel }}
-        </p>
+        </button>
       </header>
 
       <div class="email-hotspots-template__subject-row">
         <button
-          v-if="props.email.subjectTargetId"
           type="button"
-          class="email-hotspots-template__target email-hotspots-template__target--subject"
+          class="email-hotspots-template__target email-hotspots-template__target--plain email-hotspots-template__target--subject"
           :class="{
             'email-hotspots-template__target--found': isFound(props.email.subjectTargetId),
             'email-hotspots-template__target--incorrect': isIncorrect(props.email.subjectTargetId),
           }"
-          :disabled="props.disabled"
+          :disabled="props.disabled || !props.email.subjectTargetId"
           @click="activateTarget(props.email.subjectTargetId)"
         >
           {{ props.email.subject }}
         </button>
-        <h3 v-else class="email-hotspots-template__subject">
-          {{ props.email.subject }}
-        </h3>
       </div>
 
       <div class="email-hotspots-template__body">
-        <p v-if="props.email.greeting" class="email-hotspots-template__greeting">
+        <button
+          v-if="props.email.greeting"
+          type="button"
+          class="email-hotspots-template__target email-hotspots-template__target--plain email-hotspots-template__target--paragraph"
+          :class="{
+            'email-hotspots-template__target--found': isFound(props.email.greetingTargetId),
+            'email-hotspots-template__target--incorrect': isIncorrect(props.email.greetingTargetId),
+          }"
+          :disabled="props.disabled || !props.email.greetingTargetId"
+          @click="activateTarget(props.email.greetingTargetId)"
+        >
           {{ props.email.greeting }}
-        </p>
+        </button>
 
         <template v-for="block in props.email.bodyBlocks" :key="block.id">
           <button
-            v-if="block.targetId && block.type === 'text'"
+            v-if="block.type === 'text'"
             type="button"
-            class="email-hotspots-template__target email-hotspots-template__target--paragraph"
+            class="email-hotspots-template__target email-hotspots-template__target--plain email-hotspots-template__target--paragraph"
             :class="{
               'email-hotspots-template__target--found': isFound(block.targetId),
               'email-hotspots-template__target--incorrect': isIncorrect(block.targetId),
             }"
-            :disabled="props.disabled"
+            :disabled="props.disabled || !block.targetId"
             @click="activateTarget(block.targetId)"
           >
             {{ block.text }}
           </button>
-          <p
-            v-else-if="block.type === 'text'"
-            class="email-hotspots-template__paragraph"
-          >
-            {{ block.text }}
-          </p>
 
           <button
-            v-if="block.type === 'link' && block.targetId"
+            v-else-if="block.type === 'link'"
             type="button"
             class="email-hotspots-template__target email-hotspots-template__target--link"
             :class="{
               'email-hotspots-template__target--found': isFound(block.targetId),
               'email-hotspots-template__target--incorrect': isIncorrect(block.targetId),
             }"
-            :disabled="props.disabled"
+            :disabled="props.disabled || !block.targetId"
             @click="activateTarget(block.targetId)"
           >
             <span class="email-hotspots-template__link-label">{{ block.label }}</span>
             <span class="email-hotspots-template__link-url">{{ block.urlText }}</span>
             <span v-if="block.helperText" class="email-hotspots-template__link-helper">{{ block.helperText }}</span>
           </button>
-          <div
-            v-else-if="block.type === 'link'"
-            class="email-hotspots-template__link-card"
-          >
-            <span class="email-hotspots-template__link-label">{{ block.label }}</span>
-            <span class="email-hotspots-template__link-url">{{ block.urlText }}</span>
-            <span v-if="block.helperText" class="email-hotspots-template__link-helper">{{ block.helperText }}</span>
-          </div>
         </template>
 
         <button
-          v-if="props.email.actionButton?.targetId"
+          v-if="props.email.actionButton"
           type="button"
           class="email-hotspots-template__target email-hotspots-template__target--cta"
           :class="{
             'email-hotspots-template__target--found': isFound(props.email.actionButton.targetId),
             'email-hotspots-template__target--incorrect': isIncorrect(props.email.actionButton.targetId),
           }"
-          :disabled="props.disabled"
+          :disabled="props.disabled || !props.email.actionButton.targetId"
           @click="activateTarget(props.email.actionButton.targetId)"
-        >
-          <span>{{ props.email.actionButton.label }}</span>
-          <span v-if="props.email.actionButton.helperText" class="email-hotspots-template__cta-helper">
-            {{ props.email.actionButton.helperText }}
-          </span>
-        </button>
-        <button
-          v-else-if="props.email.actionButton"
-          type="button"
-          class="email-hotspots-template__cta-static"
         >
           <span>{{ props.email.actionButton.label }}</span>
           <span v-if="props.email.actionButton.helperText" class="email-hotspots-template__cta-helper">
@@ -243,9 +242,19 @@ const activateTarget = (targetId?: string) => {
           </button>
         </div>
 
-        <p v-if="props.email.closing" class="email-hotspots-template__closing">
+        <button
+          v-if="props.email.closing"
+          type="button"
+          class="email-hotspots-template__target email-hotspots-template__target--plain email-hotspots-template__target--paragraph"
+          :class="{
+            'email-hotspots-template__target--found': isFound(props.email.closingTargetId),
+            'email-hotspots-template__target--incorrect': isIncorrect(props.email.closingTargetId),
+          }"
+          :disabled="props.disabled || !props.email.closingTargetId"
+          @click="activateTarget(props.email.closingTargetId)"
+        >
           {{ props.email.closing }}
-        </p>
+        </button>
       </div>
     </article>
   </section>
@@ -385,6 +394,13 @@ const activateTarget = (targetId?: string) => {
   transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.email-hotspots-template__target--plain {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 .email-hotspots-template__target:hover:not(:disabled),
 .email-hotspots-template__target:focus-visible,
 .email-hotspots-template__attachment--interactive:hover:not(:disabled),
@@ -398,9 +414,6 @@ const activateTarget = (targetId?: string) => {
 .email-hotspots-template__target--inline {
   justify-self: start;
   width: auto;
-  padding: 0;
-  border: 0;
-  background: transparent;
   color: #4f6683;
   font-size: 0.9rem;
   text-decoration: underline;
@@ -410,19 +423,37 @@ const activateTarget = (targetId?: string) => {
 }
 
 .email-hotspots-template__target--subject {
-  padding: 0;
-  border: 0;
-  background: transparent;
   font-size: clamp(1.2rem, 1.9vw, 1.6rem);
   line-height: 1.15;
   color: #172033;
   box-shadow: none;
 }
 
+.email-hotspots-template__target--sender-name {
+  justify-self: start;
+  width: auto;
+  font-weight: 700;
+  color: #172033;
+}
+
+.email-hotspots-template__target--received-label {
+  justify-self: start;
+  width: auto;
+  font-size: 0.9rem;
+  color: #617083;
+}
+
 .email-hotspots-template__target--paragraph {
   font-size: 1rem;
   line-height: 1.55;
   color: #334155;
+}
+
+.email-hotspots-template__target--plain:hover:not(:disabled),
+.email-hotspots-template__target--plain:focus-visible {
+  transform: none;
+  box-shadow: none;
+  outline: none;
 }
 
 .email-hotspots-template__link-card {
@@ -493,12 +524,24 @@ const activateTarget = (targetId?: string) => {
 }
 
 .email-hotspots-template__target--found {
-  border-color: #4c7bb0;
-  background: #eef5ff;
+  border-color: #4a9b5a;
+  background: #eefaf0;
 }
 
 .email-hotspots-template__target--incorrect {
   border-color: #d66363;
+  background: #fff0f0;
+}
+
+.email-hotspots-template__target--plain.email-hotspots-template__target--found,
+.email-hotspots-template__target--plain.email-hotspots-template__attachment--interactive.email-hotspots-template__target--found {
+  border-radius: 0.45rem;
+  background: #eef5ff;
+}
+
+.email-hotspots-template__target--plain.email-hotspots-template__target--incorrect,
+.email-hotspots-template__target--plain.email-hotspots-template__attachment--interactive.email-hotspots-template__target--incorrect {
+  border-radius: 0.45rem;
   background: #fff0f0;
 }
 

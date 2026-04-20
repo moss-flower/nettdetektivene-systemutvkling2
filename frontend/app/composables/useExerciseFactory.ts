@@ -20,12 +20,16 @@ export type StoredExerciseFactoryPayload = ExerciseFactoryPayload & {
 };
 
 export const emailHotspotTargetIds = {
+  senderName: "sender-name",
   senderAddress: "sender-address",
+  receivedLabel: "received-label",
   subject: "subject-line",
+  greeting: "greeting",
   bodyText: "body-text",
   bodyLink: "body-link",
   actionButton: "action-button",
   attachment: "attachment",
+  closing: "closing",
 } as const;
 
 const storageKey = "teacher.exerciseFactory.payloads";
@@ -99,13 +103,16 @@ export const createEmailHotspotsDraft = (index: number): EmailHotspotTaskData =>
   },
   email: {
     senderName: "Skole-IT",
+    senderNameTargetId: emailHotspotTargetIds.senderName,
     senderAddress: "hjelp@ukjent-avsender.net",
     senderAddressTargetId: emailHotspotTargetIds.senderAddress,
     subject: "Viktig innlogging kreves i dag",
     subjectTargetId: emailHotspotTargetIds.subject,
     senderAvatarText: "IT",
     receivedLabel: "I dag 08:30",
+    receivedLabelTargetId: emailHotspotTargetIds.receivedLabel,
     greeting: "Hei!",
+    greetingTargetId: emailHotspotTargetIds.greeting,
     bodyBlocks: [
       {
         id: createDraftId("email-text"),
@@ -136,14 +143,19 @@ export const createEmailHotspotsDraft = (index: number): EmailHotspotTaskData =>
       },
     ],
     closing: "Hilsen skoleadministrasjonen",
+    closingTargetId: emailHotspotTargetIds.closing,
   },
   targets: [
+    { id: emailHotspotTargetIds.senderName, isSuspicious: false },
     { id: emailHotspotTargetIds.senderAddress, isSuspicious: true },
+    { id: emailHotspotTargetIds.receivedLabel, isSuspicious: false },
     { id: emailHotspotTargetIds.subject, isSuspicious: false },
+    { id: emailHotspotTargetIds.greeting, isSuspicious: false },
     { id: emailHotspotTargetIds.bodyText, isSuspicious: false },
     { id: emailHotspotTargetIds.bodyLink, isSuspicious: true },
     { id: emailHotspotTargetIds.actionButton, isSuspicious: false },
     { id: emailHotspotTargetIds.attachment, isSuspicious: false },
+    { id: emailHotspotTargetIds.closing, isSuspicious: false },
   ],
 });
 

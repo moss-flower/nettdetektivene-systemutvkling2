@@ -59,10 +59,26 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 				<textarea v-model="props.task.prompt!.text" rows="2"></textarea>
 			</label>
 
-			<label class="field">
-				<span>Avsendernavn</span>
-				<input v-model="props.task.email.senderName" type="text" >
-			</label>
+			<div class="hotspotCard">
+				<div class="hotspotCardHeader">
+					<span class="hotspotCardTitle">Avsendernavn-hotspot</span>
+					<div class="hotspotToggleRow">
+						<label class="hotspotToggle">
+							<input
+								:checked="isEmailHotspotSuspicious(emailHotspotTargetIds.senderName)"
+								type="checkbox"
+								@change="setEmailHotspotSuspicious(emailHotspotTargetIds.senderName, ($event.target as HTMLInputElement).checked)"
+							>
+							<span>Mistenkelig</span>
+						</label>
+					</div>
+				</div>
+
+				<label class="field">
+					<span>Avsendernavn</span>
+					<input v-model="props.task.email.senderName" type="text" >
+				</label>
+			</div>
 
 			<div class="hotspotCard">
 				<div class="hotspotCardHeader">
@@ -85,6 +101,27 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 				</label>
 			</div>
 
+			<div class="hotspotCard">
+				<div class="hotspotCardHeader">
+					<span class="hotspotCardTitle">Tidspunkt-hotspot</span>
+					<div class="hotspotToggleRow">
+						<label class="hotspotToggle">
+							<input
+								:checked="isEmailHotspotSuspicious(emailHotspotTargetIds.receivedLabel)"
+								type="checkbox"
+								@change="setEmailHotspotSuspicious(emailHotspotTargetIds.receivedLabel, ($event.target as HTMLInputElement).checked)"
+							>
+							<span>Mistenkelig</span>
+						</label>
+					</div>
+				</div>
+
+				<label class="field">
+					<span>Tidspunkt</span>
+					<input v-model="props.task.email.receivedLabel" type="text" >
+				</label>
+			</div>
+
 			<div class="hotspotCard hotspotCard--full">
 				<div class="hotspotCardHeader">
 					<span class="hotspotCardTitle">Emne-hotspot</span>
@@ -103,6 +140,27 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 				<label class="field field--full">
 					<span>Emne</span>
 					<input v-model="props.task.email.subject" type="text" >
+				</label>
+			</div>
+
+			<div class="hotspotCard hotspotCard--full">
+				<div class="hotspotCardHeader">
+					<span class="hotspotCardTitle">Hilsen-hotspot</span>
+					<div class="hotspotToggleRow">
+						<label class="hotspotToggle">
+							<input
+								:checked="isEmailHotspotSuspicious(emailHotspotTargetIds.greeting)"
+								type="checkbox"
+								@change="setEmailHotspotSuspicious(emailHotspotTargetIds.greeting, ($event.target as HTMLInputElement).checked)"
+							>
+							<span>Mistenkelig</span>
+						</label>
+					</div>
+				</div>
+
+				<label class="field field--full">
+					<span>Hilsen</span>
+					<input v-model="props.task.email.greeting" type="text" >
 				</label>
 			</div>
 
@@ -209,6 +267,27 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 						<input v-model="emailAttachment()!.details" type="text" >
 					</label>
 				</div>
+			</div>
+
+			<div class="hotspotCard hotspotCard--full">
+				<div class="hotspotCardHeader">
+					<span class="hotspotCardTitle">Avslutning-hotspot</span>
+					<div class="hotspotToggleRow">
+						<label class="hotspotToggle">
+							<input
+								:checked="isEmailHotspotSuspicious(emailHotspotTargetIds.closing)"
+								type="checkbox"
+								@change="setEmailHotspotSuspicious(emailHotspotTargetIds.closing, ($event.target as HTMLInputElement).checked)"
+							>
+							<span>Mistenkelig</span>
+						</label>
+					</div>
+				</div>
+
+				<label class="field field--full">
+					<span>Avslutning</span>
+					<input v-model="props.task.email.closing" type="text" >
+				</label>
 			</div>
 		</div>
 	</div>

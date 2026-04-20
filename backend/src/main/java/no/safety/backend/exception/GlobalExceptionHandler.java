@@ -1,6 +1,8 @@
 package no.safety.backend.exception;
 
+import no.safety.backend.exception.domain.NotClassroomOwnerException;
 import no.safety.backend.exception.domain.RoleNotFoundException;
+import no.safety.backend.exception.domain.StudentNotInClassException;
 import no.safety.backend.exception.domain.UserAlreadyExistsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -54,6 +56,66 @@ public class GlobalExceptionHandler {
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, errors);
         problem.setTitle("Validation Failed");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    /**
+     * Handles {@link NotFoundException} exceptions.
+     * @return Returns a {@link ProblemDetail} with HTTP status code: 404 Not Found.
+     */
+    @ExceptionHandler(NotFoundException.class)
+    public ProblemDetail handleNotFoundException(NotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Not Found");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    /**
+     * Handles {@link ConflictException} exceptions.
+     * @return Returns a {@link ProblemDetail} with HTTP status code: 409 Conflict.
+     */
+    @ExceptionHandler(ConflictException.class)
+    public ProblemDetail handleConflict(ConflictException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Conflict");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    /**
+     * Handles {@link ForbiddenException} exceptions.
+     * @return Returns a {@link ProblemDetail} with HTTP status code: 403 Forbidden.
+     */
+    @ExceptionHandler(ForbiddenException.class)
+    public ProblemDetail handleForbidden(ForbiddenException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+        problem.setTitle("Forbidden");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    /**
+     * Handles {@link NotClassroomOwnerException} exceptions.
+     * @return Returns a {@link ProblemDetail} with HTTP status code: 403 Forbidden.
+     */
+    @ExceptionHandler(NotClassroomOwnerException.class)
+    public ProblemDetail handleNotClassroomOwner(NotClassroomOwnerException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+        problem.setTitle("Forbidden");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    /**
+     * Handles {@link StudentNotInClassException} exceptions.
+     * @return Returns a {@link ProblemDetail} with HTTP status code: 404 Not Found.
+     */
+    @ExceptionHandler(StudentNotInClassException.class)
+    public ProblemDetail handleStudentNotInClass(StudentNotInClassException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Not Found");
         problem.setProperty("timestamp", Instant.now());
         return problem;
     }
