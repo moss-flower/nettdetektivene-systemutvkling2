@@ -128,6 +128,7 @@ export type PasswordStrengthResult = {
   correct: boolean;
   password: string;
   score: number;
+  missingStartingPassword?: boolean;
 };
 
 export type ExerciseTemplateKind =

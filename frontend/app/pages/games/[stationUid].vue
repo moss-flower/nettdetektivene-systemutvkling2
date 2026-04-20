@@ -53,7 +53,7 @@ const tasks = activeExercise
 const currentIndex = ref(0)
 const showExerciseResultDialog = ref(false)
 const correctCount = ref(0)
-const answerState = ref<{ correct: boolean, choice: string } | null>(null)
+const answerState = ref<{ correct: boolean, choice: string, missingStartingPassword?: boolean } | null>(null)
 
 const currentTask = computed(() => tasks[currentIndex.value] ?? null)
 const currentOptions = computed(() => {
@@ -138,6 +138,13 @@ const feedbackText = computed(() => {
     return currentTask.value.feedbackCorrect
   }
 
+  if (
+    currentTask.value.templateKind === 'password-strength'
+    && answerState.value.missingStartingPassword
+  ) {
+    return 'Det nye passordet ma inneholde startpassordet som en del av svaret ditt.'
+  }
+
   return currentTask.value.feedbackIncorrect
 })
 
@@ -195,6 +202,7 @@ const onAnsweredPasswordStrength = (result: PasswordStrengthResult) => {
   answerState.value = {
     correct: result.correct,
     choice: result.password,
+    missingStartingPassword: result.missingStartingPassword,
   }
 
   if (result.correct) {

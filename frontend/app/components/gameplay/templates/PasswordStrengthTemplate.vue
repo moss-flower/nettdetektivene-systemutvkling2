@@ -25,8 +25,10 @@ const checks = computed(() => {
   const containsCommonPattern = commonPatterns.value.some((pattern) => pattern.length > 0 && loweredPassword.value.includes(pattern))
   const containsBirthYear = /(?:19\d{2}|20(?:0\d|1\d|2\d))/g.test(normalizedPassword.value)
   const containsRepeatingPattern = /(.{2,})\1+/.test(loweredPassword.value) || /(.)\1{2,}/.test(loweredPassword.value)
-  const requiresChangedPassword = props.task.mode === 'improve' && Boolean(props.task.startingPassword)
-  const changedFromStart = !requiresChangedPassword || normalizedPassword.value !== props.task.startingPassword
+  const startingPassword = props.task.startingPassword ?? ''
+  const requiresStartingPassword = startingPassword.length > 0
+  const includesStartingPassword = !requiresStartingPassword || normalizedPassword.value.includes(startingPassword)
+  const changedFromStart = !requiresStartingPassword || normalizedPassword.value !== startingPassword
   const hasMixedCharacters = [hasUppercase.value, hasLowercase.value, hasDigit.value, hasSymbol.value].filter(Boolean).length >= 3
 
   return [
@@ -56,19 +58,25 @@ const checks = computed(() => {
       passed: !containsRepeatingPattern,
     },
     {
+      id: 'includes-start',
+      label: 'Behold startpassordet som en del av det nye passordet',
+      passed: includesStartingPassword,
+      required: requiresStartingPassword,
+    },
+    {
       id: 'changed',
       label: 'Gjor passordet annerledes enn det svake du startet med',
       passed: changedFromStart,
+      required: requiresStartingPassword,
     },
-  ]
+  ].filter((check) => check.required !== false)
 })
 
 const score = computed(() => checks.value.filter((check) => check.passed && check.id !== 'changed').length)
-const canPass = computed(() => {
-  const changedCheck = checks.value.find((check) => check.id === 'changed')
-  return normalizedPassword.value.length > 0
-    && score.value >= props.task.minScoreToPass
-    && Boolean(changedCheck?.passed)
+const canPass = computed(() => normalizedPassword.value.length > 0 && checks.value.every((check) => check.passed))
+const missingStartingPassword = computed(() => {
+  const includesStartCheck = checks.value.find((check) => check.id === 'includes-start')
+  return includesStartCheck ? !includesStartCheck.passed : false
 })
 
 const submit = () => {
@@ -80,6 +88,7 @@ const submit = () => {
     correct: canPass.value,
     password: normalizedPassword.value,
     score: score.value,
+    missingStartingPassword: missingStartingPassword.value,
   })
 }
 </script>
