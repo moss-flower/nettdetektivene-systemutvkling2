@@ -22,7 +22,6 @@ import no.safety.backend.user.service.UserService;
  * A service that handles registration of different user accounts e.g. student accounts and teacher accounts
  */
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class UserRegistrationService {
 
@@ -39,6 +38,7 @@ public class UserRegistrationService {
      * @return the unique internal identifier of the newly registered {@link StudentUser}
      * @throws RuntimeException if the required {@code ROLE_STUDENT} lookup fails in the database
      */
+    @Transactional
     public StudentUser registerStudent(StudentUserRegistrationRequest request) {
 
         if(userService.existsByEmail(request.email())) {
@@ -66,6 +66,7 @@ public class UserRegistrationService {
      * @return the unique internal identifier of the newly created {@link TeacherUser}
      * @throws RuntimeException if the required {@code ROLE_TEACHER} is not present in the database
      */
+    @Transactional
     public TeacherUser registerTeacher(TeacherUserRegistrationRequest request) {
         if(userService.existsByEmail(request.email())) {
             throw new RuntimeException("A user already exists with that email.");
