@@ -12,3 +12,7 @@ Oppmøtetid: 09:00 - 15:00
 
 ### Aktivitetsdiagram
 ![Aktivitetsdiagram](docs/flowchart.png)
+
+### Spill modell code
+![Spill modell code](docs/rootToTask-diagram.png)
+
