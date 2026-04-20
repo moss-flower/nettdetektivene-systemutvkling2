@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import EmailHotspotsEditor from "~/components/teacher/factory/EmailHotspotsEditor.vue";
 import MultipleChoiceEditor from "~/components/teacher/factory/MultipleChoiceEditor.vue";
+import PasswordStrengthEditor from "~/components/teacher/factory/PasswordStrengthEditor.vue";
+import SortIntoBucketsEditor from "~/components/teacher/factory/SortIntoBucketsEditor.vue";
 import XOrYEditor from "~/components/teacher/factory/XOrYEditor.vue";
 import {
 	clearExerciseFactoryOverride,
@@ -22,6 +24,8 @@ import type {
 	ExerciseTask,
 	ExerciseTemplateKind,
 	MultipleChoiceTaskData,
+	PasswordStrengthTaskData,
+	SortIntoBucketsTaskData,
 	XOrYTaskData,
 } from "~/composables/types/TaskTypes";
 
@@ -110,12 +114,22 @@ const taskLabel = (task: ExerciseTask, index: number) => {
 		return `${baseLabel}: e-post hotspots`;
 	}
 
+	if (task.templateKind === "sort-into-buckets") {
+		return `${baseLabel}: sorter i bokser`;
+	}
+
+	if (task.templateKind === "password-strength") {
+		return `${baseLabel}: passordstyrke`;
+	}
+
 	return `${baseLabel}: X eller Y`;
 };
 
 const multipleChoiceTask = (task: ExerciseTask) => task as MultipleChoiceTaskData;
 const xOrYTask = (task: ExerciseTask) => task as XOrYTaskData;
 const emailTask = (task: ExerciseTask) => task as EmailHotspotTaskData;
+const sortTask = (task: ExerciseTask) => task as SortIntoBucketsTaskData;
+const passwordTask = (task: ExerciseTask) => task as PasswordStrengthTaskData;
 
 const applyDraft = (payload: ExerciseFactoryPayload) => {
 	const clonedPayload = cloneExercisePayload(payload);
@@ -381,6 +395,12 @@ watch(payloadPreviewText, () => {
 						<button type="button" class="ghostButton" @click="addTask('email-hotspots')">
 							+ E-post
 						</button>
+						<button type="button" class="ghostButton" @click="addTask('sort-into-buckets')">
+							+ Sortering
+						</button>
+						<button type="button" class="ghostButton" @click="addTask('password-strength')">
+							+ Passord
+						</button>
 					</div>
 				</div>
 
@@ -450,6 +470,14 @@ watch(payloadPreviewText, () => {
 
 					<template v-else-if="task.templateKind === 'x-or-y'">
 						<XOrYEditor :task="xOrYTask(task)" />
+					</template>
+
+					<template v-else-if="task.templateKind === 'sort-into-buckets'">
+						<SortIntoBucketsEditor :task="sortTask(task)" />
+					</template>
+
+					<template v-else-if="task.templateKind === 'password-strength'">
+						<PasswordStrengthEditor :task="passwordTask(task)" />
 					</template>
 
 					<template v-else>

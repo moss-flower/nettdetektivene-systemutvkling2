@@ -35,6 +35,7 @@ public class ClassroomService {
     c.getOwners().add(owner);
     c.setName(req.name());
     c.setDescription(req.description());
+    c.setWorldUid(req.worldUid());
     c.setCode(codegen.generateUniqueCode());
     return ClassroomResponse.from(classroomRepo.save(c));
   }
@@ -44,6 +45,7 @@ public class ClassroomService {
     Classroom c = requireOwned(classroomId, callerUuid);
     c.setName(req.name());
     c.setDescription(req.description());
+    c.setWorldUid(req.worldUid());
     classroomRepo.save(c);
     return ClassroomResponse.from(c);
   }

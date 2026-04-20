@@ -3,6 +3,8 @@ import type {
   ExerciseTask,
   ExerciseTemplateKind,
   MultipleChoiceTaskData,
+  PasswordStrengthTaskData,
+  SortIntoBucketsTaskData,
   XOrYTaskData,
 } from "~/composables/types/TaskTypes";
 import { Exercise } from "~/composables/types/ExerciseType";
@@ -159,6 +161,63 @@ export const createEmailHotspotsDraft = (index: number): EmailHotspotTaskData =>
   ],
 });
 
+export const createSortIntoBucketsDraft = (index: number): SortIntoBucketsTaskData => ({
+  id: createDraftId(`sort-into-buckets-${index}`),
+  templateKind: "sort-into-buckets",
+  introText: "Sorter kortene i riktig boks.",
+  feedbackCorrect: "Riktig. Du sorterte kortene riktig.",
+  feedbackIncorrect: "Ikke helt. Se om alle kortene ligger i riktig boks.",
+  prompt: {
+    title: `Sorter ${index}`,
+    text: "Dra eller trykk kortene inn i riktig kategori.",
+  },
+  unplacedLabel: "Kort som skal sorteres",
+  buckets: [
+    {
+      key: "bucket-a",
+      title: "Kategori A",
+      description: "Første kategori.",
+    },
+    {
+      key: "bucket-b",
+      title: "Kategori B",
+      description: "Andre kategori.",
+    },
+  ],
+  items: [
+    {
+      id: createDraftId("sortable-item"),
+      label: "Eksempel 1",
+      correctBucketKey: "bucket-a",
+      explanation: "Hvorfor dette kortet hører hit.",
+    },
+    {
+      id: createDraftId("sortable-item"),
+      label: "Eksempel 2",
+      correctBucketKey: "bucket-b",
+      explanation: "Hvorfor dette kortet hører hit.",
+    },
+  ],
+});
+
+export const createPasswordStrengthDraft = (index: number): PasswordStrengthTaskData => ({
+  id: createDraftId(`password-strength-${index}`),
+  templateKind: "password-strength",
+  introText: "Skriv et passord som oppgaven godkjenner.",
+  feedbackCorrect: "Bra jobbet. Passordet oppfylte kravene i oppgaven.",
+  feedbackIncorrect: "Passordet trenger mer arbeid før det blir godkjent.",
+  prompt: {
+    title: `Passord ${index}`,
+    text: "Lag eller forbedre et passord.",
+    helperText: "Bruk mange tegn og bland bokstaver, tall og symbol.",
+  },
+  mode: "create",
+  placeholder: "Skriv passordet her",
+  minLength: 10,
+  minScoreToPass: 4,
+  commonPatterns: ["123", "qwerty", "passord"],
+});
+
 export const createTaskDraft = (kind: ExerciseTemplateKind, index: number): ExerciseTask => {
   if (kind === "multiple-choice") {
     return createMultipleChoiceDraft(index);
@@ -166,6 +225,14 @@ export const createTaskDraft = (kind: ExerciseTemplateKind, index: number): Exer
 
   if (kind === "email-hotspots") {
     return createEmailHotspotsDraft(index);
+  }
+
+  if (kind === "sort-into-buckets") {
+    return createSortIntoBucketsDraft(index);
+  }
+
+  if (kind === "password-strength") {
+    return createPasswordStrengthDraft(index);
   }
 
   return createXOrYDraft(index);

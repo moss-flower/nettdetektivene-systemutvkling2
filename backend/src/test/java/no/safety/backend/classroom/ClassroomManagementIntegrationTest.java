@@ -55,6 +55,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 class ClassroomManagementIntegrationTest {
 
+  private static final String DEFAULT_WORLD_UID = "schoolyard";
+
   @Container
   @ServiceConnection
   static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.4");
@@ -85,7 +87,7 @@ class ClassroomManagementIntegrationTest {
     client.post().uri("/api/v1/classrooms")
         .header("X-Test-User", teacher.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Klasse 5B", "Har mange tullinger"))
+        .body(new ClassroomRequest("Klasse 5B", "Har mange tullinger", DEFAULT_WORLD_UID))
         .exchange()
         .expectStatus().isCreated()
         .expectBody(ClassroomResponse.class)
@@ -93,6 +95,7 @@ class ClassroomManagementIntegrationTest {
           assert r != null;
           assertThat(r.name()).isEqualTo("Klasse 5B");
           assertThat(r.description()).isEqualTo("Har mange tullinger");
+          assertThat(r.worldUid()).isEqualTo(DEFAULT_WORLD_UID);
           assertThat(r.code()).isNotBlank();
           assertThat(r.owners()).hasSize(1);
           assertThat(r.owners().getFirst().publicUuid()).isEqualTo(teacher.getPublicUuid());
@@ -107,7 +110,17 @@ class ClassroomManagementIntegrationTest {
     client.post().uri("/api/v1/classrooms")
         .header("X-Test-User", student.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Klasse 5B", "Har mange tullinger"))
+        .body(new ClassroomRequest("Klasse 5B", "Har mange tullinger", DEFAULT_WORLD_UID))
+        .exchange()
+        .expectStatus().isNotFound();
+  }
+
+  @Test
+  void createClassroom_withNonexistentUser_returnsNotFound() {
+    client.post().uri("/classrooms")
+        .header("X-Test-User", UUID.randomUUID().toString())
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(new ClassroomRequest("Klasse 5B", "Har mange tullinger", DEFAULT_WORLD_UID))
         .exchange()
         .expectStatus().isNotFound();
   }
@@ -120,13 +133,14 @@ class ClassroomManagementIntegrationTest {
     client.put().uri("/api/v1/classrooms/{id}", created.id())
         .header("X-Test-User", teacher.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Klasse 7C", "En seriøs klasse"))
+        .body(new ClassroomRequest("Klasse 7C", "En seriøs klasse", "quickstart"))
         .exchange()
         .expectStatus().isOk()
         .expectBody(ClassroomResponse.class)
         .value(r -> {
           assertThat(r.name()).isEqualTo("Klasse 7C");
           assertThat(r.description()).isEqualTo("En seriøs klasse");
+          assertThat(r.worldUid()).isEqualTo("quickstart");
         });
   }
 
@@ -139,7 +153,7 @@ class ClassroomManagementIntegrationTest {
     client.put().uri("/api/v1/classrooms/{id}", created.id())
         .header("X-Test-User", other.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Hacked", "Hacked"))
+        .body(new ClassroomRequest("Hacked", "Hacked", "quickstart"))
         .exchange()
         .expectStatus().isForbidden();
   }
@@ -151,7 +165,7 @@ class ClassroomManagementIntegrationTest {
     client.put().uri("/api/v1/classrooms/{id}", 9999)
         .header("X-Test-User", teacher.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Klasse 7C", "En seriøs klasse"))
+        .body(new ClassroomRequest("Klasse 7C", "En seriøs klasse", "quickstart"))
         .exchange()
         .expectStatus().isNotFound();
   }
@@ -397,7 +411,7 @@ class ClassroomManagementIntegrationTest {
     return client.post().uri("/api/v1/classrooms")
         .header("X-Test-User", owner.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest(name, "description"))
+        .body(new ClassroomRequest(name, "description", DEFAULT_WORLD_UID))
         .exchange()
         .expectStatus().isCreated()
         .expectBody(ClassroomResponse.class)

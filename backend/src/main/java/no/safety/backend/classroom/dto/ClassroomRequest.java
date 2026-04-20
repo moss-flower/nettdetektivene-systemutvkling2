@@ -8,7 +8,10 @@ public record ClassroomRequest(
     @Size(max = 100, message = "Name cannot exceed 100 characters.")
     String name,
     @Size(max=1000, message = "Description cannot exceed 1000 characters.")
-    String description
+    String description,
+    @NotBlank(message = "World UID is required.")
+    @Size(max = 100, message = "World UID cannot exceed 100 characters.")
+    String worldUid
 ) {
 
 }
