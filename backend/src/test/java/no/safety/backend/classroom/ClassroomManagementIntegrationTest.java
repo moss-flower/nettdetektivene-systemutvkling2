@@ -8,14 +8,19 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import no.safety.backend.classroom.dto.ClassroomRequest;
 import no.safety.backend.classroom.dto.ClassroomResponse;
 import no.safety.backend.classroom.repository.ClassroomRepository;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.model.TeacherUser;
+import no.safety.backend.user.model.User;
 import no.safety.backend.user.repository.StudentUserRepository;
 import no.safety.backend.user.repository.TeacherUserRepository;
+import no.safety.backend.user.repository.UserRepository;
+import no.safety.backend.auth.model.UserPrincipal;
+
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +44,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 @SpringBootTest(
     webEnvironment = WebEnvironment.RANDOM_PORT,
@@ -46,7 +52,10 @@ import org.testcontainers.junit.jupiter.Container;
 )
 @AutoConfigureRestTestClient
 @ActiveProfiles("test")
+@Testcontainers
 class ClassroomManagementIntegrationTest {
+
+  private static final String DEFAULT_WORLD_UID = "schoolyard";
 
   @Container
   @ServiceConnection
@@ -75,10 +84,10 @@ class ClassroomManagementIntegrationTest {
   void create_asTeacher_returnsCreated() {
     TeacherUser teacher = saveTeacher("teacher1");
 
-    client.post().uri("/classrooms")
+    client.post().uri("/api/v1/classrooms")
         .header("X-Test-User", teacher.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Klasse 5B", "Har mange tullinger"))
+        .body(new ClassroomRequest("Klasse 5B", "Har mange tullinger", DEFAULT_WORLD_UID))
         .exchange()
         .expectStatus().isCreated()
         .expectBody(ClassroomResponse.class)
@@ -86,6 +95,7 @@ class ClassroomManagementIntegrationTest {
           assert r != null;
           assertThat(r.name()).isEqualTo("Klasse 5B");
           assertThat(r.description()).isEqualTo("Har mange tullinger");
+          assertThat(r.worldUid()).isEqualTo(DEFAULT_WORLD_UID);
           assertThat(r.code()).isNotBlank();
           assertThat(r.owners()).hasSize(1);
           assertThat(r.owners().getFirst().publicUuid()).isEqualTo(teacher.getPublicUuid());
@@ -97,10 +107,10 @@ class ClassroomManagementIntegrationTest {
   void createClassroom_asStudent_returnsNotFound() {
     StudentUser student = saveStudent("student1");
 
-    client.post().uri("/classrooms")
+    client.post().uri("/api/v1/classrooms")
         .header("X-Test-User", student.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Klasse 5B", "Har mange tullinger"))
+        .body(new ClassroomRequest("Klasse 5B", "Har mange tullinger", DEFAULT_WORLD_UID))
         .exchange()
         .expectStatus().isNotFound();
   }
@@ -110,7 +120,7 @@ class ClassroomManagementIntegrationTest {
     client.post().uri("/classrooms")
         .header("X-Test-User", UUID.randomUUID().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Klasse 5B", "Har mange tullinger"))
+        .body(new ClassroomRequest("Klasse 5B", "Har mange tullinger", DEFAULT_WORLD_UID))
         .exchange()
         .expectStatus().isNotFound();
   }
@@ -120,16 +130,17 @@ class ClassroomManagementIntegrationTest {
     TeacherUser teacher = saveTeacher("teacher1");
     ClassroomResponse created = createClassroom(teacher, "Klasse 5B");
 
-    client.put().uri("/classrooms/{id}", created.id())
+    client.put().uri("/api/v1/classrooms/{id}", created.id())
         .header("X-Test-User", teacher.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Klasse 7C", "En seriøs klasse"))
+        .body(new ClassroomRequest("Klasse 7C", "En seriøs klasse", "quickstart"))
         .exchange()
         .expectStatus().isOk()
         .expectBody(ClassroomResponse.class)
         .value(r -> {
           assertThat(r.name()).isEqualTo("Klasse 7C");
           assertThat(r.description()).isEqualTo("En seriøs klasse");
+          assertThat(r.worldUid()).isEqualTo("quickstart");
         });
   }
 
@@ -139,10 +150,10 @@ class ClassroomManagementIntegrationTest {
     TeacherUser other = saveTeacher("teacher2");
     ClassroomResponse created = createClassroom(owner, "Klasse 5B");
 
-    client.put().uri("/classrooms/{id}", created.id())
+    client.put().uri("/api/v1/classrooms/{id}", created.id())
         .header("X-Test-User", other.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Hacked", "Hacked"))
+        .body(new ClassroomRequest("Hacked", "Hacked", "quickstart"))
         .exchange()
         .expectStatus().isForbidden();
   }
@@ -151,10 +162,10 @@ class ClassroomManagementIntegrationTest {
   void updateClassroom_nonexistentClassroom_returnsNotFound() {
     TeacherUser teacher = saveTeacher("teacher1");
 
-    client.put().uri("/classrooms/{id}", 9999)
+    client.put().uri("/api/v1/classrooms/{id}", 9999)
         .header("X-Test-User", teacher.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Klasse 7C", "En seriøs klasse"))
+        .body(new ClassroomRequest("Klasse 7C", "En seriøs klasse", "quickstart"))
         .exchange()
         .expectStatus().isNotFound();
   }
@@ -164,7 +175,7 @@ class ClassroomManagementIntegrationTest {
     TeacherUser teacher = saveTeacher("teacher1");
     ClassroomResponse created = createClassroom(teacher, "Klasse 5B");
 
-    client.delete().uri("/classrooms/{id}", created.id())
+    client.delete().uri("/api/v1/classrooms/{id}", created.id())
         .header("X-Test-User", teacher.getPublicUuid().toString())
         .exchange()
         .expectStatus().isNoContent();
@@ -176,7 +187,7 @@ class ClassroomManagementIntegrationTest {
     TeacherUser other = saveTeacher("teacher2");
     ClassroomResponse created = createClassroom(owner, "Klasse 5B");
 
-    client.delete().uri("/classrooms/{id}", created.id())
+    client.delete().uri("/api/v1/classrooms/{id}", created.id())
         .header("X-Test-User", other.getPublicUuid().toString())
         .exchange()
         .expectStatus().isForbidden();
@@ -186,7 +197,7 @@ class ClassroomManagementIntegrationTest {
   void deleteClassroom_nonexistentClassroom_returnsNotFound() {
     TeacherUser teacher = saveTeacher("teacher1");
 
-    client.delete().uri("/classrooms/{id}", 9999)
+    client.delete().uri("/api/v1/classrooms/{id}", 9999)
         .header("X-Test-User", teacher.getPublicUuid().toString())
         .exchange()
         .expectStatus().isNotFound();
@@ -199,7 +210,7 @@ class ClassroomManagementIntegrationTest {
     TeacherUser newOwner = saveTeacher("teacher2");
     ClassroomResponse created = createClassroom(owner, "Klasse 5B");
 
-    client.post().uri("/classrooms/{id}/owners/{uuid}", created.id(), newOwner.getPublicUuid())
+    client.post().uri("/api/v1/classrooms/{id}/owners/{uuid}", created.id(), newOwner.getPublicUuid())
         .header("X-Test-User", owner.getPublicUuid().toString())
         .exchange()
         .expectStatus().isOk()
@@ -214,7 +225,7 @@ class ClassroomManagementIntegrationTest {
     TeacherUser third = saveTeacher("teacher3");
     ClassroomResponse created = createClassroom(owner, "Klasse 5B");
 
-    client.post().uri("/classrooms/{id}/owners/{uuid}", created.id(), third.getPublicUuid())
+    client.post().uri("/api/v1/classrooms/{id}/owners/{uuid}", created.id(), third.getPublicUuid())
         .header("X-Test-User", other.getPublicUuid().toString())
         .exchange()
         .expectStatus().isForbidden();
@@ -226,7 +237,7 @@ class ClassroomManagementIntegrationTest {
     StudentUser student = saveStudent("student1");
     ClassroomResponse created = createClassroom(teacher, "Klasse 5B");
 
-    client.post().uri("/classrooms/join/{code}", created.code())
+    client.post().uri("/api/v1/classrooms/join/{code}", created.code())
         .header("X-Test-User", student.getPublicUuid().toString())
         .exchange()
         .expectStatus().isOk()
@@ -243,7 +254,7 @@ class ClassroomManagementIntegrationTest {
     TeacherUser other = saveTeacher("teacher2");
     ClassroomResponse created = createClassroom(owner, "Klasse 5B");
 
-    client.post().uri("/classrooms/join/{code}", created.code())
+    client.post().uri("/api/v1/classrooms/join/{code}", created.code())
         .header("X-Test-User", other.getPublicUuid().toString())
         .exchange()
         .expectStatus().isNotFound();
@@ -257,12 +268,12 @@ class ClassroomManagementIntegrationTest {
     ClassroomResponse first = createClassroom(teacher1, "Klasse 5B");
     ClassroomResponse second = createClassroom(teacher2, "Science 5B");
 
-    client.post().uri("/classrooms/join/{code}", first.code())
+    client.post().uri("/api/v1/classrooms/join/{code}", first.code())
         .header("X-Test-User", student.getPublicUuid().toString())
         .exchange()
         .expectStatus().isOk();
 
-    client.post().uri("/classrooms/join/{code}", second.code())
+    client.post().uri("/api/v1/classrooms/join/{code}", second.code())
         .header("X-Test-User", student.getPublicUuid().toString())
         .exchange()
         .expectStatus().isEqualTo(409);
@@ -272,7 +283,7 @@ class ClassroomManagementIntegrationTest {
   void joinByCode_invalidCode_returnsNotFound() {
     StudentUser student = saveStudent("student1");
 
-    client.post().uri("/classrooms/join/{code}", "INVALID-CODE")
+    client.post().uri("/api/v1/classrooms/join/{code}", "INVALID-CODE")
         .header("X-Test-User", student.getPublicUuid().toString())
         .exchange()
         .expectStatus().isNotFound();
@@ -284,12 +295,12 @@ class ClassroomManagementIntegrationTest {
     StudentUser student = saveStudent("student1");
     ClassroomResponse created = createClassroom(teacher, "Klasse 5B");
 
-    client.post().uri("/classrooms/join/{code}", created.code())
+    client.post().uri("/api/v1/classrooms/join/{code}", created.code())
         .header("X-Test-User", student.getPublicUuid().toString())
         .exchange()
         .expectStatus().isOk();
 
-    client.delete().uri("/classrooms/{id}/members/{uuid}", created.id(), student.getPublicUuid())
+    client.delete().uri("/api/v1/classrooms/{id}/members/{uuid}", created.id(), student.getPublicUuid())
         .header("X-Test-User", teacher.getPublicUuid().toString())
         .exchange()
         .expectStatus().isOk()
@@ -304,12 +315,12 @@ class ClassroomManagementIntegrationTest {
     StudentUser student = saveStudent("student1");
     ClassroomResponse created = createClassroom(owner, "Klasse 5B");
 
-    client.post().uri("/classrooms/join/{code}", created.code())
+    client.post().uri("/api/v1/classrooms/join/{code}", created.code())
         .header("X-Test-User", student.getPublicUuid().toString())
         .exchange()
         .expectStatus().isOk();
 
-    client.delete().uri("/classrooms/{id}/members/{uuid}", created.id(), student.getPublicUuid())
+    client.delete().uri("/api/v1/classrooms/{id}/members/{uuid}", created.id(), student.getPublicUuid())
         .header("X-Test-User", other.getPublicUuid().toString())
         .exchange()
         .expectStatus().isForbidden();
@@ -321,12 +332,12 @@ class ClassroomManagementIntegrationTest {
     StudentUser student = saveStudent("student1");
     ClassroomResponse created = createClassroom(teacher, "Klasse 5B");
 
-    client.post().uri("/classrooms/join/{code}", created.code())
+    client.post().uri("/api/v1/classrooms/join/{code}", created.code())
         .header("X-Test-User", student.getPublicUuid().toString())
         .exchange()
         .expectStatus().isOk();
 
-    client.delete().uri("/classrooms/{id}/members/me", created.id())
+    client.delete().uri("/api/v1/classrooms/{id}/members/me", created.id())
         .header("X-Test-User", student.getPublicUuid().toString())
         .exchange()
         .expectStatus().isNoContent();
@@ -338,7 +349,7 @@ class ClassroomManagementIntegrationTest {
     StudentUser student = saveStudent("student1");
     ClassroomResponse created = createClassroom(teacher, "Klasse 5B");
 
-    client.delete().uri("/classrooms/{id}/members/me", created.id())
+    client.delete().uri("/api/v1/classrooms/{id}/members/me", created.id())
         .header("X-Test-User", student.getPublicUuid().toString())
         .exchange()
         .expectStatus().isNotFound();
@@ -350,7 +361,7 @@ class ClassroomManagementIntegrationTest {
     ClassroomResponse created = createClassroom(owner, "Klasse 5B");
     String oldCode = created.code();
 
-    client.post().uri("/classrooms/{id}/code", created.id())
+    client.post().uri("/api/v1/classrooms/{id}/code", created.id())
         .header("X-Test-User", owner.getPublicUuid().toString()).exchange().expectStatus()
         .isOk()
         .expectBody(ClassroomResponse.class).value(r -> {
@@ -366,7 +377,7 @@ class ClassroomManagementIntegrationTest {
 
     ClassroomResponse created = createClassroom(owner, "Klasse 5B");
 
-    client.post().uri("/classrooms/{id}/code", created.id())
+    client.post().uri("/api/v1/classrooms/{id}/code", created.id())
         .header("X-Test-User", other.getPublicUuid().toString()).exchange().expectStatus()
         .isForbidden();
   }
@@ -375,7 +386,7 @@ class ClassroomManagementIntegrationTest {
   void regenerateCode_whenClassroomNotFound_returnsNotFound() {
     TeacherUser teacher = saveTeacher("teacher1");
 
-    client.post().uri("/classrooms/{id}/code", 6767)
+    client.post().uri("/api/v1/classrooms/{id}/code", 6767)
         .header("X-Test-User", teacher.getPublicUuid().toString()).exchange().expectStatus()
         .isNotFound();
   }
@@ -397,10 +408,10 @@ class ClassroomManagementIntegrationTest {
   }
 
   private ClassroomResponse createClassroom(TeacherUser owner, String name) {
-    return client.post().uri("/classrooms")
+    return client.post().uri("/api/v1/classrooms")
         .header("X-Test-User", owner.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest(name, "description"))
+        .body(new ClassroomRequest(name, "description", DEFAULT_WORLD_UID))
         .exchange()
         .expectStatus().isCreated()
         .expectBody(ClassroomResponse.class)
@@ -412,11 +423,12 @@ class ClassroomManagementIntegrationTest {
   static class TestSecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+        UserRepository userRepository) throws Exception {
       http
           .csrf(AbstractHttpConfigurer::disable)
           .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-          .addFilterBefore(new FakeAuthenticationFilter(),
+          .addFilterBefore(new FakeAuthenticationFilter(userRepository),
               UsernamePasswordAuthenticationFilter.class);
 
       return http.build();
@@ -425,23 +437,32 @@ class ClassroomManagementIntegrationTest {
 
   static class FakeAuthenticationFilter extends OncePerRequestFilter {
 
+    private final UserRepository userRepository;
+
+    FakeAuthenticationFilter(UserRepository userRepository) {
+      this.userRepository = userRepository;
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
         @NotNull HttpServletResponse response,
         @NotNull FilterChain filterChain)
         throws ServletException, IOException {
 
-      String uuid = request.getHeader("X-Test-User");
+      String header = request.getHeader("X-Test-User");
 
-      if (uuid == null) {
-        uuid = UUID.randomUUID().toString();
+      if (header != null) {
+        Optional<User> maybeUser = userRepository.findByPublicUuid(UUID.fromString(header));
+        if (maybeUser.isPresent()) {
+          UserPrincipal principal = new UserPrincipal(maybeUser.get(), List.of());
+          Authentication auth = new UsernamePasswordAuthenticationToken(
+              principal, null, principal.getAuthorities());
+          SecurityContextHolder.getContext().setAuthentication(auth);
+        } else {
+          SecurityContextHolder.getContext().setAuthentication(
+              new UsernamePasswordAuthenticationToken(header, null, List.of()));
+        }
       }
-
-      Authentication auth = new UsernamePasswordAuthenticationToken(
-          uuid, null, List.of()
-      );
-
-      SecurityContextHolder.getContext().setAuthentication(auth);
 
       filterChain.doFilter(request, response);
     }

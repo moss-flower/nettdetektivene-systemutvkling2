@@ -10,6 +10,7 @@ export type StationData = {
   title: string;
   description: string;
   image: string;
+  backgroundColor?: string;
   exerciseUids?: Exercise["uid"][];
 };
 
@@ -21,6 +22,7 @@ export class Station {
   title: string;
   description: string;
   image: string;
+  backgroundColor: string;
   exerciseUids: Exercise["uid"][];
 
   constructor(data: StationData) {
@@ -28,6 +30,7 @@ export class Station {
     this.title = data.title;
     this.description = data.description;
     this.image = data.image;
+    this.backgroundColor = data.backgroundColor ?? "#cfe9ff";
     this.exerciseUids = data.exerciseUids ?? [];
   }
 
@@ -74,6 +77,7 @@ export class Station {
         title: "Nyhetskvartalet",
         description: "Laer a skille mellom ekte nyheter, clickbait og emosjonelt spraak.",
         image: placeholderImage,
+        backgroundColor: "#cfe9ff",
         exerciseUids: ["newsstand-exercise-1", "newsstand-exercise-2"],
       }),
       new Station({
@@ -81,12 +85,15 @@ export class Station {
         title: "Fotografen",
         description: "Laer a kjenne igjen ekte, KI-genererte og manipulerte bilder.",
         image: placeholderImage,
+        backgroundColor: "#5F5F5F",
+        exerciseUids: ["photograph-exercise-1", "photograph-exercise-2"],
       }),
       new Station({
         uid: "postoffice",
         title: "Postkontoret",
         description: "Ov pa a avslore falske e-poster, mistenkelige lenker og rare avsendere.",
         image: placeholderImage,
+        backgroundColor: "#fde68a",
         exerciseUids: ["postoffice-exercise-1", "postoffice-exercise-2"],
       }),
       new Station({
@@ -94,24 +101,31 @@ export class Station {
         title: "Passordbanken",
         description: "Laer hva som gjor et passord sterkt, trygt og lett a huske.",
         image: placeholderImage,
+        backgroundColor: "#1D5232",
+        exerciseUids: ["passwordbank-exercise-1", "passwordbank-exercise-2"],
       }),
       new Station({
         uid: "marketplace",
         title: "Markedsplassen",
         description: "Laer a vurdere om nettsider og nettbutikker er trygge eller mistenkelige.",
         image: placeholderImage,
+        backgroundColor: "#962C2C",
+        exerciseUids: ["marketplace-exercise-1", "marketplace-exercise-2"],
       }),
       new Station({
         uid: "socialmedia",
         title: "Den sosiale moteplassen",
         description: "Laer a tenke for du deler, og a oppdage manipulering og gruppepress.",
         image: placeholderImage,
+        backgroundColor: "#fbcfe8",
+        exerciseUids: ["socialmedia-exercise-1", "socialmedia-exercise-2"],
       }),
       new Station({
         uid: "datacenter",
         title: "Datasenteret",
         description: "Finalebanen der du bruker det du har laert for a bekjempe datatyven.",
         image: placeholderImage,
+        backgroundColor: "#bfdbfe",
       }),
     ];
   }
