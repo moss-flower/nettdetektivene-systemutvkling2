@@ -3,6 +3,7 @@ export default defineNuxtPlugin(() => {
 
   const api = $fetch.create({
     baseURL: "/api",
+    credentials: 'include',
     
     onRequest({ options }) {
       const token = sessionStorage.getItem('token')

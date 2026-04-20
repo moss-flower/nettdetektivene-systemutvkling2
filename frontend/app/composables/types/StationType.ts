@@ -86,6 +86,7 @@ export class Station {
         description: "Laer a kjenne igjen ekte, KI-genererte og manipulerte bilder.",
         image: placeholderImage,
         backgroundColor: "#5F5F5F",
+        exerciseUids: ["photograph-exercise-1", "photograph-exercise-2"],
       }),
       new Station({
         uid: "postoffice",
@@ -109,6 +110,7 @@ export class Station {
         description: "Laer a vurdere om nettsider og nettbutikker er trygge eller mistenkelige.",
         image: placeholderImage,
         backgroundColor: "#962C2C",
+        exerciseUids: ["marketplace-exercise-1", "marketplace-exercise-2"],
       }),
       new Station({
         uid: "socialmedia",
@@ -116,6 +118,7 @@ export class Station {
         description: "Laer a tenke for du deler, og a oppdage manipulering og gruppepress.",
         image: placeholderImage,
         backgroundColor: "#fbcfe8",
+        exerciseUids: ["socialmedia-exercise-1", "socialmedia-exercise-2"],
       }),
       new Station({
         uid: "datacenter",
