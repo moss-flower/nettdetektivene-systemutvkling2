@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import TextInput from "~/components/ui/TextInput.vue";
+import type { RegisterRequest } from "~/composables/types/AuthTypes";
+import { useAuth } from "~/composables/useAuth";
 
 //Holds current email and password fields
+const username = ref('')
 const email = ref("");
 const password = ref("");
 const repeatPassword = ref("")
@@ -27,6 +30,8 @@ const formValid = computed(() =>
   passwordsMatch.value
 );
 
+const { registerStudent } = useAuth();
+
 //Temporary placeholder handleLogin
 function handleRegister() {
   formError.value = "";
@@ -40,10 +45,10 @@ function handleRegister() {
     return;
   }
 
-  console.log("Register payload:", {
-    email: email.value,
-    password: password.value,
-  });
+  // console.log("Register payload:", {
+  //   email: email.value,
+  //   password: password.value,
+  // });
 }
 
 </script>
@@ -55,6 +60,13 @@ function handleRegister() {
       <p class="subtitle">Registrer deg for å spille Nettdetektivene!</p>
 
       <form class="registerForm" @submit.prevent="handleRegister">
+        <TextInput
+            name="username"
+            label="username"
+            placeholder="username"
+            :required="true"
+            @update:modelValue="username = $event"
+          />
         <TextInput
           name="email"
           label="E-post"
