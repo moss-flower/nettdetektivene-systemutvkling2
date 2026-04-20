@@ -834,6 +834,10 @@ export class Exercise {
       .filter((exercise): exercise is Exercise => exercise !== null);
   }
 
+  static backendFetchAllExercises(): Exercise[] {
+    return this.mockData();
+  }
+
   static backendFetchExerciseByUid(uid: string): Exercise | null {
     return this.findByUid(uid);
   }

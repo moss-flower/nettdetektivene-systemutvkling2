@@ -1,160 +1,35 @@
 <script setup lang="ts">
+import ExerciseFactoryEditor from "~/components/teacher/factory/ExerciseFactoryEditor.vue";
+import { routePaths } from "~/composables/routePaths";
 import {
-	createExerciseDraft,
-	createTaskDraft,
-	readStoredExercisePayloads,
-	removeStoredExercisePayload,
-	storeExercisePayload,
-	type ExerciseFactoryPayload,
-	type StoredExerciseFactoryPayload,
+	exerciseFactoryNewSelectionKey,
+	getExerciseFactorySelectionOptions,
+	type ExerciseFactorySelectableOption,
 } from "~/composables/useExerciseFactory";
 
-import type {
-	ExerciseTask,
-	ExerciseTemplateKind,
-	MultipleChoiceTaskData,
-	EmailHotspotTaskData,
-	XOrYTaskData,
-} from "~/composables/types/TaskTypes";
-
 const backPath = routePaths.teacherOverview;
+const selectedExerciseKey = ref<string>("");
+const selectableOptions = ref<ExerciseFactorySelectableOption[]>([]);
 
-const draft = reactive<ExerciseFactoryPayload>(createExerciseDraft());
-const savedPayloads = ref<StoredExerciseFactoryPayload[]>([]);
-const lastSavedId = ref("");
-const copyState = ref<"idle" | "copied" | "failed">("idle");
+const refreshSelectableOptions = () => {
+	selectableOptions.value = getExerciseFactorySelectionOptions();
+};
 
-const canSave = computed(() => {
-	return draft.title.trim().length > 0
-		&& draft.entryName.trim().length > 0
-		&& draft.description.trim().length > 0
-		&& draft.tasks.length > 0;
+const selectedOption = computed(() => {
+	return selectableOptions.value.find((option) => option.selectionKey === selectedExerciseKey.value) ?? null;
 });
 
-const payloadPreview = computed(() => ({
-	title: draft.title.trim(),
-	entryName: draft.entryName.trim(),
-	description: draft.description.trim(),
-	tasks: draft.tasks,
-}));
-
-const payloadPreviewText = computed(() => JSON.stringify(payloadPreview.value, null, 2));
-
-const taskLabel = (task: ExerciseTask, index: number) => {
-	const baseLabel = `Oppgave ${index + 1}`;
-
-	if (task.templateKind === "multiple-choice") {
-		return `${baseLabel}: flervalg`;
-	}
-
-	if (task.templateKind === "email-hotspots") {
-		return `${baseLabel}: e-post hotspots`;
-	}
-
-	return `${baseLabel}: X eller Y`;
+const startNewExercise = () => {
+	selectedExerciseKey.value = exerciseFactoryNewSelectionKey;
 };
 
-const multipleChoiceTask = (task: ExerciseTask) => task as MultipleChoiceTaskData;
-const xOrYTask = (task: ExerciseTask) => task as XOrYTaskData;
-const emailTask = (task: ExerciseTask) => task as EmailHotspotTaskData;
-
-const refreshSavedPayloads = () => {
-	savedPayloads.value = readStoredExercisePayloads();
-};
-
-const resetDraft = () => {
-	const nextDraft = createExerciseDraft();
-	draft.title = nextDraft.title;
-	draft.entryName = nextDraft.entryName;
-	draft.description = nextDraft.description;
-	draft.tasks.splice(0, draft.tasks.length, ...nextDraft.tasks);
-};
-
-const addTask = (kind: ExerciseTemplateKind) => {
-	draft.tasks.push(createTaskDraft(kind, draft.tasks.length + 1));
-};
-
-const removeTask = (taskIndex: number) => {
-	if (draft.tasks.length === 1) {
-		return;
-	}
-
-	draft.tasks.splice(taskIndex, 1);
-};
-
-const addOption = (taskIndex: number) => {
-	const task = draft.tasks[taskIndex];
-
-	if (!task || task.templateKind !== "multiple-choice") {
-		return;
-	}
-
-	const optionKey = String.fromCharCode(97 + task.options.length);
-
-	task.options.push({
-		key: optionKey,
-		title: `Svaralternativ ${optionKey.toUpperCase()}`,
-	});
-};
-
-const removeOption = (taskIndex: number, optionIndex: number) => {
-	const task = draft.tasks[taskIndex];
-
-	if (!task || task.templateKind !== "multiple-choice") {
-		return;
-	}
-
-	if (task.options.length <= 2) {
-		return;
-	}
-
-	const removedOption = task.options[optionIndex];
-	task.options.splice(optionIndex, 1);
-	task.options.forEach((option, index) => {
-		option.key = String.fromCharCode(97 + index);
-	});
-
-	if (task.correctChoice === removedOption?.key) {
-		task.correctChoice = task.options[0]?.key ?? "a";
-	}
-};
-
-const savePayload = () => {
-	if (!canSave.value) {
-		return;
-	}
-
-	const payload = JSON.parse(payloadPreviewText.value) as ExerciseFactoryPayload;
-	const storedPayload = storeExercisePayload(payload);
-	refreshSavedPayloads();
-	lastSavedId.value = storedPayload.localId;
-	resetDraft();
-};
-
-const deleteSavedPayload = (localId: string) => {
-	savedPayloads.value = removeStoredExercisePayload(localId);
-	if (lastSavedId.value === localId) {
-		lastSavedId.value = "";
-	}
-};
-
-const copyPayload = async () => {
-	try {
-		await navigator.clipboard.writeText(payloadPreviewText.value);
-		copyState.value = "copied";
-	} catch {
-		copyState.value = "failed";
-	}
+const handleSelectionUpdated = (selectionKey: string) => {
+	refreshSelectableOptions();
+	selectedExerciseKey.value = selectionKey;
 };
 
 onMounted(() => {
-	refreshSavedPayloads();
-});
-
-watch(payloadPreviewText, () => {
-	if (copyState.value !== "idle") {
-		copyState.value = "idle";
-	}
+	refreshSelectableOptions();
 });
 </script>
 
@@ -168,171 +43,52 @@ watch(payloadPreviewText, () => {
 				<p class="factoryEyebrow">Lærerverktøy</p>
 				<h1>Oppgavefabrikk</h1>
 				<p class="factoryDescription">
-					Bygg oppgaven som en selvstendig ressurs. Rekkefolge og opplasing styres senere av stasjonen, ikke av selve exercise-dataen.
+					Velg en eksisterende oppgave for å redigere den, eller start en ny lokal oppgave. Nye lokale oppgaver kan velges igjen fra listen etter første lagring.
 				</p>
 			</div>
 		</header>
 
-		<div class="factoryGrid">
-			<form class="editorPanel" @submit.prevent="savePayload">
-				<section class="panelSection">
-					<div class="sectionHeading">
-						<h2>Grunninfo</h2>
-						<p>Dette blir toppnivået i payloaden.</p>
-					</div>
+		<section class="selectorPanel">
+			<div class="selectorHeading">
+				<h2>Velg oppgave</h2>
+				<p>Eksisterende oppgaver kan få en lokal override, og nye oppgaver kan opprettes og redigeres videre senere.</p>
+			</div>
 
-					<div class="fieldGrid">
-						<label class="field">
-							<span>Tittel</span>
-							<input v-model="draft.title" type="text" placeholder="For eksempel: Mistenkelige meldinger" >
-						</label>
+			<div class="selectorControls">
+				<label class="field field--grow">
+					<span>Oppgave</span>
+					<select v-model="selectedExerciseKey">
+						<option value="">Velg oppgave</option>
+						<option v-for="option in selectableOptions" :key="option.selectionKey" :value="option.selectionKey">
+							{{ option.label }}
+						</option>
+					</select>
+				</label>
 
-						<label class="field">
-							<span>Entry name</span>
-							<input v-model="draft.entryName" type="text" placeholder="For eksempel: Oppgave 1" >
-						</label>
+				<button type="button" class="primaryButton" @click="startNewExercise">
+					Ny oppgave
+				</button>
+			</div>
 
-						<label class="field field--full">
-							<span>Beskrivelse</span>
-							<textarea v-model="draft.description" rows="3" placeholder="Kort beskrivelse av hva eleven skal øve på." />
-						</label>
-					</div>
-				</section>
+			<article class="selectedResourceCard">
+				<p class="cardEyebrow">Valgt ressurs</p>
+				<h3>
+					{{ selectedExerciseKey === exerciseFactoryNewSelectionKey ? 'Ny oppgave' : selectedOption?.label ?? 'Ingen valgt ennå' }}
+				</h3>
+				<p>
+					{{ selectedExerciseKey === exerciseFactoryNewSelectionKey ? 'Tom editor for en ny lokal oppgave.' : selectedOption?.badge ?? 'Velg en oppgave eller trykk Ny oppgave for å åpne editoren.' }}
+				</p>
+				<p class="selectedResourceDescription">
+					{{ selectedExerciseKey === exerciseFactoryNewSelectionKey ? 'Selve uid-en vil bli satt av backend senere.' : selectedOption?.description ?? '' }}
+				</p>
+			</article>
+		</section>
 
-				<section class="panelSection">
-					<div class="sectionHeading sectionHeading--inline">
-						<div>
-							<h2>Oppgaver</h2>
-							<p>Hver oppgave blir ett element i tasks-arrayet.</p>
-						</div>
-
-						<div class="taskAddRow">
-							<button type="button" class="ghostButton" @click="addTask('multiple-choice')">
-								+ Flervalg
-							</button>
-							<button type="button" class="ghostButton" @click="addTask('x-or-y')">
-								+ X eller Y
-							</button>
-							<button type="button" class="ghostButton" @click="addTask('email-hotspots')">
-								+ E-post
-							</button>
-						</div>
-					</div>
-
-					<p v-if="draft.tasks.length === 0" class="emptyTaskState">
-						Ingen oppgaver lagt til ennå. Start med å velge en oppgavetype.
-					</p>
-
-					<article v-for="(task, taskIndex) in draft.tasks" :key="task.id" class="taskCard">
-						<div class="taskCardHeader">
-							<div>
-								<p class="taskEyebrow">{{ taskLabel(task, taskIndex) }}</p>
-								<h3>{{ task.id }}</h3>
-							</div>
-
-							<button
-								type="button"
-								class="deleteButton"
-								:disabled="draft.tasks.length === 1"
-								@click="removeTask(taskIndex)"
-							>
-								Fjern
-							</button>
-						</div>
-
-						<div class="fieldGrid">
-							<label class="field field--full">
-								<span>Introtekst</span>
-								<textarea v-model="task.introText" rows="2"></textarea>
-							</label>
-
-							<label class="field">
-								<span>Riktig tilbakemelding</span>
-								<textarea v-model="task.feedbackCorrect" rows="2"></textarea>
-							</label>
-
-							<label class="field">
-								<span>Feil tilbakemelding</span>
-								<textarea v-model="task.feedbackIncorrect" rows="2"></textarea>
-							</label>
-						</div>
-
-						<template v-if="task.templateKind === 'multiple-choice'">
-							<TeacherFactoryMultipleChoiceEditor
-								:task="multipleChoiceTask(task)"
-								@add-option="addOption(taskIndex)"
-								@remove-option="removeOption(taskIndex, $event)"
-							/>
-						</template>
-
-						<template v-else-if="task.templateKind === 'x-or-y'">
-							<TeacherFactoryXOrYEditor :task="xOrYTask(task)" />
-						</template>
-
-						<template v-else>
-							<TeacherFactoryEmailHotspotsEditor :task="emailTask(task)" />
-						</template>
-					</article>
-				</section>
-
-				<div class="actionRow">
-					<button type="button" class="ghostButton" @click="resetDraft">
-						Nullstill utkast
-					</button>
-					<button type="submit" class="primaryButton" :disabled="!canSave">
-						Lagre payload lokalt
-					</button>
-				</div>
-			</form>
-
-			<aside class="previewPanel">
-				<section class="panelSection">
-					<div class="sectionHeading sectionHeading--inline">
-						<div>
-							<h2>Payload</h2>
-							<p>Dette er objektet du senere kan sende med POST til backend.</p>
-						</div>
-
-						<button type="button" class="ghostButton" @click="copyPayload">
-							{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier JSON' }}
-						</button>
-					</div>
-
-					<pre class="payloadPreview">{{ payloadPreviewText }}</pre>
-				</section>
-
-				<section class="panelSection">
-					<div class="sectionHeading">
-						<h2>Lokale utkast</h2>
-						<p>Disse er lagret i nettleseren som stand-in for backend-lagring.</p>
-					</div>
-
-					<div v-if="savedPayloads.length > 0" class="savedList">
-						<article
-							v-for="payload in savedPayloads"
-							:key="payload.localId"
-							class="savedCard"
-							:class="{ 'savedCard--fresh': payload.localId === lastSavedId }"
-						>
-							<div>
-								<p class="savedCardEyebrow">{{ payload.entryName }}</p>
-								<h3>{{ payload.title }}</h3>
-								<p>{{ payload.description }}</p>
-								<span>{{ payload.tasks.length }} oppgaver</span>
-							</div>
-
-							<button type="button" class="deleteButton" @click="deleteSavedPayload(payload.localId)">
-								Slett
-							</button>
-						</article>
-					</div>
-
-					<p v-else class="emptyState">
-						Ingen lagrede payloads ennå.
-					</p>
-				</section>
-			</aside>
-		</div>
+		<ExerciseFactoryEditor
+			v-if="selectedExerciseKey"
+			:selection-key="selectedExerciseKey"
+			@selection-updated="handleSelectionUpdated"
+		/>
 	</section>
 </template>
 
@@ -355,26 +111,35 @@ watch(payloadPreviewText, () => {
 	font-weight: 700;
 }
 
-.factoryEyebrow {
+.factoryEyebrow,
+.cardEyebrow {
 	margin: 0 0 0.5rem;
 	color: var(--primary);
 	font-weight: 700;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
+	font-size: 0.82rem;
 }
 
-h1 {
-	margin: 0 0 0.75rem;
+h1,
+h2,
+h3 {
+	margin: 0;
 }
 
-.factoryDescription {
-	max-width: 52rem;
+.factoryDescription,
+.selectorHeading p,
+.selectedResourceCard p {
+	margin: 0;
 	color: var(--muted);
 	line-height: 1.5;
 }
 
-.editorPanel,
-.previewPanel {
+.selectorPanel {
+	display: grid;
+	gap: 1rem;
+	margin-bottom: 1.25rem;
+	padding: 1.25rem;
 	border: 1px solid var(--border);
 	border-radius: 1.2rem;
 	background:
@@ -382,81 +147,34 @@ h1 {
 		var(--surface);
 	box-shadow: var(--shadow);
 }
-.taskEyebrow,
-.savedCardEyebrow {
-	margin-bottom: 0.45rem;
-	color: var(--primary);
-	font-size: 0.82rem;
-	font-weight: 700;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-}
 
-.panelSection h2,
-.taskCard h3,
-.savedCard h3 {
-	margin: 0 0 0.45rem;
-}
-
-.sectionHeading p,
-.savedCard p {
-	color: var(--muted);
-	line-height: 1.5;
-}
-
-.factoryGrid {
+.selectorHeading {
 	display: grid;
-	grid-template-columns: minmax(0, 1.3fr) minmax(22rem, 0.9fr);
-	gap: 1.25rem;
-	align-items: start;
+	gap: 0.35rem;
 }
 
-.editorPanel,
-.previewPanel {
-	padding: 1.25rem;
-}
-
-.panelSection + .panelSection {
-	margin-top: 1.5rem;
-	padding-top: 1.5rem;
-	border-top: 1px solid var(--border);
-}
-
-.sectionHeading {
-	margin-bottom: 1rem;
-}
-
-.sectionHeading--inline {
+.selectorControls {
 	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: 1rem;
+	gap: 0.75rem;
+	align-items: end;
+	flex-wrap: wrap;
 }
 
-.fieldGrid {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 0.9rem;
-}
-
-.field,
-.toggleField {
+.field {
 	display: grid;
 	gap: 0.45rem;
+	max-width: 32rem;
 }
 
-.field--full {
-	grid-column: 1 / -1;
+.field--grow {
+	flex: 1;
 }
 
-.field span,
-.toggleField span {
+.field span {
 	font-weight: 700;
 }
 
-.field input,
-.field select,
-.field textarea {
+.field select {
 	width: 100%;
 	padding: 0.85rem 1rem;
 	border: 1px solid var(--border);
@@ -466,155 +184,46 @@ h1 {
 	font: inherit;
 }
 
-.field textarea {
-	resize: vertical;
-}
-
-.field input:focus,
-.field select:focus,
-.field textarea:focus {
+.field select:focus {
 	outline: none;
 	border-color: var(--primary);
 }
 
-.taskAddRow,
-.actionRow {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.75rem;
-}
-
-.taskCard,
-.savedCard {
+.selectedResourceCard {
+	display: grid;
+	gap: 0.25rem;
+	max-width: 32rem;
+	padding: 1rem;
 	border: 1px solid var(--border);
 	border-radius: 1rem;
 	background: rgba(255, 255, 255, 0.02);
 }
 
-.taskCard {
-	padding: 1rem;
-}
-
-.taskCard + .taskCard {
-	margin-top: 1rem;
-}
-
-.taskCardHeader,
-.savedCard {
-	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: 0.75rem;
-}
-
-.savedList {
-	display: grid;
-	gap: 0.75rem;
-}
-
-.savedCard {
-	padding: 0.85rem 1rem;
-}
-
-.payloadPreview {
-	overflow-x: auto;
-	padding: 1rem;
-	border: 1px solid var(--border);
-	border-radius: 1rem;
-	background: #111827;
-	color: #d1fae5;
-	font-size: 0.88rem;
-	line-height: 1.55;
-}
-
-.ghostButton,
-.primaryButton,
-.deleteButton {
-	border: 1px solid var(--border);
-	border-radius: 999px;
-	padding: 0.7rem 1rem;
-	font-weight: 700;
-	transition: transform var(--transition), border-color var(--transition), background var(--transition);
-}
-
-.ghostButton {
-	background: transparent;
-	color: var(--text);
+.selectedResourceDescription {
+	font-size: 0.95rem;
 }
 
 .primaryButton {
-	border-color: var(--primary);
+	border: 1px solid var(--primary);
+	border-radius: 999px;
+	padding: 0.75rem 1rem;
+	font-weight: 700;
 	background: var(--primary);
 	color: var(--bg);
+	transition: transform var(--transition), border-color var(--transition), background var(--transition);
 }
 
-.deleteButton {
-	background: transparent;
-	color: #fca5a5;
-}
-
-.ghostButton:hover,
-.primaryButton:hover,
-.deleteButton:hover {
+.primaryButton:hover {
 	transform: translateY(-1px);
 }
 
-.ghostButton:disabled,
-.primaryButton:disabled,
-.deleteButton:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-	transform: none;
-}
-
-.toggleField {
-	grid-template-columns: auto 1fr;
-	align-items: center;
-	padding: 0.85rem 1rem;
-	border: 1px solid var(--border);
-	border-radius: 0.9rem;
-	background: rgba(255, 255, 255, 0.02);
-}
-
-.savedCard span {
-	display: inline-block;
-	margin-top: 0.5rem;
-	color: var(--primary);
-	font-weight: 700;
-}
-
-.emptyTaskState {
-	padding: 1rem;
-	border: 1px dashed var(--border);
-	border-radius: 1rem;
-	color: var(--muted);
-	line-height: 1.5;
-}
-
-.savedCard--fresh {
-	border-color: var(--primary);
-}
-
-.emptyState {
-	color: var(--muted);
-}
-
-@media (max-width: 1100px) {
-	.factoryGrid {
-		grid-template-columns: 1fr;
-	}
-}
-
 @media (max-width: 800px) {
-	.fieldGrid {
-		grid-template-columns: 1fr;
+	.selectorControls {
+		display: grid;
 	}
 
-	.sectionHeading--inline,
-	.taskCardHeader,
-	.savedCard {
-		flex-direction: column;
-		align-items: flex-start;
+	.field {
+		max-width: none;
 	}
 }
 </style>

@@ -5,6 +5,7 @@ import type {
   MultipleChoiceTaskData,
   XOrYTaskData,
 } from "~/composables/types/TaskTypes";
+import { Exercise } from "~/composables/types/ExerciseType";
 
 export type ExerciseFactoryPayload = {
   title: string;
@@ -255,4 +256,234 @@ export const removeStoredExercisePayload = (localId: string) => {
   }
 
   return remainingPayloads;
+};
+
+export type ExerciseFactoryStoredRecord = {
+  localId: string;
+  sourceUid?: string;
+  payload: ExerciseFactoryPayload;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type ExerciseFactoryStore = {
+  overrides: Record<string, ExerciseFactoryStoredRecord>;
+  drafts: ExerciseFactoryStoredRecord[];
+};
+
+export type ExerciseFactorySelectableOption = {
+  selectionKey: string;
+  label: string;
+  description: string;
+  kind: "existing" | "draft";
+  badge: string;
+};
+
+export const exerciseFactoryNewSelectionKey = "__new_exercise__";
+
+const recordStorageKey = "teacher.exerciseFactory.records";
+
+const normalizeExerciseFactoryRecord = (record: Record<string, unknown>): ExerciseFactoryStoredRecord | null => {
+  const payload = normalizeStoredPayload(record);
+
+  if (!payload) {
+    return null;
+  }
+
+  return {
+    localId: payload.localId,
+    sourceUid: typeof record.sourceUid === "string" && record.sourceUid.trim().length > 0 ? record.sourceUid.trim() : undefined,
+    payload: {
+      title: payload.title,
+      entryName: payload.entryName,
+      description: payload.description,
+      tasks: payload.tasks,
+    },
+    createdAt: payload.createdAt,
+    updatedAt: typeof record.updatedAt === "string"
+      ? record.updatedAt
+      : payload.createdAt,
+  };
+};
+
+export const readExerciseFactoryStore = (): ExerciseFactoryStore => {
+  if (!canUseStorage()) {
+    return {
+      overrides: {},
+      drafts: [],
+    };
+  }
+
+  const raw = window.localStorage.getItem(recordStorageKey);
+
+  if (!raw) {
+    return {
+      overrides: {},
+      drafts: readStoredExercisePayloads().map((payload) => ({
+        localId: payload.localId,
+        payload: {
+          title: payload.title,
+          entryName: payload.entryName,
+          description: payload.description,
+          tasks: payload.tasks,
+        },
+        createdAt: payload.createdAt,
+        updatedAt: payload.createdAt,
+      })),
+    };
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+
+    if (!parsed || typeof parsed !== "object") {
+      return {
+        overrides: {},
+        drafts: [],
+      };
+    }
+
+    const rawOverrides = parsed.overrides;
+    const rawDrafts = parsed.drafts;
+
+    const overrides = rawOverrides && typeof rawOverrides === "object"
+      ? Object.entries(rawOverrides as Record<string, unknown>).reduce<Record<string, ExerciseFactoryStoredRecord>>(
+        (accumulator, [uid, record]) => {
+          if (!record || typeof record !== "object") {
+            return accumulator;
+          }
+
+          const normalized = normalizeExerciseFactoryRecord({ ...record, sourceUid: uid });
+
+          if (normalized) {
+            accumulator[uid] = normalized;
+          }
+
+          return accumulator;
+        },
+        {},
+      )
+      : {};
+
+    const drafts = Array.isArray(rawDrafts)
+      ? rawDrafts
+        .map((record) => (record && typeof record === "object") ? normalizeExerciseFactoryRecord(record as Record<string, unknown>) : null)
+        .filter((record): record is ExerciseFactoryStoredRecord => record !== null && !record.sourceUid)
+      : [];
+
+    return {
+      overrides,
+      drafts,
+    };
+  } catch {
+    return {
+      overrides: {},
+      drafts: [],
+    };
+  }
+};
+
+const writeExerciseFactoryStore = (store: ExerciseFactoryStore) => {
+  if (!canUseStorage()) {
+    return;
+  }
+
+  window.localStorage.setItem(recordStorageKey, JSON.stringify(store));
+};
+
+export const saveExerciseFactoryOverride = (sourceUid: string, payload: ExerciseFactoryPayload): ExerciseFactoryStoredRecord => {
+  const store = readExerciseFactoryStore();
+  const existing = store.overrides[sourceUid];
+  const record: ExerciseFactoryStoredRecord = {
+    localId: existing?.localId ?? createDraftId("exercise-override"),
+    sourceUid,
+    payload,
+    createdAt: existing?.createdAt ?? new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  store.overrides[sourceUid] = record;
+  writeExerciseFactoryStore(store);
+
+  return record;
+};
+
+export const clearExerciseFactoryOverride = (sourceUid: string) => {
+  const store = readExerciseFactoryStore();
+
+  delete store.overrides[sourceUid];
+  writeExerciseFactoryStore(store);
+};
+
+export const saveExerciseFactoryDraft = (payload: ExerciseFactoryPayload, localId?: string): ExerciseFactoryStoredRecord => {
+  const store = readExerciseFactoryStore();
+  const existing = localId ? store.drafts.find((draft) => draft.localId === localId) ?? null : null;
+  const record: ExerciseFactoryStoredRecord = {
+    localId: existing?.localId ?? createDraftId("exercise"),
+    payload,
+    createdAt: existing?.createdAt ?? new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  const nextDrafts = store.drafts.filter((draft) => draft.localId !== record.localId);
+  nextDrafts.unshift(record);
+  store.drafts = nextDrafts;
+  writeExerciseFactoryStore(store);
+
+  return record;
+};
+
+export const removeExerciseFactoryDraft = (localId: string) => {
+  const store = readExerciseFactoryStore();
+
+  store.drafts = store.drafts.filter((draft) => draft.localId !== localId);
+  writeExerciseFactoryStore(store);
+};
+
+export const makeExerciseFactoryExistingSelectionKey = (uid: string) => `existing:${uid}`;
+
+export const makeExerciseFactoryDraftSelectionKey = (localId: string) => `draft:${localId}`;
+
+export const parseExerciseFactorySelectionKey = (selectionKey: string) => {
+  if (!selectionKey || selectionKey === exerciseFactoryNewSelectionKey) {
+    return { kind: "new" as const };
+  }
+
+  if (selectionKey.startsWith("existing:")) {
+    return {
+      kind: "existing" as const,
+      uid: selectionKey.slice("existing:".length),
+    };
+  }
+
+  if (selectionKey.startsWith("draft:")) {
+    return {
+      kind: "draft" as const,
+      localId: selectionKey.slice("draft:".length),
+    };
+  }
+
+  return { kind: "new" as const };
+};
+
+export const getExerciseFactorySelectionOptions = (): ExerciseFactorySelectableOption[] => {
+  const store = readExerciseFactoryStore();
+  const existingOptions = Exercise.backendFetchAllExercises().map((exercise) => ({
+    selectionKey: makeExerciseFactoryExistingSelectionKey(exercise.uid),
+    label: `${exercise.title} (${exercise.entryName})`,
+    description: exercise.uid,
+    kind: "existing" as const,
+    badge: store.overrides[exercise.uid] ? "Eksisterende oppgave · lokal override" : "Eksisterende oppgave",
+  }));
+  const draftOptions = [...store.drafts]
+    .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
+    .map((draft) => ({
+      selectionKey: makeExerciseFactoryDraftSelectionKey(draft.localId),
+      label: draft.payload.title || "Ny oppgave uten tittel",
+      description: draft.payload.entryName || draft.localId,
+      kind: "draft" as const,
+      badge: "Ny lokal oppgave",
+    }));
+
+  return [...existingOptions, ...draftOptions];
 };
