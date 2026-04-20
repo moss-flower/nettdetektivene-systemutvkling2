@@ -10,6 +10,31 @@ Oppmøtetid: 09:00 - 15:00
 - **Casper Kolsrud**
 - **William Holtsdalen**
 
+## Run Project
+#### Frontend
+``` 
+npm install
+npm run dev
+```
+
+eller
+
+```
+bun install
+bun run dev
+```
+
+#### Backend
+```
+cp .env.example .env
+```
+
+change the values in `.env` to match your local setup, then run
+
+```
+docker compose up backend --build
+```
+
 ### Aktivitetsdiagram
 ![Aktivitetsdiagram](docs/flowchart.png)
 
