@@ -23,7 +23,7 @@ const hasSymbol = computed(() => /[^A-Za-z0-9]/.test(normalizedPassword.value))
 
 const checks = computed(() => {
   const containsCommonPattern = commonPatterns.value.some((pattern) => pattern.length > 0 && loweredPassword.value.includes(pattern))
-  const containsBirthYear = /(?:19\d{2}|20(?:0\d|1\d|2\d))/g.test(normalizedPassword.value)
+  const containsBirthYear = /(?:^|\D)(?:19\d{2}|20(?:0\d|1\d|2\d))(?!\d)/.test(normalizedPassword.value)
   const containsRepeatingPattern = /(.{2,})\1+/.test(loweredPassword.value) || /(.)\1{2,}/.test(loweredPassword.value)
   const startingPassword = props.task.startingPassword ?? ''
   const requiresStartingPassword = startingPassword.length > 0

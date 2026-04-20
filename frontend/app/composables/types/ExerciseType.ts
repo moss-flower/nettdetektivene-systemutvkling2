@@ -847,11 +847,13 @@ export class Exercise {
                 key: "safe",
                 title: "Trygge passord",
                 description: "Lange passord som ikke avslorer noe personlig.",
+                backgroundColor: "#edf9f0",
               },
               {
                 key: "unsafe",
                 title: "Utrygge passord",
                 description: "Korte eller lette a gjette passord.",
+                backgroundColor: "#fff1f1",
               },
             ],
             items: [
@@ -942,11 +944,13 @@ export class Exercise {
                 key: "safe",
                 title: "Trygge passord",
                 description: "Passord som er lange og ikke bygger pa lett gjettbar info.",
+                backgroundColor: "#edf9f0",
               },
               {
                 key: "unsafe",
                 title: "Utrygge passord",
                 description: "Passord som andre fortsatt kan gjette seg fram til.",
+                backgroundColor: "#fff1f1",
               },
             ],
             items: [

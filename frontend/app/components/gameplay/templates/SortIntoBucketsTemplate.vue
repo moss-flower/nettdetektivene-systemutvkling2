@@ -22,6 +22,10 @@ const emit = defineEmits<{
   (e: 'answered', payload: SortIntoBucketsResult): void
 }>()
 
+const getBucketStyle = (bucket: SortBucket) => ({
+  ...(bucket.backgroundColor ? { backgroundColor: bucket.backgroundColor } : {}),
+})
+
 const selectedItemId = ref<string | null>(null)
 const unplacedItems = ref<SortableItem[]>([])
 const bucketItems = ref<Record<string, SortableItem[]>>({})
@@ -168,7 +172,12 @@ watch(
       </section>
 
       <div class="sort-template__bucket-grid">
-        <article v-for="bucket in props.buckets" :key="bucket.key" class="sort-template__bucket-card">
+        <article
+          v-for="bucket in props.buckets"
+          :key="bucket.key"
+          class="sort-template__bucket-card"
+          :style="getBucketStyle(bucket)"
+        >
           <div class="sort-template__section-head sort-template__section-head--bucket">
             <div>
               <h3>{{ bucket.title }}</h3>

@@ -104,6 +104,7 @@ export type SortBucket = {
   key: string;
   title: string;
   description?: string;
+  backgroundColor?: string;
 };
 
 export type SortableItem = {
