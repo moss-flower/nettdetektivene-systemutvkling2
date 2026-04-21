@@ -11,28 +11,22 @@ Oppmøtetid: 09:00 - 15:00
 - **William Holtsdalen**
 
 ## Run Project
-#### Frontend
+
+The project is set up to be easily run using Docker Compose. 
+
+#### Follow these steps:
+1. Fill out a .env placed at project root. Make sure it follows the specifications in .env.example
+2. Make sure the Docker application is running
+3. Navigate your terminal to the project root
+4. Run: 
 ``` 
-npm install
-npm run dev
+docker compose up
 ```
 
-eller
-
-```
-bun install
-bun run dev
-```
-
-#### Backend
-```
-cp .env.example .env
-```
-
-change the values in `.env` to match your local setup, then run
-
-```
-docker compose up backend --build
+If you eventually implement changes:
+``` 
+docker compose down
+docker compose up --build
 ```
 
 ### Aktivitetsdiagram
