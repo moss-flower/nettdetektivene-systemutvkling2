@@ -19,6 +19,8 @@ public interface NotepadEntryRepository extends JpaRepository<NotepadEntry, Long
 
     Page<NotepadEntry> findAllByUsers_InternalId(@Param("userId") Long userId, Pageable pageable);
 
+    Optional<NotepadEntry> findByPublicUuidAndUsers_InternalId(UUID publicUuid, Long internalId);
+
     void deleteByPublicUuid(UUID publicUuid);
 
 }

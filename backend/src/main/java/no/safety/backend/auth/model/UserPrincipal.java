@@ -7,6 +7,7 @@ import no.safety.backend.user.model.User;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -44,4 +45,6 @@ public record UserPrincipal(User user, Collection<? extends GrantedAuthority> au
 
     @Override
     public boolean isEnabled() { return true;}
+
+    public UUID getPublicUserUuid() { return user.getPublicUuid(); }
 }

@@ -23,6 +23,7 @@ import no.safety.backend.notepad.dto.NotepadEntryCreateRequest;
 import no.safety.backend.notepad.dto.NotepadEntryReadRequest;
 import no.safety.backend.notepad.dto.NotepadEntryResponse;
 import no.safety.backend.notepad.dto.NotepadEntryUpdateRequest;
+import no.safety.backend.notepad.model.NotepadEntry;
 import no.safety.backend.notepad.service.NotepadEntryService;
 
 /**
@@ -35,34 +36,59 @@ public class NotepadController {
 
     private final NotepadEntryService notepadEntryService;
 
+    /**
+     * Fetches all {@link NotepadEntry} the {@link User} has access to. 
+     * Filters based on the provided pagination values in the {@link NotepadEntryReadRequest}.
+     * @param userPrincipal
+     * @param request
+     * @return
+     */
     @GetMapping(value = "notes")
     public Page<NotepadEntryResponse> getNotepadEntries(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid NotepadEntryReadRequest request) {
-        return notepadEntryService.findAll(userPrincipal, request);
+        return notepadEntryService.findAll(userPrincipal.getPublicUserUuid(), request);
     }
 
+    /**
+     * Creates a new {@link NotepadEntry} for the user
+     * @param userPrincipal
+     * @param request
+     * @return
+     */
     @PostMapping(value = "create", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public NotepadEntryResponse createNotepadEntry(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @RequestBody NotepadEntryCreateRequest request){
-        return notepadEntryService.create(userPrincipal, request);
+        return notepadEntryService.create(userPrincipal.getPublicUserUuid(), request);
     }
 
+    /**
+     * Updated an existing {@link NotepadEntry} based on the provided {@link UUID}.
+     * @param userPrincipal
+     * @param uuid
+     * @param request
+     * @return
+     */
     @PutMapping(value = "update/{uuid}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public NotepadEntryResponse createNotepadEntry(
+    public NotepadEntryResponse updateNotepadEntry(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable UUID uuid, 
             @Valid @RequestBody NotepadEntryUpdateRequest request){
-        return notepadEntryService.update(uuid, request);
+        return notepadEntryService.update(userPrincipal.getPublicUserUuid(), uuid, request);
     }
 
+    /**
+     * Deletes the {@link NotepadEntry} matching the provided {@link UUID}.
+     * @param userPrincipal
+     * @param uuid
+     */
     @DeleteMapping("/{uuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteNotepadEntry(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable UUID uuid) {
-        notepadEntryService.delete(uuid);
+        notepadEntryService.delete(userPrincipal.getPublicUserUuid(), uuid);
     }
 }
