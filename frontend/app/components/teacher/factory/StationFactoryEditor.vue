@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { routePaths } from "~/composables/utils/routePaths";
 import {
 	clearStationFactoryOverride,
 	createStationDraft,
@@ -179,6 +180,10 @@ const resetDraft = () => {
 	copyState.value = "idle";
 };
 
+const goToExerciseFactory = () => {
+	void navigateTo(routePaths.teacherFactoryExercise);
+};
+
 const finishSave = (selectionKey: string) => {
 	emit("selection-updated", selectionKey);
 	emit("saved");
@@ -326,8 +331,11 @@ watch(payloadPreviewText, () => {
 					</div>
 
 					<div class="exerciseColumn">
-						<div class="sectionHeading sectionHeading--compact">
+						<div class="sectionHeading sectionHeading--compact sectionHeading--inline">
 							<h3>Tilgjengelige oppgavesett</h3>
+							<button type="button" class="ghostButton" @click="goToExerciseFactory">
+								+ Lag Oppgavesett
+							</button>
 						</div>
 
 						<div class="knownExercises knownExercises--columns">

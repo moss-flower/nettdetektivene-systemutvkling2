@@ -1,15 +1,34 @@
 <script setup lang="ts">
 import StationFactoryEditor from "~/components/teacher/factory/StationFactoryEditor.vue";
 import PopupFactorySaved from "~/components/teacher/factory/PopupFactorySaved.vue";
+import { routePaths } from "~/composables/utils/routePaths";
 import {
 	getStationFactorySelectionOptions,
+	makeStationFactoryExistingSelectionKey,
 	stationFactoryNewSelectionKey,
 	type StationFactorySelectableOption,
 } from "~/composables/useStationFactory";
 
+const route = useRoute();
+const router = useRouter();
 const selectedStationKey = ref<string>("");
 const selectableOptions = ref<StationFactorySelectableOption[]>([]);
 const showSavedPopup = ref(false);
+const lockedStationUid = computed(() => {
+	const uid = route.query.uid;
+
+	return typeof uid === "string" && uid.trim().length > 0 ? uid.trim() : "";
+});
+const showStationSelector = computed(() => lockedStationUid.value.length === 0);
+
+const goBack = () => {
+	if (import.meta.client && window.history.length > 1) {
+		router.back();
+		return;
+	}
+
+	void navigateTo(routePaths.teacherOverview);
+};
 
 const refreshSelectableOptions = () => {
 	selectableOptions.value = getStationFactorySelectionOptions();
@@ -21,13 +40,17 @@ const handleSelectionUpdated = (selectionKey: string) => {
 
 const handleSaved = () => {
 	refreshSelectableOptions();
-	selectedStationKey.value = "";
+	selectedStationKey.value = lockedStationUid.value
+		? makeStationFactoryExistingSelectionKey(lockedStationUid.value)
+		: "";
 	showSavedPopup.value = true;
 };
 
 const handleDeleted = () => {
 	refreshSelectableOptions();
-	selectedStationKey.value = "";
+	selectedStationKey.value = lockedStationUid.value
+		? makeStationFactoryExistingSelectionKey(lockedStationUid.value)
+		: "";
 };
 
 const closeSavedPopup = () => {
@@ -37,15 +60,24 @@ const closeSavedPopup = () => {
 onMounted(() => {
 	refreshSelectableOptions();
 });
+
+watch(
+	lockedStationUid,
+	(uid) => {
+		selectedStationKey.value = uid ? makeStationFactoryExistingSelectionKey(uid) : "";
+	},
+	{ immediate: true },
+);
 </script>
 
 <template>
 	<section class="factoryPage">
 		<header class="factoryHero">
-			<h1>Stasjoner</h1>
+			<button class="backButton" type="button" @click="goBack">Tilbake</button>
+			<h1 v-if="showStationSelector">Stasjoner</h1>
 		</header>
 
-		<section class="selectorPanel">
+		<section v-if="showStationSelector" class="selectorPanel">
 			<div class="selectorControls">
 				<label class="field field--grow">
 					<select v-model="selectedStationKey">
@@ -81,6 +113,23 @@ onMounted(() => {
 
 .factoryHero {
 	margin-bottom: 1rem;
+}
+
+.backButton {
+	display: inline-flex;
+	align-items: center;
+	margin-bottom: 0.75rem;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--primary);
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.backButton:hover {
+	text-decoration: underline;
 }
 
 h1,

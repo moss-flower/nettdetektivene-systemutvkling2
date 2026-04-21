@@ -1,15 +1,34 @@
 <script setup lang="ts">
 import WorldFactoryEditor from "~/components/teacher/factory/WorldFactoryEditor.vue";
 import PopupFactorySaved from "~/components/teacher/factory/PopupFactorySaved.vue";
+import { routePaths } from "~/composables/utils/routePaths";
 import {
 	getWorldFactorySelectionOptions,
+	makeWorldFactoryExistingSelectionKey,
 	type WorldFactorySelectableOption,
 	worldFactoryNewSelectionKey,
 } from "~/composables/useWorldFactory";
 
+const route = useRoute();
+const router = useRouter();
 const selectedWorldKey = ref<string>("");
 const selectableOptions = ref<WorldFactorySelectableOption[]>([]);
 const showSavedPopup = ref(false);
+const lockedWorldUid = computed(() => {
+	const uid = route.query.uid;
+
+	return typeof uid === "string" && uid.trim().length > 0 ? uid.trim() : "";
+});
+const showWorldSelector = computed(() => lockedWorldUid.value.length === 0);
+
+const goBack = () => {
+	if (import.meta.client && window.history.length > 1) {
+		router.back();
+		return;
+	}
+
+	void navigateTo(routePaths.teacherOverview);
+};
 
 const refreshSelectableOptions = () => {
 	selectableOptions.value = getWorldFactorySelectionOptions();
@@ -21,13 +40,17 @@ const handleSelectionUpdated = (selectionKey: string) => {
 
 const handleSaved = () => {
 	refreshSelectableOptions();
-	selectedWorldKey.value = "";
+	selectedWorldKey.value = lockedWorldUid.value
+		? makeWorldFactoryExistingSelectionKey(lockedWorldUid.value)
+		: "";
 	showSavedPopup.value = true;
 };
 
 const handleDeleted = () => {
 	refreshSelectableOptions();
-	selectedWorldKey.value = "";
+	selectedWorldKey.value = lockedWorldUid.value
+		? makeWorldFactoryExistingSelectionKey(lockedWorldUid.value)
+		: "";
 };
 
 const closeSavedPopup = () => {
@@ -37,15 +60,24 @@ const closeSavedPopup = () => {
 onMounted(() => {
 	refreshSelectableOptions();
 });
+
+watch(
+	lockedWorldUid,
+	(uid) => {
+		selectedWorldKey.value = uid ? makeWorldFactoryExistingSelectionKey(uid) : "";
+	},
+	{ immediate: true },
+);
 </script>
 
 <template>
 	<section class="factoryPage">
 		<header class="factoryHero">
-			<h1>Verdener</h1>
+			<button class="backButton" type="button" @click="goBack">Tilbake</button>
+			<h1 v-if="showWorldSelector">Verdener</h1>
 		</header>
 
-		<section class="selectorPanel">
+		<section v-if="showWorldSelector" class="selectorPanel">
 			<div class="selectorControls">
 				<label class="field field--grow">
 					<select v-model="selectedWorldKey">
@@ -81,6 +113,23 @@ onMounted(() => {
 
 .factoryHero {
 	margin-bottom: 1rem;
+}
+
+.backButton {
+	display: inline-flex;
+	align-items: center;
+	margin-bottom: 0.75rem;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--primary);
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.backButton:hover {
+	text-decoration: underline;
 }
 
 h1,

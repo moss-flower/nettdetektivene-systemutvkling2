@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { routePaths } from "~/composables/utils/routePaths";
 import {
 	clearWorldFactoryOverride,
 	createWorldDraft,
@@ -200,6 +201,10 @@ const resetDraft = () => {
 	copyState.value = "idle";
 };
 
+const goToStationFactory = () => {
+	void navigateTo(routePaths.teacherFactoryStation);
+};
+
 const finishSave = (selectionKey: string) => {
 	emit("selection-updated", selectionKey);
 	emit("saved");
@@ -337,8 +342,11 @@ watch(payloadPreviewText, () => {
 					</div>
 
 					<div class="stationColumn">
-						<div class="sectionHeading sectionHeading--compact">
+						<div class="sectionHeading sectionHeading--compact sectionHeading--inline">
 							<h3>Tilgjengelige stasjoner</h3>
+							<button type="button" class="ghostButton" @click="goToStationFactory">
+								+ Lag Stasjon
+							</button>
 						</div>
 
 						<div class="knownItems knownItems--columns">

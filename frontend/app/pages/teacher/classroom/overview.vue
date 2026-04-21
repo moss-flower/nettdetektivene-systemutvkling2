@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const route = useRoute();
 const { getTeacherClassroomById, getClassroomLeaderboard } = useTeacherDashboard();
+import { routePaths, routePathsWithString, routePathsWithUid } from '~/composables/utils/routePaths';
 
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
 
@@ -19,29 +20,24 @@ const leaderboard = computed(() => getClassroomLeaderboard(classroomId.value));
     </header>
 
     <div v-if="classroom" class="actionGrid">
-      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudents, `?classroomId=${classroom.id}`)" class="actionCard">
-        <span class="actionCard__title">Elever</span>
-        <span class="actionCard__text">Se elevoversikt og åpne enkeltelevens progresjon.</span>
-      </NuxtLink>
-
       <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomNotifications, `?classroomId=${classroom.id}`)" class="actionCard">
         <span class="actionCard__title">Varslingssenter</span>
-        <span class="actionCard__text">Se varsler som bare gjelder dette klasserommet.</span>
+        <img src="https://placehold.co/128x128?text=VS" alt="Varslingssenter" class="actionCard__image">
       </NuxtLink>
 
-      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomExercises, `?classroomId=${classroom.id}`)" class="actionCard">
-        <span class="actionCard__title">Oppgaver</span>
-        <span class="actionCard__text">Åpne oppgavene som brukes i dette klasserommet.</span>
+      <NuxtLink :to="routePathsWithUid(routePaths.teacherFactoryWorld, classroom.worldUid)" class="actionCard">
+        <span class="actionCard__title">Verden</span>
+        <img src="https://placehold.co/128x128?text=VE" alt="Verden" class="actionCard__image">
       </NuxtLink>
 
       <NuxtLink :to="routePaths.studentHome" class="actionCard">
         <span class="actionCard__title">Test spillet</span>
-        <span class="actionCard__text">Prøv spillet fra elevens perspektiv.</span>
+        <img src="https://placehold.co/128x128?text=TS" alt="Test spillet" class="actionCard__image">
       </NuxtLink>
 
       <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomMystery, `?classroomId=${classroom.id}`)" class="actionCard">
         <span class="actionCard__title">Ukens mysterium</span>
-        <span class="actionCard__text">Se og rediger ukens mysterium for dette rommet.</span>
+        <img src="https://placehold.co/128x128?text=UM" alt="Ukens mysterium" class="actionCard__image">
       </NuxtLink>
     </div>
 
@@ -146,6 +142,7 @@ h1 {
 .actionCard {
   display: grid;
   gap: 0.5rem;
+  justify-items: center;
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -156,11 +153,15 @@ h1 {
 .actionCard__title {
   font-weight: 700;
   color: var(--primary);
+  text-align: center;
 }
 
-.actionCard__text {
-  color: var(--muted);
-  line-height: 1.4;
+.actionCard__image {
+  display: block;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 0.9rem;
+  object-fit: cover;
 }
 
 .summaryCard {

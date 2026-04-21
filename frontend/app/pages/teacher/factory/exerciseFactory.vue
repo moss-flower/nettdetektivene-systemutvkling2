@@ -1,15 +1,34 @@
 <script setup lang="ts">
 import ExerciseFactoryEditor from "~/components/teacher/factory/ExerciseFactoryEditor.vue";
 import PopupFactorySaved from "~/components/teacher/factory/PopupFactorySaved.vue";
+import { routePaths } from "~/composables/utils/routePaths";
 import {
 	exerciseFactoryNewSelectionKey,
 	getExerciseFactorySelectionOptions,
+	makeExerciseFactoryExistingSelectionKey,
 	type ExerciseFactorySelectableOption,
 } from "~/composables/useExerciseFactory";
 
+const route = useRoute();
+const router = useRouter();
 const selectedExerciseKey = ref<string>("");
 const selectableOptions = ref<ExerciseFactorySelectableOption[]>([]);
 const showSavedPopup = ref(false);
+const lockedExerciseUid = computed(() => {
+	const uid = route.query.uid;
+
+	return typeof uid === "string" && uid.trim().length > 0 ? uid.trim() : "";
+});
+const showExerciseSelector = computed(() => lockedExerciseUid.value.length === 0);
+
+const goBack = () => {
+	if (import.meta.client && window.history.length > 1) {
+		router.back();
+		return;
+	}
+
+	void navigateTo(routePaths.teacherOverview);
+};
 
 const refreshSelectableOptions = () => {
 	selectableOptions.value = getExerciseFactorySelectionOptions();
@@ -22,13 +41,17 @@ const handleSelectionUpdated = (selectionKey: string) => {
 
 const handleSaved = () => {
 	refreshSelectableOptions();
-	selectedExerciseKey.value = "";
+	selectedExerciseKey.value = lockedExerciseUid.value
+		? makeExerciseFactoryExistingSelectionKey(lockedExerciseUid.value)
+		: "";
 	showSavedPopup.value = true;
 };
 
 const handleDeleted = () => {
 	refreshSelectableOptions();
-	selectedExerciseKey.value = "";
+	selectedExerciseKey.value = lockedExerciseUid.value
+		? makeExerciseFactoryExistingSelectionKey(lockedExerciseUid.value)
+		: "";
 };
 
 const closeSavedPopup = () => {
@@ -38,15 +61,24 @@ const closeSavedPopup = () => {
 onMounted(() => {
 	refreshSelectableOptions();
 });
+
+watch(
+	lockedExerciseUid,
+	(uid) => {
+		selectedExerciseKey.value = uid ? makeExerciseFactoryExistingSelectionKey(uid) : "";
+	},
+	{ immediate: true },
+);
 </script>
 
 <template>
 	<section class="factoryPage">
 		<header class="factoryHero">
-			<h1>Oppgavesett</h1>
+			<button class="backButton" type="button" @click="goBack">Tilbake</button>
+			<h1 v-if="showExerciseSelector">Oppgavesett</h1>
 		</header>
 
-		<section class="selectorPanel">
+		<section v-if="showExerciseSelector" class="selectorPanel">
 			<div class="selectorControls">
 				<label class="field field--grow">
 					<select v-model="selectedExerciseKey">
@@ -82,6 +114,23 @@ onMounted(() => {
 
 .factoryHero {
 	margin-bottom: 1rem;
+}
+
+.backButton {
+	display: inline-flex;
+	align-items: center;
+	margin-bottom: 0.75rem;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--primary);
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.backButton:hover {
+	text-decoration: underline;
 }
 
 h1,

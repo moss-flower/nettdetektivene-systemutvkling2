@@ -15,6 +15,7 @@ export type StudentOverviewEntry = StudentLeaderboardEntry & {
 export type ClassroomSummary = {
   id: string;
   name: string;
+  worldUid: string;
   totalScore: number;
   studentCount: number;
   averageProgressPercent: number;
@@ -101,6 +102,12 @@ const classroomNames: Record<string, string> = {
   'ronvik-6c': 'Rønvik skole 6C'
 };
 
+const classroomWorldUids: Record<string, string> = {
+  'ronvik-6a': 'schoolyard',
+  'ronvik-6b': 'quickstart',
+  'ronvik-6c': 'creative-lab'
+};
+
 function calculateProgressPercent(completedLevels: number, totalLevels: number): number {
   if (totalLevels === 0) {
     return 0;
@@ -120,6 +127,7 @@ function buildClassroomSummary(classroomId: string): ClassroomSummary {
   return {
     id: classroomId,
     name: classroomNames[classroomId] ?? 'Ukjent klasserom',
+    worldUid: classroomWorldUids[classroomId] ?? 'schoolyard',
     totalScore,
     studentCount: students.length,
     averageProgressPercent,
