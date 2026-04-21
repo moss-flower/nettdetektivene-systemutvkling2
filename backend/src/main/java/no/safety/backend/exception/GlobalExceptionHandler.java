@@ -43,7 +43,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ProblemDetail handleUserAlreadyExists(UserAlreadyExistsException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
-        problem.setTitle("Account Conflict");
+        problem.setTitle("Account Conflict: User already exists.");
         problem.setProperty("timestamp", Instant.now());
         return problem;
     }
