@@ -16,13 +16,7 @@ import no.safety.backend.auth.dto.UserLoginResponse;
 import no.safety.backend.auth.dto.UserLoginTokenResponse;
 import no.safety.backend.auth.service.AuthenticationService;
 import no.safety.backend.auth.service.JwtCookieService;
-import no.safety.backend.registration.dto.StudentUserRegistrationRequest;
-import no.safety.backend.registration.dto.StudentUserRegistrationResponse;
-import no.safety.backend.registration.dto.TeacherUserRegistrationRequest;
-import no.safety.backend.registration.dto.TeacherUserRegistrationResponse;
 import no.safety.backend.registration.service.UserRegistrationService;
-import no.safety.backend.user.model.StudentUser;
-import no.safety.backend.user.model.TeacherUser;
 
 /**
  * A controller that provides API endpoints for login, registration and authentication requests.
