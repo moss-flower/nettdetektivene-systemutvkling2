@@ -21,6 +21,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
+import no.safety.backend.exception.domain.RoleNotFoundException;
+import no.safety.backend.exception.domain.UserAlreadyExistsException;
 import no.safety.backend.registration.dto.StudentUserRegistrationRequest;
 import no.safety.backend.registration.dto.TeacherUserRegistrationRequest;
 import no.safety.backend.role.model.Role;
@@ -92,9 +94,21 @@ public class UserRegistrationServiceTest {
         when(mockRoleRepository.findByType(RoleType.ROLE_STUDENT)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userRegistrationService.registerStudent(studentUserRegistrationRequest))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Role not found");
+                .isInstanceOf(RoleNotFoundException.class)
+                .hasMessage("Student role not found.");
 
+        verifyNoInteractions(mockStudentUserRepository);
+    }
+
+    @Test
+    void RegisterStudent_shouldThrowWhenUserAlreadyExists() {
+        when(mockUserService.existsByEmail(studentUserRegistrationRequest.email())).thenReturn(true);
+
+        assertThatThrownBy(() -> userRegistrationService.registerStudent(studentUserRegistrationRequest))
+                .isInstanceOf(UserAlreadyExistsException.class)
+                .hasMessage("A user with this email already exists.");
+
+        verifyNoInteractions(mockRoleRepository);
         verifyNoInteractions(mockStudentUserRepository);
     }
 
@@ -127,13 +141,25 @@ public class UserRegistrationServiceTest {
     }
 
     @Test
-    void RegisterTeacher_shouldThrowWhenStudentRoleNotFound() {
+    void RegisterTeacher_shouldThrowWhenTeacherRoleNotFound() {
         when(mockRoleRepository.findByType(RoleType.ROLE_TEACHER)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userRegistrationService.registerTeacher(teacherUserRegistrationRequest))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Role not found");
+                .isInstanceOf(RoleNotFoundException.class)
+                .hasMessage("Teacher role not found.");
 
+        verifyNoInteractions(mockTeacherUserRepository);
+    }
+
+    @Test
+    void RegisterTeacher_shouldThrowWhenUserAlreadyExists() {
+        when(mockUserService.existsByEmail(teacherUserRegistrationRequest.email())).thenReturn(true);
+
+        assertThatThrownBy(() -> userRegistrationService.registerTeacher(teacherUserRegistrationRequest))
+                .isInstanceOf(UserAlreadyExistsException.class)
+                .hasMessage("A user with this email already exists.");
+
+        verifyNoInteractions(mockRoleRepository);
         verifyNoInteractions(mockTeacherUserRepository);
     }
 

@@ -10,10 +10,12 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
+import no.safety.backend.auth.service.JwtService;
 import no.safety.backend.registration.dto.StudentUserRegistrationRequest;
 import no.safety.backend.registration.dto.StudentUserRegistrationResponse;
 import no.safety.backend.registration.dto.TeacherUserRegistrationRequest;
@@ -35,6 +37,12 @@ public class UserRegistrationControllerTest {
 
     @Autowired
     RestTestClient client;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private UserDetailsService userDetailsService;
     
     @MockitoBean
     private UserRegistrationService mockService;

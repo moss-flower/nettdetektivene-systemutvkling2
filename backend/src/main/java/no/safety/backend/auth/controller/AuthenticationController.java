@@ -16,13 +16,7 @@ import no.safety.backend.auth.dto.UserLoginResponse;
 import no.safety.backend.auth.dto.UserLoginTokenResponse;
 import no.safety.backend.auth.service.AuthenticationService;
 import no.safety.backend.auth.service.JwtCookieService;
-import no.safety.backend.registration.dto.StudentUserRegistrationRequest;
-import no.safety.backend.registration.dto.StudentUserRegistrationResponse;
-import no.safety.backend.registration.dto.TeacherUserRegistrationRequest;
-import no.safety.backend.registration.dto.TeacherUserRegistrationResponse;
 import no.safety.backend.registration.service.UserRegistrationService;
-import no.safety.backend.user.model.StudentUser;
-import no.safety.backend.user.model.TeacherUser;
 
 /**
  * A controller that provides API endpoints for login, registration and authentication requests.
@@ -48,39 +42,7 @@ public class AuthenticationController {
         ResponseCookie jwtCookie = jwtCookieService.createCookie(userTokenResponse.jwtToken());
         
         return ResponseEntity.status(HttpStatus.OK)
-                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                .body(userTokenResponse.userLoginResponse());
-    }
-
-    /**
-     * API endpoint for student user registration.
-     * @param request
-     * @return
-     */
-    @PostMapping(value = "/register/student")
-    public ResponseEntity<StudentUserRegistrationResponse> registerStudentUser(@Valid @RequestBody StudentUserRegistrationRequest request){
-        StudentUser savedUser = userRegistrationService.registerStudent(request);
-        
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(StudentUserRegistrationResponse.fromEntity(
-                        savedUser, 
-                        "Student account registered successfully.")
-                );
-    }
-
-    /**
-     * API endpoint for teacher user registration.
-     * @param request
-     * @return
-     */
-    @PostMapping(value = "/register/teacher")
-    public ResponseEntity<TeacherUserRegistrationResponse> registerTeacherUser(@Valid @RequestBody TeacherUserRegistrationRequest request){
-        TeacherUser savedUser = userRegistrationService.registerTeacher(request);
-        
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(TeacherUserRegistrationResponse.fromEntity(
-                        savedUser, 
-                "Teacher account registered successfully.")
-                );
+            .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+            .body(userTokenResponse.userLoginResponse());
     }
 }
