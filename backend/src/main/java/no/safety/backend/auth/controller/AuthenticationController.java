@@ -51,36 +51,4 @@ public class AuthenticationController {
                 .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
                 .body(userTokenResponse.userLoginResponse());
     }
-
-    /**
-     * API endpoint for student user registration.
-     * @param request
-     * @return
-     */
-    @PostMapping(value = "/register/student")
-    public ResponseEntity<StudentUserRegistrationResponse> registerStudentUser(@Valid @RequestBody StudentUserRegistrationRequest request){
-        StudentUser savedUser = userRegistrationService.registerStudent(request);
-        
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(StudentUserRegistrationResponse.fromEntity(
-                        savedUser, 
-                        "Student account registered successfully.")
-                );
-    }
-
-    /**
-     * API endpoint for teacher user registration.
-     * @param request
-     * @return
-     */
-    @PostMapping(value = "/register/teacher")
-    public ResponseEntity<TeacherUserRegistrationResponse> registerTeacherUser(@Valid @RequestBody TeacherUserRegistrationRequest request){
-        TeacherUser savedUser = userRegistrationService.registerTeacher(request);
-        
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(TeacherUserRegistrationResponse.fromEntity(
-                        savedUser, 
-                "Teacher account registered successfully.")
-                );
-    }
 }
