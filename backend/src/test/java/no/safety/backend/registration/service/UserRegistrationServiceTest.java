@@ -101,6 +101,18 @@ public class UserRegistrationServiceTest {
     }
 
     @Test
+    void RegisterStudent_shouldThrowWhenUserAlreadyExists() {
+        when(mockUserService.existsByEmail(studentUserRegistrationRequest.email())).thenReturn(true);
+
+        assertThatThrownBy(() -> userRegistrationService.registerStudent(studentUserRegistrationRequest))
+                .isInstanceOf(UserAlreadyExistsException.class)
+                .hasMessage("A user with this email already exists.");
+
+        verifyNoInteractions(mockRoleRepository);
+        verifyNoInteractions(mockStudentUserRepository);
+    }
+
+    @Test
     void registerTeacher_successful(){
         //arrange, act assert
         //arrange
@@ -129,7 +141,7 @@ public class UserRegistrationServiceTest {
     }
 
     @Test
-    void RegisterTeacher_shouldThrowWhenRoleNotFound() {
+    void RegisterTeacher_shouldThrowWhenTeacherRoleNotFound() {
         when(mockRoleRepository.findByType(RoleType.ROLE_TEACHER)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userRegistrationService.registerTeacher(teacherUserRegistrationRequest))
