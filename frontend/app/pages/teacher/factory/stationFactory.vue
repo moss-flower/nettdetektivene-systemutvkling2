@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import StationFactoryEditor from "~/components/teacher/factory/StationFactoryEditor.vue";
-import { routePaths } from "~/composables/routePaths";
+import { routePaths } from "~/composables/utils/routePaths";
 import {
 	getStationFactorySelectionOptions,
 	stationFactoryNewSelectionKey,

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import StudentHomeMenuItem from '~/components/student/StudentHomeMenuItem.vue';
-import { routePaths } from '~/composables/routePaths';
+import { routePaths } from '~/composables/utils/routePaths';
 import mapImage from "~/assets/images/studentHome/map.png";
 import helpImage from "~/assets/images/studentHome/help.png";
 import profileImage from "~/assets/images/studentHome/profile.png";

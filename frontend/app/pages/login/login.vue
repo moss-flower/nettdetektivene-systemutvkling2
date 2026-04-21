@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { routePaths } from "~/composables/routePaths";
+import { routePaths } from "~/composables/utils/routePaths";
 import { useAuth } from "~/composables/useAuth";
 
 type ProviderId = "microsoft" | "idporten";

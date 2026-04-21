@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import TextInput from "~/components/ui/TextInput.vue";
-import { routePaths } from "~/composables/routePaths";
+import { routePaths } from "~/composables/utils/routePaths";
 import { useAuth } from "~/composables/useAuth";
 
 // Holds current form fields

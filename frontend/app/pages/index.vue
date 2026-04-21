@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { routePaths, routePathsWithString } from '~/composables/routePaths';
+import { routePaths, routePathsWithString } from '~/composables/utils/routePaths';
 
 type LoginOption = {
   label: string;

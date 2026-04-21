@@ -6,7 +6,7 @@ import SortIntoBucketsTemplate from '~/components/gameplay/templates/SortIntoBuc
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoiceTemplate.vue'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
-import { routePaths } from '~/composables/routePaths'
+import { routePaths } from '~/composables/utils/routePaths'
 import { Exercise } from '~/composables/types/ExerciseType'
 import { Station } from '~/composables/types/StationType'
 
