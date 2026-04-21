@@ -5,15 +5,12 @@ import PasswordStrengthEditor from "~/components/teacher/factory/PasswordStrengt
 import SortIntoBucketsEditor from "~/components/teacher/factory/SortIntoBucketsEditor.vue";
 import XOrYEditor from "~/components/teacher/factory/XOrYEditor.vue";
 import {
-	clearExerciseFactoryOverride,
 	createExerciseDraft,
 	createTaskDraft,
-	exerciseFactoryNewSelectionKey,
 	makeExerciseFactoryDraftSelectionKey,
 	makeExerciseFactoryExistingSelectionKey,
 	parseExerciseFactorySelectionKey,
 	readExerciseFactoryStore,
-	removeExerciseFactoryDraft,
 	saveExerciseFactoryDraft,
 	saveExerciseFactoryOverride,
 	type ExerciseFactoryPayload,
@@ -35,6 +32,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	(event: "selection-updated", selectionKey: string): void;
+	(event: "saved"): void;
 }>();
 
 const cloneExercisePayload = (payload: ExerciseFactoryPayload): ExerciseFactoryPayload => {
@@ -44,11 +42,8 @@ const cloneExercisePayload = (payload: ExerciseFactoryPayload): ExerciseFactoryP
 const draft = reactive<ExerciseFactoryPayload>(createExerciseDraft());
 const loadedSnapshot = ref<ExerciseFactoryPayload>(createExerciseDraft());
 const copyState = ref<"idle" | "copied" | "failed">("idle");
-const saveState = ref<"idle" | "saved">("idle");
-const loadedExerciseUid = ref("");
+const expandedTaskIds = ref<string[]>([]);
 const loadedLocalId = ref("");
-const hasStoredOverride = ref(false);
-const lastSavedAt = ref("");
 const parsedSelection = computed(() => parseExerciseFactorySelectionKey(props.selectionKey));
 
 const canSave = computed(() => {
@@ -68,20 +63,9 @@ const payloadPreview = computed<ExerciseFactoryPayload>(() => ({
 const payloadPreviewText = computed(() => JSON.stringify(payloadPreview.value, null, 2));
 const hasChanges = computed(() => JSON.stringify(payloadPreview.value) !== JSON.stringify(loadedSnapshot.value));
 
-const formattedLastSavedAt = computed(() => {
-	if (!lastSavedAt.value) {
-		return "";
-	}
-
-	return new Intl.DateTimeFormat("nb-NO", {
-		dateStyle: "medium",
-		timeStyle: "short",
-	}).format(new Date(lastSavedAt.value));
-});
-
 const editorTitle = computed(() => {
 	if (parsedSelection.value.kind === "existing") {
-		return `Rediger oppgave: ${payloadPreview.value.title || loadedExerciseUid.value}`;
+		return `Rediger oppgave: ${payloadPreview.value.title || "Uten tittel"}`;
 	}
 
 	if (parsedSelection.value.kind === "draft") {
@@ -131,6 +115,21 @@ const emailTask = (task: ExerciseTask) => task as EmailHotspotTaskData;
 const sortTask = (task: ExerciseTask) => task as SortIntoBucketsTaskData;
 const passwordTask = (task: ExerciseTask) => task as PasswordStrengthTaskData;
 
+const isTaskExpanded = (taskId: string) => expandedTaskIds.value.includes(taskId);
+
+const setExpandedTasks = (taskIds: string[]) => {
+	expandedTaskIds.value = [...taskIds];
+};
+
+const toggleTaskExpanded = (taskId: string) => {
+	if (isTaskExpanded(taskId)) {
+		expandedTaskIds.value = expandedTaskIds.value.filter((id) => id !== taskId);
+		return;
+	}
+
+	expandedTaskIds.value = [...expandedTaskIds.value, taskId];
+};
+
 const applyDraft = (payload: ExerciseFactoryPayload) => {
 	const clonedPayload = cloneExercisePayload(payload);
 
@@ -138,6 +137,7 @@ const applyDraft = (payload: ExerciseFactoryPayload) => {
 	draft.entryName = clonedPayload.entryName;
 	draft.description = clonedPayload.description;
 	draft.tasks.splice(0, draft.tasks.length, ...clonedPayload.tasks);
+	setExpandedTasks([]);
 };
 
 const updateLoadedSnapshot = (payload: ExerciseFactoryPayload) => {
@@ -148,10 +148,7 @@ const loadSelection = (selectionKey: string) => {
 	const selection = parseExerciseFactorySelectionKey(selectionKey);
 	const store = readExerciseFactoryStore();
 
-	loadedExerciseUid.value = "";
 	loadedLocalId.value = "";
-	hasStoredOverride.value = false;
-	lastSavedAt.value = "";
 
 	if (selection.kind === "existing") {
 		const backendExercise = Exercise.backendFetchExerciseByUid(selection.uid);
@@ -171,9 +168,6 @@ const loadSelection = (selectionKey: string) => {
 			}).tasks;
 		}
 
-		loadedExerciseUid.value = selection.uid;
-		hasStoredOverride.value = Boolean(override);
-		lastSavedAt.value = override?.updatedAt ?? "";
 		applyDraft(nextPayload);
 		updateLoadedSnapshot(nextPayload);
 	} else if (selection.kind === "draft") {
@@ -181,7 +175,6 @@ const loadSelection = (selectionKey: string) => {
 		const nextPayload = storedDraft?.payload ?? createExerciseDraft();
 
 		loadedLocalId.value = storedDraft?.localId ?? "";
-		lastSavedAt.value = storedDraft?.updatedAt ?? "";
 		applyDraft(nextPayload);
 		updateLoadedSnapshot(nextPayload);
 	} else {
@@ -192,17 +185,18 @@ const loadSelection = (selectionKey: string) => {
 	}
 
 	copyState.value = "idle";
-	saveState.value = "idle";
 };
 
 const resetDraft = () => {
 	applyDraft(loadedSnapshot.value);
 	copyState.value = "idle";
-	saveState.value = "idle";
 };
 
 const addTask = (kind: ExerciseTemplateKind) => {
-	draft.tasks.push(createTaskDraft(kind, draft.tasks.length + 1));
+	const nextTask = createTaskDraft(kind, draft.tasks.length + 1);
+
+	draft.tasks.push(nextTask);
+	expandedTaskIds.value = [...expandedTaskIds.value, nextTask.id];
 };
 
 const removeTask = (taskIndex: number) => {
@@ -210,7 +204,12 @@ const removeTask = (taskIndex: number) => {
 		return;
 	}
 
+	const removedTaskId = draft.tasks[taskIndex]?.id;
 	draft.tasks.splice(taskIndex, 1);
+
+	if (removedTaskId) {
+		expandedTaskIds.value = expandedTaskIds.value.filter((id) => id !== removedTaskId);
+	}
 };
 
 const moveTask = (taskIndex: number, direction: -1 | 1) => {
@@ -268,6 +267,11 @@ const removeOption = (taskIndex: number, optionIndex: number) => {
 	}
 };
 
+const finishSave = (selectionKey: string) => {
+	emit("selection-updated", selectionKey);
+	emit("saved");
+};
+
 const savePayload = () => {
 	if (!canSave.value) {
 		return;
@@ -276,13 +280,10 @@ const savePayload = () => {
 	const nextPayload = cloneExercisePayload(payloadPreview.value);
 
 	if (parsedSelection.value.kind === "existing") {
-		const record = saveExerciseFactoryOverride(parsedSelection.value.uid, nextPayload);
+		saveExerciseFactoryOverride(parsedSelection.value.uid, nextPayload);
 
 		updateLoadedSnapshot(nextPayload);
-		hasStoredOverride.value = true;
-		lastSavedAt.value = record.updatedAt;
-		saveState.value = "saved";
-		emit("selection-updated", makeExerciseFactoryExistingSelectionKey(parsedSelection.value.uid));
+		finishSave(makeExerciseFactoryExistingSelectionKey(parsedSelection.value.uid));
 		return;
 	}
 
@@ -290,25 +291,21 @@ const savePayload = () => {
 
 	loadedLocalId.value = record.localId;
 	updateLoadedSnapshot(nextPayload);
-	lastSavedAt.value = record.updatedAt;
-	saveState.value = "saved";
-	emit("selection-updated", makeExerciseFactoryDraftSelectionKey(record.localId));
+	finishSave(makeExerciseFactoryDraftSelectionKey(record.localId));
 };
 
-const clearLocalState = () => {
-	if (parsedSelection.value.kind === "existing") {
-		clearExerciseFactoryOverride(parsedSelection.value.uid);
-		loadSelection(makeExerciseFactoryExistingSelectionKey(parsedSelection.value.uid));
-		emit("selection-updated", makeExerciseFactoryExistingSelectionKey(parsedSelection.value.uid));
+const saveAsNew = () => {
+	if (!canSave.value) {
 		return;
 	}
 
-	if (parsedSelection.value.kind === "draft" && loadedLocalId.value) {
-		removeExerciseFactoryDraft(loadedLocalId.value);
-		emit("selection-updated", exerciseFactoryNewSelectionKey);
-	}
-	};
+	const nextPayload = cloneExercisePayload(payloadPreview.value);
+	const record = saveExerciseFactoryDraft(nextPayload);
 
+	loadedLocalId.value = record.localId;
+	updateLoadedSnapshot(nextPayload);
+	finishSave(makeExerciseFactoryDraftSelectionKey(record.localId));
+};
 const copyPayload = async () => {
 	try {
 		await navigator.clipboard.writeText(payloadPreviewText.value);
@@ -330,34 +327,16 @@ watch(payloadPreviewText, () => {
 	if (copyState.value !== "idle") {
 		copyState.value = "idle";
 	}
-
-	if (saveState.value === "saved" && hasChanges.value) {
-		saveState.value = "idle";
-	}
 });
 </script>
 
 <template>
-	<div class="factoryGrid">
-		<form class="editorPanel" @submit.prevent="savePayload">
+	<form class="factoryGrid" @submit.prevent="savePayload">
+		<div class="editorPanel">
 			<section class="panelSection">
 				<div class="sectionHeading">
 					<h2>{{ editorTitle }}</h2>
 					<p>{{ editorDescription }}</p>
-				</div>
-
-				<div class="summaryGrid">
-					<article class="summaryCard">
-						<p class="cardEyebrow">Kilde</p>
-						<h3>{{ parsedSelection.kind === 'existing' ? 'Eksisterende oppgave' : parsedSelection.kind === 'draft' ? 'Lokal oppgave' : 'Ny oppgave' }}</h3>
-						<p>{{ loadedExerciseUid || loadedLocalId || 'Ingen uid ennå' }}</p>
-					</article>
-
-					<article class="summaryCard">
-						<p class="cardEyebrow">Status</p>
-						<h3>{{ saveState === 'saved' ? 'Lokalt lagret' : hasStoredOverride ? 'Lokal override aktiv' : 'Redigerer grunnlag' }}</h3>
-						<p>{{ formattedLastSavedAt || 'Ikke lagret i denne nettleseren ennå.' }}</p>
-					</article>
 				</div>
 
 				<div class="fieldGrid">
@@ -417,20 +396,32 @@ watch(payloadPreviewText, () => {
 
 						<div class="taskCardActions">
 							<button
+								v-if="!isTaskExpanded(task.id)"
 								type="button"
 								class="ghostButton"
-								:disabled="taskIndex === 0"
-								@click="moveTask(taskIndex, -1)"
+								@click="toggleTaskExpanded(task.id)"
 							>
-								Opp
+								Rediger igjen
 							</button>
 							<button
 								type="button"
 								class="ghostButton"
+								aria-label="Flytt oppgave opp"
+								title="Flytt oppgave opp"
+								:disabled="taskIndex === 0"
+								@click="moveTask(taskIndex, -1)"
+							>
+								&uarr;
+							</button>
+							<button
+								type="button"
+								class="ghostButton"
+								aria-label="Flytt oppgave ned"
+								title="Flytt oppgave ned"
 								:disabled="taskIndex === draft.tasks.length - 1"
 								@click="moveTask(taskIndex, 1)"
 							>
-								Ned
+								&darr;
 							</button>
 							<button
 								type="button"
@@ -443,84 +434,69 @@ watch(payloadPreviewText, () => {
 						</div>
 					</div>
 
-					<div class="fieldGrid">
-						<label class="field field--full">
-							<span>Introtekst</span>
-							<textarea v-model="task.introText" rows="2"></textarea>
-						</label>
+					<template v-if="isTaskExpanded(task.id)">
+						<div class="fieldGrid">
+							<label class="field field--full">
+								<span>Introtekst</span>
+								<textarea v-model="task.introText" rows="2"></textarea>
+							</label>
 
-						<label class="field">
-							<span>Riktig tilbakemelding</span>
-							<textarea v-model="task.feedbackCorrect" rows="2"></textarea>
-						</label>
+							<label class="field">
+								<span>Riktig tilbakemelding</span>
+								<textarea v-model="task.feedbackCorrect" rows="2"></textarea>
+							</label>
 
-						<label class="field">
-							<span>Feil tilbakemelding</span>
-							<textarea v-model="task.feedbackIncorrect" rows="2"></textarea>
-						</label>
-					</div>
+							<label class="field">
+								<span>Feil tilbakemelding</span>
+								<textarea v-model="task.feedbackIncorrect" rows="2"></textarea>
+							</label>
+						</div>
 
-					<template v-if="task.templateKind === 'multiple-choice'">
-						<MultipleChoiceEditor
-							:task="multipleChoiceTask(task)"
-							@add-option="addOption(taskIndex)"
-							@remove-option="removeOption(taskIndex, $event)"
-						/>
-					</template>
+						<template v-if="task.templateKind === 'multiple-choice'">
+							<MultipleChoiceEditor
+								:task="multipleChoiceTask(task)"
+								@add-option="addOption(taskIndex)"
+								@remove-option="removeOption(taskIndex, $event)"
+							/>
+						</template>
 
-					<template v-else-if="task.templateKind === 'x-or-y'">
-						<XOrYEditor :task="xOrYTask(task)" />
-					</template>
+						<template v-else-if="task.templateKind === 'x-or-y'">
+							<XOrYEditor :task="xOrYTask(task)" />
+						</template>
 
-					<template v-else-if="task.templateKind === 'sort-into-buckets'">
-						<SortIntoBucketsEditor :task="sortTask(task)" />
-					</template>
+						<template v-else-if="task.templateKind === 'sort-into-buckets'">
+							<SortIntoBucketsEditor :task="sortTask(task)" />
+						</template>
 
-					<template v-else-if="task.templateKind === 'password-strength'">
-						<PasswordStrengthEditor :task="passwordTask(task)" />
-					</template>
+						<template v-else-if="task.templateKind === 'password-strength'">
+							<PasswordStrengthEditor :task="passwordTask(task)" />
+						</template>
 
-					<template v-else>
-						<EmailHotspotsEditor :task="emailTask(task)" />
-					</template>
+							<template v-else>
+								<EmailHotspotsEditor :task="emailTask(task)" />
+							</template>
+
+							<div class="taskFooterActions">
+								<button
+									type="button"
+									class="primaryButton"
+									@click="toggleTaskExpanded(task.id)"
+								>
+									Done
+								</button>
+							</div>
+						</template>
 				</article>
 			</section>
 
-			<div class="actionRow">
+			<div class="actionRow actionRow--reset">
 				<button type="button" class="ghostButton" :disabled="!hasChanges" @click="resetDraft">
 					Tilbakestill endringer
 				</button>
-				<button
-					v-if="parsedSelection.kind !== 'new'"
-					type="button"
-					class="ghostButton"
-					:disabled="parsedSelection.kind === 'existing' ? !hasStoredOverride : !loadedLocalId"
-					@click="clearLocalState"
-				>
-					{{ parsedSelection.kind === 'existing' ? 'Fjern lokal override' : 'Slett lokal oppgave' }}
-				</button>
-				<button type="submit" class="primaryButton" :disabled="!canSave || !hasChanges">
-					Lagre oppgave lokalt
-				</button>
 			</div>
-		</form>
+		</div>
 
 		<aside class="previewPanel">
-			<section class="panelSection">
-				<div class="sectionHeading sectionHeading--inline">
-					<div>
-						<h2>Payload</h2>
-						<p>Dette er objektet du senere kan sende med POST til backend.</p>
-					</div>
-
-					<button type="button" class="ghostButton" @click="copyPayload">
-						{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier JSON' }}
-					</button>
-				</div>
-
-				<pre class="payloadPreview">{{ payloadPreviewText }}</pre>
-			</section>
-
 			<section class="panelSection">
 				<div class="sectionHeading">
 					<h2>Innhold</h2>
@@ -541,14 +517,48 @@ watch(payloadPreviewText, () => {
 					</article>
 				</div>
 			</section>
+
+			<div class="actionRow actionRow--save">
+				<button type="button" class="ghostButton" :disabled="!canSave" @click="saveAsNew">
+					Lagre som ny
+				</button>
+				<button
+					v-if="parsedSelection.kind !== 'new'"
+					type="submit"
+					class="primaryButton"
+					:disabled="!canSave || !hasChanges"
+				>
+					Lagre
+				</button>
+			</div>
+
+			<section class="panelSection debugSection">
+				<details>
+					<summary class="debugSummary">Debug: payload</summary>
+					<div class="debugContent">
+						<div class="sectionHeading sectionHeading--inline">
+							<div>
+								<h2>Payload</h2>
+								<p>Dette er objektet du senere kan sende med POST til backend.</p>
+							</div>
+
+							<button type="button" class="ghostButton" @click="copyPayload">
+								{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier JSON' }}
+							</button>
+						</div>
+
+						<pre class="payloadPreview">{{ payloadPreviewText }}</pre>
+					</div>
+				</details>
+			</section>
 		</aside>
-	</div>
+	</form>
 </template>
 
 <style scoped>
 .factoryGrid {
 	display: grid;
-	grid-template-columns: minmax(0, 1.3fr) minmax(22rem, 0.9fr);
+	grid-template-columns: 1fr;
 	gap: 1.25rem;
 	align-items: start;
 }
@@ -596,15 +606,9 @@ watch(payloadPreviewText, () => {
 	line-height: 1.5;
 }
 
-.summaryGrid,
 .statusStack {
 	display: grid;
 	gap: 0.75rem;
-}
-
-.summaryGrid {
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	margin-bottom: 1rem;
 }
 
 .fieldGrid {
@@ -665,6 +669,12 @@ watch(payloadPreviewText, () => {
 	gap: 0.75rem;
 }
 
+.taskFooterActions {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 1rem;
+}
+
 .summaryCard,
 .taskCard {
 	border: 1px solid var(--border);
@@ -717,6 +727,25 @@ watch(payloadPreviewText, () => {
 	line-height: 1.55;
 }
 
+.debugSection {
+	opacity: 0.9;
+}
+
+.debugSummary {
+	cursor: pointer;
+	font-weight: 700;
+	color: var(--muted);
+	list-style: none;
+}
+
+.debugSummary::-webkit-details-marker {
+	display: none;
+}
+
+.debugContent {
+	margin-top: 1rem;
+}
+
 .ghostButton,
 .primaryButton,
 .deleteButton {
@@ -757,6 +786,15 @@ watch(payloadPreviewText, () => {
 	transform: none;
 }
 
+.actionRow--reset {
+	justify-content: flex-start;
+}
+
+.actionRow--save {
+	margin-top: 1.5rem;
+	justify-content: space-between;
+}
+
 .emptyTaskState {
 	padding: 1rem;
 	border: 1px dashed var(--border);
@@ -765,23 +803,16 @@ watch(payloadPreviewText, () => {
 	line-height: 1.5;
 }
 
-@media (max-width: 1100px) {
-	.factoryGrid {
-		grid-template-columns: 1fr;
-	}
-}
-
 @media (max-width: 800px) {
-	.summaryGrid,
 	.fieldGrid {
 		grid-template-columns: 1fr;
 	}
 
 	.sectionHeading--inline,
-	.taskCardHeader,
-	.taskCardActions,
-	.actionRow,
-	.summaryCard {
+		.taskCardHeader,
+		.taskCardActions,
+		.actionRow,
+		.summaryCard {
 		flex-direction: column;
 		align-items: flex-start;
 	}

@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import {
-	clearWorldFactoryOverride,
 	createWorldDraft,
 	makeWorldFactoryDraftSelectionKey,
 	makeWorldFactoryExistingSelectionKey,
 	normalizeWorldStationUids,
 	parseWorldFactorySelectionKey,
 	readWorldFactoryStore,
-	removeWorldFactoryDraft,
 	saveWorldFactoryDraft,
 	saveWorldFactoryOverride,
 	worldFactoryDefaultImage,
@@ -23,26 +21,23 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	(event: "selection-updated", selectionKey: string): void;
+	(event: "saved"): void;
 }>();
 
 const draft = reactive<WorldFactoryPayload>(createWorldDraft());
 const loadedSnapshot = ref<WorldFactoryPayload>(createWorldDraft());
 const storedDrafts = ref<WorldFactoryStoredRecord[]>([]);
-const stationUidInput = ref("");
 const copyState = ref<"idle" | "copied" | "failed">("idle");
-const saveState = ref<"idle" | "saved">("idle");
-const loadedWorldUid = ref("");
 const loadedLocalId = ref("");
-const hasStoredOverride = ref(false);
-const lastSavedAt = ref("");
 
 const availableStations = computed(() => Station.backendFetchAllStations());
 const knownStationMap = computed(() => new Map(availableStations.value.map((station) => [station.uid, station])));
 const parsedSelection = computed(() => parseWorldFactorySelectionKey(props.selectionKey));
 
 const payloadPreview = computed<WorldFactoryPayload>(() => ({
+	title: draft.title.trim(),
 	uid: draft.uid.trim(),
-	description: draft.description.trim(),
+	description: "",
 	image: draft.image.trim() || worldFactoryDefaultImage,
 	stationUids: normalizeWorldStationUids(draft.stationUids),
 }));
@@ -69,19 +64,8 @@ const uidConflict = computed(() => {
 });
 
 const payloadPreviewText = computed(() => JSON.stringify(payloadPreview.value, null, 2));
-const canSave = computed(() => payloadPreview.value.uid.length > 0 && !uidConflict.value);
+const canSave = computed(() => payloadPreview.value.title.length > 0);
 const hasChanges = computed(() => JSON.stringify(payloadPreview.value) !== JSON.stringify(loadedSnapshot.value));
-
-const formattedLastSavedAt = computed(() => {
-	if (!lastSavedAt.value) {
-		return "";
-	}
-
-	return new Intl.DateTimeFormat("nb-NO", {
-		dateStyle: "medium",
-		timeStyle: "short",
-	}).format(new Date(lastSavedAt.value));
-});
 
 const selectedStations = computed(() => payloadPreview.value.stationUids.map((uid, index) => {
 	const station = knownStationMap.value.get(uid);
@@ -90,18 +74,18 @@ const selectedStations = computed(() => payloadPreview.value.stationUids.map((ui
 		uid,
 		order: index + 1,
 		title: station?.title ?? "Ukjent stasjon",
-		description: station?.description ?? "Denne uid-en finnes ikke i dagens mock-data, men kan fortsatt være gyldig i backend senere.",
+		description: station?.description ?? "Denne stasjonen finnes ikke i oversikten akkurat na.",
 		isKnown: Boolean(station),
 	};
 }));
 
 const editorTitle = computed(() => {
 	if (parsedSelection.value.kind === "existing") {
-		return `Rediger verden: ${loadedWorldUid.value}`;
+		return `Rediger verden: ${payloadPreview.value.title || payloadPreview.value.uid || "Uten tittel"}`;
 	}
 
 	if (parsedSelection.value.kind === "draft") {
-		return payloadPreview.value.uid ? `Lokal verden: ${payloadPreview.value.uid}` : "Ny lokal verden";
+		return payloadPreview.value.title ? `Lokal verden: ${payloadPreview.value.title}` : "Ny lokal verden";
 	}
 
 	return "Ny verden";
@@ -116,21 +100,22 @@ const editorDescription = computed(() => {
 		return "Dette er en lokal verden uten backend-kobling. Den kan senere velges når klasserom-oppretting får valg av verden.";
 	}
 
-	return "Opprett en ny verden lokalt. Den kan lagres uten stasjoner, så lenge den har en unik uid.";
+	return "Opprett en ny verden lokalt. Den kan lagres uten stasjoner, så lenge den har en unik id.";
 });
 
 const applyDraft = (payload: WorldFactoryPayload) => {
+	draft.title = payload.title;
 	draft.uid = payload.uid;
-	draft.description = payload.description;
+	draft.description = "";
 	draft.image = payload.image;
 	draft.stationUids.splice(0, draft.stationUids.length, ...payload.stationUids);
-	stationUidInput.value = "";
 };
 
 const updateLoadedSnapshot = (payload: WorldFactoryPayload) => {
 	loadedSnapshot.value = {
+		title: payload.title,
 		uid: payload.uid,
-		description: payload.description,
+		description: "",
 		image: payload.image,
 		stationUids: [...payload.stationUids],
 	};
@@ -141,25 +126,20 @@ const loadSelection = (selectionKey: string) => {
 	const store = readWorldFactoryStore();
 
 	storedDrafts.value = store.drafts;
-	loadedWorldUid.value = "";
 	loadedLocalId.value = "";
-	hasStoredOverride.value = false;
-	lastSavedAt.value = "";
 
 	if (selection.kind === "existing") {
 		const backendWorld = World.backendFetchWorldByUid(selection.uid);
 		const override = store.overrides[selection.uid] ?? null;
 		const nextPayload = override?.payload
 			?? createWorldDraft({
+				title: backendWorld?.uid ?? selection.uid,
 				uid: backendWorld?.uid ?? selection.uid,
 				description: backendWorld?.description ?? "",
 				image: backendWorld?.image ?? worldFactoryDefaultImage,
 				stationUids: backendWorld?.stationUids ?? [],
 			});
 
-		loadedWorldUid.value = selection.uid;
-		hasStoredOverride.value = Boolean(override);
-		lastSavedAt.value = override?.updatedAt ?? "";
 		applyDraft(nextPayload);
 		updateLoadedSnapshot(nextPayload);
 	} else if (selection.kind === "draft") {
@@ -167,7 +147,6 @@ const loadSelection = (selectionKey: string) => {
 		const nextPayload = storedDraft?.payload ?? createWorldDraft();
 
 		loadedLocalId.value = storedDraft?.localId ?? "";
-		lastSavedAt.value = storedDraft?.updatedAt ?? "";
 		applyDraft(nextPayload);
 		updateLoadedSnapshot(nextPayload);
 	} else {
@@ -178,10 +157,9 @@ const loadSelection = (selectionKey: string) => {
 	}
 
 	copyState.value = "idle";
-	saveState.value = "idle";
 };
 
-const addStationUid = (uidValue = stationUidInput.value) => {
+const addStationUid = (uidValue: string) => {
 	const nextUid = uidValue.trim();
 
 	if (!nextUid || draft.stationUids.includes(nextUid)) {
@@ -189,7 +167,6 @@ const addStationUid = (uidValue = stationUidInput.value) => {
 	}
 
 	draft.stationUids.push(nextUid);
-	stationUidInput.value = "";
 };
 
 const removeStationUid = (uidToRemove: string) => {
@@ -218,7 +195,11 @@ const moveStation = (index: number, direction: -1 | 1) => {
 const resetDraft = () => {
 	applyDraft(loadedSnapshot.value);
 	copyState.value = "idle";
-	saveState.value = "idle";
+};
+
+const finishSave = (selectionKey: string) => {
+	emit("selection-updated", selectionKey);
+	emit("saved");
 };
 
 const savePayload = () => {
@@ -227,14 +208,11 @@ const savePayload = () => {
 	}
 
 	if (parsedSelection.value.kind === "existing") {
-		const record = saveWorldFactoryOverride(parsedSelection.value.uid, payloadPreview.value);
+		saveWorldFactoryOverride(parsedSelection.value.uid, payloadPreview.value);
 
 		storedDrafts.value = readWorldFactoryStore().drafts;
 		updateLoadedSnapshot(payloadPreview.value);
-		hasStoredOverride.value = true;
-		lastSavedAt.value = record.updatedAt;
-		saveState.value = "saved";
-		emit("selection-updated", makeWorldFactoryExistingSelectionKey(parsedSelection.value.uid));
+		finishSave(makeWorldFactoryExistingSelectionKey(parsedSelection.value.uid));
 		return;
 	}
 
@@ -243,24 +221,20 @@ const savePayload = () => {
 	storedDrafts.value = readWorldFactoryStore().drafts;
 	loadedLocalId.value = record.localId;
 	updateLoadedSnapshot(payloadPreview.value);
-	lastSavedAt.value = record.updatedAt;
-	saveState.value = "saved";
-	emit("selection-updated", makeWorldFactoryDraftSelectionKey(record.localId));
+	finishSave(makeWorldFactoryDraftSelectionKey(record.localId));
 };
 
-const clearLocalState = () => {
-	if (parsedSelection.value.kind === "existing") {
-		clearWorldFactoryOverride(parsedSelection.value.uid);
-		loadSelection(makeWorldFactoryExistingSelectionKey(parsedSelection.value.uid));
-		emit("selection-updated", makeWorldFactoryExistingSelectionKey(parsedSelection.value.uid));
+const saveAsNew = () => {
+	if (!canSave.value) {
 		return;
 	}
 
-	if (parsedSelection.value.kind === "draft" && loadedLocalId.value) {
-		removeWorldFactoryDraft(loadedLocalId.value);
-		storedDrafts.value = readWorldFactoryStore().drafts;
-		emit("selection-updated", "__new_world__");
-	}
+	const record = saveWorldFactoryDraft(payloadPreview.value);
+
+	storedDrafts.value = readWorldFactoryStore().drafts;
+	loadedLocalId.value = record.localId;
+	updateLoadedSnapshot(payloadPreview.value);
+	finishSave(makeWorldFactoryDraftSelectionKey(record.localId));
 };
 
 const copyPayload = async () => {
@@ -284,172 +258,106 @@ watch(payloadPreviewText, () => {
 	if (copyState.value !== "idle") {
 		copyState.value = "idle";
 	}
-
-	if (saveState.value === "saved" && hasChanges.value) {
-		saveState.value = "idle";
-	}
 });
 </script>
 
 <template>
-	<div class="factoryGrid">
-		<form class="editorPanel" @submit.prevent="savePayload">
+	<form class="factoryGrid" @submit.prevent="savePayload">
+		<div class="editorPanel">
 			<section class="panelSection">
 				<div class="sectionHeading">
 					<h2>{{ editorTitle }}</h2>
 					<p>{{ editorDescription }}</p>
 				</div>
 
-				<div class="summaryGrid">
-					<article class="summaryCard">
-						<p class="cardEyebrow">Kilde</p>
-						<h3>{{ parsedSelection.kind === 'existing' ? 'Eksisterende verden' : parsedSelection.kind === 'draft' ? 'Lokal verden' : 'Ny verden' }}</h3>
-						<p>{{ loadedWorldUid || loadedLocalId || 'Ingen uid ennå' }}</p>
-					</article>
-
-					<article class="summaryCard">
-						<p class="cardEyebrow">Status</p>
-						<h3>{{ saveState === 'saved' ? 'Lokalt lagret' : hasStoredOverride ? 'Lokal override aktiv' : 'Redigerer grunnlag' }}</h3>
-						<p>{{ formattedLastSavedAt || 'Ikke lagret i denne nettleseren ennå.' }}</p>
-					</article>
-				</div>
-
 				<div class="fieldGrid">
 					<label class="field">
-						<span>Uid</span>
-						<input v-model="draft.uid" type="text" placeholder="For eksempel: schoolyard" :disabled="parsedSelection.kind === 'existing'" >
+						<span>Tittel</span>
+						<input v-model="draft.title" type="text" placeholder="For eksempel: Skolegarden" >
 					</label>
 
-					<label class="field">
-						<span>Bilde-URL</span>
-						<input v-model="draft.image" type="url" placeholder="https://..." >
-					</label>
-
-					<label class="field field--full">
-						<span>Beskrivelse</span>
-						<textarea v-model="draft.description" rows="3" placeholder="Kort beskrivelse av verdenen. Kan stå tom hvis du bare vil opprette uid-en først." />
-					</label>
-				</div>
-
-				<p v-if="uidConflict" class="warningText">
-					Denne uid-en er allerede i bruk av en annen verden. Velg en unik uid før du lagrer.
-				</p>
-
-				<div class="imagePreviewCard">
-					<img :src="payloadPreview.image" alt="Forhåndsvisning av verdensbilde" class="imagePreview" >
 				</div>
 			</section>
 
 			<section class="panelSection">
 				<div class="sectionHeading">
-					<h2>Station uid-er</h2>
+					<h2>Stasjoner</h2>
 					<p>Verdener kan lagres uten stasjoner, eller fylles opp og sorteres allerede nå.</p>
 				</div>
 
-				<div class="uidInputRow">
-					<label class="field field--grow">
-						<span>Legg til uid manuelt</span>
-						<input
-							v-model="stationUidInput"
-							type="text"
-							placeholder="For eksempel: newsstand"
-							@keydown.enter.prevent="addStationUid()"
-						>
-					</label>
-
-					<button type="button" class="ghostButton" @click="addStationUid()">
-						+ Legg til uid
-					</button>
-				</div>
-
-				<div class="knownItems">
-					<article v-for="station in availableStations" :key="station.uid" class="knownCard">
-						<div>
-							<p class="cardEyebrow">Stasjon</p>
-							<h3>{{ station.title }}</h3>
-							<p>{{ station.uid }}</p>
+				<div class="stationColumns">
+					<div class="stationColumn">
+						<div class="sectionHeading sectionHeading--compact">
+							<h3>Stasjoner i verdenen</h3>
 						</div>
 
-						<button
-							type="button"
-							class="ghostButton"
-							:disabled="draft.stationUids.includes(station.uid)"
-							@click="addStationUid(station.uid)"
-						>
-							{{ draft.stationUids.includes(station.uid) ? 'Lagt til' : 'Bruk uid' }}
-						</button>
-					</article>
-				</div>
+						<div v-if="selectedStations.length > 0" class="selectedList">
+							<article v-for="(station, index) in selectedStations" :key="station.uid" class="selectedCard">
+								<div>
+									<p class="cardEyebrow">Plass {{ station.order }}</p>
+									<h3>{{ station.title }}</h3>
+									<span :class="['statusPill', { 'statusPill--manual': !station.isKnown }]">
+										{{ station.isKnown ? 'Fra listen' : 'Ikke tilgjengelig' }}
+									</span>
+								</div>
 
-				<div v-if="selectedStations.length > 0" class="selectedList">
-					<article v-for="(station, index) in selectedStations" :key="station.uid" class="selectedCard">
-						<div>
-							<p class="cardEyebrow">Plass {{ station.order }}</p>
-							<h3>{{ station.title }}</h3>
-							<p>{{ station.uid }}</p>
-							<span :class="['statusPill', { 'statusPill--manual': !station.isKnown }]">
-								{{ station.isKnown ? 'Kjent stasjon' : 'Manuell uid' }}
-							</span>
+								<div class="selectedActions">
+									<button type="button" class="ghostButton" :disabled="index === 0" @click="moveStation(index, -1)">
+										&uarr;
+									</button>
+									<button type="button" class="ghostButton" :disabled="index === selectedStations.length - 1" @click="moveStation(index, 1)">
+										&darr;
+									</button>
+									<button type="button" class="deleteButton" @click="removeStationUid(station.uid)">
+										Fjern
+									</button>
+								</div>
+							</article>
 						</div>
 
-						<div class="selectedActions">
-							<button type="button" class="ghostButton" :disabled="index === 0" @click="moveStation(index, -1)">
-								Opp
-							</button>
-							<button type="button" class="ghostButton" :disabled="index === selectedStations.length - 1" @click="moveStation(index, 1)">
-								Ned
-							</button>
-							<button type="button" class="deleteButton" @click="removeStationUid(station.uid)">
-								Fjern
-							</button>
-						</div>
-					</article>
-				</div>
+						<p v-else class="emptyState">
+							Ingen stasjoner er lagt til i verdenen ennå. Denne verdenen kan fortsatt lagres.
+						</p>
+					</div>
 
-				<p v-else class="emptyState">
-					Ingen station uid-er lagt til ennå. Denne verdenen kan fortsatt lagres.
-				</p>
+					<div class="stationColumn">
+						<div class="sectionHeading sectionHeading--compact">
+							<h3>Tilgjengelige stasjoner</h3>
+						</div>
+
+						<div class="knownItems knownItems--columns">
+							<article v-for="station in availableStations" :key="station.uid" class="knownCard">
+								<div>
+									<p class="cardEyebrow">Stasjon</p>
+									<h3>{{ station.title }}</h3>
+								</div>
+
+								<button
+									type="button"
+									class="ghostButton"
+									:disabled="draft.stationUids.includes(station.uid)"
+									@click="addStationUid(station.uid)"
+								>
+									{{ draft.stationUids.includes(station.uid) ? 'Lagt til' : '+ Bruk' }}
+								</button>
+							</article>
+						</div>
+					</div>
+				</div>
 			</section>
 
-			<div class="actionRow">
+			<div class="actionRow actionRow--reset">
 				<button type="button" class="ghostButton" :disabled="!hasChanges" @click="resetDraft">
 					Tilbakestill endringer
 				</button>
-				<button
-					v-if="parsedSelection.kind !== 'new'"
-					type="button"
-					class="ghostButton"
-					:disabled="parsedSelection.kind === 'existing' ? !hasStoredOverride : !loadedLocalId"
-					@click="clearLocalState"
-				>
-					{{ parsedSelection.kind === 'existing' ? 'Fjern lokal override' : 'Slett lokal verden' }}
-				</button>
-				<button type="submit" class="primaryButton" :disabled="!canSave || !hasChanges">
-					Lagre verden lokalt
-				</button>
 			</div>
-		</form>
+		</div>
 
 		<aside class="previewPanel">
 			<section class="panelSection">
-				<div class="sectionHeading sectionHeading--inline">
-					<div>
-						<h2>Payload</h2>
-						<p>Dette er objektet du senere kan sende med POST til backend.</p>
-					</div>
-
-					<button type="button" class="ghostButton" @click="copyPayload">
-						{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier JSON' }}
-					</button>
-				</div>
-
-				<pre class="payloadPreview">{{ payloadPreviewText }}</pre>
-			</section>
-
-			<section class="panelSection">
 				<div class="sectionHeading">
 					<h2>Innhold</h2>
-					<p>Her ser du hva som blir med i verdenen du redigerer akkurat nå.</p>
+					<p>Her ser du det viktigste i verdenen akkurat nå.</p>
 				</div>
 
 				<div class="statusStack">
@@ -460,20 +368,54 @@ watch(payloadPreviewText, () => {
 					</article>
 
 					<article class="summaryCard">
-						<p class="cardEyebrow">Uid</p>
-						<h3>{{ payloadPreview.uid || 'Ingen uid ennå' }}</h3>
-						<p>Verdens-uid-en er det som senere skal kunne velges når klasserom lages.</p>
+						<p class="cardEyebrow">Tittel</p>
+						<h3>{{ payloadPreview.title || 'Ingen tittel ennå' }}</h3>
+						<p>Backend skal senere lage uid for verdenen automatisk.</p>
 					</article>
 				</div>
 			</section>
+
+			<div class="actionRow actionRow--save">
+				<button type="button" class="ghostButton" :disabled="!canSave" @click="saveAsNew">
+					Lagre som ny
+				</button>
+				<button
+					v-if="parsedSelection.kind !== 'new'"
+					type="submit"
+					class="primaryButton"
+					:disabled="!canSave || !hasChanges"
+				>
+					Lagre
+				</button>
+			</div>
+
+			<section class="panelSection debugSection">
+				<details>
+					<summary class="debugSummary">Debug: payload</summary>
+					<div class="debugContent">
+						<div class="sectionHeading sectionHeading--inline">
+							<div>
+								<h2>Payload</h2>
+								<p>Dette er objektet du senere kan sende med POST til backend.</p>
+							</div>
+
+							<button type="button" class="ghostButton" @click="copyPayload">
+								{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier JSON' }}
+							</button>
+						</div>
+
+						<pre class="payloadPreview">{{ payloadPreviewText }}</pre>
+					</div>
+				</details>
+			</section>
 		</aside>
-	</div>
+	</form>
 </template>
 
 <style scoped>
 .factoryGrid {
 	display: grid;
-	grid-template-columns: minmax(0, 1.2fr) minmax(22rem, 0.8fr);
+	grid-template-columns: 1fr;
 	gap: 1.25rem;
 	align-items: start;
 }
@@ -499,6 +441,10 @@ watch(payloadPreviewText, () => {
 	margin-bottom: 1rem;
 }
 
+.sectionHeading--compact {
+	margin-bottom: 0.75rem;
+}
+
 .sectionHeading--inline {
 	grid-template-columns: 1fr auto;
 	align-items: start;
@@ -522,7 +468,6 @@ watch(payloadPreviewText, () => {
 	line-height: 1.5;
 }
 
-.summaryGrid,
 .statusStack,
 .knownItems,
 .selectedList {
@@ -530,9 +475,16 @@ watch(payloadPreviewText, () => {
 	gap: 0.75rem;
 }
 
-.summaryGrid {
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	margin-bottom: 1rem;
+.stationColumns {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 1rem;
+	align-items: start;
+}
+
+.stationColumn {
+	display: grid;
+	gap: 0.75rem;
 }
 
 .fieldGrid {
@@ -603,22 +555,6 @@ watch(payloadPreviewText, () => {
 	font-weight: 600;
 }
 
-.imagePreviewCard {
-	margin-top: 1rem;
-	border: 1px solid var(--border);
-	border-radius: 1rem;
-	overflow: hidden;
-	background: rgba(255, 255, 255, 0.02);
-}
-
-.imagePreview {
-	display: block;
-	width: 100%;
-	aspect-ratio: 16 / 8;
-	object-fit: cover;
-}
-
-.uidInputRow,
 .selectedActions,
 .actionRow {
 	display: flex;
@@ -630,6 +566,11 @@ watch(payloadPreviewText, () => {
 .knownItems,
 .selectedList {
 	margin-top: 1rem;
+}
+
+.knownItems--columns,
+.selectedList {
+	margin-top: 0;
 }
 
 .statusPill {
@@ -693,6 +634,15 @@ watch(payloadPreviewText, () => {
 	margin-top: 1.5rem;
 }
 
+.actionRow--reset {
+	justify-content: flex-start;
+}
+
+.actionRow--save {
+	margin-top: 1.5rem;
+	justify-content: space-between;
+}
+
 .payloadPreview {
 	overflow-x: auto;
 	padding: 1rem;
@@ -703,15 +653,31 @@ watch(payloadPreviewText, () => {
 	line-height: 1.5;
 }
 
-@media (max-width: 1100px) {
-	.factoryGrid {
-		grid-template-columns: 1fr;
-	}
+.debugSection {
+	opacity: 0.9;
+}
+
+.debugSummary {
+	cursor: pointer;
+	font-weight: 700;
+	color: var(--muted);
+	list-style: none;
+}
+
+.debugSummary::-webkit-details-marker {
+	display: none;
+}
+
+.debugContent {
+	margin-top: 1rem;
 }
 
 @media (max-width: 800px) {
-	.summaryGrid,
 	.fieldGrid {
+		grid-template-columns: 1fr;
+	}
+
+	.stationColumns {
 		grid-template-columns: 1fr;
 	}
 

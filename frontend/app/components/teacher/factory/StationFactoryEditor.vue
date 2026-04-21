@@ -1,18 +1,14 @@
 <script setup lang="ts">
 import {
-	clearStationFactoryOverride,
 	createStationDraft,
-	getStationFactorySelectionOptions,
 	makeStationFactoryDraftSelectionKey,
 	makeStationFactoryExistingSelectionKey,
 	normalizeStationExerciseUids,
 	parseStationFactorySelectionKey,
 	readStationFactoryStore,
-	removeStationFactoryDraft,
 	saveStationFactoryDraft,
 	saveStationFactoryOverride,
 	stationFactoryDefaultImage,
-	stationFactoryNewSelectionKey,
 	type StationFactoryPayload,
 } from "~/composables/useStationFactory";
 import { Exercise } from "~/composables/types/ExerciseType";
@@ -24,17 +20,13 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	(event: "selection-updated", selectionKey: string): void;
+	(event: "saved"): void;
 }>();
 
 const draft = reactive<StationFactoryPayload>(createStationDraft());
 const loadedSnapshot = ref<StationFactoryPayload>(createStationDraft());
-const exerciseUidInput = ref("");
 const copyState = ref<"idle" | "copied" | "failed">("idle");
-const saveState = ref<"idle" | "saved">("idle");
-const loadedStationUid = ref("");
 const loadedLocalId = ref("");
-const hasStoredOverride = ref(false);
-const lastSavedAt = ref("");
 
 const availableExercises = computed(() => Exercise.backendFetchAllExercises());
 const knownExerciseMap = computed(() => new Map(availableExercises.value.map((exercise) => [exercise.uid, exercise])));
@@ -57,17 +49,6 @@ const canSave = computed(() => {
 
 const hasChanges = computed(() => JSON.stringify(payloadPreview.value) !== JSON.stringify(loadedSnapshot.value));
 
-const formattedLastSavedAt = computed(() => {
-	if (!lastSavedAt.value) {
-		return "";
-	}
-
-	return new Intl.DateTimeFormat("nb-NO", {
-		dateStyle: "medium",
-		timeStyle: "short",
-	}).format(new Date(lastSavedAt.value));
-});
-
 const selectedExercises = computed(() => payloadPreview.value.exerciseUids.map((uid, index) => {
 	const exercise = knownExerciseMap.value.get(uid);
 
@@ -75,15 +56,15 @@ const selectedExercises = computed(() => payloadPreview.value.exerciseUids.map((
 		uid,
 		order: index + 1,
 		title: exercise?.title ?? "Ukjent øvelse",
-		entryName: exercise?.entryName ?? "Manuell uid",
-		description: exercise?.description ?? "Denne uid-en finnes ikke i dagens mock-data, men kan fortsatt være gyldig i backend senere.",
+		entryName: exercise?.entryName ?? "Ikke tilgjengelig",
+		description: exercise?.description ?? "Denne oppgaven finnes ikke i oversikten akkurat na.",
 		isKnown: Boolean(exercise),
 	};
 }));
 
 const editorTitle = computed(() => {
 	if (parsedSelection.value.kind === "existing") {
-		return `Rediger stasjon: ${payloadPreview.value.title || loadedStationUid.value}`;
+		return `Rediger stasjon: ${payloadPreview.value.title || "Uten tittel"}`;
 	}
 
 	if (parsedSelection.value.kind === "draft") {
@@ -99,7 +80,7 @@ const editorDescription = computed(() => {
 	}
 
 	if (parsedSelection.value.kind === "draft") {
-		return "Dette er en lokal stasjon uten backend-uid ennå. Du kan fortsette å redigere den fra nedtrekkslisten.";
+		return "Dette er en lokal stasjon som du kan fortsette å redigere senere fra listen.";
 	}
 
 	return "Opprett en ny stasjon lokalt. Etter første lagring dukker den opp i listen og kan redigeres videre.";
@@ -110,7 +91,6 @@ const applyDraft = (payload: StationFactoryPayload) => {
 	draft.description = payload.description;
 	draft.image = payload.image;
 	draft.exerciseUids.splice(0, draft.exerciseUids.length, ...payload.exerciseUids);
-	exerciseUidInput.value = "";
 };
 
 const updateLoadedSnapshot = (payload: StationFactoryPayload) => {
@@ -126,10 +106,7 @@ const loadSelection = (selectionKey: string) => {
 	const selection = parseStationFactorySelectionKey(selectionKey);
 	const store = readStationFactoryStore();
 
-	loadedStationUid.value = "";
 	loadedLocalId.value = "";
-	hasStoredOverride.value = false;
-	lastSavedAt.value = "";
 
 	if (selection.kind === "existing") {
 		const backendStation = Station.backendFetchStationByUid(selection.uid);
@@ -142,9 +119,6 @@ const loadSelection = (selectionKey: string) => {
 				exerciseUids: backendStation?.exerciseUids ?? [],
 			});
 
-		loadedStationUid.value = selection.uid;
-		hasStoredOverride.value = Boolean(override);
-		lastSavedAt.value = override?.updatedAt ?? "";
 		applyDraft(nextPayload);
 		updateLoadedSnapshot(nextPayload);
 	} else if (selection.kind === "draft") {
@@ -152,7 +126,6 @@ const loadSelection = (selectionKey: string) => {
 		const nextPayload = storedDraft?.payload ?? createStationDraft();
 
 		loadedLocalId.value = storedDraft?.localId ?? "";
-		lastSavedAt.value = storedDraft?.updatedAt ?? "";
 		applyDraft(nextPayload);
 		updateLoadedSnapshot(nextPayload);
 	} else {
@@ -163,10 +136,9 @@ const loadSelection = (selectionKey: string) => {
 	}
 
 	copyState.value = "idle";
-	saveState.value = "idle";
 };
 
-const addExerciseUid = (uidValue = exerciseUidInput.value) => {
+const addExerciseUid = (uidValue: string) => {
 	const nextUid = uidValue.trim();
 
 	if (!nextUid || draft.exerciseUids.includes(nextUid)) {
@@ -174,7 +146,6 @@ const addExerciseUid = (uidValue = exerciseUidInput.value) => {
 	}
 
 	draft.exerciseUids.push(nextUid);
-	exerciseUidInput.value = "";
 };
 
 const removeExerciseUid = (uidToRemove: string) => {
@@ -203,7 +174,11 @@ const moveExercise = (index: number, direction: -1 | 1) => {
 const resetDraft = () => {
 	applyDraft(loadedSnapshot.value);
 	copyState.value = "idle";
-	saveState.value = "idle";
+};
+
+const finishSave = (selectionKey: string) => {
+	emit("selection-updated", selectionKey);
+	emit("saved");
 };
 
 const savePayload = () => {
@@ -212,13 +187,10 @@ const savePayload = () => {
 	}
 
 	if (parsedSelection.value.kind === "existing") {
-		const record = saveStationFactoryOverride(parsedSelection.value.uid, payloadPreview.value);
+		saveStationFactoryOverride(parsedSelection.value.uid, payloadPreview.value);
 
 		updateLoadedSnapshot(payloadPreview.value);
-		hasStoredOverride.value = true;
-		lastSavedAt.value = record.updatedAt;
-		saveState.value = "saved";
-		emit("selection-updated", makeStationFactoryExistingSelectionKey(parsedSelection.value.uid));
+		finishSave(makeStationFactoryExistingSelectionKey(parsedSelection.value.uid));
 		return;
 	}
 
@@ -226,24 +198,20 @@ const savePayload = () => {
 
 	loadedLocalId.value = record.localId;
 	updateLoadedSnapshot(payloadPreview.value);
-	lastSavedAt.value = record.updatedAt;
-	saveState.value = "saved";
-	emit("selection-updated", makeStationFactoryDraftSelectionKey(record.localId));
+	finishSave(makeStationFactoryDraftSelectionKey(record.localId));
 };
 
-const clearLocalState = () => {
-	if (parsedSelection.value.kind === "existing") {
-		clearStationFactoryOverride(parsedSelection.value.uid);
-		loadSelection(makeStationFactoryExistingSelectionKey(parsedSelection.value.uid));
-		emit("selection-updated", makeStationFactoryExistingSelectionKey(parsedSelection.value.uid));
+const saveAsNew = () => {
+	if (!canSave.value) {
 		return;
 	}
 
-	if (parsedSelection.value.kind === "draft" && loadedLocalId.value) {
-		removeStationFactoryDraft(loadedLocalId.value);
-		emit("selection-updated", stationFactoryNewSelectionKey);
-	}
-	};
+	const record = saveStationFactoryDraft(payloadPreview.value);
+
+	loadedLocalId.value = record.localId;
+	updateLoadedSnapshot(payloadPreview.value);
+	finishSave(makeStationFactoryDraftSelectionKey(record.localId));
+};
 
 const copyPayload = async () => {
 	try {
@@ -266,34 +234,16 @@ watch(payloadPreviewText, () => {
 	if (copyState.value !== "idle") {
 		copyState.value = "idle";
 	}
-
-	if (saveState.value === "saved" && hasChanges.value) {
-		saveState.value = "idle";
-	}
 });
 </script>
 
 <template>
-	<div class="factoryGrid">
-		<form class="editorPanel" @submit.prevent="savePayload">
+	<form class="factoryGrid" @submit.prevent="savePayload">
+		<div class="editorPanel">
 			<section class="panelSection">
 				<div class="sectionHeading">
 					<h2>{{ editorTitle }}</h2>
 					<p>{{ editorDescription }}</p>
-				</div>
-
-				<div class="summaryGrid">
-					<article class="summaryCard">
-						<p class="cardEyebrow">Kilde</p>
-						<h3>{{ parsedSelection.kind === 'existing' ? 'Eksisterende stasjon' : parsedSelection.kind === 'draft' ? 'Lokal stasjon' : 'Ny stasjon' }}</h3>
-						<p>{{ loadedStationUid || loadedLocalId || 'Ingen uid ennå' }}</p>
-					</article>
-
-					<article class="summaryCard">
-						<p class="cardEyebrow">Status</p>
-						<h3>{{ saveState === 'saved' ? 'Lokalt lagret' : hasStoredOverride ? 'Lokal override aktiv' : 'Redigerer grunnlag' }}</h3>
-						<p>{{ formattedLastSavedAt || 'Ikke lagret i denne nettleseren ennå.' }}</p>
-					</article>
 				</div>
 
 				<div class="fieldGrid">
@@ -320,138 +270,141 @@ watch(payloadPreviewText, () => {
 
 			<section class="panelSection">
 				<div class="sectionHeading">
-					<h2>Exercise uid-er</h2>
-					<p>Rekkefølgen her styrer hvilken oppgave som låses opp først.</p>
+					<h2>Oppgavesett</h2>
+					<p>Rekkefolgen her styrer hvilken oppgave som kommer forst.</p>
 				</div>
 
-				<div class="uidInputRow">
-					<label class="field field--grow">
-						<span>Legg til uid manuelt</span>
-						<input
-							v-model="exerciseUidInput"
-							type="text"
-							placeholder="For eksempel: newsstand-exercise-1"
-							@keydown.enter.prevent="addExerciseUid()"
-						>
-					</label>
-
-					<button type="button" class="ghostButton" @click="addExerciseUid()">
-						+ Legg til uid
-					</button>
-				</div>
-
-				<div class="knownExercises">
-					<article v-for="exercise in availableExercises" :key="exercise.uid" class="knownExerciseCard">
-						<div>
-							<p class="cardEyebrow">{{ exercise.entryName }}</p>
-							<h3>{{ exercise.title }}</h3>
-							<p>{{ exercise.uid }}</p>
+				<div class="exerciseColumns">
+					<div class="exerciseColumn">
+						<div class="sectionHeading sectionHeading--compact">
+							<h3>Oppgavesett i stasjonen</h3>
 						</div>
 
-						<button
-							type="button"
-							class="ghostButton"
-							:disabled="draft.exerciseUids.includes(exercise.uid)"
-							@click="addExerciseUid(exercise.uid)"
-						>
-							{{ draft.exerciseUids.includes(exercise.uid) ? 'Lagt til' : 'Bruk uid' }}
-						</button>
-					</article>
-				</div>
+						<div v-if="selectedExercises.length > 0" class="selectedList">
+							<article v-for="(exercise, index) in selectedExercises" :key="exercise.uid" class="selectedCard">
+								<div>
+									<p class="cardEyebrow">Plass {{ exercise.order }}</p>
+									<h3>{{ exercise.title }}</h3>
+									<span :class="['statusPill', { 'statusPill--manual': !exercise.isKnown }]">
+										{{ exercise.isKnown ? exercise.entryName : 'Ikke tilgjengelig' }}
+									</span>
+								</div>
 
-				<div v-if="selectedExercises.length > 0" class="selectedList">
-					<article v-for="(exercise, index) in selectedExercises" :key="exercise.uid" class="selectedCard">
-						<div>
-							<p class="cardEyebrow">Plass {{ exercise.order }}</p>
-							<h3>{{ exercise.title }}</h3>
-							<p>{{ exercise.uid }}</p>
-							<span :class="['statusPill', { 'statusPill--manual': !exercise.isKnown }]">
-								{{ exercise.isKnown ? exercise.entryName : 'Manuell uid' }}
-							</span>
+								<div class="selectedActions">
+									<button type="button" class="ghostButton" :disabled="index === 0" @click="moveExercise(index, -1)">
+										&uarr;
+									</button>
+									<button type="button" class="ghostButton" :disabled="index === selectedExercises.length - 1" @click="moveExercise(index, 1)">
+										&darr;
+									</button>
+									<button type="button" class="deleteButton" @click="removeExerciseUid(exercise.uid)">
+										Fjern
+									</button>
+								</div>
+							</article>
 						</div>
 
-						<div class="selectedActions">
-							<button type="button" class="ghostButton" :disabled="index === 0" @click="moveExercise(index, -1)">
-								Opp
-							</button>
-							<button type="button" class="ghostButton" :disabled="index === selectedExercises.length - 1" @click="moveExercise(index, 1)">
-								Ned
-							</button>
-							<button type="button" class="deleteButton" @click="removeExerciseUid(exercise.uid)">
-								Fjern
-							</button>
-						</div>
-					</article>
-				</div>
+						<p v-else class="emptyState">
+							Ingen oppgavesett er lagt til i stasjonen ennå.
+						</p>
+					</div>
 
-				<p v-else class="emptyState">
-					Ingen exercise uid-er lagt til ennå.
-				</p>
+					<div class="exerciseColumn">
+						<div class="sectionHeading sectionHeading--compact">
+							<h3>Tilgjengelige oppgavesett</h3>
+						</div>
+
+						<div class="knownExercises knownExercises--columns">
+							<article v-for="exercise in availableExercises" :key="exercise.uid" class="knownExerciseCard">
+								<div>
+									<p class="cardEyebrow">{{ exercise.entryName }}</p>
+									<h3>{{ exercise.title }}</h3>
+								</div>
+
+								<button
+									type="button"
+									class="ghostButton"
+									:disabled="draft.exerciseUids.includes(exercise.uid)"
+									@click="addExerciseUid(exercise.uid)"
+								>
+									{{ draft.exerciseUids.includes(exercise.uid) ? 'Lagt til' : '+ Bruk' }}
+								</button>
+							</article>
+						</div>
+					</div>
+				</div>
 			</section>
 
-			<div class="actionRow">
+			<div class="actionRow actionRow--reset">
 				<button type="button" class="ghostButton" :disabled="!hasChanges" @click="resetDraft">
 					Tilbakestill endringer
 				</button>
-				<button
-					v-if="parsedSelection.kind !== 'new'"
-					type="button"
-					class="ghostButton"
-					:disabled="parsedSelection.kind === 'existing' ? !hasStoredOverride : !loadedLocalId"
-					@click="clearLocalState"
-				>
-					{{ parsedSelection.kind === 'existing' ? 'Fjern lokal override' : 'Slett lokal stasjon' }}
-				</button>
-				<button type="submit" class="primaryButton" :disabled="!canSave || !hasChanges">
-					Lagre stasjon lokalt
-				</button>
 			</div>
-		</form>
+		</div>
 
 		<aside class="previewPanel">
 			<section class="panelSection">
-				<div class="sectionHeading sectionHeading--inline">
-					<div>
-						<h2>Payload</h2>
-						<p>Dette er objektet du senere kan sende med POST til backend.</p>
-					</div>
-
-					<button type="button" class="ghostButton" @click="copyPayload">
-						{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier JSON' }}
-					</button>
-				</div>
-
-				<pre class="payloadPreview">{{ payloadPreviewText }}</pre>
-			</section>
-
-			<section class="panelSection">
 				<div class="sectionHeading">
 					<h2>Innhold</h2>
-					<p>Her ser du hva som blir med i stasjonen du redigerer akkurat nå.</p>
+					<p>Her ser du det viktigste i stasjonen akkurat na.</p>
 				</div>
 
 				<div class="statusStack">
 					<article class="summaryCard">
-						<p class="cardEyebrow">Øvelser</p>
+						<p class="cardEyebrow">Oppgavesett</p>
 						<h3>{{ selectedExercises.length }} valgt</h3>
 						<p>{{ hasChanges ? 'Det finnes ulagrede endringer.' : 'Editoren er synkron med sist lastede versjon.' }}</p>
 					</article>
 
 					<article class="summaryCard">
-						<p class="cardEyebrow">Kjente uid-er</p>
-						<h3>{{ selectedExercises.filter((exercise) => exercise.isKnown).length }} kjent</h3>
-						<p>Manuelle uid-er kan fortsatt være gyldige senere når backend finnes.</p>
+						<p class="cardEyebrow">Oppgavesett lagt til</p>
+						<h3>{{ selectedExercises.filter((exercise) => exercise.isKnown).length }} fra listen</h3>
+						<p>Oppgavesettene i listen kan brukes direkte i stasjonen.</p>
 					</article>
 				</div>
 			</section>
+
+			<div class="actionRow actionRow--save">
+				<button type="button" class="ghostButton" :disabled="!canSave" @click="saveAsNew">
+					Lagre som ny
+				</button>
+				<button
+					v-if="parsedSelection.kind !== 'new'"
+					type="submit"
+					class="primaryButton"
+					:disabled="!canSave || !hasChanges"
+				>
+					Lagre
+				</button>
+			</div>
+
+			<section class="panelSection debugSection">
+				<details>
+					<summary class="debugSummary">Debug: payload</summary>
+					<div class="debugContent">
+						<div class="sectionHeading sectionHeading--inline">
+							<div>
+								<h2>Payload</h2>
+								<p>Dette er objektet du senere kan sende med POST til backend.</p>
+							</div>
+
+							<button type="button" class="ghostButton" @click="copyPayload">
+								{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier JSON' }}
+							</button>
+						</div>
+
+						<pre class="payloadPreview">{{ payloadPreviewText }}</pre>
+					</div>
+				</details>
+			</section>
 		</aside>
-	</div>
+	</form>
 </template>
 
 <style scoped>
 .factoryGrid {
 	display: grid;
-	grid-template-columns: minmax(0, 1.2fr) minmax(22rem, 0.8fr);
+	grid-template-columns: 1fr;
 	gap: 1.25rem;
 	align-items: start;
 }
@@ -477,6 +430,10 @@ watch(payloadPreviewText, () => {
 	margin-bottom: 1rem;
 }
 
+.sectionHeading--compact {
+	margin-bottom: 0.75rem;
+}
+
 .sectionHeading--inline {
 	grid-template-columns: 1fr auto;
 	align-items: start;
@@ -500,7 +457,6 @@ watch(payloadPreviewText, () => {
 	line-height: 1.5;
 }
 
-.summaryGrid,
 .statusStack,
 .knownExercises,
 .selectedList {
@@ -508,11 +464,17 @@ watch(payloadPreviewText, () => {
 	gap: 0.75rem;
 }
 
-.summaryGrid {
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	margin-bottom: 1rem;
+.exerciseColumns {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 1rem;
+	align-items: start;
 }
 
+.exerciseColumn {
+	display: grid;
+	gap: 0.75rem;
+}
 .fieldGrid {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -585,7 +547,6 @@ watch(payloadPreviewText, () => {
 	object-fit: cover;
 }
 
-.uidInputRow,
 .selectedActions,
 .actionRow {
 	display: flex;
@@ -597,6 +558,11 @@ watch(payloadPreviewText, () => {
 .knownExercises,
 .selectedList {
 	margin-top: 1rem;
+}
+
+.knownExercises--columns,
+.selectedList {
+	margin-top: 0;
 }
 
 .statusPill {
@@ -660,6 +626,14 @@ watch(payloadPreviewText, () => {
 	margin-top: 1.5rem;
 }
 
+.actionRow--reset {
+	justify-content: flex-start;
+}
+
+.actionRow--save {
+	margin-top: 0;
+}
+
 .payloadPreview {
 	overflow-x: auto;
 	padding: 1rem;
@@ -670,15 +644,31 @@ watch(payloadPreviewText, () => {
 	line-height: 1.5;
 }
 
-@media (max-width: 1100px) {
-	.factoryGrid {
-		grid-template-columns: 1fr;
-	}
+.debugSection {
+	opacity: 0.9;
+}
+
+.debugSummary {
+	cursor: pointer;
+	font-weight: 700;
+	color: var(--muted);
+	list-style: none;
+}
+
+.debugSummary::-webkit-details-marker {
+	display: none;
+}
+
+.debugContent {
+	margin-top: 1rem;
 }
 
 @media (max-width: 800px) {
-	.summaryGrid,
 	.fieldGrid {
+		grid-template-columns: 1fr;
+	}
+
+	.exerciseColumns {
 		grid-template-columns: 1fr;
 	}
 
