@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const route = useRoute();
-const { getTeacherClassroomById, getClassroomLeaderboard } = useTeacherDashboard();
+const { getTeacherClassroomById, getClassroomLeaderboard, getTeacherClassroomPendingStudents } = useTeacherDashboard();
 import { routePaths, routePathsWithString, routePathsWithUid } from '~/composables/utils/routePaths';
 
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
@@ -8,6 +8,7 @@ const classroomId = computed(() => String(route.query.classroomId ?? ''));
 const classroom = computed(() => getTeacherClassroomById(classroomId.value));
 
 const leaderboard = computed(() => getClassroomLeaderboard(classroomId.value));
+const pendingStudents = computed(() => getTeacherClassroomPendingStudents(classroomId.value));
 </script>
 
 <template>
@@ -58,6 +59,22 @@ const leaderboard = computed(() => getClassroomLeaderboard(classroomId.value));
       </article>
     </div>
 
+    <section v-if="classroom" class="pendingCard">
+      <div class="pendingCard__header">
+        <h2>Ventende elever</h2>
+        <p>Elever som venter på å bli godkjent inn i klasserommet.</p>
+      </div>
+
+      <div v-if="pendingStudents.length > 0" class="pendingList">
+        <article v-for="student in pendingStudents" :key="student.id" class="pendingStudent">
+          <strong>{{ student.name }}</strong>
+          <span>Sendte forespørsel {{ student.requestedAt }}</span>
+        </article>
+      </div>
+
+      <p v-else class="pendingEmpty">Ingen elever venter på godkjenning.</p>
+    </section>
+
     <div v-if="classroom" class="tableCard">
       <table>
         <thead>
@@ -72,7 +89,11 @@ const leaderboard = computed(() => getClassroomLeaderboard(classroomId.value));
         <tbody>
           <tr v-for="(student, index) in leaderboard" :key="student.id">
             <td>{{ index + 1 }}</td>
-            <td>{{ student.name }}</td>
+            <td>
+              <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, `?classroomId=${classroomId}&studentId=${student.id}`)" class="studentLink">
+                {{ student.name }}
+              </NuxtLink>
+            </td>
             <td>{{ student.progressPercent }} %</td>
             <td>{{ student.completedLevels }} / {{ student.totalLevels }}</td>
             <td>{{ student.points }}</td>
@@ -183,6 +204,47 @@ h1 {
   color: var(--primary);
 }
 
+.pendingCard {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.pendingCard__header {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.pendingCard__header h2,
+.pendingStudent strong {
+  margin: 0;
+}
+
+.pendingCard__header p,
+.pendingEmpty,
+.pendingStudent span {
+  margin: 0;
+  color: var(--muted);
+}
+
+.pendingList {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.pendingStudent {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 0.2rem);
+  background: rgba(255, 255, 255, 0.03);
+}
+
 .tableCard {
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -206,6 +268,16 @@ td {
 thead th {
   background: var(--bg);
   font-weight: 700;
+}
+
+.studentLink {
+  color: var(--primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.studentLink:hover {
+  text-decoration: underline;
 }
 
 .emptyState {

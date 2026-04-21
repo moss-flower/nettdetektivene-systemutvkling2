@@ -12,6 +12,12 @@ export type StudentOverviewEntry = StudentLeaderboardEntry & {
   lastActive: string;
 };
 
+export type PendingStudentEntry = {
+  id: string;
+  name: string;
+  requestedAt: string;
+};
+
 export type ClassroomSummary = {
   id: string;
   name: string;
@@ -74,6 +80,15 @@ const studentExtras: Record<string, { badges: number; lastActive: string }> = {
   'leah-aas': { badges: 7, lastActive: 'I går' },
   'sander-lunde': { badges: 3, lastActive: 'For 3 dager siden' },
   'jonas-moen': { badges: 1, lastActive: 'For 4 dager siden' }
+};
+
+const pendingStudentsByClassroom: Record<string, PendingStudentEntry[]> = {
+  'ronvik-6a': [
+    { id: 'elin-holte', name: 'Elin Holte', requestedAt: 'I dag' },
+    { id: 'markus-bakke', name: 'Markus Bakke', requestedAt: 'For 1 time siden' }
+  ],
+  'ronvik-6b': [],
+  'ronvik-6c': []
 };
 
 const teacherClassroomNotifications: ClassroomNotification[] = [
@@ -175,6 +190,10 @@ function getteacherClassroomStudents(classroomId: string): StudentOverviewEntry[
     .sort((left, right) => left.name.localeCompare(right.name));
 }
 
+function getTeacherClassroomPendingStudents(classroomId: string): PendingStudentEntry[] {
+  return pendingStudentsByClassroom[classroomId] ?? [];
+}
+
 function getStudentById(classroomId: string, studentId: string): StudentOverviewEntry | null {
   return getteacherClassroomStudents(classroomId).find((student) => student.id === studentId) ?? null;
 }
@@ -197,6 +216,7 @@ export function useTeacherDashboard() {
     getTeacherClassroomById,
     getClassroomLeaderboard,
     getteacherClassroomStudents,
+    getTeacherClassroomPendingStudents,
     getStudentById,
     getteacherClassroomNotifications,
     getTeacherClassroomExercises,
