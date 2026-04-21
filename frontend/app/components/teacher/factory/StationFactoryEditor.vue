@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import {
+	clearStationFactoryOverride,
 	createStationDraft,
 	makeStationFactoryDraftSelectionKey,
 	makeStationFactoryExistingSelectionKey,
 	normalizeStationExerciseUids,
 	parseStationFactorySelectionKey,
 	readStationFactoryStore,
+	removeStationFactoryDraft,
 	saveStationFactoryDraft,
 	saveStationFactoryOverride,
 	stationFactoryDefaultImage,
@@ -21,6 +23,7 @@ const props = defineProps<{
 const emit = defineEmits<{
 	(event: "selection-updated", selectionKey: string): void;
 	(event: "saved"): void;
+	(event: "deleted"): void;
 }>();
 
 const draft = reactive<StationFactoryPayload>(createStationDraft());
@@ -213,6 +216,19 @@ const saveAsNew = () => {
 	finishSave(makeStationFactoryDraftSelectionKey(record.localId));
 };
 
+const deleteSelection = () => {
+	if (parsedSelection.value.kind === "existing") {
+		clearStationFactoryOverride(parsedSelection.value.uid);
+		emit("deleted");
+		return;
+	}
+
+	if (parsedSelection.value.kind === "draft" && loadedLocalId.value) {
+		removeStationFactoryDraft(loadedLocalId.value);
+		emit("deleted");
+	}
+};
+
 const copyPayload = async () => {
 	try {
 		await navigator.clipboard.writeText(payloadPreviewText.value);
@@ -365,6 +381,14 @@ watch(payloadPreviewText, () => {
 			</section>
 
 			<div class="actionRow actionRow--save">
+				<button
+					v-if="parsedSelection.kind !== 'new'"
+					type="button"
+					class="deleteButton"
+					@click="deleteSelection"
+				>
+					Slett
+				</button>
 				<button type="button" class="ghostButton" :disabled="!canSave" @click="saveAsNew">
 					Lagre som ny
 				</button>
@@ -632,6 +656,7 @@ watch(payloadPreviewText, () => {
 
 .actionRow--save {
 	margin-top: 0;
+	justify-content: flex-end;
 }
 
 .payloadPreview {

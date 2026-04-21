@@ -26,6 +26,11 @@ const handleSaved = () => {
 	showSavedPopup.value = true;
 };
 
+const handleDeleted = () => {
+	refreshSelectableOptions();
+	selectedExerciseKey.value = "";
+};
+
 const closeSavedPopup = () => {
 	showSavedPopup.value = false;
 };
@@ -60,6 +65,7 @@ onMounted(() => {
 			:selection-key="selectedExerciseKey"
 			@selection-updated="handleSelectionUpdated"
 			@saved="handleSaved"
+			@deleted="handleDeleted"
 		/>
 
 		<PopupFactorySaved v-if="showSavedPopup" @close="closeSavedPopup" />
