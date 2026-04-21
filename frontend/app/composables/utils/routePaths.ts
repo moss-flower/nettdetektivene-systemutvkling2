@@ -20,13 +20,13 @@ export enum routePaths {
     studentExerciseDifficultySelect = '/student/game/selectDifficulty',
     
     // to implement next
-    studentLeaderboard = '/student/home/directions/leaderboard',
-    studentMystery = '/student/home/directions/mystery',
-    studentNotes = '/student/home/directions/notes',
-    studentSettings = '/student/home/directions/settings',
+    studentLeaderboard = '/student/leaderboard',
+    studentMystery = '/student/mystery',
+    studentNotes = '/student/notes',
+    studentSettings = '/student/settings',
 
     notYetImplemented = '/shared/notYetImplemented',
-    studentHelp = '/student/home/directions/help',
+    studentHelp = '/student/help',
 }
 
 export const routePathsWithString = (path: routePaths, string: string) => `${path}${string}`;
