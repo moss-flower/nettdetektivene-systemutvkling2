@@ -33,9 +33,11 @@ const loadedSnapshot = ref<WorldFactoryPayload>(createWorldDraft());
 const storedDrafts = ref<WorldFactoryStoredRecord[]>([]);
 const copyState = ref<"idle" | "copied" | "failed">("idle");
 const loadedLocalId = ref("");
+const showStationPicker = ref(false);
 
 const availableStations = computed(() => Station.backendFetchAllStations());
 const knownStationMap = computed(() => new Map(availableStations.value.map((station) => [station.uid, station])));
+const unselectedStations = computed(() => availableStations.value.filter((station) => !draft.stationUids.includes(station.uid)));
 const parsedSelection = computed(() => parseWorldFactorySelectionKey(props.selectionKey));
 
 const payloadPreview = computed<WorldFactoryPayload>(() => ({
@@ -78,6 +80,8 @@ const selectedStations = computed(() => payloadPreview.value.stationUids.map((ui
 		uid,
 		order: index + 1,
 		title: station?.title ?? "Ukjent stasjon",
+		image: station?.image ?? worldFactoryDefaultImage,
+		backgroundColor: station?.backgroundColor ?? "rgba(255, 255, 255, 0.04)",
 		description: station?.description ?? "Denne stasjonen finnes ikke i oversikten akkurat na.",
 		isKnown: Boolean(station),
 	};
@@ -171,6 +175,7 @@ const addStationUid = (uidValue: string) => {
 	}
 
 	draft.stationUids.push(nextUid);
+	showStationPicker.value = false;
 };
 
 const removeStationUid = (uidToRemove: string) => {
@@ -199,10 +204,23 @@ const moveStation = (index: number, direction: -1 | 1) => {
 const resetDraft = () => {
 	applyDraft(loadedSnapshot.value);
 	copyState.value = "idle";
+	showStationPicker.value = false;
 };
 
 const goToStationFactory = () => {
 	void navigateTo(routePaths.teacherFactoryStation);
+};
+
+const editStation = (uid: string) => {
+	void navigateTo(`${routePaths.teacherFactoryStation}?uid=${uid}`);
+};
+
+const openStationPicker = () => {
+	showStationPicker.value = true;
+};
+
+const closeStationPicker = () => {
+	showStationPicker.value = false;
 };
 
 const finishSave = (selectionKey: string) => {
@@ -303,70 +321,88 @@ watch(payloadPreviewText, () => {
 			<section class="panelSection">
 				<div class="sectionHeading">
 					<h2>Stasjoner</h2>
-					<p>Verdener kan lagres uten stasjoner, eller fylles opp og sorteres allerede nå.</p>
+					<p>Bygg verdenen som en enkel loype med stasjoner i rekkefolge.</p>
 				</div>
 
-				<div class="stationColumns">
-					<div class="stationColumn">
-						<div class="sectionHeading sectionHeading--compact">
-							<h3>Stasjoner i verdenen</h3>
+				<div class="worldPath">
+					<article
+						v-for="(station, index) in selectedStations"
+						:key="station.uid"
+						:class="['stationNode', `stationNode--${index % 2 === 0 ? 'left' : 'right'}`]"
+					>
+						<div class="stationNode__imageShell" :style="{ backgroundColor: station.backgroundColor }">
+							<img :src="station.image" :alt="station.title" class="stationNode__image" >
+						</div>
+						<h3>{{ station.title }}</h3>
+						<p class="cardEyebrow">Stasjon {{ station.order }}</p>
+						<div class="stationNode__actions">
+							<button type="button" class="ghostButton stationNode__moveLeft" :disabled="index === 0" @click="moveStation(index, -1)">
+								<img src="https://placehold.co/80x80/1f2937/e5f3ef?text=%3C" alt="Flytt til venstre" class="stationNode__actionIcon" >
+							</button>
+							<button type="button" class="ghostButton" :disabled="!station.isKnown" @click="editStation(station.uid)">
+								<img src="https://placehold.co/80x80/0f766e/ecfeff?text=E" alt="Rediger stasjon" class="stationNode__actionIcon" >
+							</button>
+							<button type="button" class="deleteButton" @click="removeStationUid(station.uid)">
+								<img src="https://placehold.co/80x80/991b1b/fee2e2?text=X" alt="Slett stasjon" class="stationNode__actionIcon" >
+							</button>
+							<button type="button" class="ghostButton stationNode__moveRight" :disabled="index === selectedStations.length - 1" @click="moveStation(index, 1)">
+								<img src="https://placehold.co/80x80/1f2937/e5f3ef?text=%3E" alt="Flytt til hoyre" class="stationNode__actionIcon" >
+							</button>
+						</div>
+					</article>
+
+					<button
+						type="button"
+						:class="['addStationNode', `addStationNode--${selectedStations.length % 2 === 0 ? 'left' : 'right'}`]"
+						@click="openStationPicker"
+					>
+						<span class="addStationNode__plus">+</span>
+						<span>Legg til stasjon</span>
+					</button>
+				</div>
+
+				<p v-if="selectedStations.length === 0" class="emptyState emptyState--path">
+					Ingen stasjoner er lagt til ennå. Start med pluss-noden.
+				</p>
+
+				<div v-if="showStationPicker" class="stationPickerOverlay" @click.self="closeStationPicker">
+					<section class="stationPicker" role="dialog" aria-modal="true" aria-labelledby="station-picker-title">
+						<div class="sectionHeading sectionHeading--inline sectionHeading--compact">
+							<div>
+								<h3 id="station-picker-title">Velg stasjon</h3>
+								<p>Legg til en eksisterende stasjon i loypa, eller lag en ny.</p>
+							</div>
+							<button type="button" class="ghostButton" @click="closeStationPicker">
+								Lukk
+							</button>
 						</div>
 
-						<div v-if="selectedStations.length > 0" class="selectedList">
-							<article v-for="(station, index) in selectedStations" :key="station.uid" class="selectedCard">
-								<div>
-									<p class="cardEyebrow">Plass {{ station.order }}</p>
-									<h3>{{ station.title }}</h3>
-									<span :class="['statusPill', { 'statusPill--manual': !station.isKnown }]">
-										{{ station.isKnown ? 'Fra listen' : 'Ikke tilgjengelig' }}
-									</span>
-								</div>
-
-								<div class="selectedActions">
-									<button type="button" class="ghostButton" :disabled="index === 0" @click="moveStation(index, -1)">
-										&uarr;
-									</button>
-									<button type="button" class="ghostButton" :disabled="index === selectedStations.length - 1" @click="moveStation(index, 1)">
-										&darr;
-									</button>
-									<button type="button" class="deleteButton" @click="removeStationUid(station.uid)">
-										Fjern
-									</button>
-								</div>
-							</article>
-						</div>
-
-						<p v-else class="emptyState">
-							Ingen stasjoner er lagt til i verdenen ennå. Denne verdenen kan fortsatt lagres.
-						</p>
-					</div>
-
-					<div class="stationColumn">
-						<div class="sectionHeading sectionHeading--compact sectionHeading--inline">
-							<h3>Tilgjengelige stasjoner</h3>
+						<div class="stationPicker__actions">
 							<button type="button" class="ghostButton" @click="goToStationFactory">
 								+ Lag Stasjon
 							</button>
 						</div>
 
-						<div class="knownItems knownItems--columns">
-							<article v-for="station in availableStations" :key="station.uid" class="knownCard">
+						<div v-if="unselectedStations.length > 0" class="stationPickerList">
+							<button
+								v-for="station in unselectedStations"
+								:key="station.uid"
+								type="button"
+								class="stationPickerCard"
+								@click="addStationUid(station.uid)"
+							>
+								<img :src="station.image" :alt="station.title" class="stationPickerCard__image" >
 								<div>
-									<p class="cardEyebrow">Stasjon</p>
+									<p class="cardEyebrow">{{ station.uid }}</p>
 									<h3>{{ station.title }}</h3>
 								</div>
-
-								<button
-									type="button"
-									class="ghostButton"
-									:disabled="draft.stationUids.includes(station.uid)"
-									@click="addStationUid(station.uid)"
-								>
-									{{ draft.stationUids.includes(station.uid) ? 'Lagt til' : '+ Bruk' }}
-								</button>
-							</article>
+							</button>
 						</div>
-					</div>
+
+						<p v-else class="emptyState">
+							Alle tilgjengelige stasjoner er allerede lagt til i verdenen.
+						</p>
+					</section>
 				</div>
 			</section>
 
@@ -485,15 +521,14 @@ watch(payloadPreviewText, () => {
 
 .sectionHeading h2,
 .summaryCard h3,
-.knownCard h3,
-.selectedCard h3 {
+.stationNode h3,
+.stationPickerCard h3 {
 	margin: 0;
 }
 
 .sectionHeading p,
 .summaryCard p,
-.knownCard p,
-.selectedCard p,
+.stationPickerCard p,
 .emptyState {
 	margin: 0;
 	color: var(--muted);
@@ -501,22 +536,149 @@ watch(payloadPreviewText, () => {
 }
 
 .statusStack,
-.knownItems,
-.selectedList {
+.stationPickerList {
 	display: grid;
 	gap: 0.75rem;
 }
 
-.stationColumns {
+
+.worldPath {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 	gap: 1rem;
-	align-items: start;
+	justify-items: start;
 }
 
-.stationColumn {
+.stationNode,
+.addStationNode {
+	width: min(100%, 18rem);
 	display: grid;
 	gap: 0.75rem;
+	padding: 1rem;
+	border: 1px solid var(--border);
+	border-radius: 1.2rem;
+	background: rgba(255, 255, 255, 0.03);
+}
+
+.stationNode--right,
+.addStationNode--right {
+	justify-self: end;
+	margin-right: max(0rem, 12%);
+}
+
+.stationNode--left,
+.addStationNode--left {
+	margin-left: max(0rem, 12%);
+}
+
+.stationNode__imageShell {
+	overflow: hidden;
+	border-radius: 1rem;
+	aspect-ratio: 1 / 1;
+	border: 1px solid var(--border);
+}
+
+.stationNode__image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.stationNode__actions {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	flex-wrap: nowrap;
+}
+
+.stationNode__actionIcon {
+	display: block;
+	width: 3rem;
+	height: 3rem;
+	border-radius: 0.45rem;
+}
+
+.stationNode__moveLeft {
+	margin-right: auto;
+}
+
+.stationNode__moveRight {
+	margin-left: auto;
+}
+
+.addStationNode {
+	place-items: center;
+	min-height: 13rem;
+	background: rgba(101, 240, 175, 0.06);
+	color: var(--text);
+	text-align: center;
+}
+
+.addStationNode__plus {
+	display: grid;
+	place-items: center;
+	width: 4.5rem;
+	height: 4.5rem;
+	border-radius: 999px;
+	border: 1px dashed var(--primary);
+	color: var(--primary);
+	font-size: 2rem;
+	font-weight: 700;
+}
+
+.emptyState--path {
+	margin-top: 1rem;
+}
+
+.stationPickerOverlay {
+	position: fixed;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	padding: 1.5rem;
+	background: rgba(0, 0, 0, 0.6);
+	z-index: 1000;
+}
+
+.stationPicker {
+	width: min(100%, 52rem);
+	max-height: min(80vh, 46rem);
+	overflow: auto;
+	display: grid;
+	gap: 1rem;
+	padding: 1.5rem;
+	border: 1px solid var(--border);
+	border-radius: 1.2rem;
+	background: var(--surface);
+	box-shadow: var(--shadow);
+}
+
+.stationPicker__actions {
+	display: flex;
+	justify-content: flex-start;
+}
+
+.stationPickerList {
+	grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.stationPickerCard {
+	display: grid;
+	gap: 0.75rem;
+	padding: 0.9rem;
+	border: 1px solid var(--border);
+	border-radius: 1rem;
+	background: rgba(255, 255, 255, 0.03);
+	color: var(--text);
+	text-align: left;
+}
+
+.stationPickerCard__image {
+	display: block;
+	width: 100%;
+	aspect-ratio: 16 / 10;
+	border-radius: 0.9rem;
+	object-fit: cover;
 }
 
 .fieldGrid {
@@ -568,9 +730,7 @@ watch(payloadPreviewText, () => {
 	cursor: not-allowed;
 }
 
-.summaryCard,
-.knownCard,
-.selectedCard {
+.summaryCard {
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-start;
@@ -581,28 +741,11 @@ watch(payloadPreviewText, () => {
 	background: rgba(255, 255, 255, 0.02);
 }
 
-.warningText {
-	margin-top: 1rem;
-	color: #fca5a5;
-	font-weight: 600;
-}
-
-.selectedActions,
 .actionRow {
 	display: flex;
 	gap: 0.75rem;
 	align-items: end;
 	flex-wrap: wrap;
-}
-
-.knownItems,
-.selectedList {
-	margin-top: 1rem;
-}
-
-.knownItems--columns,
-.selectedList {
-	margin-top: 0;
 }
 
 .statusPill {
@@ -637,6 +780,10 @@ watch(payloadPreviewText, () => {
 	color: var(--text);
 }
 
+.ghostButton {
+	background: rgba(255, 255, 255, 0.03);
+}
+
 .primaryButton {
 	border-color: var(--primary);
 	background: var(--primary);
@@ -644,13 +791,24 @@ watch(payloadPreviewText, () => {
 }
 
 .deleteButton {
-	color: #fca5a5;
+	border-color: rgba(248, 113, 113, 0.55);
+	background: rgba(127, 29, 29, 0.18);
+	color: #fecaca;
 }
 
 .ghostButton:hover,
 .deleteButton:hover,
 .primaryButton:hover {
 	transform: translateY(-1px);
+}
+
+.ghostButton:hover {
+	background: rgba(255, 255, 255, 0.08);
+}
+
+.deleteButton:hover {
+	background: rgba(153, 27, 27, 0.32);
+	border-color: rgba(248, 113, 113, 0.75);
 }
 
 .ghostButton:disabled,
@@ -709,20 +867,25 @@ watch(payloadPreviewText, () => {
 		grid-template-columns: 1fr;
 	}
 
-	.stationColumns {
-		grid-template-columns: 1fr;
+	.stationNode,
+	.addStationNode {
+		width: 100%;
+	}
+
+	.stationNode--right,
+	.addStationNode--right,
+	.stationNode--left,
+	.addStationNode--left {
+		justify-self: stretch;
+		margin-left: 0;
+		margin-right: 0;
 	}
 
 	.sectionHeading--inline,
 	.summaryCard,
-	.knownCard,
-	.selectedCard,
+	.stationPickerCard,
 	.actionRow {
 		display: grid;
-	}
-
-	.selectedActions {
-		align-items: stretch;
 	}
 
 	.actionRow {
