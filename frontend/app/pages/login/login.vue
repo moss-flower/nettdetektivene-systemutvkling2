@@ -1,70 +1,92 @@
 <script setup lang="ts">
-import { routePaths } from '~/composables/routePaths';
+import { routePaths } from "~/composables/routePaths";
+import { useAuth } from "~/composables/useAuth";
 
-type ProviderId = 'microsoft' | 'idporten';
+type ProviderId = "microsoft" | "idporten";
 
 definePageMeta({
   layout: false,
 });
 
 const route = useRoute();
+const { login } = useAuth();
 
-const username = ref('');
-const password = ref('');
-const selectedProvider = ref<ProviderId>('microsoft');
-const formError = ref('');
+const email = ref("");
+const password = ref("");
+const selectedProvider = ref<ProviderId>("microsoft");
+const formError = ref("");
+const loading = ref(false);
 
 const providerOptions: Array<{
   id: ProviderId;
   label: string;
-  style: 'primary' | 'secondary';
+  style: "primary" | "secondary";
   badge: string;
 }> = [
   {
-    id: 'microsoft',
-    label: 'Bruk jobb- eller skolekonto',
-    style: 'primary',
-    badge: 'MS',
+    id: "microsoft",
+    label: "Bruk jobb- eller skolekonto",
+    style: "primary",
+    badge: "MS",
   },
   {
-    id: 'idporten',
-    label: 'Logg inn med ID-porten',
-    style: 'secondary',
-    badge: 'ID',
+    id: "idporten",
+    label: "Logg inn med ID-porten",
+    style: "secondary",
+    badge: "ID",
   },
 ];
 
-const selectedRole = computed<'elev' | 'lærer'>(() => {
-  const role = String(route.query.role ?? '').toLowerCase();
-  return role === 'lærer' ? 'lærer' : 'elev';
+const selectedRole = computed<"elev" | "lærer">(() => {
+  const role = String(route.query.role ?? "").toLowerCase();
+  return role === "lærer" ? "lærer" : "elev";
 });
 
 const targetRoute = computed(() =>
-  selectedRole.value === 'lærer' ? routePaths.teacherOverview : routePaths.studentHome,
+  selectedRole.value === "lærer"
+    ? routePaths.teacherOverview
+    : routePaths.studentHome,
 );
 
 const targetLabel = computed(() =>
-  selectedRole.value === 'lærer' ? 'lærerflaten' : 'elevspillet',
+  selectedRole.value === "lærer" ? "lærerflaten" : "elevspillet",
 );
 
 const affiliationName = computed(() =>
-  selectedRole.value === 'lærer' ? 'NTNU ansatte' : 'NTNU',
+  selectedRole.value === "lærer" ? "NTNU ansatte" : "NTNU",
 );
 
 function selectProvider(providerId: ProviderId) {
   selectedProvider.value = providerId;
-  formError.value = '';
+  formError.value = "";
 }
 
-async function handleMockLogin() {
-  formError.value = '';
+async function handleLogin() {
+  formError.value = "";
 
-  if (!username.value.trim() || !password.value.trim()) {
-    formError.value = 'Fyll inn brukernavn og passord for mock-innlogging.';
+  if (!email.value.trim() || !password.value.trim()) {
+    formError.value = "Fyll inn e-post og passord.";
     return;
   }
 
-  await navigateTo(targetRoute.value);
+  loading.value = true;
+
+  try {
+    await login(email.value.trim(), password.value);
+
+    console.log("CLICKED LOGIN")
+
+    await navigateTo(routePaths.home);
+
+  } catch (error: any) {
+    formError.value =
+      error?.data?.message ||
+      error?.data?.error ||
+      error?.statusMessage ||
+      "Innlogging mislyktes. Sjekk e-post og passord.";
+  } finally {
+    loading.value = false;
+  }
 }
 </script>
 
@@ -84,7 +106,9 @@ async function handleMockLogin() {
             <div class="panelMark serviceMark">ND</div>
             <div class="panelBody">
               <p class="panelLabel">Tjeneste</p>
-              <p class="panelText">Du må logge inn via Feide for å åpne Nettdetektivene.</p>
+              <p class="panelText">
+                Du må logge inn via Feide for å åpne Nettdetektivene.
+              </p>
             </div>
           </div>
 
@@ -120,15 +144,15 @@ async function handleMockLogin() {
             <span>eller bruk testinnlogging</span>
           </div>
 
-          <form class="mockForm" @submit.prevent="handleMockLogin">
+          <form class="mockForm" @submit.prevent="handleLogin">
             <div class="fieldGroup">
-              <label class="fieldLabel" for="mock-username">Brukernavn</label>
+              <label class="fieldLabel" for="mock-email">E-post</label>
               <input
-                id="mock-username"
-                v-model="username"
+                id="mock-email"
+                v-model="email"
                 class="fieldInput"
-                name="username"
-                type="text"
+                name="email"
+                type="email"
                 placeholder="f.eks. ola.nordmann@ntnu.no"
                 autocomplete="username"
               />
@@ -142,18 +166,18 @@ async function handleMockLogin() {
                 class="fieldInput"
                 name="password"
                 type="password"
-                placeholder="Skriv inn valgfritt testpassord"
+                placeholder="Skriv inn passord"
                 autocomplete="current-password"
               />
             </div>
 
             <p class="mockHint">
-              Dette er en mockside. Gyldig Feide-flyt kan kobles på senere, men akkurat nå
-              sender innloggingen deg videre til {{ targetLabel }}.
+              Dette er en prototype av Feide-innloggingen deres. Innloggingen bruker
+              backend-endepunktet og sender deg videre til {{ targetLabel }} ved vellykket innlogging.
             </p>
 
-            <button type="submit" class="submitButton">
-              Fortsett med mock-innlogging
+            <button type="submit" class="submitButton" :disabled="loading">
+              {{ loading ? "Logger inn..." : "Fortsett med innlogging" }}
             </button>
 
             <p v-if="formError" class="formError">{{ formError }}</p>
@@ -165,11 +189,12 @@ async function handleMockLogin() {
           <div class="helpContent">
             <p>Dette er en prototype av Feide-innloggingen deres.</p>
             <p>
-              Bruk en valgfri testbruker og et valgfritt passord for å gå videre til
-              {{ targetLabel }}.
+              Logg inn med en backend-bruker for å gå videre til {{ targetLabel }}.
             </p>
             <p>
-              <NuxtLink :to="targetRoute" class="inlineTextLink">Hopp over mock-innlogging</NuxtLink>
+              <NuxtLink :to="targetRoute" class="inlineTextLink">
+                Hopp over innlogging
+              </NuxtLink>
             </p>
           </div>
         </details>
