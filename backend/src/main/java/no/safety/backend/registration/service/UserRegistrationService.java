@@ -51,7 +51,7 @@ public class UserRegistrationService {
             .email(request.email())
             .password(passwordEncoder.encode(request.password()))
             .roles(Set.of(roleRepository.findByType(RoleType.ROLE_STUDENT)
-                .orElseThrow(() -> new RoleNotFoundException("Role not found"))))
+                .orElseThrow(() -> new RoleNotFoundException("Student role not found."))))
             .build();
 
         return studentUserRepository.save(studentUser);
@@ -76,7 +76,7 @@ public class UserRegistrationService {
             .email(request.email())
             .password(passwordEncoder.encode(request.password()))
             .roles(Set.of(roleRepository.findByType(RoleType.ROLE_TEACHER)
-                .orElseThrow(() -> new RoleNotFoundException("Role not found"))))
+                .orElseThrow(() -> new RoleNotFoundException("Teacher role not found."))))
             .build();
 
         return teacherUserRepository.save(teacherUser);

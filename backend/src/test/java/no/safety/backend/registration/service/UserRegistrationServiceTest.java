@@ -95,7 +95,7 @@ public class UserRegistrationServiceTest {
 
         assertThatThrownBy(() -> userRegistrationService.registerStudent(studentUserRegistrationRequest))
                 .isInstanceOf(RoleNotFoundException.class)
-                .hasMessage("Role not found");
+                .hasMessage("Student role not found.");
 
         verifyNoInteractions(mockStudentUserRepository);
     }
@@ -146,7 +146,7 @@ public class UserRegistrationServiceTest {
 
         assertThatThrownBy(() -> userRegistrationService.registerTeacher(teacherUserRegistrationRequest))
                 .isInstanceOf(RoleNotFoundException.class)
-                .hasMessage("Role not found");
+                .hasMessage("Teacher role not found.");
 
         verifyNoInteractions(mockTeacherUserRepository);
     }
