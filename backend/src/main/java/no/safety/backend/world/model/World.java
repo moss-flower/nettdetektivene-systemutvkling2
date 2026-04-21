@@ -8,15 +8,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import java.util.List;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.station.model.Station;
 
 @Entity
@@ -27,17 +25,41 @@ import no.safety.backend.station.model.Station;
 @NoArgsConstructor
 public class World {
 
+  //Internal database ID
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(nullable = false, unique = true, length = 100)
-  private String uid;
+  //Public UID for api calls
+  @Column(updatable = false, nullable = false, unique = true, columnDefinition = "BINARY(16)")
+  private String publicId;
 
+  @Column(nullable = false)
   private String image;
 
+  @Column
+  private String description;
+
+  @ManyToMany(fetch = FetchType.LAZY)
+  @JoinTable(name = "world_stations",
+      joinColumns = @JoinColumn(name = "world_id"),
+      inverseJoinColumns = @JoinColumn(name = "station_id"))
   private List<Station> stations;
 
-  private String description;
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof World world)) {
+      return false;
+    }
+    return publicId != null && publicId.equals(world.getPublicId());
+  }
+
+  @Override
+  public int hashCode() {
+    return getClass().hashCode();
+  }
 
 }
