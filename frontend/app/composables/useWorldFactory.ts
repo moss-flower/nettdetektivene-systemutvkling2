@@ -3,6 +3,7 @@ import { Station } from "~/composables/types/StationType";
 import { World } from "~/composables/types/WorldTypes";
 
 export type WorldFactoryPayload = {
+	title: string;
 	uid: string;
 	description: string;
 	image: string;
@@ -39,6 +40,7 @@ const defaultImage = "https://placehold.co/1200x720?text=Verden";
 export const worldFactoryDefaultImage = defaultImage;
 
 export const createWorldDraft = (source?: Partial<WorldFactoryPayload>): WorldFactoryPayload => ({
+	title: source?.title?.trim() ?? "",
 	uid: source?.uid?.trim() ?? "",
 	description: source?.description ?? "",
 	image: source?.image?.trim() ? source.image : defaultImage,
@@ -63,6 +65,11 @@ export const normalizeWorldStationUids = (uids: string[]) => {
 };
 
 const normalizeWorldPayload = (payload: Record<string, unknown>, uidFallback = ""): WorldFactoryPayload | null => {
+	const title = typeof payload.title === "string" && payload.title.trim().length > 0
+		? payload.title.trim()
+		: typeof payload.uid === "string" && payload.uid.trim().length > 0
+			? payload.uid.trim()
+			: uidFallback;
 	const uid = typeof payload.uid === "string" && payload.uid.trim().length > 0
 		? payload.uid.trim()
 		: typeof payload.classroomUid === "string" && payload.classroomUid.trim().length > 0
@@ -76,11 +83,12 @@ const normalizeWorldPayload = (payload: Record<string, unknown>, uidFallback = "
 		? normalizeWorldStationUids(payload.stationUids.filter((stationUid): stationUid is string => typeof stationUid === "string"))
 		: [];
 
-	if (!uid && !description && stationUids.length === 0) {
+	if (!title && !uid && !description && stationUids.length === 0) {
 		return null;
 	}
 
 	return {
+		title,
 		uid,
 		description,
 		image,
@@ -307,7 +315,7 @@ export const getWorldFactorySelectionOptions = (): WorldFactorySelectableOption[
 	const existingOptions = World.backendFetchAllWorlds().map((world) => ({
 		selectionKey: makeWorldFactoryExistingSelectionKey(world.uid),
 		label: world.uid,
-		description: world.description || `${world.stationUids.length} station uid-er`,
+		description: world.description || `${world.stationUids.length} stasjoner`,
 		kind: "existing" as const,
 		badge: store.overrides[world.uid] ? "Eksisterende verden · lokal override" : "Eksisterende verden",
 	}));
@@ -315,8 +323,8 @@ export const getWorldFactorySelectionOptions = (): WorldFactorySelectableOption[
 		.sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
 		.map((draft) => ({
 			selectionKey: makeWorldFactoryDraftSelectionKey(draft.localId),
-			label: draft.payload.uid || "Ny verden uten uid",
-			description: draft.payload.description || `${draft.payload.stationUids.length} station uid-er`,
+			label: draft.payload.title || "Ny verden uten tittel",
+			description: draft.payload.description || `${draft.payload.stationUids.length} stasjoner`,
 			kind: "draft" as const,
 			badge: "Ny lokal verden",
 		}));

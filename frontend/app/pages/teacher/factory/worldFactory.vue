@@ -1,94 +1,105 @@
 <script setup lang="ts">
 import WorldFactoryEditor from "~/components/teacher/factory/WorldFactoryEditor.vue";
+import PopupFactorySaved from "~/components/teacher/factory/PopupFactorySaved.vue";
 import { routePaths } from "~/composables/utils/routePaths";
 import {
 	getWorldFactorySelectionOptions,
+	makeWorldFactoryExistingSelectionKey,
 	type WorldFactorySelectableOption,
 	worldFactoryNewSelectionKey,
 } from "~/composables/useWorldFactory";
 
-const backPath = routePaths.teacherOverview;
+const route = useRoute();
+const router = useRouter();
 const selectedWorldKey = ref<string>("");
 const selectableOptions = ref<WorldFactorySelectableOption[]>([]);
+const showSavedPopup = ref(false);
+const lockedWorldUid = computed(() => {
+	const uid = route.query.uid;
+
+	return typeof uid === "string" && uid.trim().length > 0 ? uid.trim() : "";
+});
+const showWorldSelector = computed(() => lockedWorldUid.value.length === 0);
+
+const goBack = () => {
+	if (import.meta.client && window.history.length > 1) {
+		router.back();
+		return;
+	}
+
+	void navigateTo(routePaths.teacherOverview);
+};
 
 const refreshSelectableOptions = () => {
 	selectableOptions.value = getWorldFactorySelectionOptions();
 };
-
-const selectedOption = computed(() => {
-	return selectableOptions.value.find((option) => option.selectionKey === selectedWorldKey.value) ?? null;
-});
-
-const startNewWorld = () => {
-	selectedWorldKey.value = worldFactoryNewSelectionKey;
-};
-
 const handleSelectionUpdated = (selectionKey: string) => {
 	refreshSelectableOptions();
 	selectedWorldKey.value = selectionKey;
 };
 
+const handleSaved = () => {
+	refreshSelectableOptions();
+	selectedWorldKey.value = lockedWorldUid.value
+		? makeWorldFactoryExistingSelectionKey(lockedWorldUid.value)
+		: "";
+	showSavedPopup.value = true;
+};
+
+const handleDeleted = () => {
+	refreshSelectableOptions();
+	selectedWorldKey.value = lockedWorldUid.value
+		? makeWorldFactoryExistingSelectionKey(lockedWorldUid.value)
+		: "";
+};
+
+const closeSavedPopup = () => {
+	showSavedPopup.value = false;
+};
+
 onMounted(() => {
 	refreshSelectableOptions();
 });
+
+watch(
+	lockedWorldUid,
+	(uid) => {
+		selectedWorldKey.value = uid ? makeWorldFactoryExistingSelectionKey(uid) : "";
+	},
+	{ immediate: true },
+);
 </script>
 
 <template>
 	<section class="factoryPage">
 		<header class="factoryHero">
-			<div>
-				<NuxtLink class="factoryBackLink" :to="backPath">
-					Tilbake til læreroversikt
-				</NuxtLink>
-				<p class="factoryEyebrow">Lærerverktøy</p>
-				<h1>Verdensfabrikk</h1>
-				<p class="factoryDescription">
-					Velg en eksisterende verden for å redigere den, eller start en ny lokal verden. Nye verdener får sin egen uid i frontend slik at de senere kan velges når klasserom-oppretting kommer.
-				</p>
-			</div>
+			<button class="backButton" type="button" @click="goBack">Tilbake</button>
+			<h1 v-if="showWorldSelector">Verdener</h1>
 		</header>
 
-		<section class="selectorPanel">
-			<div class="selectorHeading">
-				<h2>Velg verden</h2>
-				<p>Verdener er nå egne ressurser. De kan lagres tomme og fylles med stasjoner senere.</p>
-			</div>
-
+		<section v-if="showWorldSelector" class="selectorPanel">
 			<div class="selectorControls">
 				<label class="field field--grow">
-					<span>Verden</span>
 					<select v-model="selectedWorldKey">
 						<option value="">Velg verden</option>
+						<option :value="worldFactoryNewSelectionKey">Ny verden</option>
 						<option v-for="option in selectableOptions" :key="option.selectionKey" :value="option.selectionKey">
 							{{ option.label }}
 						</option>
 					</select>
 				</label>
-
-				<button type="button" class="primaryButton" @click="startNewWorld">
-					Ny verden
-				</button>
 			</div>
-
-			<article class="selectedResourceCard">
-				<p class="cardEyebrow">Valgt ressurs</p>
-				<h3>
-					{{ selectedWorldKey === worldFactoryNewSelectionKey ? 'Ny verden' : selectedOption?.label ?? 'Ingen valgt ennå' }}
-				</h3>
-				<p>
-					{{ selectedWorldKey === worldFactoryNewSelectionKey ? 'Tom editor for en ny lokal verden.' : selectedOption?.badge ?? 'Velg en verden eller trykk Ny verden for å åpne editoren.' }}
-				</p>
-				<p class="selectedResourceDescription">
-					{{ selectedWorldKey === worldFactoryNewSelectionKey ? 'Verdenen må ha en uid før den lagres, slik at den senere kan knyttes til et klasserom.' : selectedOption?.description ?? '' }}
-				</p>
-			</article>
 		</section>
 
 		<WorldFactoryEditor
 			v-if="selectedWorldKey"
 			:selection-key="selectedWorldKey"
 			@selection-updated="handleSelectionUpdated"
+			@saved="handleSaved"
+			@deleted="handleDeleted"
 		/>
+
+		<PopupFactorySaved v-if="showSavedPopup" @close="closeSavedPopup" />
 	</section>
 </template>
 
@@ -101,38 +112,30 @@ onMounted(() => {
 }
 
 .factoryHero {
-	margin-bottom: 1.5rem;
+	margin-bottom: 1rem;
 }
 
-.factoryBackLink {
+.backButton {
 	display: inline-flex;
+	align-items: center;
 	margin-bottom: 0.75rem;
+	padding: 0;
+	border: 0;
+	background: transparent;
 	color: var(--primary);
-	font-weight: 700;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
 }
 
-.factoryEyebrow,
-.cardEyebrow {
-	margin: 0 0 0.5rem;
-	color: var(--primary);
-	font-weight: 700;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	font-size: 0.82rem;
+.backButton:hover {
+	text-decoration: underline;
 }
 
 h1,
 h2,
 h3 {
 	margin: 0;
-}
-
-.factoryDescription,
-.selectorHeading p,
-.selectedResourceCard p {
-	margin: 0;
-	color: var(--muted);
-	line-height: 1.5;
 }
 
 .selectorPanel {
@@ -147,17 +150,8 @@ h3 {
 		var(--surface);
 	box-shadow: var(--shadow);
 }
-
-.selectorHeading {
-	display: grid;
-	gap: 0.35rem;
-}
-
 .selectorControls {
 	display: flex;
-	gap: 0.75rem;
-	align-items: end;
-	flex-wrap: wrap;
 }
 
 .field {
@@ -168,10 +162,6 @@ h3 {
 
 .field--grow {
 	flex: 1;
-}
-
-.field span {
-	font-weight: 700;
 }
 
 .field select {
@@ -188,35 +178,6 @@ h3 {
 	outline: none;
 	border-color: var(--primary);
 }
-
-.selectedResourceCard {
-	display: grid;
-	gap: 0.25rem;
-	max-width: 32rem;
-	padding: 1rem;
-	border: 1px solid var(--border);
-	border-radius: 1rem;
-	background: rgba(255, 255, 255, 0.02);
-}
-
-.selectedResourceDescription {
-	font-size: 0.95rem;
-}
-
-.primaryButton {
-	border: 1px solid var(--primary);
-	border-radius: 999px;
-	padding: 0.75rem 1rem;
-	font-weight: 700;
-	background: var(--primary);
-	color: var(--bg);
-	transition: transform var(--transition), border-color var(--transition), background var(--transition);
-}
-
-.primaryButton:hover {
-	transform: translateY(-1px);
-}
-
 @media (max-width: 800px) {
 	.selectorControls {
 		display: grid;

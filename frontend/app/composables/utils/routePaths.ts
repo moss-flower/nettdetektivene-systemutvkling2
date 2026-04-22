@@ -5,6 +5,9 @@ export enum routePaths {
     join = '/login/join',
     register = '/login/register',
     teacherOverview = '/teacher',
+    teacherSettings = '/teacher/settings',
+    teacherNotifications = '/teacher/notifications',
+    teacherClassroomCreate = '/teacher/classroom/create',
     teacherClassroomOverview = '/teacher/classroom/overview',
     teacherClassroomMystery = '/teacher/classroom/mystery',
     teacherClassroomNotifications = '/teacher/classroom/notifications',
@@ -22,7 +25,7 @@ export enum routePaths {
     // to implement next
     studentLeaderboard = '/student/leaderboard',
     studentMystery = '/student/mystery',
-    studentNotes = '/student/notes',
+    studentNotes = '/student/notepad',
     studentSettings = '/student/settings',
 
     notYetImplemented = '/shared/notYetImplemented',
@@ -30,3 +33,4 @@ export enum routePaths {
 }
 
 export const routePathsWithString = (path: routePaths, string: string) => `${path}${string}`;
+export const routePathsWithUid = (path: routePaths, uid: string) => `${path}?uid=${uid}`;

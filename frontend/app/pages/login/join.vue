@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import TextInput from "~/components/ui/TextInput.vue";
+import { routePaths } from '~/composables/utils/routePaths';
 
 //Holds input variables
 const classroomCode = ref("");
-const username = ref("");
 
 //Holds validity of fields
 const classroomCodeValid = ref(false);
-const usernameValid = ref(false);
 
 //Error display
 const formError = ref("");
@@ -16,22 +15,19 @@ const formError = ref("");
 const classroomCodePattern = /^\d{6}$/;
 
 //Dynamically checks if credentials are valid
-const formValid = computed(() =>
-  classroomCodeValid.value && usernameValid.value
-);
+const formValid = computed(() => classroomCodeValid.value);
 
 //Temporary placeholder
 function handleJoinClassroom() {
   formError.value = "";
 
   if (!formValid.value) {
-    formError.value = "Please enter a valid 6-digit classroom code and username.";
+    formError.value = "Skriv inn en gyldig 6-sifret klasseromskode.";
     return;
   }
 
   console.log("Join classroom payload:", {
     classroomCode: classroomCode.value,
-    username: username.value,
   });
 }
 </script>
@@ -41,7 +37,7 @@ function handleJoinClassroom() {
     <div class="joinCard">
       <h1 class="title">Bli med i klasserom</h1>
       <p class="subtitle">
-        Skriv inn klasseromskoden og velg et brukernavn for å bli med.
+        Skriv inn klasseromskoden for å bli med.
       </p>
 
       <form class="joinForm" @submit.prevent="handleJoinClassroom">
@@ -55,17 +51,6 @@ function handleJoinClassroom() {
           :maxLength="6"
           @update:modelValue="classroomCode = $event"
           @update:isValid="classroomCodeValid = $event"
-        />
-
-        <TextInput
-          name="username"
-          label="Brukernavn"
-          placeholder="Detektiv Kari"
-          :required="true"
-          :minLength="3"
-          :maxLength="20"
-          @update:modelValue="username = $event"
-          @update:isValid="usernameValid = $event"
         />
 
         <button type="submit" class="joinButton" :disabled="!formValid">
