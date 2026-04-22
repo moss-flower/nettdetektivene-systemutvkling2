@@ -2,7 +2,7 @@ import type { H3Event } from "h3";
 
 export function getBackendAPI(event: H3Event) {
   const config = useRuntimeConfig(event);
-  const baseURL = (config.public.apiBase as string) || "http://localhost:8080/api";
+  const baseURL = (config.public.apiBase as string);
 
   return $fetch.create({
     baseURL,

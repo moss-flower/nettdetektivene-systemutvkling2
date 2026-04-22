@@ -1,44 +1,39 @@
 <script setup lang="ts">
 import TextInput from "~/components/ui/TextInput.vue";
 import { routePaths } from "~/composables/utils/routePaths";
+import { useClassrooms } from "~/composables/useClassrooms";
 
+const { student } = useClassrooms();
 
-//Holds input variables
+// Holds input variables
 const classroomCode = ref("");
 
-//Holds validity of fields
+// Holds validity of fields
 const classroomCodeValid = ref(false);
 
-//Error display
+// Error display
 const formError = ref("");
 const loading = ref(false);
 
-//REGEX restricts input
+// Regex restricts input
 const classroomCodePattern = /^\d{6}$/;
 
-//Dynamically checks if credentials are valid
+// Dynamically checks if credentials are valid
 const formValid = computed(() => classroomCodeValid.value);
 
-//Join classroom and navigate to student home
+// Join classroom and navigate to student home
 async function handleJoinClassroom() {
   formError.value = "";
 
   if (!formValid.value) {
-    formError.value = "Vennligst skriv inn en gyldig 6-sifret klasseromskode og brukernavn.";
+    formError.value = "Vennligst skriv inn en gyldig 6-sifret klasseromskode.";
     return;
   }
 
   loading.value = true;
 
   try {
-    const { $api } = useNuxtApp();
-    
-    // Call backend to join classroom
-    await $api(`/classrooms/join/${classroomCode.value}`, {
-      method: "POST",
-    });
-
-    // Navigate to student home on success
+    await student.joinClassroom(classroomCode.value.trim());
     await navigateTo(routePaths.studentHome);
   } catch (error: any) {
     formError.value =
@@ -56,9 +51,7 @@ async function handleJoinClassroom() {
   <section class="joinPage">
     <div class="joinCard">
       <h1 class="title">Bli med i klasserom</h1>
-      <p class="subtitle">
-        Skriv inn klasseromskoden for å bli med.
-      </p>
+      <p class="subtitle">Skriv inn klasseromskoden for å bli med.</p>
 
       <form class="joinForm" @submit.prevent="handleJoinClassroom">
         <TextInput
@@ -68,20 +61,9 @@ async function handleJoinClassroom() {
           :required="true"
           :pattern="classroomCodePattern"
           :minLength="6"
-          :maxLength="6"
+          :maxLength="30"
           @update:modelValue="classroomCode = $event"
           @update:isValid="classroomCodeValid = $event"
-        />
-
-        <TextInput
-          name="username"
-          label="Brukernavn"
-          placeholder="Detektiv Kari"
-          :required="true"
-          :minLength="3"
-          :maxLength="20"
-          @update:modelValue="username = $event"
-          @update:isValid="usernameValid = $event"
         />
 
         <button type="submit" class="joinButton" :disabled="!formValid || loading">
