@@ -46,5 +46,10 @@ public record UserPrincipal(User user, Collection<? extends GrantedAuthority> au
     @Override
     public boolean isEnabled() { return true;}
 
-    public UUID getPublicUserUuid() { return user.getPublicUuid(); }
+    /* Returns the {@link User} internal ID (primary key). This should be used for database lookups. */
+    public Long getUserInternalId() { return user.getInternalId(); }
+
+    /* Returns the {@link User} public UUID */
+    public UUID getUserPublicUuid() { return user.getPublicUuid(); } 
+    
 }
