@@ -5,11 +5,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import no.safety.backend.excercise.dto.ExerciseReadRequest;
 import no.safety.backend.excercise.dto.ExerciseRequest;
 import no.safety.backend.excercise.dto.ExerciseResponse;
 import no.safety.backend.excercise.service.ExerciseService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -57,9 +57,9 @@ public class ExerciseController {
   )
   @PreAuthorize("hasRole('TEACHER')")
   @GetMapping
-  public Page<ExerciseResponse> getAll(Pageable pageable) {
+  public Page<ExerciseResponse> getAll(@Valid @RequestBody ExerciseReadRequest req) {
     return exerciseService.list(
-        pageable); //No max page size yet. Maybe add a fix before production.
+        req);
   }
 
   @Operation(

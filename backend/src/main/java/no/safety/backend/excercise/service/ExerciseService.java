@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.exception.NotFoundException;
+import no.safety.backend.excercise.dto.ExerciseReadRequest;
 import no.safety.backend.excercise.dto.ExerciseRequest;
 import no.safety.backend.excercise.dto.ExerciseResponse;
 import no.safety.backend.excercise.model.Exercise;
@@ -39,8 +40,8 @@ public class ExerciseService {
   }
 
   @Transactional(readOnly = true)
-  public Page<ExerciseResponse> list(@PageableDefault Pageable pageable) {
-    return exerciseRepo.findAll(pageable).map(ExerciseResponse::from);
+  public Page<ExerciseResponse> list(ExerciseReadRequest req) {
+    return exerciseRepo.findAll(req.toPageable()).map(ExerciseResponse::from);
   }
 
   @Transactional
