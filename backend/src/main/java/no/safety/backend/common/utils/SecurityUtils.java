@@ -15,7 +15,7 @@ public class SecurityUtils {
     private final UserRepository userRepository;
 
     public User findUserByPublicUuid(UUID uuid) {
-        return userRepository.findByPublicUuid(uuid)
+        return userRepository.findById(uuid)
             .orElseThrow(() -> new EntityNotFoundException("User not found."));
     }
 }

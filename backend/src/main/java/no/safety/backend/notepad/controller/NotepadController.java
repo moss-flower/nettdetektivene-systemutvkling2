@@ -47,7 +47,7 @@ public class NotepadController {
     public Page<NotepadEntryResponse> getNotepadEntries(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid NotepadEntryReadRequest request) {
-        return notepadEntryService.findAll(userPrincipal.getPublicUserUuid(), request);
+        return notepadEntryService.findAll(userPrincipal.getUserInternalId(), request);
     }
 
     /**
@@ -61,7 +61,7 @@ public class NotepadController {
     public NotepadEntryResponse createNotepadEntry(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @RequestBody NotepadEntryCreateRequest request){
-        return notepadEntryService.create(userPrincipal.getPublicUserUuid(), request);
+        return notepadEntryService.create(userPrincipal.getUserInternalId(), request);
     }
 
     /**
@@ -76,7 +76,7 @@ public class NotepadController {
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable UUID uuid, 
             @Valid @RequestBody NotepadEntryUpdateRequest request){
-        return notepadEntryService.update(userPrincipal.getPublicUserUuid(), uuid, request);
+        return notepadEntryService.update(userPrincipal.getUserInternalId(), uuid, request);
     }
 
     /**
@@ -89,6 +89,6 @@ public class NotepadController {
     public void deleteNotepadEntry(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable UUID uuid) {
-        notepadEntryService.delete(userPrincipal.getPublicUserUuid(), uuid);
+        notepadEntryService.delete(userPrincipal.getUserInternalId(), uuid);
     }
 }

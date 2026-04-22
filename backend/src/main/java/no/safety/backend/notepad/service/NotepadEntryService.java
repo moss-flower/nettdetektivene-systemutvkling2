@@ -1,12 +1,13 @@
 package no.safety.backend.notepad.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.safety.backend.exception.domain.UserNotFoundException;
 import no.safety.backend.notepad.dto.NotepadEntryCreateRequest;
 import no.safety.backend.notepad.dto.NotepadEntryReadRequest;
 import no.safety.backend.notepad.dto.NotepadEntryResponse;
 import no.safety.backend.notepad.dto.NotepadEntryUpdateRequest;
+import no.safety.backend.notepad.exception.NotepadEntryNotFoundException;
 import no.safety.backend.notepad.model.NotepadEntry;
 import no.safety.backend.notepad.repository.NotepadEntryRepository;
 import no.safety.backend.user.model.User;
@@ -32,23 +33,23 @@ public class NotepadEntryService {
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
-    public Page<NotepadEntryResponse> findAll(@NonNull UUID callerUuid, @NonNull NotepadEntryReadRequest request) {
-        log.debug("Fetching page of notepad entries for user: {}, request: {}", callerUuid, request);
+    public Page<NotepadEntryResponse> findAll(@NonNull Long callerId, @NonNull NotepadEntryReadRequest request) {
+        log.debug("Fetching page of notepad entries for user: {}, request: {}", callerId, request);
 
-        User user = userRepository.findByPublicUuid(callerUuid)
-            .orElseThrow(() -> new EntityNotFoundException("User not found with UUID: " + callerUuid));
+        User user = userRepository.findById(callerId)
+            .orElseThrow(() -> new UserNotFoundException("User not found."));
 
         return notepadEntryRepository.findAllByUsers_InternalId(user.getInternalId(), request.toPageable())
                 .map(NotepadEntryResponse::fromEntity);
     }
 
     @Transactional
-    public NotepadEntryResponse create(@NonNull UUID callerUuid, @NonNull NotepadEntryCreateRequest request) {
+    public NotepadEntryResponse create(@NonNull Long callerId, @NonNull NotepadEntryCreateRequest request) {
 
-        log.info("Creating new notepad entry for user: {}, request: {}", callerUuid, request);
+        log.info("Creating new notepad entry for user: {}, request: {}", callerId, request);
 
-        User user = userRepository.findByPublicUuid(callerUuid)
-            .orElseThrow(() -> new EntityNotFoundException("User not found with UUID: " + callerUuid));
+        User user = userRepository.findById(callerId)
+            .orElseThrow(() -> new UserNotFoundException("User not found."));
 
         var entry = new NotepadEntry();
 
@@ -67,17 +68,17 @@ public class NotepadEntryService {
     }
 
     @Transactional
-    public NotepadEntryResponse update(@NonNull UUID callerUuid, @NonNull UUID uuid, @NonNull NotepadEntryUpdateRequest request) {
-        log.info("Updating notepad entry: {}, called by user: {}, with request {}", uuid, callerUuid, request);
+    public NotepadEntryResponse update(@NonNull Long callerId, @NonNull UUID uuid, @NonNull NotepadEntryUpdateRequest request) {
+        log.info("Updating notepad entry: {}, called by user: {}, with request {}", uuid, callerId, request);
 
-        User user = userRepository.findByPublicUuid(callerUuid)
-            .orElseThrow(() -> new EntityNotFoundException("User not found with UUID: " + callerUuid));
+        User user = userRepository.findById(callerId)
+            .orElseThrow(() -> new UserNotFoundException("User not found."));
 
         NotepadEntry entry = notepadEntryRepository.findByPublicUuidAndUsers_InternalId(uuid, user.getInternalId())
             .orElseThrow(() -> {
                 log.warn("Security or Resource failure: User ID {} attempted to access Entry UUID {}", 
                         user.getInternalId(), uuid);
-                return new EntityNotFoundException("Notepad entry not found or access denied.");
+                return new NotepadEntryNotFoundException("Notepad entry not found or access denied.");
             });
 
         entry.setTitle(request.title());
@@ -91,17 +92,17 @@ public class NotepadEntryService {
     }
 
     @Transactional
-    public void delete(@NonNull UUID callerUuid, @NonNull UUID uuid) {
-        log.info("Deleting notepad entry: {}, called by user: {}", uuid, callerUuid);
+    public void delete(@NonNull Long callerId, @NonNull UUID uuid) {
+        log.info("Deleting notepad entry: {}, called by user: {}", uuid, callerId);
 
-        User user = userRepository.findByPublicUuid(callerUuid)
-            .orElseThrow(() -> new EntityNotFoundException("User not found with UUID: " + callerUuid));
+        User user = userRepository.findById(callerId)
+            .orElseThrow(() -> new UserNotFoundException("User not found."));
 
         NotepadEntry entry = notepadEntryRepository.findByPublicUuidAndUsers_InternalId(uuid, user.getInternalId())
             .orElseThrow(() -> {
                 log.warn("Security or Resource failure: User ID {} attempted to access Entry UUID {}", 
                         user.getInternalId(), uuid);
-                return new EntityNotFoundException("Notepad entry not found or access denied.");
+                return new NotepadEntryNotFoundException("Notepad entry not found or access denied.");
             });
 
         notepadEntryRepository.delete(entry);

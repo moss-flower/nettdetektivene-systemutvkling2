@@ -452,7 +452,7 @@ class ClassroomManagementIntegrationTest {
       String header = request.getHeader("X-Test-User");
 
       if (header != null) {
-        Optional<User> maybeUser = userRepository.findByPublicUuid(UUID.fromString(header));
+        Optional<User> maybeUser = userRepository.findById(UUID.fromString(header));
         if (maybeUser.isPresent()) {
           UserPrincipal principal = new UserPrincipal(maybeUser.get(), List.of());
           Authentication auth = new UsernamePasswordAuthenticationToken(

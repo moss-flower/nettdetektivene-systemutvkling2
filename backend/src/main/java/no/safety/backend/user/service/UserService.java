@@ -31,7 +31,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public java.util.Optional<User> findByPublicUuid(UUID publicUuid) {
-        return userRepository.findByPublicUuid(publicUuid);
+        return userRepository.findById(publicUuid);
     }
 
     /**
@@ -72,7 +72,7 @@ public class UserService {
      */
     @Transactional
     public void deleteByPublicUuid(UUID publicUuid) {
-        User user = userRepository.findByPublicUuid(publicUuid)
+        User user = userRepository.findById(publicUuid)
                 .orElseThrow(() -> new RuntimeException("User not found with UUID: " + publicUuid));
         
         userRepository.delete(user);

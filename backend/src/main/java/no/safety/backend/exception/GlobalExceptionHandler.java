@@ -4,6 +4,9 @@ import no.safety.backend.exception.domain.NotClassroomOwnerException;
 import no.safety.backend.exception.domain.RoleNotFoundException;
 import no.safety.backend.exception.domain.StudentNotInClassException;
 import no.safety.backend.exception.domain.UserAlreadyExistsException;
+import no.safety.backend.exception.domain.UserNotFoundException;
+import no.safety.backend.notepad.exception.NotepadEntryNotFoundException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -50,6 +53,18 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles {@link UserNotFoundException} exceptions.
+     * @return Returns a {@link ProblemDetail} with HTTP status code: 404 Conflict.
+     */
+    @ExceptionHandler(UserNotFoundException.class)
+    public ProblemDetail handleUserNotFound(UserNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("User not found.");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    /**
      * Handles {@link RoleNotFoundException} exceptions.
      * @return Returns a {@link ProblemDetail} with HTTP status code: 500 INTERNAL_SERVER_ERROR.
      */
@@ -86,6 +101,18 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(NotFoundException.class)
     public ProblemDetail handleNotFoundException(NotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Not Found");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    /**
+     * Handles {@link NotepadEntryNotFoundException} exceptions.
+     * @return Returns a {@link ProblemDetail} with HTTP status code: 404 Not Found.
+     */
+    @ExceptionHandler(NotepadEntryNotFoundException.class)
+    public ProblemDetail handleNotepadEntryNotFoundException(NotFoundException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problem.setTitle("Not Found");
         problem.setProperty("timestamp", Instant.now());
