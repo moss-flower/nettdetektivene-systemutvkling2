@@ -1,84 +1,139 @@
 <script setup lang="ts">
-const achievements = [
-  { title: 'Første steg', description: 'Fullførte første oppgave.' },
-  { title: 'XP-jeger', description: 'Kom over 500 XP.' },
-  { title: 'På vei opp', description: 'Nådde nivå 7.' }
-]
+import MedalGrid from "~/components/medals/MedalGrid.vue";
+import MedalElement from "~/components/medals/MedalElement.vue";
+import medalImage from "~/assets/images/medal.png";
+import type { Medal } from "~/composables/types/MedalTypes";
+
+const medals: Medal[] = [
+  {
+    id: "passordbanken",
+    title: "Passordbanken",
+    description: "Fullførte Passordbanken.",
+    category: "stop",
+    source: "Passordbanken",
+    unlocked: false,
+    imageUrl: medalImage,
+    reward: null,
+  },
+  {
+    id: "sosiale-moteplassen",
+    title: "Sosiale møteplassen",
+    description: "Fullførte Sosiale møteplassen.",
+    category: "stop",
+    source: "Sosiale møteplassen",
+    unlocked: true,
+    imageUrl: medalImage,
+    reward: null,
+  },
+  {
+    id: "nyhetskvartalet",
+    title: "Nyhetskvartalet",
+    description: "Fullførte Nyhetskvartalet.",
+    category: "stop",
+    source: "Nyhetskvartalet",
+    unlocked: false,
+    imageUrl: medalImage,
+    reward: null,
+  },
+  {
+    id: "markedsplassen",
+    title: "Markedsplassen",
+    description: "Fullførte Markedsplassen.",
+    category: "stop",
+    source: "Markedsplassen",
+    unlocked: true,
+    imageUrl: medalImage,
+    reward: null,
+  },
+  {
+    id: "postkontoret",
+    title: "Postkontoret",
+    description: "Fullførte Postkontoret.",
+    category: "stop",
+    source: "Postkontoret",
+    unlocked: false,
+    imageUrl: medalImage,
+    reward: null,
+  },
+  {
+    id: "fotografen",
+    title: "Fotografen",
+    description: "Fullførte Fotografen.",
+    category: "stop",
+    source: "Fotografen",
+    unlocked: true,
+    imageUrl: medalImage,
+    reward: null,
+  },
+  {
+    id: "datasenteret",
+    title: "Datasenteret",
+    description: "Beseiret hovedbossen i Datasenteret.",
+    category: "special",
+    source: "Datasenteret",
+    unlocked: true,
+    imageUrl: medalImage,
+    reward: "Spesialmedalje for å ha slått bossen",
+  },
+];
+
+const regularMedals = computed(() =>
+  medals.filter((medal) => medal.category !== "special")
+);
+
+const specialMedal = computed(() => 
+  medals.find((medal) => medal.category === "special")
+);
 </script>
 
 <template>
-  <section class="achievementsPage">
-    <header class="pageHeader">
-      <NuxtLink class="backLink" :to="routePaths.studentProfile">Tilbake til profil</NuxtLink>
-      <p class="eyebrow">Achievements</p>
-      <h1>Mine prestasjoner</h1>
-      <p class="subtitle">Foreløpige plassholdere til vi får ekte data.</p>
-    </header>
+  <section class="medalsPage">
+    <div class="achievementsSection">
+      <h1 class="sectionTitle">Achievements</h1>
+      <MedalGrid :medals="regularMedals" />
+    </div>
 
-    <div class="achievementsGrid">
-      <article v-for="achievement in achievements" :key="achievement.title" class="achievementCard">
-        <h2>{{ achievement.title }}</h2>
-        <p>{{ achievement.description }}</p>
-      </article>
+    <div class="specialSection">
+      <h1 class="sectionTitle">Special achievement</h1>
+      <MedalElement class="specialMedal" :medal="specialMedal!" />
     </div>
   </section>
 </template>
 
 <style scoped>
-.achievementsPage {
+.medalsPage {
+  height: 100%;
   width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
+  background: rgb(94, 37, 0);
+  display: grid;
+  grid-template-columns: 64% 34%;
+  gap: 2%;
+  padding: var(--space-6);
+}
+
+.pageLabel {
+  margin: 0 0 0.75rem;
+  color: #8e8e93;
+  font-size: 0.85rem;
+}
+
+.achievementsSection,
+.specialSection {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.sectionTitle {
+  font-size: 3.5rem;
+  font-weight: 400;
+  color: white;
+  font-family: Georgia, "Times New Roman", serif;
+  text-align: center;
+  display: flex;
   padding: var(--space-4);
 }
 
-.pageHeader {
-  margin-bottom: var(--space-4);
-}
-
-.backLink {
-  display: inline-block;
-  margin-bottom: 0.75rem;
-  color: var(--primary);
-  font-weight: 600;
-}
-
-.eyebrow {
-  color: var(--primary);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 0.5rem;
-}
-
-h1 {
-  margin: 0 0 0.5rem 0;
-  color: var(--text);
-}
-
-.subtitle {
-  margin: 0;
-  color: var(--muted);
-}
-
-.achievementsGrid {
-  display: grid;
-  gap: 1rem;
-}
-
-.achievementCard {
-  padding: 1rem;
-  border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
-}
-
-.achievementCard h2 {
-  margin-bottom: 0.35rem;
-  color: var(--text);
-}
-
-.achievementCard p {
-  color: var(--muted);
-}
 </style>

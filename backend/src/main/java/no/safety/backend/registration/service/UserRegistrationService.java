@@ -7,13 +7,14 @@ import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import no.safety.backend.exception.domain.RoleNotFoundException;
+import no.safety.backend.exception.domain.UserAlreadyExistsException;
 import no.safety.backend.registration.dto.StudentUserRegistrationRequest;
 import no.safety.backend.registration.dto.TeacherUserRegistrationRequest;
 import no.safety.backend.role.model.RoleType;
 import no.safety.backend.role.repository.RoleRepository;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.model.TeacherUser;
-import no.safety.backend.user.model.User;
 import no.safety.backend.user.repository.StudentUserRepository;
 import no.safety.backend.user.repository.TeacherUserRepository;
 import no.safety.backend.user.service.UserService;
@@ -41,15 +42,17 @@ public class UserRegistrationService {
     @Transactional
     public StudentUser registerStudent(StudentUserRegistrationRequest request) {
 
+        if(userService.existsByEmail(request.email())) {
+            throw new UserAlreadyExistsException("A user with this email already exists.");
+        }
+
         StudentUser studentUser = StudentUser.builder()
             .username(request.username())
             .email(request.email())
             .password(passwordEncoder.encode(request.password()))
             .roles(Set.of(roleRepository.findByType(RoleType.ROLE_STUDENT)
-                .orElseThrow(() -> new RuntimeException("Role not found"))))
+                .orElseThrow(() -> new RoleNotFoundException("Student role not found."))))
             .build();
-
-        validateUniqueUserCredentials(studentUser);
 
         return studentUserRepository.save(studentUser);
     }
@@ -63,32 +66,19 @@ public class UserRegistrationService {
      */
     @Transactional
     public TeacherUser registerTeacher(TeacherUserRegistrationRequest request) {
+        
+        if(userService.existsByEmail(request.email())) {
+            throw new UserAlreadyExistsException("A user with this email already exists.");
+        }
+
         TeacherUser teacherUser = TeacherUser.builder()
             .username(request.username())
             .email(request.email())
             .password(passwordEncoder.encode(request.password()))
             .roles(Set.of(roleRepository.findByType(RoleType.ROLE_TEACHER)
-                .orElseThrow(() -> new RuntimeException("Role not found"))))
+                .orElseThrow(() -> new RoleNotFoundException("Teacher role not found."))))
             .build();
 
-        validateUniqueUserCredentials(teacherUser);
-
         return teacherUserRepository.save(teacherUser);
-    }
-
-    /**
-     * Validates that the user details are unique and do not exist in the database
-     */
-    private void validateUniqueUserCredentials(User user) {
-        if (user == null){
-            throw new NullPointerException("User object is null.");
-        }
-
-        if (userService.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("Email already in use"); 
-        }
-        if (userService.existsByUsername(user.getUsername())) {
-            throw new RuntimeException("Username already taken");
-        }
     }
 }

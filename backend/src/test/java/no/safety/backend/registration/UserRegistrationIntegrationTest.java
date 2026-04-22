@@ -25,7 +25,7 @@ public class UserRegistrationIntegrationTest extends BaseIntegrationTest {
         StudentUserRegistrationRequest request = new StudentUserRegistrationRequest("student", "student@email.no", "password");
 
         client.post()
-            .uri("/api/v1/auth/register/student")
+            .uri("/api/v1/register/student")
             .body(request)
             .exchange()
             .expectStatus().isCreated() 
@@ -40,7 +40,7 @@ public class UserRegistrationIntegrationTest extends BaseIntegrationTest {
         TeacherUserRegistrationRequest request = new TeacherUserRegistrationRequest("teacher", "teacher@email.no", "passord");
 
         client.post()
-            .uri("/api/v1/auth/register/teacher")
+            .uri("/api/v1/register/teacher")
             .body(request)
             .exchange()
             .expectStatus().isCreated() 

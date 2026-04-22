@@ -1,0 +1,163 @@
+<script setup lang="ts">
+import type { XOrYTaskData } from "~/composables/types/TaskTypes";
+
+const props = defineProps<{
+	task: XOrYTaskData;
+}>();
+</script>
+
+<template>
+	<div class="templateSection">
+		<h4>X eller Y</h4>
+		<div class="fieldGrid">
+			<label class="field">
+				<span>Prompt-tittel</span>
+				<input v-model="props.task.prompt!.title" type="text" >
+			</label>
+
+			<label class="field field--full">
+				<span>Prompt-tekst</span>
+				<textarea v-model="props.task.prompt!.text" rows="2"></textarea>
+			</label>
+
+			<label class="field">
+				<span>Riktig valg</span>
+				<select v-model="props.task.correctChoice">
+					<option value="x">X</option>
+					<option value="y">Y</option>
+				</select>
+			</label>
+		</div>
+
+		<div class="splitGrid">
+			<article class="splitCard">
+				<h5>Alternativ X</h5>
+				<label class="field">
+					<span>Eyebrow</span>
+					<input v-model="props.task.options.x.eyebrow" type="text" >
+				</label>
+				<label class="field">
+					<span>Tittel</span>
+					<input v-model="props.task.options.x.title" type="text" >
+				</label>
+				<label class="field">
+					<span>Tekst</span>
+					<textarea v-model="props.task.options.x.text" rows="3"></textarea>
+				</label>
+				<label class="field">
+					<span>Bilde-URL</span>
+					<input v-model="props.task.options.x.imageUrl" type="url" >
+				</label>
+				<label class="field">
+					<span>Bildetekst</span>
+					<input v-model="props.task.options.x.imageAlt" type="text" >
+				</label>
+			</article>
+
+			<article class="splitCard">
+				<h5>Alternativ Y</h5>
+				<label class="field">
+					<span>Eyebrow</span>
+					<input v-model="props.task.options.y.eyebrow" type="text" >
+				</label>
+				<label class="field">
+					<span>Tittel</span>
+					<input v-model="props.task.options.y.title" type="text" >
+				</label>
+				<label class="field">
+					<span>Tekst</span>
+					<textarea v-model="props.task.options.y.text" rows="3"></textarea>
+				</label>
+				<label class="field">
+					<span>Bilde-URL</span>
+					<input v-model="props.task.options.y.imageUrl" type="url" >
+				</label>
+				<label class="field">
+					<span>Bildetekst</span>
+					<input v-model="props.task.options.y.imageAlt" type="text" >
+				</label>
+			</article>
+		</div>
+	</div>
+</template>
+
+<style scoped>
+.templateSection {
+	margin-top: 1rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--border);
+}
+
+.templateSection h4 {
+	margin: 0 0 0.8rem;
+	font-weight: 700;
+}
+
+.fieldGrid,
+.splitGrid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.9rem;
+}
+
+.splitGrid {
+	margin-top: 0.9rem;
+}
+
+.field {
+	display: grid;
+	gap: 0.45rem;
+}
+
+.field--full {
+	grid-column: 1 / -1;
+}
+
+.field span,
+.splitCard h5 {
+	font-weight: 700;
+}
+
+.field input,
+.field select,
+.field textarea {
+	width: 100%;
+	padding: 0.85rem 1rem;
+	border: 1px solid var(--border);
+	border-radius: 0.9rem;
+	background: rgba(0, 0, 0, 0.16);
+	color: var(--text);
+	font: inherit;
+}
+
+.field textarea {
+	resize: vertical;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+	outline: none;
+	border-color: var(--primary);
+}
+
+.splitCard {
+	display: grid;
+	gap: 0.75rem;
+	padding: 1rem;
+	border: 1px solid var(--border);
+	border-radius: 1rem;
+	background: rgba(255, 255, 255, 0.02);
+}
+
+.splitCard h5 {
+	margin: 0;
+}
+
+@media (max-width: 800px) {
+	.fieldGrid,
+	.splitGrid {
+		grid-template-columns: 1fr;
+	}
+}
+</style>

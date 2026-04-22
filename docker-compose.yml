@@ -19,7 +19,7 @@ services:
       retries: 10
       start_period: 30s
 
-  backend: 
+  backend:
     build: ./backend
     container_name: backend
     restart: always
