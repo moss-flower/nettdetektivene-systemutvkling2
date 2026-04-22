@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import TextInput from "~/components/ui/TextInput.vue";
+import { routePaths } from "~/composables/utils/routePaths";
 
 //Holds input variables
 const classroomCode = ref("");
@@ -11,6 +12,7 @@ const usernameValid = ref(false);
 
 //Error display
 const formError = ref("");
+const loading = ref(false);
 
 //REGEX restricts input
 const classroomCodePattern = /^\d{6}$/;
@@ -20,19 +22,36 @@ const formValid = computed(() =>
   classroomCodeValid.value && usernameValid.value
 );
 
-//Temporary placeholder
-function handleJoinClassroom() {
+//Join classroom and navigate to student home
+async function handleJoinClassroom() {
   formError.value = "";
 
   if (!formValid.value) {
-    formError.value = "Please enter a valid 6-digit classroom code and username.";
+    formError.value = "Vennligst skriv inn en gyldig 6-sifret klasseromskode og brukernavn.";
     return;
   }
 
-  console.log("Join classroom payload:", {
-    classroomCode: classroomCode.value,
-    username: username.value,
-  });
+  loading.value = true;
+
+  try {
+    const { $api } = useNuxtApp();
+    
+    // Call backend to join classroom
+    await $api(`/classrooms/join/${classroomCode.value}`, {
+      method: "POST",
+    });
+
+    // Navigate to student home on success
+    await navigateTo(routePaths.studentHome);
+  } catch (error: any) {
+    formError.value =
+      error?.data?.message ||
+      error?.data?.error ||
+      error?.statusMessage ||
+      "Klarte ikke å bli med i klasserommet. Sjekk klasseromskoden.";
+  } finally {
+    loading.value = false;
+  }
 }
 </script>
 
@@ -68,8 +87,8 @@ function handleJoinClassroom() {
           @update:isValid="usernameValid = $event"
         />
 
-        <button type="submit" class="joinButton" :disabled="!formValid">
-          Bli med
+        <button type="submit" class="joinButton" :disabled="!formValid || loading">
+          {{ loading ? "Blir med..." : "Bli med" }}
         </button>
 
         <p v-if="formError" class="formError">{{ formError }}</p>

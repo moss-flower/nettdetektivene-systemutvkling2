@@ -45,7 +45,7 @@ services:
     depends_on:
       - backend
     environment:
-      NUXT_PUBLIC_API_BASE: http://backend:8080/
+      NUXT_PUBLIC_API_BASE: http://backend:8080/api
       NUXT_SESSION_PASSWORD: ${NUXT_SESSION_PASSWORD}
     ports:
       - "3000:3000"
