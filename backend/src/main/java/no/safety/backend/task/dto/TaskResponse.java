@@ -5,7 +5,6 @@ import no.safety.backend.task.model.Task;
 import no.safety.backend.task.model.TemplateKind;
 
 public record TaskResponse(
-    Long id,
     TemplateKind templateKind,
     String introText,
     String feedbackCorrect,
@@ -15,7 +14,6 @@ public record TaskResponse(
 
   public static TaskResponse from(Task t) {
     return new TaskResponse(
-        t.getId(),
         t.getTemplateKind(),
         t.getIntroText(),
         t.getFeedbackCorrect(),

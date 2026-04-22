@@ -1,10 +1,7 @@
 package no.safety.backend.excercise.service;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.exception.NotFoundException;
 import no.safety.backend.excercise.dto.ExerciseRequest;
@@ -15,6 +12,7 @@ import no.safety.backend.task.dto.TaskRequest;
 import no.safety.backend.task.model.Task;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +39,7 @@ public class ExerciseService {
   }
 
   @Transactional(readOnly = true)
-  public Page<ExerciseResponse> list(Pageable pageable) {
+  public Page<ExerciseResponse> list(@PageableDefault Pageable pageable) {
     return exerciseRepo.findAll(pageable).map(ExerciseResponse::from);
   }
 
@@ -50,26 +48,11 @@ public class ExerciseService {
     Exercise e = require(publicId);
     applyScalarFields(e, req);
 
-    Map<Long, Task> existingById = e.getTasks().stream()
-        .filter(t -> t.getId() != null)
-        .collect(Collectors.toMap(Task::getId, t -> t));
-
-    Map<Boolean, List<TaskRequest>> byMatchesExisting = req.tasks().stream()
-        .collect(Collectors.partitioningBy(
-            tr -> tr.id() != null && existingById.containsKey(tr.id())));
-
-    byMatchesExisting.get(true)
-        .forEach(tr -> copyTaskFields(existingById.get(tr.id()), tr));
-
-    List<Task> fresh = byMatchesExisting.get(false).stream()
+    e.getTasks().clear();
+    List<Task> updatedTasks = req.tasks().stream()
         .map(tr -> newTask(e, tr))
         .toList();
-    e.getTasks().addAll(fresh);
-
-    Set<Long> keepIds = byMatchesExisting.get(true).stream()
-        .map(TaskRequest::id)
-        .collect(Collectors.toSet());
-    e.getTasks().removeIf(t -> t.getId() != null && !keepIds.contains(t.getId()));
+    e.getTasks().addAll(updatedTasks);
 
     return ExerciseResponse.from(e);
   }

@@ -37,7 +37,7 @@ public class Task {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Long internalId;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "exercise_id", nullable = false)
@@ -89,7 +89,7 @@ public class Task {
     if (!(o instanceof Task task)) {
       return false;
     }
-    return id != null && id.equals(task.getId());
+    return internalId != null && internalId.equals(task.getInternalId());
   }
 
   @Override

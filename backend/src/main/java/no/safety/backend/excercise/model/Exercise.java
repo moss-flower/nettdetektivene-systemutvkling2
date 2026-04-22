@@ -30,7 +30,7 @@ public class Exercise {
   //Internal database ID
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Long internalId;
 
   //Public UID for api calls
   @Column(updatable = false, nullable = false, unique = true, columnDefinition = "BINARY(16)")

@@ -7,8 +7,6 @@ import jakarta.validation.constraints.Size;
 import no.safety.backend.task.content.TaskContent;
 
 public record TaskRequest(
-    Long id, //So if a task is updated, it can retain its ID.
-
     @NotBlank(message = "introText is required.")
     @Size(max = 2000, message = "introText cannot exceed 2000 characters.")
     String introText,
@@ -25,4 +23,5 @@ public record TaskRequest(
     @Valid
     TaskContent content
 ) {
+
 }
