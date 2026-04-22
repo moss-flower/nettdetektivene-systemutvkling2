@@ -7,6 +7,8 @@ import no.safety.backend.achievements.repository.AchievementRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 public class AchievementInitializer implements CommandLineRunner {
@@ -16,7 +18,6 @@ public class AchievementInitializer implements CommandLineRunner {
   @Override
   public void run(String... args) {
     createIfMissing(
-        "COMPLETE_PASSWORD_BANK",
         "Passordbanken",
         "Fullførte Passordbanken.",
         AchievementCategory.STOP,
@@ -26,7 +27,6 @@ public class AchievementInitializer implements CommandLineRunner {
     );
 
     createIfMissing(
-        "COMPLETE_SOCIAL_SPACE",
         "Sosiale møteplassen",
         "Fullførte Sosiale møteplassen.",
         AchievementCategory.STOP,
@@ -36,7 +36,6 @@ public class AchievementInitializer implements CommandLineRunner {
     );
 
     createIfMissing(
-        "COMPLETE_NEWS_SQUARE",
         "Nyhetskvartalet",
         "Fullførte Nyhetskvartalet.",
         AchievementCategory.STOP,
@@ -46,7 +45,6 @@ public class AchievementInitializer implements CommandLineRunner {
     );
 
     createIfMissing(
-        "COMPLETE_MARKETPLACE",
         "Markedsplassen",
         "Fullførte Markedsplassen.",
         AchievementCategory.STOP,
@@ -56,7 +54,6 @@ public class AchievementInitializer implements CommandLineRunner {
     );
 
     createIfMissing(
-        "COMPLETE_POST_OFFICE",
         "Postkontoret",
         "Fullførte Postkontoret.",
         AchievementCategory.STOP,
@@ -66,7 +63,6 @@ public class AchievementInitializer implements CommandLineRunner {
     );
 
     createIfMissing(
-        "COMPLETE_PHOTOGRAPHER",
         "Fotografen",
         "Fullførte Fotografen.",
         AchievementCategory.STOP,
@@ -76,7 +72,6 @@ public class AchievementInitializer implements CommandLineRunner {
     );
 
     createIfMissing(
-        "BEAT_FINAL_BOSS",
         "Datasenteret",
         "Beseiret hovedbossen i Datasenteret.",
         AchievementCategory.SPECIAL,
@@ -87,7 +82,6 @@ public class AchievementInitializer implements CommandLineRunner {
   }
 
   private void createIfMissing(
-      String code,
       String title,
       String description,
       AchievementCategory category,
@@ -95,12 +89,12 @@ public class AchievementInitializer implements CommandLineRunner {
       String imageUrl,
       String reward
   ) {
-    if (achievementRepository.findByCode(code).isPresent()) {
+    if (achievementRepository.findByTitle(title).isPresent()) {
       return;
     }
 
     Achievement achievement = new Achievement();
-    achievement.setCode(code);
+    achievement.setUUID(UUID.randomUUID());
     achievement.setTitle(title);
     achievement.setDescription(description);
     achievement.setCategory(category);

@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,9 +32,9 @@ public class AchievementService {
    * @return true if a new unlock was created, false if the student already had it
    */
   @Transactional
-  public boolean unlockAchievement(StudentUser student, String achievementCode) {
-    Achievement achievement = achievementRepository.findByCode(achievementCode)
-        .orElseThrow(() -> new IllegalArgumentException("Unknown achievement code: " + achievementCode));
+  public boolean unlockAchievement(StudentUser student, UUID UUID) {
+    Achievement achievement = achievementRepository.findByUUID(UUID)
+        .orElseThrow(() -> new IllegalArgumentException("Unknown achievement code: " + UUID.toString()));
 
     boolean alreadyUnlocked = userAchievementRepository.existsByStudentAndAchievement(student, achievement);
 
@@ -52,21 +53,20 @@ public class AchievementService {
 
   @Transactional(readOnly = true)
   public List<AchievementResponse> getAchievementsForStudent(StudentUser studentUser) {
-    List<Achievement> allAchievements = achievementRepository.findAll();
     List<UserAchievement> unlockedAchievements = userAchievementRepository.findByStudent(studentUser);
 
     Set<Long> unlockedAchievementIds = unlockedAchievements.stream()
-        .map(userAchievement -> userAchievement.getAchievement().getId())
+        .map(userAchievement -> userAchievement.getAchievement().getInternalId())
         .collect(Collectors.toSet());
 
-    return allAchievements.stream()
+    return achievementRepository.findAll().stream()
         .map(achievement -> AchievementResponse.builder()
-            .id(String.valueOf(achievement.getId()))
+            .UUID(achievement.getUUID())
             .title(achievement.getTitle())
             .description(achievement.getDescription())
             .category(achievement.getCategory().name().toLowerCase())
             .source(achievement.getSource())
-            .unlocked(unlockedAchievementIds.contains(achievement.getId()))
+            .unlocked(unlockedAchievementIds.contains(achievement.getInternalId()))
             .imageUrl(achievement.getImageUrl())
             .reward(achievement.getReward())
             .build())
@@ -77,7 +77,7 @@ public class AchievementService {
   public List<AchievementResponse> getAllAchievements() {
     return achievementRepository.findAll().stream()
         .map(achievement -> AchievementResponse.builder()
-            .id(String.valueOf(achievement.getId()))
+            .UUID(achievement.getUUID())
             .title(achievement.getTitle())
             .description(achievement.getDescription())
             .category(achievement.getCategory().name().toLowerCase())

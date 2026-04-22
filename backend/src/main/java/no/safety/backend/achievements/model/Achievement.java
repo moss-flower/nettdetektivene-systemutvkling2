@@ -1,5 +1,7 @@
 package no.safety.backend.achievements.model;
 
+import java.util.UUID;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,10 +16,10 @@ public class Achievement {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Long internalId;
 
   @Column(nullable = false, unique = true)
-  private String code;
+  private UUID UUID;
 
   @Column(nullable = false)
   private String title;

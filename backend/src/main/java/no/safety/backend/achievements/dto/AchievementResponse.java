@@ -1,13 +1,14 @@
 package no.safety.backend.achievements.dto;
 
+import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
 public class AchievementResponse {
-
-  private String id;
+  private UUID UUID;
   private String title;
   private String description;
   private String category;
