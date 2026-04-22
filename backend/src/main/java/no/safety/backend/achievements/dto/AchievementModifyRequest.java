@@ -1,0 +1,16 @@
+package no.safety.backend.achievements.dto;
+
+import lombok.Getter;
+import lombok.Setter;
+import no.safety.backend.achievements.model.AchievementCategory;
+
+@Getter
+@Setter
+public class AchievementModifyRequest {
+  private String title;
+  private String description;
+  private AchievementCategory category;
+  private String source;
+  private String imageUrl;
+  private String reward;
+}

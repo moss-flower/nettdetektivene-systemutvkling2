@@ -1,17 +1,18 @@
 package no.safety.backend.achievements.service;
 
 import lombok.RequiredArgsConstructor;
+import no.safety.backend.achievements.dto.AchievementModifyRequest;
 import no.safety.backend.achievements.dto.AchievementResponse;
 import no.safety.backend.achievements.model.Achievement;
 import no.safety.backend.achievements.model.UserAchievement;
 import no.safety.backend.achievements.repository.AchievementRepository;
 import no.safety.backend.achievements.repository.UserAchievementRepository;
 import no.safety.backend.user.model.StudentUser;
-
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -24,42 +25,16 @@ public class AchievementService {
   private final AchievementRepository achievementRepository;
   private final UserAchievementRepository userAchievementRepository;
 
-  /**
-   * Attempts to unlock one achievement for a student.
-   *
-   * @param student         the student who may unlock the achievement
-   * @param achievementCode the stable achievement code, e.g. COMPLETE_POST_OFFICE
-   * @return true if a new unlock was created, false if the student already had it
-   */
-  @Transactional
-  public boolean unlockAchievement(StudentUser student, UUID UUID) {
-    Achievement achievement = achievementRepository.findByUUID(UUID)
-        .orElseThrow(() -> new IllegalArgumentException("Unknown achievement code: " + UUID.toString()));
-
-    boolean alreadyUnlocked = userAchievementRepository.existsByStudentAndAchievement(student, achievement);
-
-    if (alreadyUnlocked) {
-      return false;
-    }
-
-    UserAchievement userAchievement = new UserAchievement();
-    userAchievement.setStudent(student);
-    userAchievement.setAchievement(achievement);
-    userAchievement.setUnlockedAt(Instant.now());
-
-    userAchievementRepository.save(userAchievement);
-    return true;
-  }
-
   @Transactional(readOnly = true)
-  public List<AchievementResponse> getAchievementsForStudent(StudentUser studentUser) {
-    List<UserAchievement> unlockedAchievements = userAchievementRepository.findByStudent(studentUser);
+  public List<AchievementResponse> getAchievementsForStudent(StudentUser student) {
+    List<Achievement> allAchievements = achievementRepository.findAll();
+    List<UserAchievement> unlockedAchievements = userAchievementRepository.findByStudent(student);
 
     Set<Long> unlockedAchievementIds = unlockedAchievements.stream()
         .map(userAchievement -> userAchievement.getAchievement().getInternalId())
         .collect(Collectors.toSet());
 
-    return achievementRepository.findAll().stream()
+    return allAchievements.stream()
         .map(achievement -> AchievementResponse.builder()
             .UUID(achievement.getUUID())
             .title(achievement.getTitle())
@@ -76,17 +51,76 @@ public class AchievementService {
   @Transactional(readOnly = true)
   public List<AchievementResponse> getAllAchievements() {
     return achievementRepository.findAll().stream()
-        .map(achievement -> AchievementResponse.builder()
-            .UUID(achievement.getUUID())
-            .title(achievement.getTitle())
-            .description(achievement.getDescription())
-            .category(achievement.getCategory().name().toLowerCase())
-            .source(achievement.getSource())
-            .unlocked(false)
-            .imageUrl(achievement.getImageUrl())
-            .reward(achievement.getReward())
-            .build())
+        .map(achievement -> achievementToResponse(achievement, false))
         .toList();
   }
 
+  @Transactional(readOnly = true)
+  public AchievementResponse getAchievementByUUID(UUID achievementUUID) {
+    Achievement achievement = achievementRepository.findByUUID(achievementUUID)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Achievement not found"
+        ));
+
+    return achievementToResponse(achievement, false);
+  }
+
+  @Transactional
+  public AchievementResponse createAchievement(AchievementModifyRequest request) {
+    Achievement achievement = new Achievement();
+    achievement.setUUID(UUID.randomUUID());
+    achievement.setTitle(request.getTitle());
+    achievement.setDescription(request.getDescription());
+    achievement.setCategory(request.getCategory());
+    achievement.setSource(request.getSource());
+    achievement.setImageUrl(request.getImageUrl());
+    achievement.setReward(request.getReward());
+
+    Achievement saved = achievementRepository.save(achievement);
+    return achievementToResponse(saved, false);
+  }
+
+  @Transactional
+  public AchievementResponse updateAchievement(UUID achievementUUID, AchievementModifyRequest request) {
+    Achievement achievement = achievementRepository.findByUUID(achievementUUID)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Achievement not found"
+        ));
+
+    achievement.setTitle(request.getTitle());
+    achievement.setDescription(request.getDescription());
+    achievement.setCategory(request.getCategory());
+    achievement.setSource(request.getSource());
+    achievement.setImageUrl(request.getImageUrl());
+    achievement.setReward(request.getReward());
+
+    Achievement saved = achievementRepository.save(achievement);
+    return achievementToResponse(saved, false);
+  }
+
+  @Transactional
+  public void deleteAchievement(UUID achievementUUID) {
+    Achievement achievement = achievementRepository.findByUUID(achievementUUID)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Achievement not found"
+        ));
+
+    achievementRepository.delete(achievement);
+  }
+
+  private AchievementResponse achievementToResponse(Achievement achievement, boolean unlocked) {
+    return AchievementResponse.builder()
+        .UUID(achievement.getUUID())
+        .title(achievement.getTitle())
+        .description(achievement.getDescription())
+        .category(achievement.getCategory().name().toLowerCase())
+        .source(achievement.getSource())
+        .unlocked(unlocked)
+        .imageUrl(achievement.getImageUrl())
+        .reward(achievement.getReward())
+        .build();
+  }
 }
