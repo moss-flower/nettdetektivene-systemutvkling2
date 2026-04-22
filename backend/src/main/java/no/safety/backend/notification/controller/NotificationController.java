@@ -9,6 +9,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.auth.model.UserPrincipal;
+import no.safety.backend.notification.service.NotificationService;
 import no.safety.backend.notification.service.SseRegistry;
 
 /**
@@ -20,6 +21,7 @@ import no.safety.backend.notification.service.SseRegistry;
 @RequiredArgsConstructor
 public class NotificationController {
     private final SseRegistry sseRegistry;
+    private final NotificationService notificationService;
 
     /**
      * Endpoint for establishing an SSE Emitter connection (one way server events).
@@ -33,7 +35,11 @@ public class NotificationController {
     )
     @GetMapping(value = "/stream")
     public SseEmitter stream(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        return sseRegistry.register(userPrincipal.user().getInternalId());
+        Long userId = userPrincipal.user().getInternalId();
+        SseEmitter emitter = sseRegistry.register(userId);
+
+        notificationService.flushPending(userId);
+        return emitter;
     }
 
 

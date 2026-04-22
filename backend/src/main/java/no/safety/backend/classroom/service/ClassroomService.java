@@ -11,10 +11,13 @@ import no.safety.backend.exception.ConflictException;
 import no.safety.backend.exception.NotFoundException;
 import no.safety.backend.exception.domain.NotClassroomOwnerException;
 import no.safety.backend.exception.domain.StudentNotInClassException;
+import no.safety.backend.notification.dto.NotificationEvent;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.repository.StudentUserRepository;
 import no.safety.backend.user.repository.TeacherUserRepository;
+
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +29,7 @@ public class ClassroomService {
   private final TeacherUserRepository teacherRepo;
   private final StudentUserRepository studentRepo;
   private final ClassroomCodeGenerator codegen;
+  private final ApplicationEventPublisher eventPublisher; // use this for publishing notifications for the teacher
 
   @Transactional
   public ClassroomResponse create(ClassroomRequest req, UUID callerUuid) {
@@ -131,6 +135,8 @@ public class ClassroomService {
 
     member.setClassroom(null);
     c.getMembers().remove(member);
+
+    eventPublisher.publishEvent(new NotificationEvent(memberUuid, classroomId, 0));
     return ClassroomResponse.from(c);
   }
 
