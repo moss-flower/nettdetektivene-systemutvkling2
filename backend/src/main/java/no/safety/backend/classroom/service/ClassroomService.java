@@ -139,7 +139,7 @@ public class ClassroomService {
     classroomRepo.findById(classroomId)
         .orElseThrow(() -> new NotFoundException("Could not find classroom"));
 
-    StudentUser member = studentRepo.findById(callerUuid)
+    StudentUser member = studentRepo.findByPublicUuid(callerUuid)
         .orElseThrow(() -> new NotFoundException("Student not found"));
 
     if (member.getClassroom() == null || !member.getClassroom().getId().equals(classroomId)) {
@@ -165,7 +165,7 @@ public class ClassroomService {
 
   @Transactional(readOnly = true)
   public ClassroomResponse getMyClassroom(UUID callerUuid) {
-    StudentUser student = studentRepo.findById(callerUuid)
+    StudentUser student = studentRepo.findByPublicUuid(callerUuid)
         .orElseThrow(() -> new NotFoundException("Student not found"));
 
     if (student.getClassroom() == null) {
@@ -183,10 +183,10 @@ public class ClassroomService {
   }
 
   private TeacherUser requireTeacher(UUID uuid) {
-    return teacherRepo.findById(uuid).orElseThrow(() -> new NotFoundException("Teacher not found"));
+    return teacherRepo.findByPublicUuid(uuid).orElseThrow(() -> new NotFoundException("Teacher not found"));
   }
 
   private StudentUser requireStudent(UUID uuid) {
-    return studentRepo.findById(uuid).orElseThrow(() -> new NotFoundException("Student not found"));
+    return studentRepo.findByPublicUuid(uuid).orElseThrow(() -> new NotFoundException("Student not found"));
   }
 }

@@ -39,7 +39,7 @@ public class UserServiceTest {
     @Test
     void findByPublicUuid_success() {
         UUID uuid = new UUID(0, 0);
-        when(userRepository.findById(uuid)).thenReturn(Optional.of(user));
+        when(userRepository.findByPublicUuid(uuid)).thenReturn(Optional.of(user));
 
         Optional<User> result = userService.findByPublicUuid(uuid);
 
@@ -65,7 +65,7 @@ public class UserServiceTest {
     @Test
     void deleteByPublicUuid_success() {
         UUID uuid = new UUID(0, 0);
-        when(userRepository.findById(uuid)).thenReturn(Optional.of(user));
+        when(userRepository.findByPublicUuid(uuid)).thenReturn(Optional.of(user));
         
         userService.deleteByPublicUuid(uuid);
 
@@ -75,7 +75,7 @@ public class UserServiceTest {
     @Test
     void deleteByPublicUuid_throwsErrorOnMissingUser() {
         UUID uuid = new UUID(0, 0);
-        when(userRepository.findById(uuid)).thenReturn(Optional.empty());
+        when(userRepository.findByPublicUuid(uuid)).thenReturn(Optional.empty());
         
         assertThatThrownBy(() -> userService.deleteByPublicUuid(uuid))
             .isInstanceOf(RuntimeException.class)

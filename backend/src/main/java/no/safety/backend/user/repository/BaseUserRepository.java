@@ -14,7 +14,7 @@ import no.safety.backend.user.model.User;
  */
 @NoRepositoryBean
 public interface BaseUserRepository<T extends User, ID> extends JpaRepository<T, ID> {
-    Optional<T> findById(UUID publicUuid);
+    Optional<T> findByPublicUuid(UUID uuid);
 
     Optional<T> findByEmail(String email);
     Optional<T> findByUsername(String username);
