@@ -20,7 +20,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import no.safety.backend.user.model.TeacherUser;
+import no.safety.backend.user.model.User;
 
 @Entity
 @Table(name = "notifications")
@@ -48,7 +48,7 @@ public class Notification {
 
     @ManyToOne
     @JoinColumn(name = "target_id", nullable = false)
-    private TeacherUser target;
+    private User target;
 
     @PrePersist
     protected void onCreate(){
