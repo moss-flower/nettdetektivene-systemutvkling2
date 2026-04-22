@@ -7,11 +7,14 @@ import no.safety.backend.achievements.model.UserAchievement;
 import no.safety.backend.achievements.repository.AchievementRepository;
 import no.safety.backend.achievements.repository.UserAchievementRepository;
 import no.safety.backend.user.model.StudentUser;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,18 +26,16 @@ public class AchievementService {
   /**
    * Attempts to unlock one achievement for a student.
    *
-   * @param student the student who may unlock the achievement
+   * @param student         the student who may unlock the achievement
    * @param achievementCode the stable achievement code, e.g. COMPLETE_POST_OFFICE
    * @return true if a new unlock was created, false if the student already had it
    */
   @Transactional
   public boolean unlockAchievement(StudentUser student, String achievementCode) {
     Achievement achievement = achievementRepository.findByCode(achievementCode)
-        .orElseThrow(() ->
-            new IllegalArgumentException("Unknown achievement code: " + achievementCode));
+        .orElseThrow(() -> new IllegalArgumentException("Unknown achievement code: " + achievementCode));
 
-    boolean alreadyUnlocked =
-        userAchievementRepository.existsByStudentAndAchievement(student, achievement);
+    boolean alreadyUnlocked = userAchievementRepository.existsByStudentAndAchievement(student, achievement);
 
     if (alreadyUnlocked) {
       return false;
@@ -50,19 +51,40 @@ public class AchievementService {
   }
 
   @Transactional(readOnly = true)
-  public List<AchievementResponse> getAchievementsForStudent(StudentUser student) {
-    List<UserAchievement> unlockedAchievements = userAchievementRepository.findByStudent(student);
+  public List<AchievementResponse> getAchievementsForStudent(StudentUser studentUser) {
+    List<Achievement> allAchievements = achievementRepository.findAll();
+    List<UserAchievement> unlockedAchievements = userAchievementRepository.findByStudent(studentUser);
 
-    return unlockedAchievements.stream()
-        .map(userAchievement -> AchievementResponse.builder()
-            .id(String.valueOf(userAchievement.getAchievement().getId()))
-            .title(userAchievement.getAchievement().getTitle())
-            .description(userAchievement.getAchievement().getDescription())
-            .category(userAchievement.getAchievement().getCategory().name().toLowerCase())
-            .source(userAchievement.getAchievement().getSource())
-            .unlocked(true)
-            .imageUrl(userAchievement.getAchievement().getImageUrl())
-            .reward(userAchievement.getAchievement().getReward())
+    Set<Long> unlockedAchievementIds = unlockedAchievements.stream()
+        .map(userAchievement -> userAchievement.getAchievement().getId())
+        .collect(Collectors.toSet());
+
+    return allAchievements.stream()
+        .map(achievement -> AchievementResponse.builder()
+            .id(String.valueOf(achievement.getId()))
+            .title(achievement.getTitle())
+            .description(achievement.getDescription())
+            .category(achievement.getCategory().name().toLowerCase())
+            .source(achievement.getSource())
+            .unlocked(unlockedAchievementIds.contains(achievement.getId()))
+            .imageUrl(achievement.getImageUrl())
+            .reward(achievement.getReward())
+            .build())
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public List<AchievementResponse> getAllAchievements() {
+    return achievementRepository.findAll().stream()
+        .map(achievement -> AchievementResponse.builder()
+            .id(String.valueOf(achievement.getId()))
+            .title(achievement.getTitle())
+            .description(achievement.getDescription())
+            .category(achievement.getCategory().name().toLowerCase())
+            .source(achievement.getSource())
+            .unlocked(false)
+            .imageUrl(achievement.getImageUrl())
+            .reward(achievement.getReward())
             .build())
         .toList();
   }
