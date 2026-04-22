@@ -2,13 +2,12 @@
 import TextInput from "~/components/ui/TextInput.vue";
 import { routePaths } from "~/composables/utils/routePaths";
 
+
 //Holds input variables
 const classroomCode = ref("");
-const username = ref("");
 
 //Holds validity of fields
 const classroomCodeValid = ref(false);
-const usernameValid = ref(false);
 
 //Error display
 const formError = ref("");
@@ -18,9 +17,7 @@ const loading = ref(false);
 const classroomCodePattern = /^\d{6}$/;
 
 //Dynamically checks if credentials are valid
-const formValid = computed(() =>
-  classroomCodeValid.value && usernameValid.value
-);
+const formValid = computed(() => classroomCodeValid.value);
 
 //Join classroom and navigate to student home
 async function handleJoinClassroom() {
@@ -60,7 +57,7 @@ async function handleJoinClassroom() {
     <div class="joinCard">
       <h1 class="title">Bli med i klasserom</h1>
       <p class="subtitle">
-        Skriv inn klasseromskoden og velg et brukernavn for å bli med.
+        Skriv inn klasseromskoden for å bli med.
       </p>
 
       <form class="joinForm" @submit.prevent="handleJoinClassroom">

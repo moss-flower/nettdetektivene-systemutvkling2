@@ -35,3 +35,16 @@ docker compose up --build
 ### Spill modell code
 ![Spill modell code](docs/rootToTask-diagram.png)
 
+## Factory Routes
+
+Factory-sidene i frontend støtter nå direkte åpning av en spesifikk ressurs via `?uid=` i URL-en.
+
+Når `uid` er satt:
+- riktig world, station eller exercise åpnes direkte i editoren
+- overskrift og nedtrekksliste for valg skjules
+- brukeren låses til ressursen i URL-en og kan ikke velge en annen fra siden
+
+Eksempler:
+- ` /teacher/factory/worldFactory?uid=min-verden `
+- ` /teacher/factory/stationFactory?uid=min-stasjon `
+- ` /teacher/factory/exerciseFactory?uid=min-oppgave `

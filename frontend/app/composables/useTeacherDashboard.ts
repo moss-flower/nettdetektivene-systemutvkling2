@@ -12,9 +12,16 @@ export type StudentOverviewEntry = StudentLeaderboardEntry & {
   lastActive: string;
 };
 
+export type PendingStudentEntry = {
+  id: string;
+  name: string;
+  requestedAt: string;
+};
+
 export type ClassroomSummary = {
   id: string;
   name: string;
+  worldUid: string;
   totalScore: number;
   studentCount: number;
   averageProgressPercent: number;
@@ -75,6 +82,15 @@ const studentExtras: Record<string, { badges: number; lastActive: string }> = {
   'jonas-moen': { badges: 1, lastActive: 'For 4 dager siden' }
 };
 
+const pendingStudentsByClassroom: Record<string, PendingStudentEntry[]> = {
+  'ronvik-6a': [
+    { id: 'elin-holte', name: 'Elin Holte', requestedAt: 'I dag' },
+    { id: 'markus-bakke', name: 'Markus Bakke', requestedAt: 'For 1 time siden' }
+  ],
+  'ronvik-6b': [],
+  'ronvik-6c': []
+};
+
 const teacherClassroomNotifications: ClassroomNotification[] = [
   { id: 'n1', classroomId: 'ronvik-6a', title: 'Ny innlevering', description: 'Ada Berg har fullført en ny oppgave.', timeLabel: 'For 10 minutter siden' },
   { id: 'n2', classroomId: 'ronvik-6a', title: 'Elev trenger hjelp', description: 'Tobias Solheim har prøvd samme nivå flere ganger.', timeLabel: 'I dag' },
@@ -101,6 +117,12 @@ const classroomNames: Record<string, string> = {
   'ronvik-6c': 'Rønvik skole 6C'
 };
 
+const classroomWorldUids: Record<string, string> = {
+  'ronvik-6a': 'schoolyard',
+  'ronvik-6b': 'quickstart',
+  'ronvik-6c': 'creative-lab'
+};
+
 function calculateProgressPercent(completedLevels: number, totalLevels: number): number {
   if (totalLevels === 0) {
     return 0;
@@ -120,6 +142,7 @@ function buildClassroomSummary(classroomId: string): ClassroomSummary {
   return {
     id: classroomId,
     name: classroomNames[classroomId] ?? 'Ukjent klasserom',
+    worldUid: classroomWorldUids[classroomId] ?? 'schoolyard',
     totalScore,
     studentCount: students.length,
     averageProgressPercent,
@@ -167,6 +190,10 @@ function getteacherClassroomStudents(classroomId: string): StudentOverviewEntry[
     .sort((left, right) => left.name.localeCompare(right.name));
 }
 
+function getTeacherClassroomPendingStudents(classroomId: string): PendingStudentEntry[] {
+  return pendingStudentsByClassroom[classroomId] ?? [];
+}
+
 function getStudentById(classroomId: string, studentId: string): StudentOverviewEntry | null {
   return getteacherClassroomStudents(classroomId).find((student) => student.id === studentId) ?? null;
 }
@@ -189,6 +216,7 @@ export function useTeacherDashboard() {
     getTeacherClassroomById,
     getClassroomLeaderboard,
     getteacherClassroomStudents,
+    getTeacherClassroomPendingStudents,
     getStudentById,
     getteacherClassroomNotifications,
     getTeacherClassroomExercises,
