@@ -1,14 +1,16 @@
 package no.safety.backend.achievements.controller;
 
 import lombok.RequiredArgsConstructor;
-import no.safety.backend.achievements.dto.AchievementModifyRequest;
+import no.safety.backend.achievements.dto.AchievementRequest;
 import no.safety.backend.achievements.dto.AchievementResponse;
 import no.safety.backend.achievements.service.AchievementService;
 import no.safety.backend.auth.model.UserPrincipal;
+import no.safety.backend.role.model.RoleType;
 import no.safety.backend.user.model.StudentUser;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,8 +27,7 @@ public class AchievementController {
    */
   @GetMapping("/unlocked")
   public List<AchievementResponse> getUnlockedStudentAchievements(
-      @AuthenticationPrincipal UserPrincipal userPrincipal
-  ) {
+      @AuthenticationPrincipal UserPrincipal userPrincipal) {
     return achievementService.getAchievementsForStudent((StudentUser) userPrincipal.user());
   }
 
@@ -51,7 +52,19 @@ public class AchievementController {
    */
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  public AchievementResponse createAchievement(@RequestBody AchievementModifyRequest request) {
+  public AchievementResponse createAchievement(
+      @RequestBody AchievementRequest request,
+      @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    boolean isAllowed = userPrincipal.user().getRoles().stream()
+        .anyMatch(role -> role.getType() == RoleType.ROLE_TEACHER ||
+            role.getType() == RoleType.ROLE_ADMIN);
+
+    if (!isAllowed) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN,
+          "Only teachers and admins can create achievements");
+    }
+
     return achievementService.createAchievement(request);
   }
 
@@ -61,8 +74,18 @@ public class AchievementController {
   @PutMapping("/{achievementUUID}")
   public AchievementResponse updateAchievement(
       @PathVariable UUID achievementUUID,
-      @RequestBody AchievementModifyRequest request
-  ) {
+      @RequestBody AchievementRequest request,
+      @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    boolean isAllowed = userPrincipal.user().getRoles().stream()
+        .anyMatch(role -> role.getType() == RoleType.ROLE_TEACHER ||
+            role.getType() == RoleType.ROLE_ADMIN);
+
+    if (!isAllowed) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN,
+          "Only teachers and admins can update achievements");
+    }
+
     return achievementService.updateAchievement(achievementUUID, request);
   }
 
@@ -71,7 +94,19 @@ public class AchievementController {
    */
   @DeleteMapping("/{achievementUUID}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void deleteAchievement(@PathVariable UUID achievementUUID) {
+  public void deleteAchievement(
+      @PathVariable UUID achievementUUID,
+      @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    boolean isAllowed = userPrincipal.user().getRoles().stream()
+        .anyMatch(role -> role.getType() == RoleType.ROLE_TEACHER ||
+            role.getType() == RoleType.ROLE_ADMIN);
+
+    if (!isAllowed) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN,
+          "Only teachers and admins can delete achievements");
+    }
+
     achievementService.deleteAchievement(achievementUUID);
   }
 }
