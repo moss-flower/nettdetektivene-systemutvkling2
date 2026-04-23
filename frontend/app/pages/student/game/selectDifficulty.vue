@@ -115,61 +115,82 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
 
 <style scoped>
 .difficultyPage {
+  --difficulty-hero-bg-top: var(--palette-cream-100);
+  --difficulty-hero-bg-bottom: var(--palette-cream-200);
+  --difficulty-hero-border: var(--palette-overlay-cork-shadow);
+  --difficulty-eyebrow: var(--palette-cork-580);
+  --difficulty-title: var(--palette-cork-900);
+  --difficulty-summary: var(--palette-cork-700);
+  --difficulty-missing-bg: var(--palette-red-100);
+  --difficulty-missing-border: var(--palette-red-200);
+
   display: grid;
-  gap: 1.5rem;
-  padding: clamp(1rem, 2vw, 2rem);
+  gap: var(--space-5);
+  /* fluid outer padding, deliberate exception (token system)*/
+  padding: var(--layout-page-padding-comfortable);
 }
 
 .backLink {
   width: fit-content;
-  font-weight: 700;
-  color: var(--primary);
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width-hairline) solid var(--palette-gray-200);
+  border-radius: var(--radius-pill);
+  background: var(--palette-white);
+  font-weight: var(--font-weight-bold);
+  color: var(--palette-navy-900);
   text-decoration: none;
 }
 
 .difficultyHero {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--space-3);
+  /* fluid inner padding, deliberate exception (token system) */
   padding: clamp(1.25rem, 3vw, 2rem);
-  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-  border-radius: 1.5rem;
-  background: linear-gradient(135deg, #fff7e8 0%, #f6ead1 100%);
-  box-shadow: var(--shadow);
+  border: var(--border-width-hairline) solid var(--difficulty-hero-border);
+  border-radius: var(--radius-4);
+  background: linear-gradient(
+      135deg,
+      var(--difficulty-hero-bg-top) 0%,
+      var(--difficulty-hero-bg-bottom) 100%
+  );
+  box-shadow: var(--shadow-2);
 }
 
 .difficultyEyebrow {
   margin: 0;
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: var(--font-size-14);
+  line-height: var(--font-leading-14);
+  font-weight: var(--font-weight-bold);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #86562b;
+  letter-spacing: var(--font-tracking-wider);
+  color: var(--difficulty-eyebrow);
 }
 
 .difficultyTitle {
   margin: 0;
+  /* fluid display-scale, deliberate exception again */
   font-size: clamp(2rem, 5vw, 3.25rem);
-  color: #3e2a18;
+  color: var(--difficulty-title);
 }
 
 .difficultySummary {
   margin: 0;
   max-width: 60ch;
-  line-height: 1.55;
-  color: #5b4633;
+  line-height: var(--font-leading-base);
+  color: var(--difficulty-summary);
 }
 
 .difficultyGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .missingStation {
-  padding: 1.5rem;
-  border-radius: 1.25rem;
-  background: #fff1ef;
-  border: 1px solid #f3c4bc;
+  padding: var(--space-5);
+  border-radius: var(--radius-3);
+  background: var(--difficulty-missing-bg);
+  border: var(--border-width-hairline) solid var(--difficulty-missing-border);
 }
 
 .missingStation h1,
@@ -178,7 +199,7 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
 }
 
 .missingStation p {
-  margin-top: 0.75rem;
+  margin-top: var(--space-3);
 }
 
 @media (max-width: 900px) {

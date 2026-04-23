@@ -105,7 +105,7 @@ function sendMysterySubmission() {
   <section class="student-mystery">
     <div class="student-mystery__content">
       <header class="student-mystery__header">
-        <NuxtLink class="student-mystery__back" :to="routePaths.studentHome">Tilbake til hjem</NuxtLink>
+        <UiStudentHomeBackButton class="student-mystery__back" />
         <p class="student-mystery__eyebrow">Ukens mysterium</p>
         <div class="student-mystery__titleRow">
           <h1>{{ currentMystery.title }}</h1>
@@ -325,10 +325,6 @@ function sendMysterySubmission() {
 
 .student-mystery__back {
   width: fit-content;
-  color: var(--color-brand-primary);
-  font-weight: var(--font-weight-semibold);
-  text-decoration: none;
-  line-height: 1;
 }
 
 .student-mystery__eyebrow {

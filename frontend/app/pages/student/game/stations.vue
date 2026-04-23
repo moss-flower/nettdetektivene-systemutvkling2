@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import StationCard from "~/components/station/station.vue";
-import { routePaths } from "~/composables/utils/routePaths";
 import { Station } from "~/composables/types/StationType";
 
 const router = useRouter();
@@ -14,9 +13,7 @@ function goBack() {
 
 <template>
   <section class="stationsPage">
-    <button class="goBack" type="button" @click="goBack">
-      ← Tilbake
-    </button>
+    <UiStudentHomeBackButton class="goBack" label="Tilbake" />
 
     <header class="pageIntro">
       <p class="pageEyebrow">Stasjonskart</p>
@@ -38,49 +35,58 @@ function goBack() {
 
 <style scoped>
 .stationsPage {
+  --stations-eyebrow: var(--palette-cork-580);
+  --stations-title: var(--palette-cream-200);
+  --stations-summary: var(--palette-gray-300);
+  --stations-back-bg: var(--palette-white);
+  --stations-back-border: var(--palette-gray-200);
+  --stations-back-text: var(--palette-navy-900);
+
   display: grid;
-  gap: 1.5rem;
-  padding: clamp(1rem, 2vw, 2rem);
+  gap: var(--space-5);
+  padding: var(--layout-page-padding);
 }
 
 .goBack {
   width: fit-content;
-  padding: 0.6rem 1rem;
-  border: 1px solid #d6d6d6;
-  border-radius: 999px;
-  background: #ffffff;
-  color: #1f2937;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width-hairline) solid var(--stations-back-border);
+  border-radius: var(--radius-pill);
+  background: var(--stations-back-bg);
+  color: var(--stations-back-text);
 }
 
 .pageIntro {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .pageEyebrow {
   margin: 0;
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-family: var(--font-family-body), sans-serif;
+  font-size: var(--font-size-14);
+  line-height: var(--font-leading-14);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--font-tracking-wider);
   text-transform: uppercase;
-  color: #86562b;
+  color: var(--stations-eyebrow);
 }
 
 .pageTitle {
   margin: 0;
-  color: #f3f3f3;
+  color: var(--stations-title);
 }
 
 .pageSummary {
   margin: 0;
   max-width: 60ch;
-  color: #d1d5db;
+  color: var(--stations-summary);
 }
 
 .stationGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
+  gap: var(--space-4);
   justify-items: center;
 }
 
