@@ -57,7 +57,7 @@ public class ExerciseController {
   )
   @PreAuthorize("hasRole('TEACHER')")
   @GetMapping
-  public Page<ExerciseResponse> getAll(@Valid @RequestBody ExerciseReadRequest req) {
+  public Page<ExerciseResponse> getAll(@Valid ExerciseReadRequest req) {
     return exerciseService.list(
         req);
   }
