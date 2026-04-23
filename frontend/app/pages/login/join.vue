@@ -1,34 +1,51 @@
 <script setup lang="ts">
-import TextInput from "~/components/ui/TextInput.vue";
-import { routePaths } from '~/composables/utils/routePaths';
+import { routePaths } from "~/composables/utils/routePaths";
+import { useClassrooms } from "~/composables/useClassrooms";
 
-//Holds input variables
-const classroomCode = ref("");
+const { student } = useClassrooms();
 
-//Holds validity of fields
-const classroomCodeValid = ref(false);
+const codeWords = ref(["", "", ""]);
 
-//Error display
+function normalizeCodeWord(value: string) {
+  return value.toUpperCase().replace(/[^A-ZÆØÅ]/g, "").trim();
+}
+
+function updateCodeWord(index: number, value: string) {
+  codeWords.value[index] = normalizeCodeWord(value);
+}
+
+const classroomCode = computed(() => codeWords.value.join("-"));
+
 const formError = ref("");
+const loading = ref(false);
 
-//REGEX restricts input
-const classroomCodePattern = /^\d{6}$/;
+const formValid = computed(() =>
+  codeWords.value.every((word) => word.trim().length > 0),
+);
 
-//Dynamically checks if credentials are valid
-const formValid = computed(() => classroomCodeValid.value);
-
-//Temporary placeholder
-function handleJoinClassroom() {
+async function handleJoinClassroom() {
   formError.value = "";
 
   if (!formValid.value) {
-    formError.value = "Skriv inn en gyldig 6-sifret klasseromskode.";
+    formError.value = "Skriv inn alle tre ordene i klasseromskoden.";
     return;
   }
 
-  console.log("Join classroom payload:", {
-    classroomCode: classroomCode.value,
-  });
+  loading.value = true;
+
+  try {
+    await student.joinClassroom(classroomCode.value);
+    await navigateTo(routePaths.studentHome);
+  } catch (error: any) {
+    formError.value =
+      error?.data?.detail ||
+      error?.data?.message ||
+      error?.data?.error ||
+      error?.statusMessage ||
+      "Klarte ikke å bli med i klasserommet. Sjekk klasseromskoden.";
+  } finally {
+    loading.value = false;
+  }
 }
 </script>
 
@@ -36,25 +53,48 @@ function handleJoinClassroom() {
   <section class="joinPage">
     <div class="joinCard">
       <h1 class="title">Bli med i klasserom</h1>
-      <p class="subtitle">
-        Skriv inn klasseromskoden for å bli med.
-      </p>
+      <p class="subtitle">Skriv inn klasseromskoden for å bli med.</p>
 
       <form class="joinForm" @submit.prevent="handleJoinClassroom">
-        <TextInput
-          name="classroomCode"
-          label="Klasseromskode"
-          placeholder="123456"
-          :required="true"
-          :pattern="classroomCodePattern"
-          :minLength="6"
-          :maxLength="6"
-          @update:modelValue="classroomCode = $event"
-          @update:isValid="classroomCodeValid = $event"
-        />
+        <fieldset class="codeFieldset">
+          <legend class="codeLegend">Klasseromskode</legend>
 
-        <button type="submit" class="joinButton" :disabled="!formValid">
-          Bli med
+          <div class="codeInputs">
+            <input
+              :value="codeWords[0]"
+              class="codeInput"
+              type="text"
+              inputmode="text"
+              autocomplete="off"
+              autocapitalize="characters"
+              @input="updateCodeWord(0, ($event.target as HTMLInputElement).value)"
+            />
+            <span class="codeSeparator">-</span>
+            <input
+              :value="codeWords[1]"
+              class="codeInput"
+              type="text"
+              inputmode="text"
+              autocomplete="off"
+              autocapitalize="characters"
+              @input="updateCodeWord(1, ($event.target as HTMLInputElement).value)"
+            />
+            <span class="codeSeparator">-</span>
+            <input
+              :value="codeWords[2]"
+              class="codeInput"
+              type="text"
+              inputmode="text"
+              autocomplete="off"
+              autocapitalize="characters"
+              @input="updateCodeWord(2, ($event.target as HTMLInputElement).value)"
+            />
+          </div>
+
+        </fieldset>
+
+        <button type="submit" class="joinButton" :disabled="!formValid || loading">
+          {{ loading ? "Blir med..." : "Bli med" }}
         </button>
 
         <p v-if="formError" class="formError">{{ formError }}</p>
@@ -106,6 +146,51 @@ function handleJoinClassroom() {
   gap: 1rem;
 }
 
+.codeFieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.codeLegend {
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.codeInputs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.codeInput {
+  width: 100%;
+  min-width: 0;
+  padding: 0.85rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.codeInput:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.codeSeparator {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
 .joinButton {
   margin-top: 0.5rem;
   padding: 0.9rem 1rem;
@@ -139,5 +224,15 @@ function handleJoinClassroom() {
 .backLink {
   color: var(--primary);
   font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .codeInputs {
+    grid-template-columns: 1fr;
+  }
+
+  .codeSeparator {
+    display: none;
+  }
 }
 </style>

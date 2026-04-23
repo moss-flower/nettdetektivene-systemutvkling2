@@ -6,13 +6,13 @@ import java.util.UUID;
 import no.safety.backend.classroom.model.Classroom;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
+public interface ClassroomRepository extends JpaRepository<Classroom, UUID> {
 
   boolean existsByCode(String code);
 
-  boolean existsByIdAndOwners_PublicUuid(Long id, UUID ownerUuid);
+  boolean existsByUidAndOwners_PublicUuid(UUID uid, UUID ownerUuid);
 
-  Optional<Classroom> findByIdAndOwners_PublicUuid(Long id, UUID ownerUuid);
+  Optional<Classroom> findByUidAndOwners_PublicUuid(UUID uid, UUID ownerUuid);
 
   Set<Classroom> findAllByOwners_PublicUuid(UUID ownerUuid);
 

@@ -70,7 +70,8 @@ public class UserRegistrationControllerTest {
             "jane", "jane@test.com", "secret_password");
         savedTeacher = TeacherUser.builder()
             .username("jane")
-            .email("jane@test.com").password("secret_password")
+            .email("jane@test.com")
+            .password("supersecretpass")
             .internalId(1l)
             .publicUuid(new UUID(0, 0))
             .roles(Set.of())

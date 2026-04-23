@@ -1,143 +1,160 @@
 <script setup lang="ts">
 import { World } from "~/composables/types/WorldTypes";
 import { routePaths } from "~/composables/utils/routePaths";
+import { useClassrooms } from "~/composables/useClassrooms";
+import type { ClassroomRequest } from "~/composables/types/ClassroomTypes";
+import TextInput from "~/components/ui/TextInput.vue";
 
 const route = useRoute();
 const router = useRouter();
+const { teacher } = useClassrooms();
 
 const draft = reactive({
-	name: "",
-	worldUid: "",
+  name: "",
+  description: "",
+  worldUid: "",
 });
 
-const submittedPayload = ref<null | { name: string; worldUid: string }>(null);
+const formError = ref("");
+const loading = ref(false);
 
 const availableWorlds = computed(() => World.backendFetchAllWorlds());
+
 const lockedWorldUid = computed(() => {
-	const uid = route.query.uid;
-
-	return typeof uid === "string" && uid.trim().length > 0 ? uid.trim() : "";
+  const uid = route.query.uid;
+  return typeof uid === "string" ? uid.trim() : "";
 });
+
 const showWorldSelector = computed(() => lockedWorldUid.value.length === 0);
-const selectedWorldUid = computed(() => lockedWorldUid.value || draft.worldUid);
-const selectedWorld = computed(() => {
-	const nextUid = selectedWorldUid.value.trim().toLowerCase();
 
-	return availableWorlds.value.find((world) => world.uid.trim().toLowerCase() === nextUid) ?? null;
+const effectiveWorldUid = computed(() => {
+  return lockedWorldUid.value || draft.worldUid.trim();
 });
-const canCreate = computed(() => draft.name.trim().length > 0 && selectedWorld.value !== null);
+
+const canCreate = computed(() =>
+  draft.name.trim().length > 0 && effectiveWorldUid.value.length > 0,
+);
 
 const goBack = () => {
-	if (import.meta.client && window.history.length > 1) {
-		router.back();
-		return;
-	}
+  if (import.meta.client && window.history.length > 1) {
+    router.back();
+    return;
+  }
 
-	void navigateTo(routePaths.teacherOverview);
+  void navigateTo(routePaths.teacherOverview);
 };
 
-const goToWorldFactory = () => {
-	void navigateTo(routePaths.teacherFactoryWorld);
+const createClassroom = async () => {
+  formError.value = "";
+
+  if (!canCreate.value) {
+    formError.value = "Klasserommet må ha navn, og verden må være satt.";
+    return;
+  }
+
+  loading.value = true;
+
+  try {
+    const payload: ClassroomRequest = {
+      name: draft.name.trim(),
+      description: draft.description.trim(),
+      worldUid: effectiveWorldUid.value,
+    };
+
+    await teacher.createClassroom(payload);
+    await navigateTo(routePaths.teacherOverview);
+  } catch (error: any) {
+    formError.value =
+      error?.data?.message ||
+      error?.data?.error ||
+      error?.statusMessage ||
+      "Klarte ikke å opprette klasserommet.";
+  } finally {
+    loading.value = false;
+  }
 };
-
-const createClassroom = () => {
-	if (!canCreate.value || !selectedWorld.value) {
-		return;
-	}
-
-	submittedPayload.value = {
-		name: draft.name.trim(),
-		worldUid: selectedWorld.value.uid,
-	};
-	console.log("Create classroom payload:", submittedPayload.value);
-};
-
-watch(
-	lockedWorldUid,
-	(uid) => {
-		if (uid) {
-			draft.worldUid = "";
-		}
-	},
-	{ immediate: true },
-);
 </script>
 
 <template>
-	<section class="classroomCreatePage">
-		<header class="pageHeader">
-			<button class="backButton" type="button" @click="goBack">Tilbake</button>
-			<h1>Lag klasserom</h1>
-			<p class="subtitle">
-				Velg hvilken verden klasserommet skal bruke, og klargjor navnet som vises til elevene.
-			</p>
-		</header>
+  <section class="classroomCreatePage">
+    <header class="pageHeader">
+      <button class="backButton" type="button" @click="goBack">Tilbake</button>
+      <h1>Lag klasserom</h1>
+      <p class="subtitle">
+        Gi klasserommet et navn og velg hvilken verden klasserommet skal bruke.
+      </p>
+    </header>
 
-		<form class="pageGrid" @submit.prevent="createClassroom">
-			<div class="editorPanel">
-				<section class="panelSection">
-					<div class="sectionHeading">
-						<h2>Klasserom</h2>
-						<p>Dette er en lokal oppretting inntil backend for klasserom er pa plass.</p>
-					</div>
+    <form class="pageGrid" @submit.prevent="createClassroom">
+      <div class="editorPanel">
+        <section class="panelSection">
+          <div class="sectionHeading">
+            <h2>Klasserom</h2>
+            <p>Oppretter klasserom mot backend.</p>
+          </div>
 
-					<div class="fieldGrid">
-						<label class="field">
-							<span>Navn</span>
-							<input v-model="draft.name" type="text" placeholder="For eksempel: 6A Vaar 2026" >
-						</label>
-					</div>
-				</section>
+          <div class="fieldGrid">
+            <div class="field field--full">
+              <TextInput
+                name="name"
+                label="Navn"
+                placeholder="For eksempel: 6A Vår 2026"
+                :required="true"
+                @update:modelValue="draft.name = $event"
+              />
+            </div>
 
-				<section class="panelSection">
-					<div v-if="showWorldSelector" class="sectionHeading sectionHeading--inline">
-						<div>
-							<h2>Verden</h2>
-							<p>Velg verdenen som skal brukes i klasserommet.</p>
-						</div>
-						<button type="button" class="ghostButton" @click="goToWorldFactory">
-							+ Lag verden
-						</button>
-					</div>
+            <div class="field field--full">
+              <TextInput
+                name="description"
+                label="Beskrivelse"
+                placeholder="For eksempel: Klasse for vårsemesteret"
+                @update:modelValue="draft.description = $event"
+              />
+            </div>
+          </div>
+        </section>
 
-					<div v-if="showWorldSelector" class="fieldGrid">
-						<label class="field field--full">
-							<span>Velg verden</span>
-							<select v-model="draft.worldUid">
-								<option value="">Velg verden</option>
-								<option v-for="world in availableWorlds" :key="world.uid" :value="world.uid">
-									{{ world.uid }}
-								</option>
-							</select>
-						</label>
-					</div>
+        <section class="panelSection">
+          <div class="sectionHeading">
+            <h2>Verden</h2>
+            <p v-if="showWorldSelector">Velg verdenen som skal brukes i klasserommet.</p>
+            <p v-else>Denne verdenen er satt på forhånd og kan ikke endres her.</p>
+          </div>
 
-					<div v-else class="lockedWorldCard">
-						<p class="cardEyebrow">Verden</p>
-						<h3>{{ selectedWorld?.uid ?? lockedWorldUid }}</h3>
-						<p>
-							Klasserommet er bundet til verden fra URL-en og kan ikke bytte verden her.
-						</p>
-					</div>
-				</section>
+          <div v-if="showWorldSelector" class="fieldGrid">
+            <label class="field field--full">
+              <span>Velg verden</span>
+              <select v-model="draft.worldUid">
+                <option value="">Velg verden</option>
+                <option
+                  v-for="world in availableWorlds"
+                  :key="world.uid"
+                  :value="world.uid"
+                >
+                  {{ world.uid }}
+                </option>
+              </select>
+            </label>
+          </div>
 
-				<div class="actionRow actionRow--save">
-					<button type="submit" class="primaryButton" :disabled="!canCreate">
-						Lag klasserom
-					</button>
-				</div>
+          <div v-else class="lockedWorldCard">
+            <p class="cardEyebrow">Verden</p>
+            <h3>{{ lockedWorldUid }}</h3>
+            <p>Denne verdenen er satt på forhånd og kan ikke endres her.</p>
+          </div>
+        </section>
 
-				<section v-if="submittedPayload" class="panelSection successSection">
-					<div class="sectionHeading">
-						<h2>Klasserom lagret lokalt</h2>
-						<p>Payloaden er klar for backend nar klasserom-oppretting blir koblet opp.</p>
-					</div>
+        <div class="actionRow actionRow--save">
+          <button type="submit" class="primaryButton" :disabled="!canCreate || loading">
+            {{ loading ? "Lagrer..." : "Lag klasserom" }}
+          </button>
+        </div>
 
-					<pre class="payloadPreview">{{ JSON.stringify(submittedPayload, null, 2) }}</pre>
-				</section>
-			</div>
-		</form>
-	</section>
+        <p v-if="formError" class="formError">{{ formError }}</p>
+      </div>
+    </form>
+  </section>
 </template>
 
 <style scoped>

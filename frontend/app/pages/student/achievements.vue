@@ -1,103 +1,69 @@
 <script setup lang="ts">
 import MedalGrid from "~/components/medals/MedalGrid.vue";
 import MedalElement from "~/components/medals/MedalElement.vue";
-import medalImage from "~/assets/images/medal.png";
-import type { Medal } from "~/composables/types/MedalTypes";
+import type { AchievementResponse } from "~/composables/types/AchievementTypes";
+import { useAchievements } from "~/composables/useAchievements";
 
-const medals: Medal[] = [
-  {
-    id: "passordbanken",
-    title: "Passordbanken",
-    description: "Fullførte Passordbanken.",
-    category: "stop",
-    source: "Passordbanken",
-    unlocked: false,
-    imageUrl: medalImage,
-    reward: null,
-  },
-  {
-    id: "sosiale-moteplassen",
-    title: "Sosiale møteplassen",
-    description: "Fullførte Sosiale møteplassen.",
-    category: "stop",
-    source: "Sosiale møteplassen",
-    unlocked: true,
-    imageUrl: medalImage,
-    reward: null,
-  },
-  {
-    id: "nyhetskvartalet",
-    title: "Nyhetskvartalet",
-    description: "Fullførte Nyhetskvartalet.",
-    category: "stop",
-    source: "Nyhetskvartalet",
-    unlocked: false,
-    imageUrl: medalImage,
-    reward: null,
-  },
-  {
-    id: "markedsplassen",
-    title: "Markedsplassen",
-    description: "Fullførte Markedsplassen.",
-    category: "stop",
-    source: "Markedsplassen",
-    unlocked: true,
-    imageUrl: medalImage,
-    reward: null,
-  },
-  {
-    id: "postkontoret",
-    title: "Postkontoret",
-    description: "Fullførte Postkontoret.",
-    category: "stop",
-    source: "Postkontoret",
-    unlocked: false,
-    imageUrl: medalImage,
-    reward: null,
-  },
-  {
-    id: "fotografen",
-    title: "Fotografen",
-    description: "Fullførte Fotografen.",
-    category: "stop",
-    source: "Fotografen",
-    unlocked: true,
-    imageUrl: medalImage,
-    reward: null,
-  },
-  {
-    id: "datasenteret",
-    title: "Datasenteret",
-    description: "Beseiret hovedbossen i Datasenteret.",
-    category: "special",
-    source: "Datasenteret",
-    unlocked: true,
-    imageUrl: medalImage,
-    reward: "Spesialmedalje for å ha slått bossen",
-  },
-];
+const { student } = useAchievements();
+
+const medals = ref<AchievementResponse[]>([]);
+const loading = ref(true);
+const formError = ref("");
 
 const regularMedals = computed(() =>
-  medals.filter((medal) => medal.category !== "special")
+  medals.value.filter((medal) => medal.category !== "special"),
 );
 
-const specialMedal = computed(() => 
-  medals.find((medal) => medal.category === "special")
+const specialMedal = computed(() =>
+  medals.value.find((medal) => medal.category === "special") ?? null,
 );
+
+onMounted(async () => {
+  loading.value = true;
+  formError.value = "";
+
+  try {
+    medals.value = await student.getUnlockedAchievements();
+  } catch (error: any) {
+    formError.value =
+      error?.data?.message ||
+      error?.data?.error ||
+      error?.statusMessage ||
+      "Klarte ikke å hente achievements.";
+  } finally {
+    loading.value = false;
+  }
+});
 </script>
 
 <template>
   <UiStudentHomeBackButton class="returnButton" />
   <section class="medalsPage">
-    <div class="achievementsSection">
-      <h1 class="sectionTitle">Achievements</h1>
-      <MedalGrid :medals="regularMedals" />
-    </div>
+    <template v-if="loading">
+      <div class="achievementsSection">
+        <h1 class="sectionTitle">Achievements</h1>
+        <p>Laster achievements...</p>
+      </div>
+    </template>
 
-    <div class="specialSection">
-      <h1 class="sectionTitle">Special achievement</h1>
-      <MedalElement class="specialMedal" :medal="specialMedal!" />
-    </div>
+    <template v-else-if="formError">
+      <div class="achievementsSection">
+        <h1 class="sectionTitle">Achievements</h1>
+        <p>{{ formError }}</p>
+      </div>
+    </template>
+
+    <template v-else>
+      <div class="achievementsSection">
+        <h1 class="sectionTitle">Achievements</h1>
+        <MedalGrid :medals="regularMedals" />
+      </div>
+
+      <div class="specialSection">
+        <h1 class="sectionTitle">Special achievement</h1>
+        <MedalElement v-if="specialMedal" class="specialMedal" :medal="specialMedal" />
+      </div>
+    </template>
   </section>
 </template>
 
@@ -143,5 +109,4 @@ const specialMedal = computed(() =>
   display: flex;
   padding: var(--space-4);
 }
-
 </style>

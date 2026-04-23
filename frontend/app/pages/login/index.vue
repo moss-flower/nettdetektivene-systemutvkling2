@@ -45,11 +45,11 @@ const selectedRole = computed<"elev" | "lærer">(() => {
 const targetRoute = computed(() =>
   selectedRole.value === "lærer"
     ? routePaths.teacherOverview
-    : routePaths.studentHome,
+    : routePaths.join,
 );
 
 const targetLabel = computed(() =>
-  selectedRole.value === "lærer" ? "lærerflaten" : "elevspillet",
+  selectedRole.value === "lærer" ? "lærerflaten" : "klasseromssiden",
 );
 
 const affiliationName = computed(() =>
@@ -74,12 +74,11 @@ async function handleLogin() {
   try {
     await login(email.value.trim(), password.value);
 
-    console.log("CLICKED LOGIN")
-
-    await navigateTo(routePaths.home);
+    await navigateTo(targetRoute.value);
 
   } catch (error: any) {
     formError.value =
+      error?.data?.detail ||
       error?.data?.message ||
       error?.data?.error ||
       error?.statusMessage ||
