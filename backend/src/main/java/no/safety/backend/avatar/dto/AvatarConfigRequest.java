@@ -6,6 +6,7 @@ import no.safety.backend.avatar.enums.HairColor;
 import no.safety.backend.avatar.enums.HairStyle;
 import no.safety.backend.avatar.enums.Outfit;
 import no.safety.backend.avatar.enums.SkinColor;
+import no.safety.backend.avatar.model.AvatarConfig;
 
 public record AvatarConfigRequest (
     @NotNull HairStyle hairStyle, 
@@ -13,4 +14,15 @@ public record AvatarConfigRequest (
     @NotNull Outfit outfit,
     @NotNull EyeColor eyeColor,
     @NotNull SkinColor skinColor
-) {}
+) {
+
+    public AvatarConfig toEntity() {
+        return new AvatarConfig(
+            hairStyle,
+            hairColor,
+            outfit,
+            eyeColor,
+            skinColor
+        );
+    }
+}

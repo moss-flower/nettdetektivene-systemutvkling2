@@ -3,6 +3,7 @@ package no.safety.backend.avatar.model;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import no.safety.backend.avatar.dto.AvatarConfigRequest;
 import no.safety.backend.avatar.enums.EyeColor;
 import no.safety.backend.avatar.enums.HairColor;
 import no.safety.backend.avatar.enums.HairStyle;
