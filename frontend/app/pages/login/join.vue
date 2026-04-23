@@ -1,38 +1,49 @@
 <script setup lang="ts">
 import TextInput from "~/components/ui/TextInput.vue";
+import { routePaths } from "~/composables/utils/routePaths";
+import { useClassrooms } from "~/composables/useClassrooms";
 
-//Holds input variables
+const { student } = useClassrooms();
+
+// Holds input variables
 const classroomCode = ref("");
-const username = ref("");
 
-//Holds validity of fields
+// Holds validity of fields
 const classroomCodeValid = ref(false);
-const usernameValid = ref(false);
 
-//Error display
+// Error display
 const formError = ref("");
+const loading = ref(false);
 
-//REGEX restricts input
+// Regex restricts input
 const classroomCodePattern = /^\d{6}$/;
 
-//Dynamically checks if credentials are valid
-const formValid = computed(() =>
-  classroomCodeValid.value && usernameValid.value
-);
+// Dynamically checks if credentials are valid
+const formValid = computed(() => classroomCodeValid.value);
 
-//Temporary placeholder
-function handleJoinClassroom() {
+// Join classroom and navigate to student home
+async function handleJoinClassroom() {
   formError.value = "";
 
   if (!formValid.value) {
-    formError.value = "Please enter a valid 6-digit classroom code and username.";
+    formError.value = "Vennligst skriv inn en gyldig 6-sifret klasseromskode.";
     return;
   }
 
-  console.log("Join classroom payload:", {
-    classroomCode: classroomCode.value,
-    username: username.value,
-  });
+  loading.value = true;
+
+  try {
+    await student.joinClassroom(classroomCode.value.trim());
+    await navigateTo(routePaths.studentHome);
+  } catch (error: any) {
+    formError.value =
+      error?.data?.message ||
+      error?.data?.error ||
+      error?.statusMessage ||
+      "Klarte ikke å bli med i klasserommet. Sjekk klasseromskoden.";
+  } finally {
+    loading.value = false;
+  }
 }
 </script>
 
@@ -40,9 +51,7 @@ function handleJoinClassroom() {
   <section class="joinPage">
     <div class="joinCard">
       <h1 class="title">Bli med i klasserom</h1>
-      <p class="subtitle">
-        Skriv inn klasseromskoden og velg et brukernavn for å bli med.
-      </p>
+      <p class="subtitle">Skriv inn klasseromskoden for å bli med.</p>
 
       <form class="joinForm" @submit.prevent="handleJoinClassroom">
         <TextInput
@@ -52,24 +61,13 @@ function handleJoinClassroom() {
           :required="true"
           :pattern="classroomCodePattern"
           :minLength="6"
-          :maxLength="6"
+          :maxLength="30"
           @update:modelValue="classroomCode = $event"
           @update:isValid="classroomCodeValid = $event"
         />
 
-        <TextInput
-          name="username"
-          label="Brukernavn"
-          placeholder="Detektiv Kari"
-          :required="true"
-          :minLength="3"
-          :maxLength="20"
-          @update:modelValue="username = $event"
-          @update:isValid="usernameValid = $event"
-        />
-
-        <button type="submit" class="joinButton" :disabled="!formValid">
-          Bli med
+        <button type="submit" class="joinButton" :disabled="!formValid || loading">
+          {{ loading ? "Blir med..." : "Bli med" }}
         </button>
 
         <p v-if="formError" class="formError">{{ formError }}</p>

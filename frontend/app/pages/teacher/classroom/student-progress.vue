@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { routePaths, routePathsWithString } from '~/composables/utils/routePaths';
 const route = useRoute();
 const { getTeacherClassroomById, getStudentById } = useTeacherDashboard();
 

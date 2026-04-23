@@ -1,8 +1,11 @@
 import type { H3Event } from "h3";
 
 export function getBackendAPI(event: H3Event) {
+  const config = useRuntimeConfig(event);
+  const baseURL = (config.public.apiBase as string);
+
   return $fetch.create({
-    baseURL: "http://backend:8080/api",
+    baseURL,
 
     onRequest({ options }) {
       const authHeader = getHeader(event, "authorization");

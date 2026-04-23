@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { getTeacherClassroomSummaries } = useTeacherDashboard();
+import { routePaths, routePathsWithString } from '~/composables/utils/routePaths';
 
 const classroomSummaries = computed(() => getTeacherClassroomSummaries());
 </script>
@@ -12,45 +13,48 @@ const classroomSummaries = computed(() => getTeacherClassroomSummaries());
       <p class="subtitle">Administrer klasserom og følg aktivitet.</p>
     </header>
 
-    <div class="dashboardGrid">
-      <article class="panel classesPanel">
+	<div class="dashboardGrid">
+	  <aside class="panel classesPanel">
         <h2>Dine klasserom</h2>
+        <NuxtLink class="buttonLink createClassroomButton" :to="routePaths.teacherClassroomCreate">
+          + Lag klasserom
+        </NuxtLink>
+        <NuxtLink class="buttonLink joinClassroomButton" :to="routePaths.join">
+          Bli med i klasserom
+        </NuxtLink>
+
         <div class="classroomCards">
-          <article
+          <NuxtLink
             v-for="(classroom, index) in classroomSummaries"
             :key="classroom.id"
             class="classroomCard"
             :class="`classroomCard--${(index % 3) + 1}`"
+            :to="routePathsWithString(routePaths.teacherClassroomOverview, `?classroomId=${classroom.id}`)"
           >
-            <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomOverview, `?classroomId=${classroom.id}`)">{{ classroom.name }}</NuxtLink>
+            <span class="classroomName">{{ classroom.name }}</span>
             <span class="classScore">{{ classroom.totalScore }} poeng</span>
-          </article>
-        </div>
-      </article>
+          </NuxtLink>
+		  </div>
+		</aside>
 
-      <article class="panel">
-        <h2>Innstillinger</h2>
-        <p>Profil, språk, varslingstyper og klasseregler.</p>
-      </article>
+		<div class="topActionRow">
+		  <NuxtLink class="panel settingsButton" :to="routePaths.teacherSettings">
+			<img src="https://placehold.co/64x64" alt="Innstillinger ikon" class="settingsIcon">
+			<span class="settingsButton__label">Innstillinger</span>
+		  </NuxtLink>
 
-      <article class="panel">
-        <h2>Varslinger</h2>
-        <ul class="notificationList">
-          <li>3 elever har levert nye oppgaver.</li>
-        </ul>
-      </article>
+		  <NuxtLink class="panel settingsButton settingsButton--notifications" :to="routePaths.teacherNotifications">
+			<img src="https://placehold.co/64x64" alt="Varslinger ikon" class="settingsIcon">
+			<span class="settingsButton__label">Varslinger</span>
+			<span class="notificationBadge">1</span>
+		  </NuxtLink>
+		</div>
 
       <article class="panel panel--highlight managementPanel">
         <h2>Lag og rediger</h2>
         <p>Lag og/eller rediger klasserom og ressurser fra samme sted.</p>
 
         <div class="factoryActions factoryActions--grid">
-          <NuxtLink class="buttonLink buttonLink--secondary" :to="routePaths.notYetImplemented">
-            Klasserom
-          </NuxtLink>
-          <NuxtLink class="buttonLink buttonLink--secondary" :to="routePaths.teacherFactoryWorld">
-            Verdener
-          </NuxtLink>
           <NuxtLink class="buttonLink buttonLink--secondary" :to="routePaths.teacherFactoryStation">
             Stasjoner
           </NuxtLink>
@@ -58,6 +62,13 @@ const classroomSummaries = computed(() => getTeacherClassroomSummaries());
             Øvelser
           </NuxtLink>
         </div>
+      </article>
+
+      <article class="panel mysteryPanel">
+        <h2>Ukens mysterium</h2>
+        <button type="button" class="buttonLink buttonLink--secondary mysteryButton">
+          Placeholder
+        </button>
       </article>
     </div>
   </section>
@@ -96,7 +107,8 @@ h1 {
 .dashboardGrid {
   display: grid;
   gap: var(--space-4);
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  align-items: start;
 }
 
 .panel {
@@ -106,25 +118,67 @@ h1 {
   padding: var(--space-4);
 }
 
+.topActionRow {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.settingsButton {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: 1rem;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.settingsButton:hover {
+  transform: translateY(-1px);
+  border-color: var(--primary);
+}
+
+.settingsIcon {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 0.75rem;
+}
+
+.settingsButton__label {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.notificationBadge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: #ef4444;
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
 .classesPanel {
-  grid-column: 1 / -1;
+  display: grid;
+  gap: 1rem;
 }
 
 h2 {
   margin: 0 0 0.75rem 0;
 }
 
-.notificationList {
-  margin: 0;
-  padding-left: 1rem;
-  display: grid;
-  gap: 0.4rem;
-}
-
 .classroomCards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .classroomCard {
@@ -132,10 +186,12 @@ h2 {
   flex-direction: column;
   justify-content: space-between;
   gap: 0.75rem;
-  min-height: 120px;
+  min-height: 96px;
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
 .classroomCard--1 {
@@ -150,7 +206,12 @@ h2 {
   background: rgba(244, 114, 182, 0.1);
 }
 
-.classroomCard a {
+.classroomCard:hover {
+  transform: translateY(-1px);
+  border-color: var(--primary);
+}
+
+.classroomName {
   font-weight: 700;
   color: var(--primary);
   font-size: 1.05rem;
@@ -167,7 +228,11 @@ h2 {
 }
 
 .managementPanel {
-  grid-column: 1 / -1;
+  grid-column: 2;
+}
+
+.mysteryPanel {
+  grid-column: 2;
 }
 
 .factoryActions {
@@ -202,13 +267,41 @@ h2 {
   color: var(--primary);
 }
 
+.joinClassroomButton {
+  width: 100%;
+  min-height: 3.5rem;
+}
+
+.createClassroomButton {
+  width: 100%;
+  min-height: 3.5rem;
+}
+
+.mysteryButton {
+  margin-top: 0.9rem;
+  width: 100%;
+}
+
 @media (max-width: 900px) {
   .dashboardGrid {
     grid-template-columns: 1fr;
   }
+
+  .topActionRow {
+    grid-column: auto;
+  }
+
+  .managementPanel {
+    grid-column: auto;
+  }
+
+  .mysteryPanel {
+    grid-column: auto;
+  }
 }
 
 @media (max-width: 640px) {
+  .topActionRow,
   .factoryActions--grid {
     grid-template-columns: 1fr;
   }
