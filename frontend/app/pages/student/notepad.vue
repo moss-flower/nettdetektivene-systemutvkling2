@@ -173,8 +173,6 @@ function handleNewNoteClick() {
   min-width: 0;
   min-height: 0;
   height: 100%;
-  /* deliberate no overflow: hidden
-    NotepadFrame's drop-shdow need to extend onto desk */
 }
 
 /* side rails, transparent; widgets inside carry their own surfaces */
