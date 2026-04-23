@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { routePaths } from "~/composables/utils/routePaths"
+
 const volume = ref(65)
 const volumeLabel = computed(() => `${volume.value}%`)
 </script>

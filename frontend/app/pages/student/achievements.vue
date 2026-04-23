@@ -3,6 +3,7 @@ import MedalGrid from "~/components/medals/MedalGrid.vue";
 import MedalElement from "~/components/medals/MedalElement.vue";
 import medalImage from "~/assets/images/medal.png";
 import type { Medal } from "~/composables/types/MedalTypes";
+import { routePaths } from "~/composables/utils/routePaths";
 
 const medals: Medal[] = [
   {
@@ -87,6 +88,7 @@ const specialMedal = computed(() =>
 </script>
 
 <template>
+  <NuxtLink :to="routePaths.studentHome" class="returnButton">Tilbake til hjem</NuxtLink>
   <section class="medalsPage">
     <div class="achievementsSection">
       <h1 class="sectionTitle">Achievements</h1>
@@ -107,8 +109,26 @@ const specialMedal = computed(() =>
   background: rgb(94, 37, 0);
   display: grid;
   grid-template-columns: 64% 34%;
+  grid-template-rows: auto 1fr;
   gap: 2%;
   padding: var(--space-6);
+}
+
+.returnButton {
+  grid-column: 1 / -1;
+  justify-self: start;
+  margin-bottom: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  padding: 0.45rem 0.9rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.returnButton:hover {
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .pageLabel {

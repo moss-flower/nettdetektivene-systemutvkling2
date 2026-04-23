@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { routePaths } from '~/composables/utils/routePaths'
+
 const canReplay = ref(true)
 
 const replayHelp = () => {
