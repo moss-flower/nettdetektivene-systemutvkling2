@@ -102,38 +102,124 @@ const specialMedal = computed(() =>
 
 <style scoped>
 .medalsPage {
+  /* cork board surface tokens */
+  --trophy-canvas: var(--palette-cork-700);
+  --trophy-canvas-edge: var(--palette-cork-800);
+  --trophy-highlight: var(--palette-overlay-warm-glow);
+  --trophy-shadow: var(--palette-overlay-dark-deep);
+  --trophy-grain-ink: var(--palette-overlay-dark-medium);
+
+  /* wall behind cork board (fills page) */
+  --trophy-wall: var(--palette-wood-900);
+  --trophy-wall-seam: var(--palette-overlay-warm-glow);
+
+  /* shared text tokens */
+  --trophy-title-depth: var(--palette-overlay-dark-strong);
+  --trophy-text: var(--palette-cream-100);
+  --trophy-text-muted: var(--palette-cream-300);
+  --trophy-rule: var(--color-accent-reward);
+
+  position: relative;
   height: 100%;
   width: 100%;
-  background: rgb(94, 37, 0);
+  padding: var(--space-7) var(--space-6);
   display: grid;
-  grid-template-columns: 64% 34%;
-  gap: 2%;
-  padding: var(--space-6);
+  grid-template-columns: 1.65fr 1fr;
+  background: var(--color-bg-canvas);
+  gap: var(--space-7);
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 200px,
+      var(--trophy-wall-seam) 200px,
+      var(--trophy-wall-seam) 201px
+    ),
+    var(--trophy-wall);
+  color: var(--trophy-text);
+  overflow: hidden;
 }
 
-.pageLabel {
-  margin: 0 0 0.75rem;
-  color: #8e8e93;
-  font-size: 0.85rem;
+.achievementsSection {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: var(--space-5);
+  padding: var(--space-6) var(--space-5);
+  background:
+    radial-gradient(ellipse 75% 55% at 28% 18%, var(--trophy-highlight), transparent 62%),
+    radial-gradient(ellipse 70% 90% at 95% 95%, var(--trophy-shadow), transparent 65%),
+    var(--trophy-canvas);
+  border-radius: var(--radius-1);
+  box-shadow: 0 var(--space-2) var(--space-5) var(--palette-overlay-dark-deep);
+  overflow: hidden;
+  isolation: isolate;
 }
 
-.achievementsSection,
+.achievementsSection::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, var(--trophy-grain-ink) 1px, transparent 0);
+  background-size: 3px 3px;
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.achievementsSection::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 48%, var(--trophy-canvas-edge) 100%);
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: -1;
+}
+
 .specialSection {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
+  gap: var(--space-6);
+  background: transparent;
+}
+
+
+.pageLabel {
+  margin: 0 0 var(--space-3);
+  color: var(--trophy-text-muted);
+  font-family: var(--font-family-body), sans-serif;
+  font-size: var(--font-size-14);
+  line-height: var(--font-leading-14);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--font-tracking-wider);
 }
 
 .sectionTitle {
-  font-size: 3.5rem;
-  font-weight: 400;
-  color: white;
-  font-family: Georgia, "Times New Roman", serif;
+  margin: 0 0 var(--space-5);
+  font-family: var(--font-family-serif), sans-serif;
+  font-size: var(--font-size-36);
+  line-height: var(--font-leading-36);
+  font-weight: var(--font-weight-regular);
+  color: var(--trophy-text);
   text-align: center;
-  display: flex;
-  padding: var(--space-4);
+  letter-spacing: var(--font-tracking-normal);
+  text-shadow: 0 1px 2px var(--trophy-title-depth);
 }
 
+.sectionTitle::after {
+  content: "";
+  display: block;
+  width: var(--space-6);
+  height: var(--border-width-hairline);
+  margin: var(--space-2) auto 0;
+  background: var(--trophy-rule);
+  opacity: 0.85;
+}
 </style>

@@ -66,16 +66,17 @@ const stars = computed(() =>
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
   width: 100%;
+  /* 220px matches minmax(220px, 1fr) minimum on .stationGrid */
   max-width: 220px;
-  padding: 1rem;
-  border: 1px solid #d6d6d6;
-  border-radius: 12px;
-  background: #ffffff;
-  color: #1f2937;
+  padding: var(--space-4);
+  border: var(--border-width-hairline) solid var(--palette-gray-200);
+  border-radius: var(--radius-2);
+  background: var(--palette-white);
+  color: var(--palette-navy-900);
   text-decoration: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-card);
 }
 
 .lockedCard {
@@ -84,28 +85,30 @@ const stars = computed(() =>
 
 .levelImage {
   width: 100%;
+  /* thumbnail ceiling inside the 220px card */
   max-width: 140px;
   height: auto;
-  border-radius: 8px;
+  border-radius: var(--radius-1);
   object-fit: cover;
 }
 
 .levelName {
   margin: 0;
   text-align: center;
-  font-size: 1rem;
+  font-size: var(--font-size-16);
+  line-height: var(--font-leading-16);
 }
 
 .starRow {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
+  gap: var(--space-1);
 }
 
 .starImage {
-  width: 24px;
-  height: 24px;
+  width: var(--size-icon-md);
+  height: var(--size-icon-md);
 }
 
 .lock {

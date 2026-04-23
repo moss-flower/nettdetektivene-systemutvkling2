@@ -21,7 +21,7 @@ const props = defineProps<{
 .medalGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 30px;
+  gap: var(--space-5);
   width: 100%;
 }
 </style>

@@ -32,6 +32,10 @@ const medalImage = (): string => {
 
 <style scoped>
 .medalElement {
+  --medal-chip-bg: var(--palette-navy-900);
+  --medal-chip-text: var(--palette-cream-100);
+  --medal-chip-lift: var(--palette-overlay-dark-strong);
+
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
@@ -50,21 +54,21 @@ const medalImage = (): string => {
 
 .title {
   position: absolute;
+  left: 50%;
   bottom: 0;
-  width: 100%;
+  transform: translateX(-50%);
+  max-width: 110%;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: var(--space-1) var(--space-3);
+  background-color: var(--medal-chip-bg);
+  color: var(--medal-chip-text);
+  font-family: var(--font-family-body), sans-serif;
+  font-size: var(--font-size-22);
+  line-height: var(--font-leading-22);
+  font-weight: var(--font-weight-semibold);
   text-align: center;
-
-  padding: 0.5rem;
-  box-sizing: border-box;
-
-  background-color: red;
-  color: white;
-  font-size: 3rem;
-  font-weight: 600;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 var(--space-1) var(--space-2) var(--medal-chip-lift);
 }
 
 .locked {
