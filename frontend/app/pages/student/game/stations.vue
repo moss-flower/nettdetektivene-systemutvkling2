@@ -1,22 +1,13 @@
 <script setup lang="ts">
 import StationCard from "~/components/station/station.vue";
-import { routePaths } from "~/composables/utils/routePaths";
 import { Station } from "~/composables/types/StationType";
 
 const stations = Station.backendFetchAllStations();
-const router = useRouter();
-
-function goBack() {
-  router.push(routePaths.studentHome);
-}
-
 </script>
 
 <template>
   <section class="stationsPage">
-    <button class="goBack" type="button" @click="goBack">
-      ← Tilbake
-    </button>
+    <UiStudentHomeBackButton class="goBack" label="Tilbake" />
 
     <header class="pageIntro">
       <p class="pageEyebrow">Stasjonskart</p>

@@ -1,6 +1,19 @@
 <template>
-  <h1>notes</h1>
+  <section class="pageWrap">
+    <UiStudentHomeBackButton class="returnButton" />
+    <h1>notes</h1>
+  </section>
 </template>
 
-<script setup lang="ts"> </script>
-<style></style>
+<style scoped>
+.pageWrap {
+  position: relative;
+  min-height: 100vh;
+}
+
+.returnButton {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+}
+</style>

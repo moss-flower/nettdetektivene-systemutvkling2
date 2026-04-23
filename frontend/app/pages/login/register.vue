@@ -17,6 +17,9 @@ const repeatPasswordValid = ref(false);
 const formError = ref("");
 const loading = ref(false);
 
+const route = useRoute();
+const { registerStudent, registerTeacher } = useAuth();
+
 // Regex restricts email form
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -35,7 +38,25 @@ const formValid = computed(() =>
   passwordsMatch.value,
 );
 
-const { registerStudent } = useAuth();
+const selectedRole = computed<"elev" | "lærer">(() => {
+  const role = String(route.query.role ?? "").toLowerCase();
+  return role === "lærer" ? "lærer" : "elev";
+});
+
+const registerTitle = computed(() =>
+  selectedRole.value === "lærer" ? "Lærerregistrering" : "Registrering",
+);
+
+const registerSubtitle = computed(() =>
+  selectedRole.value === "lærer"
+    ? "Registrer deg for å bruke lærerflaten i Nettdetektivene!"
+    : "Registrer deg for å spille Nettdetektivene!",
+);
+
+const loginTarget = computed(() => ({
+  path: routePaths.login,
+  query: { role: selectedRole.value },
+}));
 
 async function handleRegister() {
   formError.value = "";
@@ -54,18 +75,21 @@ async function handleRegister() {
   loading.value = true;
 
   try {
-    await registerStudent(
-      username.value.trim(),
-      email.value.trim(),
-      password.value,
-    );
+    if (selectedRole.value === "lærer") {
+      await registerTeacher(
+        username.value.trim(),
+        email.value.trim(),
+        password.value,
+      );
+    } else {
+      await registerStudent(
+        username.value.trim(),
+        email.value.trim(),
+        password.value,
+      );
+    }
 
-    /**
-     * Assumes register creates the user, but does not automatically log them in.
-     * If backend also logs the user in and sets JWT-Cookie here,
-     * you can change this to routePaths.studentHome instead.
-     */
-    await navigateTo(routePaths.login);
+    await navigateTo(loginTarget.value);
   } catch (error: any) {
     formError.value =
       error?.data?.message ||
@@ -81,8 +105,8 @@ async function handleRegister() {
 <template>
   <section class="registerPage">
     <div class="registerCard">
-      <h1 class="title">Registrering</h1>
-      <p class="subtitle">Registrer deg for å spille Nettdetektivene!</p>
+      <h1 class="title">{{ registerTitle }}</h1>
+      <p class="subtitle">{{ registerSubtitle }}</p>
 
       <form class="registerForm" @submit.prevent="handleRegister">
         <TextInput
@@ -134,7 +158,7 @@ async function handleRegister() {
 
       <p class="registerText">
         Har du allerede en konto?
-        <NuxtLink :to="routePaths.login" class="loginLink">Logg inn</NuxtLink>
+        <NuxtLink :to="loginTarget" class="loginLink">Logg inn</NuxtLink>
       </p>
     </div>
   </section>
