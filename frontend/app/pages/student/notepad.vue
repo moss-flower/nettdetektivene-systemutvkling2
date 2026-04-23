@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import leftArrow from "~/assets/images/leftArrow.png";
 import NewNote from "~/components/notepad/NewNote.vue";
 import NotepadFilters from "~/components/notepad/NotepadFilters.vue";
 import NotepadFrame from "~/components/notepad/NotepadFrame.vue";
-import { routePaths } from "~/composables/utils/routePaths";
 import type { NotepadEntry } from "~/composables/types/NotepadTypes.ts";
 
 //Holds selected filter as string
@@ -102,9 +100,7 @@ function handleNewNoteClick() {
     <div class="leftColumn">
       <div></div>
       <p>PLACEHOLDER FOR PROFILE</p>
-      <NuxtLink :to="routePaths.studentHome" class="arrowButton">
-        <img :src="leftArrow" alt="Back" />
-      </NuxtLink>
+      <UiStudentHomeBackButton class="arrowButton" label="Tilbake" />
     </div>
 
     <div class="notepadWrapper">
@@ -160,12 +156,7 @@ function handleNewNoteClick() {
 }
 
 .arrowButton {
-  padding: 0.3rem;
-  width: 70%;
+  width: fit-content;
   margin: 0 auto 15%;
-}
-
-.arrowButton img {
-  max-width: 100%;
 }
 </style>

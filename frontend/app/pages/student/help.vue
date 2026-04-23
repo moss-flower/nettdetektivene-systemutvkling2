@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { routePaths } from '~/composables/utils/routePaths'
-
 const canReplay = ref(true)
 
 const replayHelp = () => {
@@ -15,7 +13,7 @@ const replayHelp = () => {
 <template>
   <section class="student-help">
     <header class="student-help__header">
-      <NuxtLink class="student-help__back" :to="routePaths.studentHome">Tilbake til hjem</NuxtLink>
+      <UiStudentHomeBackButton class="student-help__back" />
       <p class="student-help__eyebrow">Hjelp</p>
       <h2>Hjelpemeldinger for elev</h2>
       <p class="student-help__intro">
@@ -57,8 +55,6 @@ const replayHelp = () => {
 
 .student-help__back {
   width: fit-content;
-  color: var(--primary);
-  font-weight: 700;
 }
 
 .student-help__eyebrow {
