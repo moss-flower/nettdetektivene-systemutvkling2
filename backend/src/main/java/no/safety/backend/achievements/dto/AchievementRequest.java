@@ -6,7 +6,7 @@ import no.safety.backend.achievements.model.AchievementCategory;
 
 @Getter
 @Setter
-public class AchievementModifyRequest {
+public class AchievementRequest {
   private String title;
   private String description;
   private AchievementCategory category;

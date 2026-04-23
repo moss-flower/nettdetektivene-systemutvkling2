@@ -1,7 +1,7 @@
 package no.safety.backend.achievements.service;
 
 import lombok.RequiredArgsConstructor;
-import no.safety.backend.achievements.dto.AchievementModifyRequest;
+import no.safety.backend.achievements.dto.AchievementRequest;
 import no.safety.backend.achievements.dto.AchievementResponse;
 import no.safety.backend.achievements.model.Achievement;
 import no.safety.backend.achievements.model.UserAchievement;
@@ -67,7 +67,7 @@ public class AchievementService {
   }
 
   @Transactional
-  public AchievementResponse createAchievement(AchievementModifyRequest request) {
+  public AchievementResponse createAchievement(AchievementRequest request) {
     Achievement achievement = new Achievement();
     achievement.setUUID(UUID.randomUUID());
     achievement.setTitle(request.getTitle());
@@ -82,7 +82,7 @@ public class AchievementService {
   }
 
   @Transactional
-  public AchievementResponse updateAchievement(UUID achievementUUID, AchievementModifyRequest request) {
+  public AchievementResponse updateAchievement(UUID achievementUUID, AchievementRequest request) {
     Achievement achievement = achievementRepository.findByUUID(achievementUUID)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND,
