@@ -13,7 +13,7 @@ export const useAuth = () => {
     email: string,
     password: string,
   ) => {
-    return await $api("/auth/register/student", {
+    return await $api("/register/student", {
       method: "POST",
       body: { username, email, password },
     });
@@ -24,7 +24,7 @@ export const useAuth = () => {
     email: string,
     password: string,
   ) => {
-    return await $api("/auth/register/teacher", {
+    return await $api("/register/teacher", {
       method: "POST",
       body: { username, email, password },
     });

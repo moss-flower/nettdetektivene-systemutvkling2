@@ -12,7 +12,7 @@ import type {
 export function useClassrooms() {
   /**
    * Custom API client provided by the Nuxt plugin.
-   * This is typically configured with baseURL = "/api"
+   * This is typically configured with baseURL = "/api/v1"
    * and handles auth headers automatically.
    */
   const { $api } = useNuxtApp();
