@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { routePaths } from "~/composables/utils/routePaths";
 import {
 	clearWorldFactoryOverride,
 	createWorldDraft,
@@ -23,26 +24,26 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	(event: "selection-updated", selectionKey: string): void;
+	(event: "saved"): void;
+	(event: "deleted"): void;
 }>();
 
 const draft = reactive<WorldFactoryPayload>(createWorldDraft());
 const loadedSnapshot = ref<WorldFactoryPayload>(createWorldDraft());
 const storedDrafts = ref<WorldFactoryStoredRecord[]>([]);
-const stationUidInput = ref("");
 const copyState = ref<"idle" | "copied" | "failed">("idle");
-const saveState = ref<"idle" | "saved">("idle");
-const loadedWorldUid = ref("");
 const loadedLocalId = ref("");
-const hasStoredOverride = ref(false);
-const lastSavedAt = ref("");
+const showStationPicker = ref(false);
 
 const availableStations = computed(() => Station.backendFetchAllStations());
 const knownStationMap = computed(() => new Map(availableStations.value.map((station) => [station.uid, station])));
+const unselectedStations = computed(() => availableStations.value.filter((station) => !draft.stationUids.includes(station.uid)));
 const parsedSelection = computed(() => parseWorldFactorySelectionKey(props.selectionKey));
 
 const payloadPreview = computed<WorldFactoryPayload>(() => ({
+	title: draft.title.trim(),
 	uid: draft.uid.trim(),
-	description: draft.description.trim(),
+	description: "",
 	image: draft.image.trim() || worldFactoryDefaultImage,
 	stationUids: normalizeWorldStationUids(draft.stationUids),
 }));
@@ -69,19 +70,8 @@ const uidConflict = computed(() => {
 });
 
 const payloadPreviewText = computed(() => JSON.stringify(payloadPreview.value, null, 2));
-const canSave = computed(() => payloadPreview.value.uid.length > 0 && !uidConflict.value);
+const canSave = computed(() => payloadPreview.value.title.length > 0);
 const hasChanges = computed(() => JSON.stringify(payloadPreview.value) !== JSON.stringify(loadedSnapshot.value));
-
-const formattedLastSavedAt = computed(() => {
-	if (!lastSavedAt.value) {
-		return "";
-	}
-
-	return new Intl.DateTimeFormat("nb-NO", {
-		dateStyle: "medium",
-		timeStyle: "short",
-	}).format(new Date(lastSavedAt.value));
-});
 
 const selectedStations = computed(() => payloadPreview.value.stationUids.map((uid, index) => {
 	const station = knownStationMap.value.get(uid);
@@ -90,18 +80,20 @@ const selectedStations = computed(() => payloadPreview.value.stationUids.map((ui
 		uid,
 		order: index + 1,
 		title: station?.title ?? "Ukjent stasjon",
-		description: station?.description ?? "Denne uid-en finnes ikke i dagens mock-data, men kan fortsatt være gyldig i backend senere.",
+		image: station?.image ?? worldFactoryDefaultImage,
+		backgroundColor: station?.backgroundColor ?? "rgba(255, 255, 255, 0.04)",
+		description: station?.description ?? "Denne stasjonen finnes ikke i oversikten akkurat na.",
 		isKnown: Boolean(station),
 	};
 }));
 
 const editorTitle = computed(() => {
 	if (parsedSelection.value.kind === "existing") {
-		return `Rediger verden: ${loadedWorldUid.value}`;
+		return `Rediger verden: ${payloadPreview.value.title || payloadPreview.value.uid || "Uten tittel"}`;
 	}
 
 	if (parsedSelection.value.kind === "draft") {
-		return payloadPreview.value.uid ? `Lokal verden: ${payloadPreview.value.uid}` : "Ny lokal verden";
+		return payloadPreview.value.title ? `Lokal verden: ${payloadPreview.value.title}` : "Ny lokal verden";
 	}
 
 	return "Ny verden";
@@ -116,21 +108,22 @@ const editorDescription = computed(() => {
 		return "Dette er en lokal verden uten backend-kobling. Den kan senere velges når klasserom-oppretting får valg av verden.";
 	}
 
-	return "Opprett en ny verden lokalt. Den kan lagres uten stasjoner, så lenge den har en unik uid.";
+	return "Opprett en ny verden lokalt. Den kan lagres uten stasjoner, så lenge den har en unik id.";
 });
 
 const applyDraft = (payload: WorldFactoryPayload) => {
+	draft.title = payload.title;
 	draft.uid = payload.uid;
-	draft.description = payload.description;
+	draft.description = "";
 	draft.image = payload.image;
 	draft.stationUids.splice(0, draft.stationUids.length, ...payload.stationUids);
-	stationUidInput.value = "";
 };
 
 const updateLoadedSnapshot = (payload: WorldFactoryPayload) => {
 	loadedSnapshot.value = {
+		title: payload.title,
 		uid: payload.uid,
-		description: payload.description,
+		description: "",
 		image: payload.image,
 		stationUids: [...payload.stationUids],
 	};
@@ -141,25 +134,20 @@ const loadSelection = (selectionKey: string) => {
 	const store = readWorldFactoryStore();
 
 	storedDrafts.value = store.drafts;
-	loadedWorldUid.value = "";
 	loadedLocalId.value = "";
-	hasStoredOverride.value = false;
-	lastSavedAt.value = "";
 
 	if (selection.kind === "existing") {
 		const backendWorld = World.backendFetchWorldByUid(selection.uid);
 		const override = store.overrides[selection.uid] ?? null;
 		const nextPayload = override?.payload
 			?? createWorldDraft({
+				title: backendWorld?.uid ?? selection.uid,
 				uid: backendWorld?.uid ?? selection.uid,
 				description: backendWorld?.description ?? "",
 				image: backendWorld?.image ?? worldFactoryDefaultImage,
 				stationUids: backendWorld?.stationUids ?? [],
 			});
 
-		loadedWorldUid.value = selection.uid;
-		hasStoredOverride.value = Boolean(override);
-		lastSavedAt.value = override?.updatedAt ?? "";
 		applyDraft(nextPayload);
 		updateLoadedSnapshot(nextPayload);
 	} else if (selection.kind === "draft") {
@@ -167,7 +155,6 @@ const loadSelection = (selectionKey: string) => {
 		const nextPayload = storedDraft?.payload ?? createWorldDraft();
 
 		loadedLocalId.value = storedDraft?.localId ?? "";
-		lastSavedAt.value = storedDraft?.updatedAt ?? "";
 		applyDraft(nextPayload);
 		updateLoadedSnapshot(nextPayload);
 	} else {
@@ -178,10 +165,9 @@ const loadSelection = (selectionKey: string) => {
 	}
 
 	copyState.value = "idle";
-	saveState.value = "idle";
 };
 
-const addStationUid = (uidValue = stationUidInput.value) => {
+const addStationUid = (uidValue: string) => {
 	const nextUid = uidValue.trim();
 
 	if (!nextUid || draft.stationUids.includes(nextUid)) {
@@ -189,7 +175,7 @@ const addStationUid = (uidValue = stationUidInput.value) => {
 	}
 
 	draft.stationUids.push(nextUid);
-	stationUidInput.value = "";
+	showStationPicker.value = false;
 };
 
 const removeStationUid = (uidToRemove: string) => {
@@ -218,7 +204,28 @@ const moveStation = (index: number, direction: -1 | 1) => {
 const resetDraft = () => {
 	applyDraft(loadedSnapshot.value);
 	copyState.value = "idle";
-	saveState.value = "idle";
+	showStationPicker.value = false;
+};
+
+const goToStationFactory = () => {
+	void navigateTo(routePaths.teacherFactoryStation);
+};
+
+const editStation = (uid: string) => {
+	void navigateTo(`${routePaths.teacherFactoryStation}?uid=${uid}`);
+};
+
+const openStationPicker = () => {
+	showStationPicker.value = true;
+};
+
+const closeStationPicker = () => {
+	showStationPicker.value = false;
+};
+
+const finishSave = (selectionKey: string) => {
+	emit("selection-updated", selectionKey);
+	emit("saved");
 };
 
 const savePayload = () => {
@@ -227,14 +234,11 @@ const savePayload = () => {
 	}
 
 	if (parsedSelection.value.kind === "existing") {
-		const record = saveWorldFactoryOverride(parsedSelection.value.uid, payloadPreview.value);
+		saveWorldFactoryOverride(parsedSelection.value.uid, payloadPreview.value);
 
 		storedDrafts.value = readWorldFactoryStore().drafts;
 		updateLoadedSnapshot(payloadPreview.value);
-		hasStoredOverride.value = true;
-		lastSavedAt.value = record.updatedAt;
-		saveState.value = "saved";
-		emit("selection-updated", makeWorldFactoryExistingSelectionKey(parsedSelection.value.uid));
+		finishSave(makeWorldFactoryExistingSelectionKey(parsedSelection.value.uid));
 		return;
 	}
 
@@ -243,23 +247,32 @@ const savePayload = () => {
 	storedDrafts.value = readWorldFactoryStore().drafts;
 	loadedLocalId.value = record.localId;
 	updateLoadedSnapshot(payloadPreview.value);
-	lastSavedAt.value = record.updatedAt;
-	saveState.value = "saved";
-	emit("selection-updated", makeWorldFactoryDraftSelectionKey(record.localId));
+	finishSave(makeWorldFactoryDraftSelectionKey(record.localId));
 };
 
-const clearLocalState = () => {
+const saveAsNew = () => {
+	if (!canSave.value) {
+		return;
+	}
+
+	const record = saveWorldFactoryDraft(payloadPreview.value);
+
+	storedDrafts.value = readWorldFactoryStore().drafts;
+	loadedLocalId.value = record.localId;
+	updateLoadedSnapshot(payloadPreview.value);
+	finishSave(makeWorldFactoryDraftSelectionKey(record.localId));
+};
+
+const deleteSelection = () => {
 	if (parsedSelection.value.kind === "existing") {
 		clearWorldFactoryOverride(parsedSelection.value.uid);
-		loadSelection(makeWorldFactoryExistingSelectionKey(parsedSelection.value.uid));
-		emit("selection-updated", makeWorldFactoryExistingSelectionKey(parsedSelection.value.uid));
+		emit("deleted");
 		return;
 	}
 
 	if (parsedSelection.value.kind === "draft" && loadedLocalId.value) {
 		removeWorldFactoryDraft(loadedLocalId.value);
-		storedDrafts.value = readWorldFactoryStore().drafts;
-		emit("selection-updated", "__new_world__");
+		emit("deleted");
 	}
 };
 
@@ -284,172 +297,127 @@ watch(payloadPreviewText, () => {
 	if (copyState.value !== "idle") {
 		copyState.value = "idle";
 	}
-
-	if (saveState.value === "saved" && hasChanges.value) {
-		saveState.value = "idle";
-	}
 });
 </script>
 
 <template>
-	<div class="factoryGrid">
-		<form class="editorPanel" @submit.prevent="savePayload">
+	<form class="factoryGrid" @submit.prevent="savePayload">
+		<div class="editorPanel">
 			<section class="panelSection">
 				<div class="sectionHeading">
 					<h2>{{ editorTitle }}</h2>
 					<p>{{ editorDescription }}</p>
 				</div>
 
-				<div class="summaryGrid">
-					<article class="summaryCard">
-						<p class="cardEyebrow">Kilde</p>
-						<h3>{{ parsedSelection.kind === 'existing' ? 'Eksisterende verden' : parsedSelection.kind === 'draft' ? 'Lokal verden' : 'Ny verden' }}</h3>
-						<p>{{ loadedWorldUid || loadedLocalId || 'Ingen uid ennå' }}</p>
-					</article>
-
-					<article class="summaryCard">
-						<p class="cardEyebrow">Status</p>
-						<h3>{{ saveState === 'saved' ? 'Lokalt lagret' : hasStoredOverride ? 'Lokal override aktiv' : 'Redigerer grunnlag' }}</h3>
-						<p>{{ formattedLastSavedAt || 'Ikke lagret i denne nettleseren ennå.' }}</p>
-					</article>
-				</div>
-
 				<div class="fieldGrid">
 					<label class="field">
-						<span>Uid</span>
-						<input v-model="draft.uid" type="text" placeholder="For eksempel: schoolyard" :disabled="parsedSelection.kind === 'existing'" >
+						<span>Tittel</span>
+						<input v-model="draft.title" type="text" placeholder="For eksempel: Skolegarden" >
 					</label>
 
-					<label class="field">
-						<span>Bilde-URL</span>
-						<input v-model="draft.image" type="url" placeholder="https://..." >
-					</label>
-
-					<label class="field field--full">
-						<span>Beskrivelse</span>
-						<textarea v-model="draft.description" rows="3" placeholder="Kort beskrivelse av verdenen. Kan stå tom hvis du bare vil opprette uid-en først." />
-					</label>
-				</div>
-
-				<p v-if="uidConflict" class="warningText">
-					Denne uid-en er allerede i bruk av en annen verden. Velg en unik uid før du lagrer.
-				</p>
-
-				<div class="imagePreviewCard">
-					<img :src="payloadPreview.image" alt="Forhåndsvisning av verdensbilde" class="imagePreview" >
 				</div>
 			</section>
 
 			<section class="panelSection">
 				<div class="sectionHeading">
-					<h2>Station uid-er</h2>
-					<p>Verdener kan lagres uten stasjoner, eller fylles opp og sorteres allerede nå.</p>
+					<h2>Stasjoner</h2>
+					<p>Bygg verdenen som en enkel loype med stasjoner i rekkefolge.</p>
 				</div>
 
-				<div class="uidInputRow">
-					<label class="field field--grow">
-						<span>Legg til uid manuelt</span>
-						<input
-							v-model="stationUidInput"
-							type="text"
-							placeholder="For eksempel: newsstand"
-							@keydown.enter.prevent="addStationUid()"
-						>
-					</label>
+				<div class="worldPath">
+					<article
+						v-for="(station, index) in selectedStations"
+						:key="station.uid"
+						:class="['stationNode', `stationNode--${index % 2 === 0 ? 'left' : 'right'}`]"
+					>
+						<div class="stationNode__imageShell" :style="{ backgroundColor: station.backgroundColor }">
+							<img :src="station.image" :alt="station.title" class="stationNode__image" >
+						</div>
+						<h3>{{ station.title }}</h3>
+						<p class="cardEyebrow">Stasjon {{ station.order }}</p>
+						<div class="stationNode__actions">
+							<button type="button" class="ghostButton stationNode__moveLeft" :disabled="index === 0" @click="moveStation(index, -1)">
+								<img src="https://placehold.co/80x80/1f2937/e5f3ef?text=%3C" alt="Flytt til venstre" class="stationNode__actionIcon" >
+							</button>
+							<button type="button" class="ghostButton" :disabled="!station.isKnown" @click="editStation(station.uid)">
+								<img src="https://placehold.co/80x80/0f766e/ecfeff?text=E" alt="Rediger stasjon" class="stationNode__actionIcon" >
+							</button>
+							<button type="button" class="deleteButton" @click="removeStationUid(station.uid)">
+								<img src="https://placehold.co/80x80/991b1b/fee2e2?text=X" alt="Slett stasjon" class="stationNode__actionIcon" >
+							</button>
+							<button type="button" class="ghostButton stationNode__moveRight" :disabled="index === selectedStations.length - 1" @click="moveStation(index, 1)">
+								<img src="https://placehold.co/80x80/1f2937/e5f3ef?text=%3E" alt="Flytt til hoyre" class="stationNode__actionIcon" >
+							</button>
+						</div>
+					</article>
 
-					<button type="button" class="ghostButton" @click="addStationUid()">
-						+ Legg til uid
+					<button
+						type="button"
+						:class="['addStationNode', `addStationNode--${selectedStations.length % 2 === 0 ? 'left' : 'right'}`]"
+						@click="openStationPicker"
+					>
+						<span class="addStationNode__plus">+</span>
+						<span>Legg til stasjon</span>
 					</button>
 				</div>
 
-				<div class="knownItems">
-					<article v-for="station in availableStations" :key="station.uid" class="knownCard">
-						<div>
-							<p class="cardEyebrow">Stasjon</p>
-							<h3>{{ station.title }}</h3>
-							<p>{{ station.uid }}</p>
-						</div>
-
-						<button
-							type="button"
-							class="ghostButton"
-							:disabled="draft.stationUids.includes(station.uid)"
-							@click="addStationUid(station.uid)"
-						>
-							{{ draft.stationUids.includes(station.uid) ? 'Lagt til' : 'Bruk uid' }}
-						</button>
-					</article>
-				</div>
-
-				<div v-if="selectedStations.length > 0" class="selectedList">
-					<article v-for="(station, index) in selectedStations" :key="station.uid" class="selectedCard">
-						<div>
-							<p class="cardEyebrow">Plass {{ station.order }}</p>
-							<h3>{{ station.title }}</h3>
-							<p>{{ station.uid }}</p>
-							<span :class="['statusPill', { 'statusPill--manual': !station.isKnown }]">
-								{{ station.isKnown ? 'Kjent stasjon' : 'Manuell uid' }}
-							</span>
-						</div>
-
-						<div class="selectedActions">
-							<button type="button" class="ghostButton" :disabled="index === 0" @click="moveStation(index, -1)">
-								Opp
-							</button>
-							<button type="button" class="ghostButton" :disabled="index === selectedStations.length - 1" @click="moveStation(index, 1)">
-								Ned
-							</button>
-							<button type="button" class="deleteButton" @click="removeStationUid(station.uid)">
-								Fjern
-							</button>
-						</div>
-					</article>
-				</div>
-
-				<p v-else class="emptyState">
-					Ingen station uid-er lagt til ennå. Denne verdenen kan fortsatt lagres.
+				<p v-if="selectedStations.length === 0" class="emptyState emptyState--path">
+					Ingen stasjoner er lagt til ennå. Start med pluss-noden.
 				</p>
+
+				<div v-if="showStationPicker" class="stationPickerOverlay" @click.self="closeStationPicker">
+					<section class="stationPicker" role="dialog" aria-modal="true" aria-labelledby="station-picker-title">
+						<div class="sectionHeading sectionHeading--inline sectionHeading--compact">
+							<div>
+								<h3 id="station-picker-title">Velg stasjon</h3>
+								<p>Legg til en eksisterende stasjon i loypa, eller lag en ny.</p>
+							</div>
+							<button type="button" class="ghostButton" @click="closeStationPicker">
+								Lukk
+							</button>
+						</div>
+
+						<div class="stationPicker__actions">
+							<button type="button" class="ghostButton" @click="goToStationFactory">
+								+ Lag Stasjon
+							</button>
+						</div>
+
+						<div v-if="unselectedStations.length > 0" class="stationPickerList">
+							<button
+								v-for="station in unselectedStations"
+								:key="station.uid"
+								type="button"
+								class="stationPickerCard"
+								@click="addStationUid(station.uid)"
+							>
+								<img :src="station.image" :alt="station.title" class="stationPickerCard__image" >
+								<div>
+									<p class="cardEyebrow">{{ station.uid }}</p>
+									<h3>{{ station.title }}</h3>
+								</div>
+							</button>
+						</div>
+
+						<p v-else class="emptyState">
+							Alle tilgjengelige stasjoner er allerede lagt til i verdenen.
+						</p>
+					</section>
+				</div>
 			</section>
 
-			<div class="actionRow">
+			<div class="actionRow actionRow--reset">
 				<button type="button" class="ghostButton" :disabled="!hasChanges" @click="resetDraft">
 					Tilbakestill endringer
 				</button>
-				<button
-					v-if="parsedSelection.kind !== 'new'"
-					type="button"
-					class="ghostButton"
-					:disabled="parsedSelection.kind === 'existing' ? !hasStoredOverride : !loadedLocalId"
-					@click="clearLocalState"
-				>
-					{{ parsedSelection.kind === 'existing' ? 'Fjern lokal override' : 'Slett lokal verden' }}
-				</button>
-				<button type="submit" class="primaryButton" :disabled="!canSave || !hasChanges">
-					Lagre verden lokalt
-				</button>
 			</div>
-		</form>
+		</div>
 
 		<aside class="previewPanel">
 			<section class="panelSection">
-				<div class="sectionHeading sectionHeading--inline">
-					<div>
-						<h2>Payload</h2>
-						<p>Dette er objektet du senere kan sende med POST til backend.</p>
-					</div>
-
-					<button type="button" class="ghostButton" @click="copyPayload">
-						{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier JSON' }}
-					</button>
-				</div>
-
-				<pre class="payloadPreview">{{ payloadPreviewText }}</pre>
-			</section>
-
-			<section class="panelSection">
 				<div class="sectionHeading">
 					<h2>Innhold</h2>
-					<p>Her ser du hva som blir med i verdenen du redigerer akkurat nå.</p>
+					<p>Her ser du det viktigste i verdenen akkurat nå.</p>
 				</div>
 
 				<div class="statusStack">
@@ -460,20 +428,62 @@ watch(payloadPreviewText, () => {
 					</article>
 
 					<article class="summaryCard">
-						<p class="cardEyebrow">Uid</p>
-						<h3>{{ payloadPreview.uid || 'Ingen uid ennå' }}</h3>
-						<p>Verdens-uid-en er det som senere skal kunne velges når klasserom lages.</p>
+						<p class="cardEyebrow">Tittel</p>
+						<h3>{{ payloadPreview.title || 'Ingen tittel ennå' }}</h3>
+						<p>Backend skal senere lage uid for verdenen automatisk.</p>
 					</article>
 				</div>
 			</section>
+
+			<div class="actionRow actionRow--save">
+				<button
+					v-if="parsedSelection.kind !== 'new'"
+					type="button"
+					class="deleteButton"
+					@click="deleteSelection"
+				>
+					Slett
+				</button>
+				<button type="button" class="ghostButton" :disabled="!canSave" @click="saveAsNew">
+					Lagre som ny
+				</button>
+				<button
+					v-if="parsedSelection.kind !== 'new'"
+					type="submit"
+					class="primaryButton"
+					:disabled="!canSave || !hasChanges"
+				>
+					Lagre
+				</button>
+			</div>
+
+			<section class="panelSection debugSection">
+				<details>
+					<summary class="debugSummary">Debug: payload</summary>
+					<div class="debugContent">
+						<div class="sectionHeading sectionHeading--inline">
+							<div>
+								<h2>Payload</h2>
+								<p>Dette er objektet du senere kan sende med POST til backend.</p>
+							</div>
+
+							<button type="button" class="ghostButton" @click="copyPayload">
+								{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier JSON' }}
+							</button>
+						</div>
+
+						<pre class="payloadPreview">{{ payloadPreviewText }}</pre>
+					</div>
+				</details>
+			</section>
 		</aside>
-	</div>
+	</form>
 </template>
 
 <style scoped>
 .factoryGrid {
 	display: grid;
-	grid-template-columns: minmax(0, 1.2fr) minmax(22rem, 0.8fr);
+	grid-template-columns: 1fr;
 	gap: 1.25rem;
 	align-items: start;
 }
@@ -499,6 +509,10 @@ watch(payloadPreviewText, () => {
 	margin-bottom: 1rem;
 }
 
+.sectionHeading--compact {
+	margin-bottom: 0.75rem;
+}
+
 .sectionHeading--inline {
 	grid-template-columns: 1fr auto;
 	align-items: start;
@@ -507,32 +521,164 @@ watch(payloadPreviewText, () => {
 
 .sectionHeading h2,
 .summaryCard h3,
-.knownCard h3,
-.selectedCard h3 {
+.stationNode h3,
+.stationPickerCard h3 {
 	margin: 0;
 }
 
 .sectionHeading p,
 .summaryCard p,
-.knownCard p,
-.selectedCard p,
+.stationPickerCard p,
 .emptyState {
 	margin: 0;
 	color: var(--muted);
 	line-height: 1.5;
 }
 
-.summaryGrid,
 .statusStack,
-.knownItems,
-.selectedList {
+.stationPickerList {
 	display: grid;
 	gap: 0.75rem;
 }
 
-.summaryGrid {
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	margin-bottom: 1rem;
+
+.worldPath {
+	display: grid;
+	gap: 1rem;
+	justify-items: start;
+}
+
+.stationNode,
+.addStationNode {
+	width: min(100%, 18rem);
+	display: grid;
+	gap: 0.75rem;
+	padding: 1rem;
+	border: 1px solid var(--border);
+	border-radius: 1.2rem;
+	background: rgba(255, 255, 255, 0.03);
+}
+
+.stationNode--right,
+.addStationNode--right {
+	justify-self: end;
+	margin-right: max(0rem, 12%);
+}
+
+.stationNode--left,
+.addStationNode--left {
+	margin-left: max(0rem, 12%);
+}
+
+.stationNode__imageShell {
+	overflow: hidden;
+	border-radius: 1rem;
+	aspect-ratio: 1 / 1;
+	border: 1px solid var(--border);
+}
+
+.stationNode__image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.stationNode__actions {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	flex-wrap: nowrap;
+}
+
+.stationNode__actionIcon {
+	display: block;
+	width: 3rem;
+	height: 3rem;
+	border-radius: 0.45rem;
+}
+
+.stationNode__moveLeft {
+	margin-right: auto;
+}
+
+.stationNode__moveRight {
+	margin-left: auto;
+}
+
+.addStationNode {
+	place-items: center;
+	min-height: 13rem;
+	background: rgba(101, 240, 175, 0.06);
+	color: var(--text);
+	text-align: center;
+}
+
+.addStationNode__plus {
+	display: grid;
+	place-items: center;
+	width: 4.5rem;
+	height: 4.5rem;
+	border-radius: 999px;
+	border: 1px dashed var(--primary);
+	color: var(--primary);
+	font-size: 2rem;
+	font-weight: 700;
+}
+
+.emptyState--path {
+	margin-top: 1rem;
+}
+
+.stationPickerOverlay {
+	position: fixed;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	padding: 1.5rem;
+	background: rgba(0, 0, 0, 0.6);
+	z-index: 1000;
+}
+
+.stationPicker {
+	width: min(100%, 52rem);
+	max-height: min(80vh, 46rem);
+	overflow: auto;
+	display: grid;
+	gap: 1rem;
+	padding: 1.5rem;
+	border: 1px solid var(--border);
+	border-radius: 1.2rem;
+	background: var(--surface);
+	box-shadow: var(--shadow);
+}
+
+.stationPicker__actions {
+	display: flex;
+	justify-content: flex-start;
+}
+
+.stationPickerList {
+	grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.stationPickerCard {
+	display: grid;
+	gap: 0.75rem;
+	padding: 0.9rem;
+	border: 1px solid var(--border);
+	border-radius: 1rem;
+	background: rgba(255, 255, 255, 0.03);
+	color: var(--text);
+	text-align: left;
+}
+
+.stationPickerCard__image {
+	display: block;
+	width: 100%;
+	aspect-ratio: 16 / 10;
+	border-radius: 0.9rem;
+	object-fit: cover;
 }
 
 .fieldGrid {
@@ -584,9 +730,7 @@ watch(payloadPreviewText, () => {
 	cursor: not-allowed;
 }
 
-.summaryCard,
-.knownCard,
-.selectedCard {
+.summaryCard {
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-start;
@@ -597,39 +741,11 @@ watch(payloadPreviewText, () => {
 	background: rgba(255, 255, 255, 0.02);
 }
 
-.warningText {
-	margin-top: 1rem;
-	color: #fca5a5;
-	font-weight: 600;
-}
-
-.imagePreviewCard {
-	margin-top: 1rem;
-	border: 1px solid var(--border);
-	border-radius: 1rem;
-	overflow: hidden;
-	background: rgba(255, 255, 255, 0.02);
-}
-
-.imagePreview {
-	display: block;
-	width: 100%;
-	aspect-ratio: 16 / 8;
-	object-fit: cover;
-}
-
-.uidInputRow,
-.selectedActions,
 .actionRow {
 	display: flex;
 	gap: 0.75rem;
 	align-items: end;
 	flex-wrap: wrap;
-}
-
-.knownItems,
-.selectedList {
-	margin-top: 1rem;
 }
 
 .statusPill {
@@ -664,6 +780,10 @@ watch(payloadPreviewText, () => {
 	color: var(--text);
 }
 
+.ghostButton {
+	background: rgba(255, 255, 255, 0.03);
+}
+
 .primaryButton {
 	border-color: var(--primary);
 	background: var(--primary);
@@ -671,13 +791,24 @@ watch(payloadPreviewText, () => {
 }
 
 .deleteButton {
-	color: #fca5a5;
+	border-color: rgba(248, 113, 113, 0.55);
+	background: rgba(127, 29, 29, 0.18);
+	color: #fecaca;
 }
 
 .ghostButton:hover,
 .deleteButton:hover,
 .primaryButton:hover {
 	transform: translateY(-1px);
+}
+
+.ghostButton:hover {
+	background: rgba(255, 255, 255, 0.08);
+}
+
+.deleteButton:hover {
+	background: rgba(153, 27, 27, 0.32);
+	border-color: rgba(248, 113, 113, 0.75);
 }
 
 .ghostButton:disabled,
@@ -693,6 +824,15 @@ watch(payloadPreviewText, () => {
 	margin-top: 1.5rem;
 }
 
+.actionRow--reset {
+	justify-content: flex-start;
+}
+
+.actionRow--save {
+	margin-top: 1.5rem;
+	justify-content: flex-end;
+}
+
 .payloadPreview {
 	overflow-x: auto;
 	padding: 1rem;
@@ -703,28 +843,49 @@ watch(payloadPreviewText, () => {
 	line-height: 1.5;
 }
 
-@media (max-width: 1100px) {
-	.factoryGrid {
-		grid-template-columns: 1fr;
-	}
+.debugSection {
+	opacity: 0.9;
+}
+
+.debugSummary {
+	cursor: pointer;
+	font-weight: 700;
+	color: var(--muted);
+	list-style: none;
+}
+
+.debugSummary::-webkit-details-marker {
+	display: none;
+}
+
+.debugContent {
+	margin-top: 1rem;
 }
 
 @media (max-width: 800px) {
-	.summaryGrid,
 	.fieldGrid {
 		grid-template-columns: 1fr;
 	}
 
-	.sectionHeading--inline,
-	.summaryCard,
-	.knownCard,
-	.selectedCard,
-	.actionRow {
-		display: grid;
+	.stationNode,
+	.addStationNode {
+		width: 100%;
 	}
 
-	.selectedActions {
-		align-items: stretch;
+	.stationNode--right,
+	.addStationNode--right,
+	.stationNode--left,
+	.addStationNode--left {
+		justify-self: stretch;
+		margin-left: 0;
+		margin-right: 0;
+	}
+
+	.sectionHeading--inline,
+	.summaryCard,
+	.stationPickerCard,
+	.actionRow {
+		display: grid;
 	}
 
 	.actionRow {

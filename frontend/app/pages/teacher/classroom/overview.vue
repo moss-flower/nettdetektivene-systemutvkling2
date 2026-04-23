@@ -1,15 +1,14 @@
 <script setup lang="ts">
 const route = useRoute();
-import { routePaths, routePathsWithString } from '~/composables/utils/routePaths';
-import { useTeacherDashboard } from '~/composables/useTeacherDashboard';
-
-const { getTeacherClassroomById, getClassroomLeaderboard } = useTeacherDashboard();
+const { getTeacherClassroomById, getClassroomLeaderboard, getTeacherClassroomPendingStudents } = useTeacherDashboard();
+import { routePaths, routePathsWithString, routePathsWithUid } from '~/composables/utils/routePaths';
 
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
 
 const classroom = computed(() => getTeacherClassroomById(classroomId.value));
 
 const leaderboard = computed(() => getClassroomLeaderboard(classroomId.value));
+const pendingStudents = computed(() => getTeacherClassroomPendingStudents(classroomId.value));
 </script>
 
 <template>
@@ -22,29 +21,24 @@ const leaderboard = computed(() => getClassroomLeaderboard(classroomId.value));
     </header>
 
     <div v-if="classroom" class="actionGrid">
-      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudents, `?classroomId=${classroom.id}`)" class="actionCard">
-        <span class="actionCard__title">Elever</span>
-        <span class="actionCard__text">Se elevoversikt og åpne enkeltelevens progresjon.</span>
-      </NuxtLink>
-
       <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomNotifications, `?classroomId=${classroom.id}`)" class="actionCard">
         <span class="actionCard__title">Varslingssenter</span>
-        <span class="actionCard__text">Se varsler som bare gjelder dette klasserommet.</span>
+        <img src="https://placehold.co/128x128?text=VS" alt="Varslingssenter" class="actionCard__image">
       </NuxtLink>
 
-      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomExercises, `?classroomId=${classroom.id}`)" class="actionCard">
-        <span class="actionCard__title">Oppgaver</span>
-        <span class="actionCard__text">Åpne oppgavene som brukes i dette klasserommet.</span>
+      <NuxtLink :to="routePathsWithUid(routePaths.teacherFactoryWorld, classroom.worldUid)" class="actionCard">
+        <span class="actionCard__title">Verden</span>
+        <img src="https://placehold.co/128x128?text=VE" alt="Verden" class="actionCard__image">
       </NuxtLink>
 
       <NuxtLink :to="routePaths.studentHome" class="actionCard">
         <span class="actionCard__title">Test spillet</span>
-        <span class="actionCard__text">Prøv spillet fra elevens perspektiv.</span>
+        <img src="https://placehold.co/128x128?text=TS" alt="Test spillet" class="actionCard__image">
       </NuxtLink>
 
       <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomMystery, `?classroomId=${classroom.id}`)" class="actionCard">
         <span class="actionCard__title">Ukens mysterium</span>
-        <span class="actionCard__text">Se og rediger ukens mysterium for dette rommet.</span>
+        <img src="https://placehold.co/128x128?text=UM" alt="Ukens mysterium" class="actionCard__image">
       </NuxtLink>
     </div>
 
@@ -65,6 +59,22 @@ const leaderboard = computed(() => getClassroomLeaderboard(classroomId.value));
       </article>
     </div>
 
+    <section v-if="classroom" class="pendingCard">
+      <div class="pendingCard__header">
+        <h2>Ventende elever</h2>
+        <p>Elever som venter på å bli godkjent inn i klasserommet.</p>
+      </div>
+
+      <div v-if="pendingStudents.length > 0" class="pendingList">
+        <article v-for="student in pendingStudents" :key="student.id" class="pendingStudent">
+          <strong>{{ student.name }}</strong>
+          <span>Sendte forespørsel {{ student.requestedAt }}</span>
+        </article>
+      </div>
+
+      <p v-else class="pendingEmpty">Ingen elever venter på godkjenning.</p>
+    </section>
+
     <div v-if="classroom" class="tableCard">
       <table>
         <thead>
@@ -79,7 +89,11 @@ const leaderboard = computed(() => getClassroomLeaderboard(classroomId.value));
         <tbody>
           <tr v-for="(student, index) in leaderboard" :key="student.id">
             <td>{{ index + 1 }}</td>
-            <td>{{ student.name }}</td>
+            <td>
+              <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, `?classroomId=${classroomId}&studentId=${student.id}`)" class="studentLink">
+                {{ student.name }}
+              </NuxtLink>
+            </td>
             <td>{{ student.progressPercent }} %</td>
             <td>{{ student.completedLevels }} / {{ student.totalLevels }}</td>
             <td>{{ student.points }}</td>
@@ -149,6 +163,7 @@ h1 {
 .actionCard {
   display: grid;
   gap: 0.5rem;
+  justify-items: center;
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -159,11 +174,15 @@ h1 {
 .actionCard__title {
   font-weight: 700;
   color: var(--primary);
+  text-align: center;
 }
 
-.actionCard__text {
-  color: var(--muted);
-  line-height: 1.4;
+.actionCard__image {
+  display: block;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 0.9rem;
+  object-fit: cover;
 }
 
 .summaryCard {
@@ -183,6 +202,47 @@ h1 {
 .summaryCard strong {
   font-size: 1.6rem;
   color: var(--primary);
+}
+
+.pendingCard {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.pendingCard__header {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.pendingCard__header h2,
+.pendingStudent strong {
+  margin: 0;
+}
+
+.pendingCard__header p,
+.pendingEmpty,
+.pendingStudent span {
+  margin: 0;
+  color: var(--muted);
+}
+
+.pendingList {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.pendingStudent {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 0.2rem);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .tableCard {
@@ -208,6 +268,16 @@ td {
 thead th {
   background: var(--bg);
   font-weight: 700;
+}
+
+.studentLink {
+  color: var(--primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.studentLink:hover {
+  text-decoration: underline;
 }
 
 .emptyState {

@@ -5,6 +5,7 @@
 </template>
 
 <script setup lang="ts">
+    import { routePaths } from '~/composables/utils/routePaths';
     const route = useRoute();
     const backPath = computed(() => {
         const queryBackPath = route.query.backPath;
