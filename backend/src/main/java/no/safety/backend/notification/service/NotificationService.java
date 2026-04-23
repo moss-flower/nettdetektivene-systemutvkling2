@@ -34,7 +34,7 @@ public class NotificationService {
             Notification notification = new Notification();
             
             notification = Notification.builder()
-            .message(event.getMessage().toString())
+            .message(event.getMessage())
             .target(user)
             .priority(event.getPriority())
             .build();
