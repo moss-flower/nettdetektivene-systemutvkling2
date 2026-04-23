@@ -24,9 +24,14 @@ public class NotificationService {
 
     private final Logger logger = LoggerFactory.getLogger(NotificationService.class);
     
+    /**
+     * Captures events linked to Notifications emitted by other files and routes them
+     * to the correct recipient.
+     * @param event a NotificationEvent type object, include sender ID for mapping to correct targets.
+     */
     @EventListener
     public void handleNotificationEvent(NotificationEvent event) {
-        logger.debug("Notification event Triggered");
+        logger.debug("Notification event Triggered with event" + event);
         StudentUser sender = (StudentUser) userService.findByPublicUuid(event.getSenderUserUuid()).get();
         Set<User> targets = sender.getClassroom().getOwners();
 
@@ -48,9 +53,17 @@ public class NotificationService {
         }
     }
 
+    /**
+     * A method for immediately notifying a user of any unread notifications.
+     * Called only when a user establishes a connection.
+     * Might lead to spam.
+     * @param userId internal ID for a given User, not the public facing UUID.
+     */
     public void flushPending(Long userId) {
+        logger.debug("Flush pending messages called for user id " + userId);
         Set<Notification> notifications = repository.findByTarget_IntenalId(userId);
         if(notifications.isEmpty()) {
+            logger.debug("No notifications found for user id " + userId);
             return;
         }
         for (Notification notification : notifications) {

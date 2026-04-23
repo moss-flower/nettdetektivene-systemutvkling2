@@ -6,6 +6,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+
+/**
+ * Internal DTO for conveying necessry information to Notification Service.
+ */
 @Getter
 @Setter
 @RequiredArgsConstructor
