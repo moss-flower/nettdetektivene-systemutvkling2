@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   const api = getBackendAPI(event);
   const body = await readBody(event);
 
-  return await api("/v1/completed-exercises", {
+  return await api("/completed-exercises", {
     method: "POST",
     body,
   });
