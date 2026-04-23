@@ -13,6 +13,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AchievementInitializer implements CommandLineRunner {
 
+  private static final String MEDAL_IMAGE_URL = "/images/medal.png";
+
   private final AchievementRepository achievementRepository;
 
   @Override
@@ -22,7 +24,7 @@ public class AchievementInitializer implements CommandLineRunner {
         "Fullførte Passordbanken.",
         AchievementCategory.STOP,
         "Passordbanken",
-        "/images/medals/password-bank.png",
+        MEDAL_IMAGE_URL,
         null
     );
 
@@ -31,7 +33,7 @@ public class AchievementInitializer implements CommandLineRunner {
         "Fullførte Sosiale møteplassen.",
         AchievementCategory.STOP,
         "Sosiale møteplassen",
-        "/images/medals/social-space.png",
+        MEDAL_IMAGE_URL,
         null
     );
 
@@ -40,7 +42,7 @@ public class AchievementInitializer implements CommandLineRunner {
         "Fullførte Nyhetskvartalet.",
         AchievementCategory.STOP,
         "Nyhetskvartalet",
-        "/images/medals/news-square.png",
+        MEDAL_IMAGE_URL,
         null
     );
 
@@ -49,7 +51,7 @@ public class AchievementInitializer implements CommandLineRunner {
         "Fullførte Markedsplassen.",
         AchievementCategory.STOP,
         "Markedsplassen",
-        "/images/medals/marketplace.png",
+        MEDAL_IMAGE_URL,
         null
     );
 
@@ -58,7 +60,7 @@ public class AchievementInitializer implements CommandLineRunner {
         "Fullførte Postkontoret.",
         AchievementCategory.STOP,
         "Postkontoret",
-        "/images/medals/post-office.png",
+        MEDAL_IMAGE_URL,
         null
     );
 
@@ -67,7 +69,7 @@ public class AchievementInitializer implements CommandLineRunner {
         "Fullførte Fotografen.",
         AchievementCategory.STOP,
         "Fotografen",
-        "/images/medals/photographer.png",
+        MEDAL_IMAGE_URL,
         null
     );
 
@@ -76,7 +78,7 @@ public class AchievementInitializer implements CommandLineRunner {
         "Beseiret hovedbossen i Datasenteret.",
         AchievementCategory.SPECIAL,
         "Datasenteret",
-        "/images/medals/final-boss.png",
+        MEDAL_IMAGE_URL,
         "Spesialmedalje for å ha slått bossen"
     );
   }
