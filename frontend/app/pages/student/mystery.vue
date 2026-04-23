@@ -117,19 +117,13 @@ function sendMysterySubmission() {
           <p class="student-mystery__week student-mystery__week--hero">{{ currentMystery.weekLabel }}</p>
         </div>
         <p class="student-mystery__intro">
-          Her er denne ukens sak. Spill den først, og send gjerne inn tips hvis du finner noe som passer til en senere uke.
+          Spill ukens mysterium, eller tips læreren om en senere sak.
         </p>
       </header>
 
       <section class="student-mystery__section student-mystery__section--feature" aria-labelledby="current-mystery-heading">
-        <div class="student-mystery__sectionHeader">
-          <h2 id="current-mystery-heading">Denne ukens sak</h2>
-          <p class="student-mystery__helper">Spill mysteriet først. Hvis du finner noe spennende selv, kan du sende inn tips til neste uke.</p>
-        </div>
-
         <div class="student-mystery__playCard">
-          <p class="student-mystery__playPrompt">{{ currentMystery.prompt }}</p>
-          <p class="student-mystery__playClue"><strong>Tips:</strong> {{ currentMystery.clue }}</p>
+          <h2 id="current-mystery-heading" class="student-mystery__playTitle">Denne ukens sak</h2>
 
           <div class="student-mystery__actionsRow">
             <NuxtLink :to="currentMysteryPlayPath" class="student-mystery__playAction">
@@ -171,7 +165,9 @@ function sendMysterySubmission() {
           <div class="student-mystery__sectionHeader">
             <p class="student-mystery__eyebrow">Neste uke</p>
             <h2 id="suggestion-dialog-title">Tips læreren om et nytt mysterium</h2>
+            <p class="student-mystery__helper">{{ currentMystery.prompt }}</p>
             <p class="student-mystery__helper">Send inn et bilde og en kort forklaring. Læreren kan bruke det i et senere mysterium.</p>
+            <p class="student-mystery__meta"><strong>Tips:</strong> {{ currentMystery.clue }}</p>
           </div>
 
           <button
@@ -383,15 +379,10 @@ function sendMysterySubmission() {
   background: color-mix(in srgb, var(--color-bg-surface) 90%, var(--color-semantic-info) 10%);
 }
 
-.student-mystery__playPrompt {
+.student-mystery__playTitle {
   margin: 0;
-  font-size: clamp(1.1rem, 1.8vw, 1.25rem);
-  line-height: 1.45;
-}
-
-.student-mystery__playClue {
-  margin: 0;
-  color: var(--color-text-secondary);
+  font-size: clamp(1.35rem, 2vw, 1.65rem);
+  line-height: 1.05;
 }
 
 .student-mystery__actionsRow {
