@@ -61,7 +61,7 @@ public class NotificationService {
      */
     public void flushPending(Long userId) {
         logger.debug("Flush pending messages called for user id " + userId);
-        Set<Notification> notifications = repository.findByTarget_IntenalId(userId);
+        Set<Notification> notifications = repository.findByTarget_InternalId(userId);
         if(notifications.isEmpty()) {
             logger.debug("No notifications found for user id " + userId);
             return;
