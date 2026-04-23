@@ -156,6 +156,18 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles {@link AccessDeniedException} exceptions.
+     * @return Returns a {@link ProblemDetail} with HTTP status code: 403 Forbidden.
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ProblemDetail handleAccessDeniedException(AccessDeniedException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+        problem.setTitle("Access Denied");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    /**
      * Handles {@link StudentNotInClassException} exceptions.
      * @return Returns a {@link ProblemDetail} with HTTP status code: 404 Not Found.
      */
@@ -177,7 +189,7 @@ public class GlobalExceptionHandler {
         log.error("Exception: ", ex);
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
             HttpStatus.INTERNAL_SERVER_ERROR, 
-            "An unexpected error occurred. Please contact support."
+            "An unexpected error occurred."
         );
         problem.setTitle("Server Error");
         return problem;

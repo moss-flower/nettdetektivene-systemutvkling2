@@ -1,5 +1,6 @@
 package no.safety.backend.notepad.service;
 
+import no.safety.backend.exception.AccessDeniedException;
 import no.safety.backend.exception.domain.UserNotFoundException;
 import no.safety.backend.notepad.dto.*;
 import no.safety.backend.notepad.exception.NotepadEntryNotFoundException;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -119,16 +121,30 @@ class NotepadEntryServiceTest {
     }
 
     @Test
-    void update_ShouldThrowEntityNotFoundException_WhenEntryNotFoundOrNotOwned() {
+    void update_ShouldThrowEntityNotFoundException_WhenEntryDoesNotExist() {
         var updateRequest = new NotepadEntryUpdateRequest("New Title", NotepadEntryType.TIP, "New Content", "Source");
         User user = new User();
         user.setInternalId(USER_ID);
-        given(userRepository.findById(USER_ID)).willReturn(Optional.of(user));
-        given(notepadEntryRepository.findByPublicUuidAndUsers_InternalId(ENTRY_UUID, USER_ID))
+        given(notepadEntryRepository.findByPublicUuid(ENTRY_UUID))
                 .willReturn(Optional.empty());
 
         assertThatThrownBy(() -> notepadEntryService.update(USER_ID, ENTRY_UUID, updateRequest))
                 .isInstanceOf(NotepadEntryNotFoundException.class);
+    }
+
+    @Test
+    void update_ShouldThrowAccessDeniedException_WhenUserDoesNotHaveAccessToEntry() {
+        var updateRequest = new NotepadEntryUpdateRequest("New Title", NotepadEntryType.TIP, "New Content", "Source");
+        NotepadEntry entry = new NotepadEntry();
+        User user = new User();
+        user.setInternalId(USER_ID);
+        given(notepadEntryRepository.findByPublicUuid(ENTRY_UUID))
+                .willReturn(Optional.of(entry));
+
+        entry.setUsers(Set.of());
+
+        assertThatThrownBy(() -> notepadEntryService.update(USER_ID, ENTRY_UUID, updateRequest))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
