@@ -8,6 +8,7 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -27,6 +28,6 @@ public class CompletedExercise {
   private StudentUser student;
 
   @Id
-  @Column(name = "exerciseid", nullable = false, length = 100)
-  private String exerciseId;
+  @Column(name = "exerciseid", nullable = false, columnDefinition = "BINARY(16)")
+  private UUID exerciseUid;
 }

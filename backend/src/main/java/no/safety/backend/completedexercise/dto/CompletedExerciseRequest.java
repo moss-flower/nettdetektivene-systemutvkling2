@@ -1,9 +1,8 @@
 package no.safety.backend.completedexercise.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import java.util.UUID;
 
 public record CompletedExerciseRequest(
-    @NotBlank(message = "exerciseId is required")
-    String exerciseId
+    UUID exerciseUid
 ) {
 }

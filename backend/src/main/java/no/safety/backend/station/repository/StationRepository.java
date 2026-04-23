@@ -1,5 +1,6 @@
 package no.safety.backend.station.repository;
 
+import java.util.UUID;
 import java.util.Optional;
 import no.safety.backend.station.model.Station;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,5 +12,5 @@ import org.springframework.stereotype.Repository;
 public interface StationRepository extends JpaRepository<Station, String> {
 
   @Query("SELECT s FROM Station s JOIN s.exerciseUids e WHERE e = :exerciseUid")
-  Optional<Station> findByExerciseUid(@Param("exerciseUid") String exerciseUid);
+  Optional<Station> findByExerciseUid(@Param("exerciseUid") UUID exerciseUid);
 }

@@ -2,6 +2,7 @@ package no.safety.backend.completedexercise.model;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class CompletedExerciseId implements Serializable {
 
   private Long student;
-  private String exerciseId;
+  private UUID exerciseUid;
 
   @Override
   public boolean equals(Object o) {
@@ -20,11 +21,11 @@ public class CompletedExerciseId implements Serializable {
     if (!(o instanceof CompletedExerciseId that)) {
       return false;
     }
-    return Objects.equals(student, that.student) && Objects.equals(exerciseId, that.exerciseId);
+    return Objects.equals(student, that.student) && Objects.equals(exerciseUid, that.exerciseUid);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(student, exerciseId);
+    return Objects.hash(student, exerciseUid);
   }
 }

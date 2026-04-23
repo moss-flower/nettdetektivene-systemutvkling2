@@ -5,13 +5,13 @@ import no.safety.backend.completedexercise.model.CompletedExercise;
 
 public record CompletedExerciseResponse(
     UUID studentId,
-    String exerciseId
+    UUID exerciseUid
 ) {
 
   public static CompletedExerciseResponse from(CompletedExercise completedExercise) {
     return new CompletedExerciseResponse(
         completedExercise.getStudent().getPublicUuid(),
-        completedExercise.getExerciseId()
+        completedExercise.getExerciseUid()
     );
   }
 }

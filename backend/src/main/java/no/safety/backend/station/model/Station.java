@@ -10,6 +10,7 @@ import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,7 +42,7 @@ public class Station {
 
   @ElementCollection
   @CollectionTable(name = "station_exercises", joinColumns = @JoinColumn(name = "station_uid"))
-  @Column(name = "exercise_uid")
+  @Column(name = "exercise_uid", columnDefinition = "BINARY(16)")
   @OrderColumn(name = "sort_order")
-  private List<String> exerciseUids = new ArrayList<>();
+  private List<UUID> exerciseUids = new ArrayList<>();
 }

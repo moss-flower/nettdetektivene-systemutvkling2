@@ -1,6 +1,7 @@
 package no.safety.backend.station.dto;
 
 import java.util.List;
+import java.util.UUID;
 import no.safety.backend.station.model.Station;
 
 public record StationResponse(
@@ -9,7 +10,7 @@ public record StationResponse(
     String description,
     String image,
     String backgroundColor,
-    List<String> exerciseUids
+    List<UUID> exerciseUids
 ) {
   public static StationResponse from(Station station) {
     return new StationResponse(

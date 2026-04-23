@@ -1,6 +1,7 @@
 package no.safety.backend.completedexercise.service;
 
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.completedexercise.dto.CompletedExerciseRequest;
 import no.safety.backend.completedexercise.dto.CompletedExerciseResponse;
@@ -21,26 +22,26 @@ public class CompletedExerciseService {
 
   @Transactional
   public CompletedExerciseResponse create(CompletedExerciseRequest request, StudentUser student) {
-    String exerciseId = request.exerciseId().trim();
+    UUID exerciseUid = request.exerciseUid();
 
-    if (progressValidationService.isLocked(student, exerciseId)) {
+    if (progressValidationService.isLocked(student, exerciseUid)) {
       throw new ForbiddenException("Oppgaven er låst. Fullfør forrige oppgave eller stasjon først.");
     }
 
-    if (completedExerciseRepository.existsByStudentAndExerciseId(student, exerciseId)) {
+    if (completedExerciseRepository.existsByStudentAndExerciseUid(student, exerciseUid)) {
       throw new ConflictException("Exercise is already marked as completed for this student");
     }
 
     CompletedExercise completedExercise = new CompletedExercise();
     completedExercise.setStudent(student);
-    completedExercise.setExerciseId(exerciseId);
+    completedExercise.setExerciseUid(exerciseUid);
 
     return CompletedExerciseResponse.from(completedExerciseRepository.save(completedExercise));
   }
 
   @Transactional(readOnly = true)
   public List<CompletedExerciseResponse> getMyCompletedExercises(StudentUser student) {
-    return completedExerciseRepository.findAllByStudentOrderByExerciseIdAsc(student)
+    return completedExerciseRepository.findAllByStudentOrderByExerciseUidAsc(student)
         .stream()
         .map(CompletedExerciseResponse::from)
         .toList();
