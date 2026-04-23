@@ -1,8 +1,14 @@
 <template>
   <div class="app-shell">
-    <header class="topbar">
-      <h1>Nettdetektivene</h1>
-    </header>
+    <aside class="sidebar">
+      <div class="profile">
+        <!-- avatar +(?) detektiv navn -->
+      </div>
+
+      <button class="nav-home" type="button" aria-label="Tilbake til hovedmeny">
+        <!-- map-pin icon -->
+      </button>
+    </aside>
 
     <main class="content">
       <slot />
@@ -12,20 +18,48 @@
 
 <style scoped>
 .app-shell {
-  min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
-  font-family: Arial, sans-serif;
+  display: grid;
+  grid-template-columns: var(--layout-sidebar-width) 1fr;
 }
 
-.topbar {
-  padding: 1rem;
-  border-bottom: 1px solid #ddd;
+.sidebar {
+  background: var(--color-bg-surface);
+  border-right: var(--border-width-hairline) solid var(--color-border-default);
+  padding: var(--space-5) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile {
+  margin: auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+.nav-home {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.nav-home:hover {
+  transform: translateY(-2px);
 }
 
 .content {
-  padding: 1rem;
-  width: 90%;
-  margin: auto;
-  height: 90vh;
+  min-width: 0;
+  min-height: 0;
 }
 </style>

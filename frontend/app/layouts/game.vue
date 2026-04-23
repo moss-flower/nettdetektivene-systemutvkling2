@@ -17,7 +17,11 @@ const stationUid = computed(() => {
   return typeof routeParam === 'string' ? routeParam : ''
 })
 
-const station = computed(() => stationUid.value ? Station.backendFetchStationByUid(stationUid.value) : null)
+const { data: station } = await useAsyncData(
+  () => `layout-station-${stationUid.value}`,
+  () => stationUid.value ? Station.backendFetchStationByUid(stationUid.value) : null,
+  { watch: [stationUid] },
+)
 
 const layoutStyle = computed(() => {
   const backgroundColor = station.value?.backgroundColor ?? '#cfe9ff'
@@ -50,7 +54,7 @@ const layoutStyle = computed(() => {
     </aside>
 
     <main class="game-layout__content" aria-label="Spillinnhold">
-      <div class="game-layout__content-shell">
+      <div :key="route.fullPath" class="game-layout__content-shell">
         <slot />
       </div>
     </main>

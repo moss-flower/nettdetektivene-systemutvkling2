@@ -1,6 +1,19 @@
 <template>
-  <h1>leaderboard</h1>
+  <section class="pageWrap">
+    <h1>leaderboard</h1>
+    <UiStudentHomeBackButton class="returnButton" />
+  </section>
 </template>
 
-<script setup lang="ts"> </script>
-<style></style>
+<style scoped>
+.pageWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 100vh;
+}
+
+.returnButton {
+  width: fit-content;
+}
+</style>

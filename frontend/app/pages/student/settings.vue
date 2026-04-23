@@ -6,7 +6,7 @@ const volumeLabel = computed(() => `${volume.value}%`)
 <template>
   <section class="student-settings">
     <header class="student-settings__header">
-      <NuxtLink class="student-settings__back" :to="routePaths.studentHome">Tilbake til hjem</NuxtLink>
+      <UiStudentHomeBackButton class="student-settings__back" />
       <p class="student-settings__eyebrow">Innstillinger</p>
       <h2>Volum på nettsiden</h2>
       <p class="student-settings__intro">
@@ -53,8 +53,6 @@ const volumeLabel = computed(() => `${volume.value}%`)
 
 .student-settings__back {
   width: fit-content;
-  color: var(--primary);
-  font-weight: 700;
 }
 
 .student-settings__eyebrow {

@@ -10,6 +10,7 @@ import {
 	createTaskDraft,
 	makeExerciseFactoryDraftSelectionKey,
 	makeExerciseFactoryExistingSelectionKey,
+	mapExerciseToBackendRequest,
 	parseExerciseFactorySelectionKey,
 	readExerciseFactoryStore,
 	removeExerciseFactoryDraft,
@@ -51,19 +52,19 @@ const parsedSelection = computed(() => parseExerciseFactorySelectionKey(props.se
 
 const canSave = computed(() => {
 	return draft.title.trim().length > 0
-		&& draft.entryName.trim().length > 0
+		&& draft.difficultyName.trim().length > 0
 		&& draft.description.trim().length > 0
 		&& draft.tasks.length > 0;
 });
 
 const payloadPreview = computed<ExerciseFactoryPayload>(() => ({
 	title: draft.title.trim(),
-	entryName: draft.entryName.trim(),
+	difficultyName: draft.difficultyName.trim(),
 	description: draft.description.trim(),
 	tasks: draft.tasks,
 }));
 
-const payloadPreviewText = computed(() => JSON.stringify(payloadPreview.value, null, 2));
+const payloadPreviewText = computed(() => JSON.stringify(mapExerciseToBackendRequest(payloadPreview.value), null, 2));
 const hasChanges = computed(() => JSON.stringify(payloadPreview.value) !== JSON.stringify(loadedSnapshot.value));
 
 const editorTitle = computed(() => {
@@ -137,7 +138,7 @@ const applyDraft = (payload: ExerciseFactoryPayload) => {
 	const clonedPayload = cloneExercisePayload(payload);
 
 	draft.title = clonedPayload.title;
-	draft.entryName = clonedPayload.entryName;
+	draft.difficultyName = clonedPayload.difficultyName;
 	draft.description = clonedPayload.description;
 	draft.tasks.splice(0, draft.tasks.length, ...clonedPayload.tasks);
 	setExpandedTasks([]);
@@ -161,11 +162,11 @@ const loadSelection = (selectionKey: string) => {
 
 		if (!override && backendExercise) {
 			nextPayload.title = backendExercise.title;
-			nextPayload.entryName = backendExercise.entryName;
+			nextPayload.difficultyName = backendExercise.difficultyName;
 			nextPayload.description = backendExercise.description ?? "";
 			nextPayload.tasks = cloneExercisePayload({
 				title: backendExercise.title,
-				entryName: backendExercise.entryName,
+				difficultyName: backendExercise.difficultyName,
 				description: backendExercise.description ?? "",
 				tasks: backendExercise.tasks,
 			}).tasks;
@@ -362,8 +363,8 @@ watch(payloadPreviewText, () => {
 					</label>
 
 					<label class="field">
-						<span>Entry name</span>
-						<input v-model="draft.entryName" type="text" placeholder="For eksempel: Oppgave 1" >
+						<span>Difficulty name</span>
+						<input v-model="draft.difficultyName" type="text" placeholder="For eksempel: Lett" >
 					</label>
 
 					<label class="field field--full">
@@ -528,8 +529,8 @@ watch(payloadPreviewText, () => {
 
 					<article class="summaryCard">
 						<p class="cardEyebrow">Metadata</p>
-						<h3>{{ draft.entryName || 'Ingen entry name ennå' }}</h3>
-						<p>Tittel, entry name og beskrivelse blir lagret sammen med oppgavens tasks.</p>
+						<h3>{{ draft.difficultyName || 'Ingen difficulty name ennå' }}</h3>
+						<p>Tittel, difficulty name og beskrivelse blir lagret sammen med oppgavens tasks.</p>
 					</article>
 				</div>
 			</section>

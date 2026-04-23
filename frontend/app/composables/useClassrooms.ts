@@ -12,7 +12,7 @@ import type {
 export function useClassrooms() {
   /**
    * Custom API client provided by the Nuxt plugin.
-   * This is typically configured with baseURL = "/api"
+   * This is typically configured with baseURL = "/api/v1"
    * and handles auth headers automatically.
    */
   const { $api } = useNuxtApp();
@@ -38,10 +38,10 @@ export function useClassrooms() {
     },
 
     /**
-     * Fetch one specific classroom by its numeric ID.
+     * Fetch one specific classroom by its uid.
      */
-    getClassroomById: async (classroomId: number): Promise<Classroom> => {
-      return await $api(`/classrooms/${classroomId}`, {
+    getClassroomById: async (classroomUid: string): Promise<Classroom> => {
+      return await $api(`/classrooms/${classroomUid}`, {
         method: "GET",
       });
     },
@@ -64,20 +64,20 @@ export function useClassrooms() {
      * Update classroom name and description.
      */
     updateClassroom: async (
-      classroomId: number,
+      classroomUid: string,
       payload: ClassroomRequest,
     ): Promise<Classroom> => {
-      return await $api(`/classrooms/${classroomId}`, {
+      return await $api(`/classrooms/${classroomUid}`, {
         method: "PUT",
         body: payload,
       });
     },
 
     /**
-     * Permanently delete a classroom by ID.
+     * Permanently delete a classroom by uid.
      */
-    deleteClassroom: async (classroomId: number): Promise<void> => {
-      await $api(`/classrooms/${classroomId}`, {
+    deleteClassroom: async (classroomUid: string): Promise<void> => {
+      await $api(`/classrooms/${classroomUid}`, {
         method: "DELETE",
       });
     },
@@ -85,14 +85,14 @@ export function useClassrooms() {
     /**
      * Add a teacher as an owner of the classroom.
      *
-     * @param classroomId - Numeric classroom ID
+     * @param classroomUid - Classroom uid
      * @param userUuid - Public UUID of the teacher to add
      */
     addOwner: async (
-      classroomId: number,
+      classroomUid: string,
       userUuid: string,
     ): Promise<Classroom> => {
-      return await $api(`/classrooms/${classroomId}/owners/${userUuid}`, {
+      return await $api(`/classrooms/${classroomUid}/owners/${userUuid}`, {
         method: "POST",
       });
     },
@@ -103,10 +103,10 @@ export function useClassrooms() {
      * Note: backend should prevent removing the last owner.
      */
     removeOwner: async (
-      classroomId: number,
+      classroomUid: string,
       userUuid: string,
     ): Promise<Classroom> => {
-      return await $api(`/classrooms/${classroomId}/owners/${userUuid}`, {
+      return await $api(`/classrooms/${classroomUid}/owners/${userUuid}`, {
         method: "DELETE",
       });
     },
@@ -116,8 +116,8 @@ export function useClassrooms() {
      *
      * The previous code becomes invalid after regeneration.
      */
-    regenerateJoinCode: async (classroomId: number): Promise<Classroom> => {
-      return await $api(`/classrooms/${classroomId}/code`, {
+    regenerateJoinCode: async (classroomUid: string): Promise<Classroom> => {
+      return await $api(`/classrooms/${classroomUid}/code`, {
         method: "POST",
       });
     },
@@ -125,14 +125,14 @@ export function useClassrooms() {
     /**
      * Remove a student from a classroom.
      *
-     * @param classroomId - Numeric classroom ID
+     * @param classroomUid - Classroom uid
      * @param userUuid - Public UUID of the student to remove
      */
     removeMember: async (
-      classroomId: number,
+      classroomUid: string,
       userUuid: string,
     ): Promise<Classroom> => {
-      return await $api(`/classrooms/${classroomId}/members/${userUuid}`, {
+      return await $api(`/classrooms/${classroomUid}/members/${userUuid}`, {
         method: "DELETE",
       });
     },
@@ -170,10 +170,10 @@ export function useClassrooms() {
     /**
      * Leave the classroom the student is currently a member of.
      *
-     * The backend route requires the classroom ID in the path.
+     * The backend route requires the classroom uid in the path.
      */
-    leaveClassroom: async (classroomId: number): Promise<void> => {
-      await $api(`/classrooms/${classroomId}/members/me`, {
+    leaveClassroom: async (classroomUid: string): Promise<void> => {
+      await $api(`/classrooms/${classroomUid}/members/me`, {
         method: "DELETE",
       });
     },

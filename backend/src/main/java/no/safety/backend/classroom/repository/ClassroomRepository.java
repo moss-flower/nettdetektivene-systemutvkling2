@@ -10,9 +10,11 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
 
   boolean existsByCode(String code);
 
-  boolean existsByIdAndOwners_PublicUuid(Long id, UUID ownerUuid);
+  Optional<Classroom> findByUid(UUID uid);
 
-  Optional<Classroom> findByIdAndOwners_PublicUuid(Long id, UUID ownerUuid);
+  boolean existsByUidAndOwners_PublicUuid(UUID uid, UUID ownerUuid);
+
+  Optional<Classroom> findByUidAndOwners_PublicUuid(UUID uid, UUID ownerUuid);
 
   Set<Classroom> findAllByOwners_PublicUuid(UUID ownerUuid);
 

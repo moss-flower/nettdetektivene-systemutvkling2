@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import MedalElement from "~/components/medals/MedalElement.vue";
-import type { Medal } from "~/composables/types/MedalTypes";
+import type { AchievementResponse } from "~/composables/types/AchievementTypes";
 
 const props = defineProps<{
-  medals: Medal[];
+  medals: AchievementResponse[];
 }>();
 </script>
 
@@ -11,7 +11,7 @@ const props = defineProps<{
   <section class="medalGrid">
     <MedalElement
       v-for="medal in props.medals"
-      :key="medal.id"
+      :key="medal.UUID"
       :medal="medal"
     />
   </section>
@@ -21,7 +21,7 @@ const props = defineProps<{
 .medalGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 30px;
+  gap: var(--space-5);
   width: 100%;
 }
 </style>
