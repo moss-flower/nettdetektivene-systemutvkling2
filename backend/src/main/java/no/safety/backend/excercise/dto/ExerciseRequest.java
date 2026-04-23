@@ -5,8 +5,17 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import java.util.List;
+import no.safety.backend.excercise.model.Exercise;
 import no.safety.backend.task.dto.TaskRequest;
 
+/**
+ * Defines a {@link Exercise} request to handle POST and PUT specific to exercises.
+ *
+ * @param title          Exercise title
+ * @param difficultyName Name of difficulty
+ * @param description    A description of the exercise
+ * @param tasks          A list of TaskRequests each containing a task
+ */
 public record ExerciseRequest(
     @NotBlank(message = "title is required.")
     @Size(max = 100, message = "title cannot exceed 100 characters.")
@@ -23,4 +32,5 @@ public record ExerciseRequest(
     @Valid
     List<TaskRequest> tasks
 ) {
+
 }

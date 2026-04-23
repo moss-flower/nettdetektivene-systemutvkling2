@@ -17,12 +17,21 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * A service that handles CRUD operations of exercises.
+ */
 @Service
 @RequiredArgsConstructor
 public class ExerciseService {
 
   private final ExerciseRepository exerciseRepo;
 
+  /**
+   * Creates a new exercise in the database.
+   *
+   * @param req the {@link ExerciseRequest} containing exercise information and tasks.
+   * @return the {@link ExerciseResponse} of the created exercise.
+   */
   @Transactional
   public ExerciseResponse create(ExerciseRequest req) {
     Exercise e = new Exercise();
@@ -34,16 +43,36 @@ public class ExerciseService {
     return ExerciseResponse.from(exerciseRepo.save(e));
   }
 
+  /**
+   * Retrieves an exercise by its public id.
+   *
+   * @param publicId the {@link UUID} of the exercise
+   * @return an {@link ExerciseResponse} containing information about the exercise.
+   * @throws
+   */
   @Transactional(readOnly = true)
   public ExerciseResponse get(UUID publicId) {
     return ExerciseResponse.from(require(publicId));
   }
 
+  /**
+   * Retrieves a paginated list of all exercises
+   *
+   * @param req a {@link ExerciseReadRequest} containing pagination and sorting information.
+   * @return a {@link Page} of exercise entities.
+   */
   @Transactional(readOnly = true)
   public Page<ExerciseResponse> list(ExerciseReadRequest req) {
     return exerciseRepo.findAll(req.toPageable()).map(ExerciseResponse::from);
   }
 
+  /**
+   * Updates every field of an exercise except for the internal and public ID.
+   *
+   * @param publicId the {@link UUID} of the exercise to update.
+   * @param req      an {@link ExerciseRequest} containing the new exercise data.
+   * @return an {@link ExerciseResponse} containing the updated exercise data.
+   */
   @Transactional
   public ExerciseResponse update(UUID publicId, ExerciseRequest req) {
     Exercise e = require(publicId);
@@ -58,6 +87,11 @@ public class ExerciseService {
     return ExerciseResponse.from(e);
   }
 
+  /**
+   * Deletes an exercise by its public ID.
+   *
+   * @param publicId the {@link UUID} of the exercise to delete.
+   */
   @Transactional
   public void delete(UUID publicId) {
     exerciseRepo.delete(require(publicId));

@@ -19,6 +19,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import no.safety.backend.task.model.Task;
 
+/**
+ * Defines an exercise entity.
+ */
 @Entity
 @Table(name = "exercises")
 @Getter

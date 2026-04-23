@@ -23,6 +23,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Exercise controller that defines API endpoints for managing exercises.
+ */
 @RestController
 @RequestMapping("/api/v1/exercises")
 @RequiredArgsConstructor
@@ -31,6 +34,16 @@ public class ExerciseController {
 
   private final ExerciseService exerciseService;
 
+  /**
+   * Creates a new exercise.
+   *
+   * @param request an {@link ExerciseResponse} containing exercise information and tasks.
+   * @return the {@link ExerciseResponse} of the created exercise.
+   * @throws org.springframework.web.client.HttpClientErrorException.BadRequest   if the request is
+   *                                                                              invalid
+   * @throws org.springframework.web.client.HttpClientErrorException.Unauthorized if the caller is
+   *                                                                              not a teacher
+   */
   @Operation(
       summary = "Create a new exercise",
       description = "Creates a new exercise with its tasks."
@@ -42,6 +55,14 @@ public class ExerciseController {
     return exerciseService.create(request);
   }
 
+  /**
+   * Retrieves an exercise by its public ID.
+   *
+   * @param publicId the {@link UUID} of the exercise
+   * @return an {@link ExerciseResponse} containing information about the exercise.
+   * @throws no.safety.backend.exception.NotFoundException if an exercise with the public ID was not
+   *                                                       found.
+   */
   @Operation(
       summary = "Get an exercise",
       description = "Gets an exercise by its public UUID."
@@ -51,6 +72,14 @@ public class ExerciseController {
     return exerciseService.get(publicId);
   }
 
+  /**
+   * Retrieves a paginated list of all exercises
+   *
+   * @param req a {@link ExerciseReadRequest} containing pagination and sorting information.
+   * @return a {@link Page} of exercise entities.
+   * @throws org.springframework.web.client.HttpClientErrorException.Unauthorized if the caller is
+   *                                                                              not a teacher
+   */
   @Operation(
       summary = "Get all exercises",
       description = "Gets a paginated list of all exercises. Accepts standard Spring Data page/size/sort query params."
@@ -62,6 +91,18 @@ public class ExerciseController {
         req);
   }
 
+  /**
+   * Updates every field of an exercise except for the internal and public ID.
+   *
+   * @param publicId the {@link UUID} of the exercise to update.
+   * @param request  an {@link ExerciseRequest} containing the new exercise data.
+   * @return an {@link ExerciseResponse} containing the updated exercise data.
+   * @throws org.springframework.web.client.HttpClientErrorException.Unauthorized if the caller is
+   *                                                                              not a teacher
+   * @throws no.safety.backend.exception.NotFoundException                        if an exercise
+   *                                                                              with the public ID
+   *                                                                              was not found.
+   */
   @Operation(
       summary = "Update an exercise",
       description = "Replaces an exercise's fields and tasks. Existing tasks are removed and replaced with the submitted set."
@@ -74,6 +115,17 @@ public class ExerciseController {
     return exerciseService.update(publicId, request);
   }
 
+  /**
+   * Deletes an exercise by its public ID.
+   *
+   * @param publicId  the {@link UUID} of the exercise to delete.
+   * @return an empty 204 No Content response.
+   * @throws org.springframework.web.client.HttpClientErrorException.Unauthorized if the caller is
+   *                                                                              not a teacher
+   * @throws no.safety.backend.exception.NotFoundException                        if an exercise
+   *                                                                              with the public ID
+   *                                                                              was not found.
+   */
   @Operation(
       summary = "Delete an exercise",
       description = "Deletes an exercise and its tasks."
