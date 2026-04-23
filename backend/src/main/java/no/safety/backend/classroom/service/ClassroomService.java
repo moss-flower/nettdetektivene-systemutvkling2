@@ -41,8 +41,8 @@ public class ClassroomService {
   }
 
   @Transactional
-  public ClassroomResponse update(Long classroomId, ClassroomRequest req, UUID callerUuid) {
-    Classroom c = requireOwned(classroomId, callerUuid);
+  public ClassroomResponse update(UUID classroomUid, ClassroomRequest req, UUID callerUuid) {
+    Classroom c = requireOwned(classroomUid, callerUuid);
     c.setName(req.name());
     c.setDescription(req.description());
     c.setWorldUid(req.worldUid());
@@ -51,17 +51,17 @@ public class ClassroomService {
   }
 
   @Transactional
-  public void delete(Long classroomId, UUID callerUuid) {
-    Classroom c = requireOwned(classroomId, callerUuid);
+  public void delete(UUID classroomUid, UUID callerUuid) {
+    Classroom c = requireOwned(classroomUid, callerUuid);
     classroomRepo.delete(c);
   }
 
   @Transactional
-  public ClassroomResponse addOwner(Long classroomId, UUID newOwnerUuid, UUID callerUuid) {
-    Classroom c = requireOwned(classroomId, callerUuid);
+  public ClassroomResponse addOwner(UUID classroomUid, UUID newOwnerUuid, UUID callerUuid) {
+    Classroom c = requireOwned(classroomUid, callerUuid);
     TeacherUser newOwner = requireTeacher(newOwnerUuid);
 
-    if (classroomRepo.existsByIdAndOwners_PublicUuid(classroomId, newOwnerUuid)) {
+    if (classroomRepo.existsByUidAndOwners_PublicUuid(classroomUid, newOwnerUuid)) {
       throw new ConflictException("Teacher is already an owner");
     }
 
@@ -71,8 +71,8 @@ public class ClassroomService {
   }
 
   @Transactional
-  public ClassroomResponse removeOwner(Long classroomId, UUID ownerToRemoveUuid, UUID callerUuid) {
-    Classroom c = requireOwned(classroomId, callerUuid);
+  public ClassroomResponse removeOwner(UUID classroomUid, UUID ownerToRemoveUuid, UUID callerUuid) {
+    Classroom c = requireOwned(classroomUid, callerUuid);
 
     if (c.getOwners().size() <= 1) {
       throw new ConflictException("Cannot remove the last owner of a classroom");
@@ -91,13 +91,13 @@ public class ClassroomService {
   /**
    * Generates a new code for joining the classroom. Useful when codes are leaked.
    *
-   * @param classroomId Classroom id
+   * @param classroomUid Classroom uid
    * @param callerUuid  UUID of the calling user
    * @return ClassroomResponse
    */
   @Transactional
-  public ClassroomResponse regenerateCode(Long classroomId, UUID callerUuid) {
-    Classroom c = requireOwned(classroomId, callerUuid);
+  public ClassroomResponse regenerateCode(UUID classroomUid, UUID callerUuid) {
+    Classroom c = requireOwned(classroomUid, callerUuid);
     c.setCode(codegen.generateUniqueCode());
     classroomRepo.save(c);
     return ClassroomResponse.from(c);
@@ -120,12 +120,12 @@ public class ClassroomService {
   }
 
   @Transactional
-  public ClassroomResponse removeMember(Long classroomId, UUID memberUuid, UUID callerUuid) {
-    Classroom c = requireOwned(classroomId, callerUuid);
+  public ClassroomResponse removeMember(UUID classroomUid, UUID memberUuid, UUID callerUuid) {
+    Classroom c = requireOwned(classroomUid, callerUuid);
 
     StudentUser member = requireStudent(memberUuid);
 
-    if (member.getClassroom() == null || !member.getClassroom().getId().equals(classroomId)) {
+    if (member.getClassroom() == null || !member.getClassroom().getUid().equals(classroomUid)) {
       throw new StudentNotInClassException("Student is not a member of this classroom");
     }
 
@@ -135,14 +135,14 @@ public class ClassroomService {
   }
 
   @Transactional
-  public void leaveClassroom(Long classroomId, UUID callerUuid) {
-    classroomRepo.findById(classroomId)
+  public void leaveClassroom(UUID classroomUid, UUID callerUuid) {
+    classroomRepo.findById(classroomUid)
         .orElseThrow(() -> new NotFoundException("Could not find classroom"));
 
     StudentUser member = studentRepo.findByPublicUuid(callerUuid)
         .orElseThrow(() -> new NotFoundException("Student not found"));
 
-    if (member.getClassroom() == null || !member.getClassroom().getId().equals(classroomId)) {
+    if (member.getClassroom() == null || !member.getClassroom().getUid().equals(classroomUid)) {
       throw new StudentNotInClassException("Student is not a member of this classroom");
     }
 
@@ -158,8 +158,8 @@ public class ClassroomService {
   }
 
   @Transactional(readOnly = true)
-  public ClassroomResponse getClassroom(Long classroomId, UUID callerUuid) {
-    Classroom c = requireOwned(classroomId, callerUuid);
+  public ClassroomResponse getClassroom(UUID classroomUid, UUID callerUuid) {
+    Classroom c = requireOwned(classroomUid, callerUuid);
     return ClassroomResponse.from(c);
   }
 
@@ -175,11 +175,12 @@ public class ClassroomService {
     return ClassroomResponse.from(student.getClassroom());
   }
 
-  private Classroom requireOwned(Long classroomId, UUID callerUuid) {
-    if (classroomRepo.findById(classroomId).isEmpty()) {
+  private Classroom requireOwned(UUID classroomUid, UUID callerUuid) {
+    if (classroomRepo.findById(classroomUid).isEmpty()) {
       throw new NotFoundException("Could not find classroom");
     }
-    return classroomRepo.findByIdAndOwners_PublicUuid(classroomId, callerUuid).orElseThrow(() -> new NotClassroomOwnerException("Caller is not an owner of the classroom"));
+    return classroomRepo.findByUidAndOwners_PublicUuid(classroomUid, callerUuid)
+        .orElseThrow(() -> new NotClassroomOwnerException("Caller is not an owner of the classroom"));
   }
 
   private TeacherUser requireTeacher(UUID uuid) {
