@@ -3,23 +3,34 @@ import { NuxtLink } from "#components";
 import starEmpty from "~/assets/images/star/spStarEmpty.png";
 import starFilled from "~/assets/images/star/spStarFilled.png";
 import { routePaths } from "~/composables/routePaths";
-import type { StationBase } from "~/composables/types/StationType";
+import type { Station } from "~/composables/types/StationType";
 
 const props = defineProps<{
-  station: StationBase;
+  station: Station;
 }>();
 
+const stationStatus = computed(() => props.station.getMockStatus());
+const stationIsUnlocked = computed(() => props.station.isUnlocked());
+
 const stationPath = computed(() => ({
-  path: routePaths.studentTaskDifficultySelect,
-  query: { id: props.station.id },
+  path: routePaths.studentExerciseDifficultySelect,
+  query: { uid: props.station.uid },
 }));
 
+const totalExercises = computed(() => {
+  if (props.station.exerciseUids.length > 0) {
+    return props.station.exerciseUids.length;
+  }
+
+  return stationStatus.value.completedExercises.length;
+});
+
 const stars = computed(() =>
-  Array.from({ length: 3 }, (_, index) => {
-    const isCompleted = props.station.completedTasks[index] ?? false;
+  Array.from({ length: totalExercises.value }, (_, index) => {
+    const isCompleted = stationStatus.value.completedExercises[index] ?? false;
 
     return {
-      id: `${props.station.id}-star-${index}`,
+      id: `${props.station.uid}-star-${index}`,
       src: isCompleted ? starFilled : starEmpty,
       alt: isCompleted ? `Completed star ${index + 1}` : `Empty star ${index + 1}`,
     };
@@ -28,11 +39,11 @@ const stars = computed(() =>
 </script>
 
 <template>
-  <component
-    :is="station.isUnlocked ? NuxtLink : 'div'"
+    <component
+  :is="stationIsUnlocked ? NuxtLink : 'div'"
     class="levelCard"
-    :class="{ lockedCard: !station.isUnlocked }"
-    :to="station.isUnlocked ? stationPath : undefined"
+  :class="{ lockedCard: !stationIsUnlocked }"
+  :to="stationIsUnlocked ? stationPath : undefined"
   >
     <img :src="station.image" :alt="station.name" class="levelImage">
 
@@ -46,7 +57,7 @@ const stars = computed(() =>
         class="starImage"
       >
     </div>
-    <p v-if="!station.isUnlocked" class="lock">🔒</p>
+    <p v-if="!stationIsUnlocked" class="lock">🔒</p>
   </component>
 </template>
 

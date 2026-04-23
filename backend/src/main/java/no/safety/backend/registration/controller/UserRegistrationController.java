@@ -54,7 +54,7 @@ public class UserRegistrationController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(TeacherUserRegistrationResponse.fromEntity(
                         savedUser, 
-                        "Student account registered successfully.")
+                        "Teacher account registered successfully.")
                 );
     }
 }

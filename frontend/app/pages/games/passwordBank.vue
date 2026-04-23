@@ -2,7 +2,7 @@
 import PasswordBankGuessExercise from '~/components/gameplay/passwordbank/PasswordBankGuessExercise.vue'
 import PasswordBankImproveExercise from '~/components/gameplay/passwordbank/PasswordBankImproveExercise.vue'
 import PasswordBankMakePasswordExercise from '~/components/gameplay/passwordbank/PasswordBankMakePasswordExercise.vue'
-import CompletedPopup from '~/components/gameplay/shared/CompletedPopup.vue'
+import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDialog.vue'
 import SelectedPopup from '~/components/gameplay/shared/SelectedPopup.vue'
 import type {
   PasswordBankTask,
@@ -40,23 +40,23 @@ const mockData: PasswordBankTask = {
 const tasks = sampleAndShuffle(mockData.items, mockData.items.length)
 const currentIndex = ref(0)
 const currentTask = computed(() => tasks[currentIndex.value])
-const showResultPopup = ref(false)
-const showCompletedPopup = ref(false)
+const showTaskResultDialog = ref(false)
+const showExerciseResultDialog = ref(false)
 const lastAnswerCorrect = ref(false)
 const correctCount = ref(0)
 
 const onAnswered = (correct: boolean) => {
   lastAnswerCorrect.value = correct
   if (correct) correctCount.value++
-  showResultPopup.value = true
+  showTaskResultDialog.value = true
 }
 
 const next = () => {
-  showResultPopup.value = false
+  showTaskResultDialog.value = false
   if (currentIndex.value < tasks.length - 1) {
     currentIndex.value++
   } else {
-    showCompletedPopup.value = true
+    showExerciseResultDialog.value = true
   }
 }
 </script>
@@ -84,14 +84,14 @@ const next = () => {
     </template>
 
     <SelectedPopup
-      v-if="showResultPopup"
+      v-if="showTaskResultDialog"
       :correct="lastAnswerCorrect"
       :is-last="currentIndex >= tasks.length - 1"
       @next="next"
     />
 
-    <CompletedPopup
-      v-if="showCompletedPopup"
+    <ExerciseResultDialog
+      v-if="showExerciseResultDialog"
       :correct-count="correctCount"
       :total="tasks.length"
     />

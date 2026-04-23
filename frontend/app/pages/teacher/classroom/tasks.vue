@@ -1,10 +1,10 @@
 <script setup lang="ts">
 const route = useRoute();
-const { getTeacherClassroomById, getteacherClassroomTasks } = useTeacherDashboard();
+const { getTeacherClassroomById, getTeacherClassroomExercises } = useTeacherDashboard();
 
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
 const classroom = computed(() => getTeacherClassroomById(classroomId.value));
-const tasks = computed(() => getteacherClassroomTasks(classroomId.value));
+const exercises = computed(() => getTeacherClassroomExercises(classroomId.value));
 </script>
 
 <template>
@@ -16,10 +16,10 @@ const tasks = computed(() => getteacherClassroomTasks(classroomId.value));
     </header>
 
     <div class="stack">
-      <article v-for="task in tasks" :key="task.id" class="card">
-        <h2>{{ task.title }}</h2>
-        <p>{{ task.level }}</p>
-        <span>{{ task.status }}</span>
+      <article v-for="exercise in exercises" :key="exercise.uid" class="card">
+        <h2>{{ exercise.title }}</h2>
+        <p>{{ exercise.level }}</p>
+        <span>{{ exercise.status }}</span>
       </article>
     </div>
   </section>

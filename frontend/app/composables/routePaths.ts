@@ -10,11 +10,14 @@ export enum routePaths {
     teacherClassroomNotifications = '/teacher/classroom/notifications',
     teacherClassroomStudentProgress = '/teacher/classroom/student-progress',
     teacherClassroomStudents = '/teacher/classroom/students',
-    teacherClassroomTasks = '/teacher/classroom/tasks',
+    teacherClassroomExercises = '/teacher/classroom/tasks',
+    teacherFactoryExercise = '/teacher/factory/exerciseFactory',
+    teacherFactoryStation = '/teacher/factory/stationFactory',
+    teacherFactoryWorld = '/teacher/factory/worldFactory',
     studentHome = '/student/home/home',
     studentProfile = '/student/home/directions/profile',
     studentAchievements = '/student/home/directions/achievements',
-    studentTaskDifficultySelect = '/student/task/taskDifficultySelect',
+    studentExerciseDifficultySelect = '/student/task/exerciseDifficultySelect',
     
     // to implement next
     studentLeaderboard = '/student/home/directions/leaderboard',

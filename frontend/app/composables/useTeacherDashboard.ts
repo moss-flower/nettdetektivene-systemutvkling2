@@ -28,8 +28,8 @@ export type ClassroomNotification = {
   timeLabel: string;
 };
 
-export type ClassroomTask = {
-  id: string;
+export type ClassroomExercise = {
+  uid: string;
   classroomId: string;
   title: string;
   status: string;
@@ -82,11 +82,11 @@ const teacherClassroomNotifications: ClassroomNotification[] = [
   { id: 'n4', classroomId: 'ronvik-6c', title: 'Høy aktivitet', description: 'Klassen har hatt ekstra høy aktivitet denne uken.', timeLabel: 'I går' }
 ];
 
-const teacherClassroomTasks: ClassroomTask[] = [
-  { id: 't1', classroomId: 'ronvik-6a', title: 'Skille ekte og falske nyheter', status: 'Aktiv', level: 'Nyhetskvartalet' },
-  { id: 't2', classroomId: 'ronvik-6a', title: 'Oppdage mistenkelige e-poster', status: 'Kladd', level: 'Postkontoret' },
-  { id: 't3', classroomId: 'ronvik-6b', title: 'Vurdere nettbutikker', status: 'Aktiv', level: 'Markedsplassen' },
-  { id: 't4', classroomId: 'ronvik-6c', title: 'Sterke passord', status: 'Planlagt', level: 'Passordbanken' }
+const teacherClassroomExercises: ClassroomExercise[] = [
+  { uid: 't1', classroomId: 'ronvik-6a', title: 'Skille ekte og falske nyheter', status: 'Aktiv', level: 'Nyhetskvartalet' },
+  { uid: 't2', classroomId: 'ronvik-6a', title: 'Oppdage mistenkelige e-poster', status: 'Kladd', level: 'Postkontoret' },
+  { uid: 't3', classroomId: 'ronvik-6b', title: 'Vurdere nettbutikker', status: 'Aktiv', level: 'Markedsplassen' },
+  { uid: 't4', classroomId: 'ronvik-6c', title: 'Sterke passord', status: 'Planlagt', level: 'Passordbanken' }
 ];
 
 const classroomMysteries: teacherClassroomMystery[] = [
@@ -175,8 +175,8 @@ function getteacherClassroomNotifications(classroomId: string): ClassroomNotific
   return teacherClassroomNotifications.filter((notification) => notification.classroomId === classroomId);
 }
 
-function getteacherClassroomTasks(classroomId: string): ClassroomTask[] {
-  return teacherClassroomTasks.filter((task) => task.classroomId === classroomId);
+function getTeacherClassroomExercises(classroomId: string): ClassroomExercise[] {
+  return teacherClassroomExercises.filter((exercise) => exercise.classroomId === classroomId);
 }
 
 function getteacherClassroomMystery(classroomId: string): teacherClassroomMystery | null {
@@ -191,7 +191,7 @@ export function useTeacherDashboard() {
     getteacherClassroomStudents,
     getStudentById,
     getteacherClassroomNotifications,
-    getteacherClassroomTasks,
+    getTeacherClassroomExercises,
     getteacherClassroomMystery,
   };
 }

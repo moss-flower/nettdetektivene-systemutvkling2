@@ -40,10 +40,24 @@ const classroomSummaries = computed(() => getTeacherClassroomSummaries());
         </ul>
       </article>
 
-      <article class="panel panel--highlight">
-        <h2>Opprett nytt klasserom</h2>
-        <p>Start et nytt klasserom og inviter elever.</p>
-        <button type="button">+ Opprett klasserom</button>
+      <article class="panel panel--highlight managementPanel">
+        <h2>Lag og rediger</h2>
+        <p>Lag og/eller rediger klasserom og ressurser fra samme sted.</p>
+
+        <div class="factoryActions factoryActions--grid">
+          <NuxtLink class="buttonLink buttonLink--secondary" :to="routePaths.notYetImplemented">
+            Klasserom
+          </NuxtLink>
+          <NuxtLink class="buttonLink buttonLink--secondary" :to="routePaths.teacherFactoryWorld">
+            Verdener
+          </NuxtLink>
+          <NuxtLink class="buttonLink buttonLink--secondary" :to="routePaths.teacherFactoryStation">
+            Stasjoner
+          </NuxtLink>
+          <NuxtLink class="buttonLink buttonLink--secondary" :to="routePaths.teacherFactoryExercise">
+            Øvelser
+          </NuxtLink>
+        </div>
       </article>
     </div>
   </section>
@@ -152,19 +166,50 @@ h2 {
   background: var(--surface);
 }
 
-button {
+.managementPanel {
+  grid-column: 1 / -1;
+}
+
+.factoryActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   margin-top: 0.9rem;
-  padding: 0.65rem 1rem;
+}
+
+.factoryActions--grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.buttonLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 4.5rem;
+  padding: 1rem 1.25rem;
   border: 1px solid var(--primary);
   border-radius: var(--radius);
   background: var(--primary);
   color: var(--bg);
-  font-weight: 600;
-  cursor: pointer;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.buttonLink--secondary {
+  background: transparent;
+  color: var(--primary);
 }
 
 @media (max-width: 900px) {
   .dashboardGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .factoryActions--grid {
     grid-template-columns: 1fr;
   }
 }
