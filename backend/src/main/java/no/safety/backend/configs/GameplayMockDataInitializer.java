@@ -64,7 +64,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
 
   private void seedExercises() {
     upsertExercise(NEWSSTAND_EXERCISE_1_UID, "Troverdige nyheter", "Lett",
-        "Undersok hvilke nyhetssaker som virker ekte, og hvilke faresignaler som bor sjekkes ekstra godt.",
+        "Undersok hvilke nyhetssaker som virker ekte og hvilke faresignaler du bor sjekke.",
         List.of(
             multipleChoiceTask(
                 "Velg den forklaringen som best viser hvorfor saken virker trygg a stole pa.",
@@ -99,7 +99,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     );
 
     upsertExercise(NEWSSTAND_EXERCISE_2_UID, "Nyhetsdetektiv", "Middels",
-        "Sammenlign nyhetssaker, oppdag clickbait og finn ut hva du bor undersoke for du tror eller deler noe.",
+        "Sammenlign nyhetssaker og finn ut hva du bor sjekke for du tror eller deler.",
         List.of(
             multipleChoiceTask(
                 "Velg saken som virker mest palitelig nar du ser pa sprak, avsender og forklaringer.",
@@ -140,7 +140,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     );
 
     upsertExercise(PHOTOGRAPH_EXERCISE_2_UID, "Bildedetektiv", "Middels",
-        "Sammenlign bilder og oppdag tegn som tyder pa at noe er generert eller manipulert.",
+        "Sammenlign bilder og oppdag tegn pa at noe er generert eller manipulert.",
         List.of(
             multipleChoiceTask(
                 "Velg det smarteste sporsmalet a starte med.",
@@ -281,7 +281,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     );
 
     upsertExercise(SOCIALMEDIA_EXERCISE_1_UID, "Tenk for du deler", "Lett",
-        "Laer a tenke for du deler, og a oppdage manipulering og gruppepress.",
+        "Laer a tenke for du deler og oppdage manipulering og gruppepress.",
         List.of(
             multipleChoiceTask(
                 "Velg den smarteste reaksjonen nar et innlegg prover a stresse deg.",
