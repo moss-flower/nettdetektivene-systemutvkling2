@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { routePaths } from '~/composables/utils/routePaths';
+
 const studentName = 'Saddam Hussein'
 const currentLevel = 7
 const currentXp = 840

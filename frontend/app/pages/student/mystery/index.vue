@@ -35,11 +35,6 @@ const canSubmit = computed(() => {
 
 const anyDialogOpen = computed(() => showPreviousMysteries.value || showSuggestionDialog.value);
 
-const currentMysteryPlayPath = computed(() => ({
-  path: routePaths.studentExerciseDifficultySelect,
-  query: { uid: 'newsstand' },
-}));
-
 watch(selectedFile, (file, previousFile) => {
   if (previewUrl.value) {
     URL.revokeObjectURL(previewUrl.value);
@@ -126,7 +121,7 @@ function sendMysterySubmission() {
           <h2 id="current-mystery-heading" class="student-mystery__playTitle">Denne ukens sak</h2>
 
           <div class="student-mystery__actionsRow">
-            <NuxtLink :to="currentMysteryPlayPath" class="student-mystery__playAction">
+            <NuxtLink :to="routePaths.studentMysteryPlay" class="student-mystery__playAction">
               Spill ukens mysterium
             </NuxtLink>
 
@@ -403,6 +398,7 @@ function sendMysterySubmission() {
   color: var(--color-text-onDark);
   font-weight: var(--font-weight-semibold);
   text-decoration: none;
+  cursor: pointer;
 }
 
 .student-mystery__section {
