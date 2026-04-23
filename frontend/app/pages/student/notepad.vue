@@ -120,11 +120,48 @@ function handleNewNoteClick() {
 
 <style scoped>
 .notepadPage {
+  /* desk surface */
+  --notepad-desk: var(--palette-wood-900);
+  --notepad-desk-glow: var(--palette-overlay-warm-glow);
+  --notepad-desk-seam: var(--palette-overlay-dark-strong);
+  --notepad-desk-bevel: var(--palette-overlay-warm-glow);
+
+  /* shared text on desk*/
+  --notepad-text-onDesk: var(--palette-cream-100);
+  --notepad-text-onDesk-muted: var(--palette-cream-300);
+
+  /* arrow pager (physical desk button) */
+  --notepad-arrow-bg: var(--palette-cream-100);
+  --notepad-arrow-border: var(--palette-cork-900);
+  --notepad-arrow-shadow: var(--palette-overlay-dark-deep);
+  --notepad-arrow-hover-ring: var(--palette-gold-500);
+
   display: grid;
   grid-template-columns: 0.2fr 1fr 0.2fr;
-  gap: 1rem;
-  height: 100%;
+  gap: var(--space-4);
+  height: 100dvh;
   min-height: 0;
+  padding: var(--layout-page-padding);
+  box-sizing: border-box;
+  color: var(--notepad-text-onDesk);
+  background:
+      linear-gradient(
+        135deg,
+        var(--notepad-desk-glow) 0%,
+        transparent 40%,
+        transparent 60%,
+        var(--palette-overlay-dark-strong) 100%
+      ),
+      repeating-linear-gradient(
+        0deg,
+        transparent 0,
+        transparent 117px,
+        var(--notepad-desk-seam) 117px,
+        var(--notepad-desk-seam) 120px,
+        var(--notepad-desk-bevel) 120px,
+        var(--notepad-desk-bevel) 122px
+      ),
+      var(--notepad-desk);
   overflow: hidden;
 }
 
@@ -132,31 +169,51 @@ function handleNewNoteClick() {
   min-width: 0;
   min-height: 0;
   height: 100%;
-  overflow: hidden;
 }
 
-.leftColumn {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 1rem;
-  background-color: rgb(68, 68, 255);
-  height: 100%;
-  min-height: 0;
-}
-
+/* side rails, transparent; widgets inside carry their own surfaces */
+.leftColumn,
 .rightColumn {
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
-  gap: 1rem;
-  background-color: rgb(68, 68, 255);
+  gap: var(--space-4);
   height: 100%;
   min-height: 0;
 }
 
+.leftColumn {
+  /* three children: top spacer + profile placeholder + back to menu arrow
+     space between = arrow pushed to bottom of rail + lets placeholder sit in the middle */
+  justify-content: space-between;
+}
+
+.rightColumn {
+  justify-content: space-around;
+}
+
 .arrowButton {
-  width: fit-content;
+  width: 70%;
   margin: 0 auto 15%;
+  padding: var(--space-1);
+  border: var(--border-width-hairline) solid var(--notepad-arrow-border);
+  border-radius: var(--radius-pill);
+  background: var(--notepad-arrow-bg);
+  box-shadow: 0 var(--space-1) var(--space-3) var(--notepad-arrow-shadow);
+  cursor: pointer;
+  transition:
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.arrowButton:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 var(--border-width-thin) var(--notepad-arrow-hover-ring),
+    0 var(--space-1) var(--space-4) var(--notepad-arrow-shadow);
+}
+
+.arrowButton img {
+  display: block;
+  max-width: 100%;
 }
 </style>
