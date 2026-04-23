@@ -14,18 +14,34 @@ export type ExerciseTask =
   | PasswordStrengthTaskData;
 
 export class Exercise {
-  uid: string;
+  publicId: string;
   title: string;
-  entryName: string;
+  difficultyName: string;
   description?: string;
   tasks: ExerciseTask[];
 
-  constructor(data: { uid: string; title: string; entryName: string; description?: string; tasks: ExerciseTask[] }) {
-    this.uid = data.uid;
+  constructor(data: {
+    publicId?: string;
+    uid?: string;
+    title: string;
+    difficultyName?: string;
+    entryName?: string;
+    description?: string;
+    tasks: ExerciseTask[];
+  }) {
+    this.publicId = data.publicId ?? data.uid ?? "";
     this.title = data.title;
-    this.entryName = data.entryName;
+    this.difficultyName = data.difficultyName ?? data.entryName ?? "";
     this.description = data.description;
     this.tasks = data.tasks;
+  }
+
+  get uid(): string {
+    return this.publicId;
+  }
+
+  get entryName(): string {
+    return this.difficultyName;
   }
 
   static mockData(): Exercise[] {
@@ -1461,6 +1477,10 @@ export class Exercise {
     return this.mockData().find((exercise) => exercise.uid === uid) ?? null;
   }
 
+  static findByPublicId(publicId: string): Exercise | null {
+    return this.mockData().find((exercise) => exercise.publicId === publicId) ?? null;
+  }
+
   static findByUids(uids: string[]): Exercise[] {
     return uids
       .map((uid) => this.findByUid(uid))
@@ -1473,6 +1493,10 @@ export class Exercise {
 
   static backendFetchExerciseByUid(uid: string): Exercise | null {
     return this.findByUid(uid);
+  }
+
+  static backendFetchExerciseByPublicId(publicId: string): Exercise | null {
+    return this.findByPublicId(publicId);
   }
 
   static backendFetchExercisesByUids(uids: string[]): Exercise[] {
