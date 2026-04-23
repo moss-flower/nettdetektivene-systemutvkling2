@@ -416,7 +416,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
 
   private void upsertStation(UUID uid, String title, String description, String image,
       String backgroundColor, List<UUID> exerciseUids) {
-    Station station = stationRepository.findById(uid).orElseGet(Station::new);
+    Station station = stationRepository.findByUid(uid).orElseGet(Station::new);
 
     station.setUid(uid);
     station.setTitle(title);
@@ -429,7 +429,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   }
 
   private void upsertWorld(UUID uid, String description, String image, List<UUID> stationUids) {
-    World world = worldRepository.findById(uid).orElseGet(World::new);
+    World world = worldRepository.findByUid(uid).orElseGet(World::new);
 
     world.setUid(uid);
     world.setDescription(description);

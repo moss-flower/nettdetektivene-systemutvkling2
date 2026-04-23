@@ -136,7 +136,7 @@ public class ClassroomService {
 
   @Transactional
   public void leaveClassroom(UUID classroomUid, UUID callerUuid) {
-    classroomRepo.findById(classroomUid)
+    classroomRepo.findByUid(classroomUid)
         .orElseThrow(() -> new NotFoundException("Could not find classroom"));
 
     StudentUser member = studentRepo.findByPublicUuid(callerUuid)
@@ -176,7 +176,7 @@ public class ClassroomService {
   }
 
   private Classroom requireOwned(UUID classroomUid, UUID callerUuid) {
-    if (classroomRepo.findById(classroomUid).isEmpty()) {
+    if (classroomRepo.findByUid(classroomUid).isEmpty()) {
       throw new NotFoundException("Could not find classroom");
     }
     return classroomRepo.findByUidAndOwners_PublicUuid(classroomUid, callerUuid)

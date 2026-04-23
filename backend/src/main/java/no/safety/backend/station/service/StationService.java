@@ -24,7 +24,7 @@ public class StationService {
 
   @Transactional(readOnly = true)
   public StationResponse getStationByUid(UUID uid) {
-    return stationRepository.findById(uid)
+    return stationRepository.findByUid(uid)
         .map(StationResponse::from)
         .orElseThrow(() -> new NotFoundException("Station not found with uid: " + uid));
   }
