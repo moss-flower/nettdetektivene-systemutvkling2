@@ -1,6 +1,9 @@
 package no.safety.backend.notification.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,6 +23,7 @@ import no.safety.backend.notification.service.SseRegistry;
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
 public class NotificationController {
+    private final Logger logger = LoggerFactory.getLogger(NotificationController.class);
     private final SseRegistry sseRegistry;
     private final NotificationService notificationService;
 
@@ -35,7 +39,10 @@ public class NotificationController {
     )
     @GetMapping(value = "/stream")
     public SseEmitter stream(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        Long userId = userPrincipal.user().getInternalId();
+        logger.info("Controller - principal: " + userPrincipal);
+        logger.info("Controller - context auth: " + SecurityContextHolder.getContext().getAuthentication());
+        logger.info("Controller hit, principal: " + userPrincipal);
+        Long userId = userPrincipal.getUserInternalId();
         SseEmitter emitter = sseRegistry.register(userId);
 
         notificationService.flushPending(userId);
