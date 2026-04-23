@@ -2,9 +2,9 @@ import { getBackendAPI } from "~~/server/utils/backendAPI";
 
 export default defineEventHandler(async (event) => {
   const api = getBackendAPI(event);
-  const classroomId = getRouterParam(event, "classroomId");
+  const code = getRouterParam(event, "code");
 
-  return await api(`/classrooms/${classroomId}/members/me`, {
-    method: "DELETE",
+  return await api(`classrooms/join/${code}`, {
+    method: "POST",
   });
 });
