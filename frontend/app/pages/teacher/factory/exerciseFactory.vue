@@ -1,26 +1,37 @@
 <script setup lang="ts">
 import ExerciseFactoryEditor from "~/components/teacher/factory/ExerciseFactoryEditor.vue";
+import PopupFactorySaved from "~/components/teacher/factory/PopupFactorySaved.vue";
 import { routePaths } from "~/composables/utils/routePaths";
 import {
 	exerciseFactoryNewSelectionKey,
 	getExerciseFactorySelectionOptions,
+	makeExerciseFactoryExistingSelectionKey,
 	type ExerciseFactorySelectableOption,
 } from "~/composables/useExerciseFactory";
 
-const backPath = routePaths.teacherOverview;
+const route = useRoute();
+const router = useRouter();
 const selectedExerciseKey = ref<string>("");
 const selectableOptions = ref<ExerciseFactorySelectableOption[]>([]);
+const showSavedPopup = ref(false);
+const lockedExerciseUid = computed(() => {
+	const uid = route.query.uid;
+
+	return typeof uid === "string" && uid.trim().length > 0 ? uid.trim() : "";
+});
+const showExerciseSelector = computed(() => lockedExerciseUid.value.length === 0);
+
+const goBack = () => {
+	if (import.meta.client && window.history.length > 1) {
+		router.back();
+		return;
+	}
+
+	void navigateTo(routePaths.teacherOverview);
+};
 
 const refreshSelectableOptions = () => {
 	selectableOptions.value = getExerciseFactorySelectionOptions();
-};
-
-const selectedOption = computed(() => {
-	return selectableOptions.value.find((option) => option.selectionKey === selectedExerciseKey.value) ?? null;
-});
-
-const startNewExercise = () => {
-	selectedExerciseKey.value = exerciseFactoryNewSelectionKey;
 };
 
 const handleSelectionUpdated = (selectionKey: string) => {
@@ -28,67 +39,68 @@ const handleSelectionUpdated = (selectionKey: string) => {
 	selectedExerciseKey.value = selectionKey;
 };
 
+const handleSaved = () => {
+	refreshSelectableOptions();
+	selectedExerciseKey.value = lockedExerciseUid.value
+		? makeExerciseFactoryExistingSelectionKey(lockedExerciseUid.value)
+		: "";
+	showSavedPopup.value = true;
+};
+
+const handleDeleted = () => {
+	refreshSelectableOptions();
+	selectedExerciseKey.value = lockedExerciseUid.value
+		? makeExerciseFactoryExistingSelectionKey(lockedExerciseUid.value)
+		: "";
+};
+
+const closeSavedPopup = () => {
+	showSavedPopup.value = false;
+};
+
 onMounted(() => {
 	refreshSelectableOptions();
 });
+
+watch(
+	lockedExerciseUid,
+	(uid) => {
+		selectedExerciseKey.value = uid ? makeExerciseFactoryExistingSelectionKey(uid) : "";
+	},
+	{ immediate: true },
+);
 </script>
 
 <template>
 	<section class="factoryPage">
 		<header class="factoryHero">
-			<div>
-				<NuxtLink class="factoryBackLink" :to="backPath">
-					Tilbake til læreroversikt
-				</NuxtLink>
-				<p class="factoryEyebrow">Lærerverktøy</p>
-				<h1>Oppgavefabrikk</h1>
-				<p class="factoryDescription">
-					Velg en eksisterende oppgave for å redigere den, eller start en ny lokal oppgave. Nye lokale oppgaver kan velges igjen fra listen etter første lagring.
-				</p>
-			</div>
+			<button class="backButton" type="button" @click="goBack">Tilbake</button>
+			<h1 v-if="showExerciseSelector">Oppgavesett</h1>
 		</header>
 
-		<section class="selectorPanel">
-			<div class="selectorHeading">
-				<h2>Velg oppgave</h2>
-				<p>Eksisterende oppgaver kan få en lokal override, og nye oppgaver kan opprettes og redigeres videre senere.</p>
-			</div>
-
+		<section v-if="showExerciseSelector" class="selectorPanel">
 			<div class="selectorControls">
 				<label class="field field--grow">
-					<span>Oppgave</span>
 					<select v-model="selectedExerciseKey">
-						<option value="">Velg oppgave</option>
+						<option value="">Velg oppgavesett</option>
+						<option :value="exerciseFactoryNewSelectionKey">Nytt oppgavesett</option>
 						<option v-for="option in selectableOptions" :key="option.selectionKey" :value="option.selectionKey">
 							{{ option.label }}
 						</option>
 					</select>
 				</label>
-
-				<button type="button" class="primaryButton" @click="startNewExercise">
-					Ny oppgave
-				</button>
 			</div>
-
-			<article class="selectedResourceCard">
-				<p class="cardEyebrow">Valgt ressurs</p>
-				<h3>
-					{{ selectedExerciseKey === exerciseFactoryNewSelectionKey ? 'Ny oppgave' : selectedOption?.label ?? 'Ingen valgt ennå' }}
-				</h3>
-				<p>
-					{{ selectedExerciseKey === exerciseFactoryNewSelectionKey ? 'Tom editor for en ny lokal oppgave.' : selectedOption?.badge ?? 'Velg en oppgave eller trykk Ny oppgave for å åpne editoren.' }}
-				</p>
-				<p class="selectedResourceDescription">
-					{{ selectedExerciseKey === exerciseFactoryNewSelectionKey ? 'Selve uid-en vil bli satt av backend senere.' : selectedOption?.description ?? '' }}
-				</p>
-			</article>
 		</section>
 
 		<ExerciseFactoryEditor
 			v-if="selectedExerciseKey"
 			:selection-key="selectedExerciseKey"
 			@selection-updated="handleSelectionUpdated"
+			@saved="handleSaved"
+			@deleted="handleDeleted"
 		/>
+
+		<PopupFactorySaved v-if="showSavedPopup" @close="closeSavedPopup" />
 	</section>
 </template>
 
@@ -101,38 +113,30 @@ onMounted(() => {
 }
 
 .factoryHero {
-	margin-bottom: 1.5rem;
+	margin-bottom: 1rem;
 }
 
-.factoryBackLink {
+.backButton {
 	display: inline-flex;
+	align-items: center;
 	margin-bottom: 0.75rem;
+	padding: 0;
+	border: 0;
+	background: transparent;
 	color: var(--primary);
-	font-weight: 700;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
 }
 
-.factoryEyebrow,
-.cardEyebrow {
-	margin: 0 0 0.5rem;
-	color: var(--primary);
-	font-weight: 700;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	font-size: 0.82rem;
+.backButton:hover {
+	text-decoration: underline;
 }
 
 h1,
 h2,
-h3 {
+	h3 {
 	margin: 0;
-}
-
-.factoryDescription,
-.selectorHeading p,
-.selectedResourceCard p {
-	margin: 0;
-	color: var(--muted);
-	line-height: 1.5;
 }
 
 .selectorPanel {
@@ -147,17 +151,8 @@ h3 {
 		var(--surface);
 	box-shadow: var(--shadow);
 }
-
-.selectorHeading {
-	display: grid;
-	gap: 0.35rem;
-}
-
 .selectorControls {
 	display: flex;
-	gap: 0.75rem;
-	align-items: end;
-	flex-wrap: wrap;
 }
 
 .field {
@@ -168,10 +163,6 @@ h3 {
 
 .field--grow {
 	flex: 1;
-}
-
-.field span {
-	font-weight: 700;
 }
 
 .field select {
@@ -187,34 +178,6 @@ h3 {
 .field select:focus {
 	outline: none;
 	border-color: var(--primary);
-}
-
-.selectedResourceCard {
-	display: grid;
-	gap: 0.25rem;
-	max-width: 32rem;
-	padding: 1rem;
-	border: 1px solid var(--border);
-	border-radius: 1rem;
-	background: rgba(255, 255, 255, 0.02);
-}
-
-.selectedResourceDescription {
-	font-size: 0.95rem;
-}
-
-.primaryButton {
-	border: 1px solid var(--primary);
-	border-radius: 999px;
-	padding: 0.75rem 1rem;
-	font-weight: 700;
-	background: var(--primary);
-	color: var(--bg);
-	transition: transform var(--transition), border-color var(--transition), background var(--transition);
-}
-
-.primaryButton:hover {
-	transform: translateY(-1px);
 }
 
 @media (max-width: 800px) {

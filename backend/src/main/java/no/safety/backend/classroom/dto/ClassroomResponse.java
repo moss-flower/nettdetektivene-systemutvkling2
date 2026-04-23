@@ -1,14 +1,15 @@
 package no.safety.backend.classroom.dto;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import no.safety.backend.classroom.model.Classroom;
 
 public record ClassroomResponse(
-    Long id,
+    UUID uid,
     String name,
     String description,
-    String worldUid,
+    UUID worldUid,
     String code,
     List<OwnerSummary> owners,
     List<MemberSummary> members
@@ -23,7 +24,7 @@ public record ClassroomResponse(
         .map(u -> new MemberSummary(u.getPublicUuid(), u.getUsername()))
         .collect(Collectors.toList());
 
-    return new ClassroomResponse(c.getId(), c.getName(), c.getDescription(), c.getWorldUid(), c.getCode(), owners,
+    return new ClassroomResponse(c.getUid(), c.getName(), c.getDescription(), c.getWorldUid(), c.getCode(), owners,
         members);
   }
 

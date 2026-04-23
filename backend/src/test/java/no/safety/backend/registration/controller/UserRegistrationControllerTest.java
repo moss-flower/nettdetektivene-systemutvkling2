@@ -10,10 +10,13 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
+import no.safety.backend.auth.service.JwtService;
+import no.safety.backend.exception.domain.RoleNotFoundException;
 import no.safety.backend.registration.dto.StudentUserRegistrationRequest;
 import no.safety.backend.registration.dto.StudentUserRegistrationResponse;
 import no.safety.backend.registration.dto.TeacherUserRegistrationRequest;
@@ -35,6 +38,12 @@ public class UserRegistrationControllerTest {
 
     @Autowired
     RestTestClient client;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private UserDetailsService userDetailsService;
     
     @MockitoBean
     private UserRegistrationService mockService;
@@ -58,10 +67,11 @@ public class UserRegistrationControllerTest {
             .build();
         
         validTeacherRequest = new TeacherUserRegistrationRequest(
-            "jane", "jane@test.com", "sup");
+            "jane", "jane@test.com", "secret_password");
         savedTeacher = TeacherUser.builder()
             .username("jane")
-            .email("jane@test.com").password("sup")
+            .email("jane@test.com")
+            .password("supersecretpass")
             .internalId(1l)
             .publicUuid(new UUID(0, 0))
             .roles(Set.of())
@@ -105,9 +115,9 @@ public class UserRegistrationControllerTest {
 
     @Test
     @WithMockUser
-    void StudentRegistration_shouldReturn500WhenServiceThrows() {
+    void StudentRegistration_shouldReturn500WhenRoleIsMissing() {
         when(mockService.registerStudent(any(StudentUserRegistrationRequest.class)))
-                .thenThrow(new RuntimeException("Role not found"));
+                .thenThrow(new RoleNotFoundException("Student role not found."));
 
         client.post().uri("/api/v1/register/student")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -150,9 +160,9 @@ public class UserRegistrationControllerTest {
 
     @Test
     @WithMockUser
-    void TeacherRegistration_shouldReturn500WhenServiceThrows() {
+    void TeacherRegistration_shouldReturn500WhenRoleIsMissing() {
         when(mockService.registerTeacher(any(TeacherUserRegistrationRequest.class)))
-                .thenThrow(new RuntimeException("Role not found"));
+                .thenThrow(new RoleNotFoundException("Teacher role not found."));
 
         client.post().uri("/api/v1/register/teacher")
                 .contentType(MediaType.APPLICATION_JSON)

@@ -35,7 +35,7 @@ public class User {
     @Column(updatable = false, nullable = false, unique = true, columnDefinition = "BINARY(16)")
     private UUID publicUuid;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, unique = false, length = 50)
     private String username;
 
     @Column(nullable = false, unique = true, length = 255)
