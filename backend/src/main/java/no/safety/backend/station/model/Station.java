@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OrderColumn;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +26,8 @@ import lombok.Setter;
 public class Station {
 
   @Id
-  @Column(name = "uid", length = 100)
-  private String uid;
+  @Column(name = "uid", nullable = false, updatable = false, columnDefinition = "BINARY(16)")
+  private UUID uid;
 
   @Column(nullable = false, length = 100)
   private String title;
@@ -45,4 +46,11 @@ public class Station {
   @Column(name = "exercise_uid", columnDefinition = "BINARY(16)")
   @OrderColumn(name = "sort_order")
   private List<UUID> exerciseUids = new ArrayList<>();
+
+  @PrePersist
+  private void onCreate() {
+    if (uid == null) {
+      uid = UUID.randomUUID();
+    }
+  }
 }

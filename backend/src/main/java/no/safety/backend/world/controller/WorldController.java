@@ -2,6 +2,7 @@ package no.safety.backend.world.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.world.dto.WorldResponse;
 import no.safety.backend.world.service.WorldService;
@@ -25,7 +26,7 @@ public class WorldController {
 
   @Operation(summary = "Get world by UID", tags = {"Worlds"})
   @GetMapping("/{uid}")
-  public WorldResponse getWorldByUid(@PathVariable String uid) {
+  public WorldResponse getWorldByUid(@PathVariable UUID uid) {
     return worldService.getWorldByUid(uid);
   }
 }

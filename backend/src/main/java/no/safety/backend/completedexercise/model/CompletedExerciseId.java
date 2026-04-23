@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CompletedExerciseId implements Serializable {
 
-  private Long student;
+  private UUID studentUid;
   private UUID exerciseUid;
 
   @Override
@@ -21,11 +21,11 @@ public class CompletedExerciseId implements Serializable {
     if (!(o instanceof CompletedExerciseId that)) {
       return false;
     }
-    return Objects.equals(student, that.student) && Objects.equals(exerciseUid, that.exerciseUid);
+    return Objects.equals(studentUid, that.studentUid) && Objects.equals(exerciseUid, that.exerciseUid);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(student, exerciseUid);
+    return Objects.hash(studentUid, exerciseUid);
   }
 }

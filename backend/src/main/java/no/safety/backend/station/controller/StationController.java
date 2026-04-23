@@ -2,6 +2,7 @@ package no.safety.backend.station.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.station.dto.StationResponse;
 import no.safety.backend.station.service.StationService;
@@ -25,7 +26,7 @@ public class StationController {
 
   @Operation(summary = "Get station by UID", tags = {"Stations"})
   @GetMapping("/{uid}")
-  public StationResponse getStationByUid(@PathVariable String uid) {
+  public StationResponse getStationByUid(@PathVariable UUID uid) {
     return stationService.getStationByUid(uid);
   }
 }

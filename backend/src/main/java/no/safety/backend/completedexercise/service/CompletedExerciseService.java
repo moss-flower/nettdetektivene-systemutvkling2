@@ -22,18 +22,19 @@ public class CompletedExerciseService {
 
   @Transactional
   public CompletedExerciseResponse create(CompletedExerciseRequest request, StudentUser student) {
+    UUID studentUid = student.getPublicUuid();
     UUID exerciseUid = request.exerciseUid();
 
     if (progressValidationService.isLocked(student, exerciseUid)) {
       throw new ForbiddenException("Oppgaven er låst. Fullfør forrige oppgave eller stasjon først.");
     }
 
-    if (completedExerciseRepository.existsByStudentAndExerciseUid(student, exerciseUid)) {
+    if (completedExerciseRepository.existsByStudentUidAndExerciseUid(studentUid, exerciseUid)) {
       throw new ConflictException("Exercise is already marked as completed for this student");
     }
 
     CompletedExercise completedExercise = new CompletedExercise();
-    completedExercise.setStudent(student);
+    completedExercise.setStudentUid(studentUid);
     completedExercise.setExerciseUid(exerciseUid);
 
     return CompletedExerciseResponse.from(completedExerciseRepository.save(completedExercise));
@@ -41,7 +42,7 @@ public class CompletedExerciseService {
 
   @Transactional(readOnly = true)
   public List<CompletedExerciseResponse> getMyCompletedExercises(StudentUser student) {
-    return completedExerciseRepository.findAllByStudentOrderByExerciseUidAsc(student)
+    return completedExerciseRepository.findAllByStudentUidOrderByExerciseUidAsc(student.getPublicUuid())
         .stream()
         .map(CompletedExerciseResponse::from)
         .toList();

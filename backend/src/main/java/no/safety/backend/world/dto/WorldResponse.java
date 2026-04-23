@@ -1,13 +1,14 @@
 package no.safety.backend.world.dto;
 
 import java.util.List;
+import java.util.UUID;
 import no.safety.backend.world.model.World;
 
 public record WorldResponse(
-    String uid,
+    UUID uid,
     String description,
     String image,
-    List<String> stationUids
+    List<UUID> stationUids
 ) {
   public static WorldResponse from(World world) {
     return new WorldResponse(

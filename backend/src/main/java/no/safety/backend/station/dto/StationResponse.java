@@ -5,7 +5,7 @@ import java.util.UUID;
 import no.safety.backend.station.model.Station;
 
 public record StationResponse(
-    String uid,
+    UUID uid,
     String title,
     String description,
     String image,

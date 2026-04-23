@@ -24,6 +24,7 @@ public class ProgressValidationService {
 
   @Transactional(readOnly = true)
   public boolean isLocked(StudentUser student, UUID exerciseUid) {
+    UUID studentUid = student.getPublicUuid();
     World world = getStudentWorld(student);
     Station station = findStationInWorld(world, exerciseUid);
 
@@ -36,12 +37,12 @@ public class ProgressValidationService {
 
     if (exerciseIndex > 0) {
       UUID previousExerciseUid = exercisesInStation.get(exerciseIndex - 1);
-      boolean prevCompleted = completedExerciseRepository.existsByStudentAndExerciseUid(student, previousExerciseUid);
+      boolean prevCompleted = completedExerciseRepository.existsByStudentUidAndExerciseUid(studentUid, previousExerciseUid);
       if (!prevCompleted) {
         return true;
       }
     } else {
-      List<String> stationsInWorld = world.getStationUids();
+      List<UUID> stationsInWorld = world.getStationUids();
       int stationIndex = stationsInWorld.indexOf(station.getUid());
 
       if (stationIndex < 0) {
@@ -49,13 +50,13 @@ public class ProgressValidationService {
       }
 
       if (stationIndex > 0) {
-        String previousStationUid = stationsInWorld.get(stationIndex - 1);
+        UUID previousStationUid = stationsInWorld.get(stationIndex - 1);
         Station previousStation = stationRepository.findById(previousStationUid)
             .orElseThrow(() -> new NotFoundException("Previous station not found: " + previousStationUid));
 
         List<UUID> prevExercises = previousStation.getExerciseUids();
         if (!prevExercises.isEmpty()) {
-          long completedCount = completedExerciseRepository.countByStudentAndExerciseUidIn(student, prevExercises);
+          long completedCount = completedExerciseRepository.countByStudentUidAndExerciseUidIn(studentUid, prevExercises);
           if (completedCount < prevExercises.size()) {
             return true;
           }
@@ -71,8 +72,8 @@ public class ProgressValidationService {
       throw new StudentNotInClassException("Student is not in a classroom");
     }
 
-    String worldUid = student.getClassroom().getWorldUid();
-    if (worldUid == null || worldUid.isBlank()) {
+    UUID worldUid = student.getClassroom().getWorldUid();
+    if (worldUid == null) {
       throw new NotFoundException("Classroom has no assigned world");
     }
 
@@ -81,7 +82,7 @@ public class ProgressValidationService {
   }
 
   private Station findStationInWorld(World world, UUID exerciseUid) {
-    for (String stationUid : world.getStationUids()) {
+    for (UUID stationUid : world.getStationUids()) {
       Station station = stationRepository.findById(stationUid)
           .orElseThrow(() -> new NotFoundException("Station not found with uid: " + stationUid));
       if (station.getExerciseUids().contains(exerciseUid)) {

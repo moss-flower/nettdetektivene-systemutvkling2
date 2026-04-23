@@ -1,6 +1,7 @@
 package no.safety.backend.world.service;
 
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.exception.NotFoundException;
 import no.safety.backend.world.dto.WorldResponse;
@@ -22,7 +23,7 @@ public class WorldService {
   }
 
   @Transactional(readOnly = true)
-  public WorldResponse getWorldByUid(String uid) {
+  public WorldResponse getWorldByUid(UUID uid) {
     return worldRepository.findById(uid)
         .map(WorldResponse::from)
         .orElseThrow(() -> new NotFoundException("World not found with uid: " + uid));

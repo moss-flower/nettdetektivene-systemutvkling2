@@ -4,13 +4,13 @@ import java.util.UUID;
 import no.safety.backend.completedexercise.model.CompletedExercise;
 
 public record CompletedExerciseResponse(
-    UUID studentId,
+    UUID studentUid,
     UUID exerciseUid
 ) {
 
   public static CompletedExerciseResponse from(CompletedExercise completedExercise) {
     return new CompletedExerciseResponse(
-        completedExercise.getStudent().getPublicUuid(),
+        completedExercise.getStudentUid(),
         completedExercise.getExerciseUid()
     );
   }
