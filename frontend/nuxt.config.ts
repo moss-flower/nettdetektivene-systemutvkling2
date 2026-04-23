@@ -14,7 +14,7 @@ export default defineNuxtConfig({
   
   runtimeConfig: {
     public: {
-      apiBase: '/api/v1/',
+      apiBase: 'http://backend:8080/api/v1',
     },
   },
 })
