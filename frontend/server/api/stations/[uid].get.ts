@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   const api = getBackendAPI(event);
   const uid = getRouterParam(event, "uid");
 
-  return await api(`v1/stations/${uid}`, {
+  return await api(`/v1/stations/${uid}`, {
     method: "GET",
   });
 });
