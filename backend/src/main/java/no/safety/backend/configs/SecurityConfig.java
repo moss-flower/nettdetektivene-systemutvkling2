@@ -36,11 +36,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            
+
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-                .ignoringRequestMatchers("/api/v1/auth/**", "/api/v1/register/**", "/api/v1/achievements/**")
+                .ignoringRequestMatchers("/api/v1/auth/**", "/api/v1/register/**", "/api/v1/achievements/**", "/api/v1/classrooms/**")
             )
 
             .headers(headers -> headers

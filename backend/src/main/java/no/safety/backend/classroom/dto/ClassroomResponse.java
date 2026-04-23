@@ -8,6 +8,7 @@ public record ClassroomResponse(
     Long id,
     String name,
     String description,
+    String worldUid,
     String code,
     List<OwnerSummary> owners,
     List<MemberSummary> members
@@ -22,7 +23,7 @@ public record ClassroomResponse(
         .map(u -> new MemberSummary(u.getPublicUuid(), u.getUsername()))
         .collect(Collectors.toList());
 
-    return new ClassroomResponse(c.getId(), c.getName(), c.getDescription(), c.getCode(), owners,
+    return new ClassroomResponse(c.getId(), c.getName(), c.getDescription(), c.getWorldUid(), c.getCode(), owners,
         members);
   }
 

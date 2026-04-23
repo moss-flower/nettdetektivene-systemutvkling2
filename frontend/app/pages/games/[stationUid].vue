@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import EmailHotspotsTemplate from '~/components/gameplay/templates/EmailHotspotsTemplate.vue'
 import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDialog.vue'
+import PasswordStrengthTemplate from '~/components/gameplay/templates/PasswordStrengthTemplate.vue'
+import SortIntoBucketsTemplate from '~/components/gameplay/templates/SortIntoBucketsTemplate.vue'
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoiceTemplate.vue'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
-import { routePaths } from '~/composables/routePaths'
+import { routePaths } from '~/composables/utils/routePaths'
 import { Exercise } from '~/composables/types/ExerciseType'
 import { Station } from '~/composables/types/StationType'
 
@@ -12,6 +14,8 @@ import type {
   EmailHotspotResult,
   MultipleChoiceOptionKey,
   MultipleChoiceResult,
+  PasswordStrengthResult,
+  SortIntoBucketsResult,
   XOrYChoice,
   XOrYResult,
 } from '~/composables/types/TaskTypes'
@@ -49,7 +53,7 @@ const tasks = activeExercise
 const currentIndex = ref(0)
 const showExerciseResultDialog = ref(false)
 const correctCount = ref(0)
-const answerState = ref<{ correct: boolean, choice: string } | null>(null)
+const answerState = ref<{ correct: boolean, choice: string, missingStartingPassword?: boolean } | null>(null)
 
 const currentTask = computed(() => tasks[currentIndex.value] ?? null)
 const currentOptions = computed(() => {
@@ -107,6 +111,14 @@ const feedbackTitle = computed(() => {
       return 'Trykk på det som virker mistenkelig'
     }
 
+    if (currentTask.value.templateKind === 'sort-into-buckets') {
+      return 'Sorter alle passordene'
+    }
+
+    if (currentTask.value.templateKind === 'password-strength') {
+      return 'Bygg et tryggere passord'
+    }
+
     return 'Velg avisen du stoler mest på'
   }
 
@@ -124,6 +136,13 @@ const feedbackText = computed(() => {
 
   if (answerState.value.correct) {
     return currentTask.value.feedbackCorrect
+  }
+
+  if (
+    currentTask.value.templateKind === 'password-strength'
+    && answerState.value.missingStartingPassword
+  ) {
+    return 'Det nye passordet ma inneholde startpassordet som en del av svaret ditt.'
   }
 
   return currentTask.value.feedbackIncorrect
@@ -167,6 +186,31 @@ const onAnsweredEmailHotspots = (result: EmailHotspotResult) => {
   }
 }
 
+const onAnsweredSortIntoBuckets = (result: SortIntoBucketsResult) => {
+  answerState.value = {
+    correct: result.correct,
+    choice: Object.values(result.placements).flat().join(','),
+  }
+
+  if (result.correct) {
+    correctCount.value++
+    celebrateCorrectAnswer()
+  }
+}
+
+const onAnsweredPasswordStrength = (result: PasswordStrengthResult) => {
+  answerState.value = {
+    correct: result.correct,
+    choice: result.password,
+    missingStartingPassword: result.missingStartingPassword,
+  }
+
+  if (result.correct) {
+    correctCount.value++
+    celebrateCorrectAnswer()
+  }
+}
+
 const next = () => {
   stop()
   answerState.value = null
@@ -187,12 +231,6 @@ const next = () => {
           <p class="station-page__eyebrow">{{ station.title }}</p>
           <p class="station-page__progress-pill">{{ progressLabel }}</p>
         </div>
-        <p v-if="activeExercise" class="station-page__exercise-title">
-          {{ activeExercise.title }}
-        </p>
-        <p class="station-page__description">
-          {{ activeExercise?.description ?? station.description }}
-        </p>
       </div>
     </header>
 
@@ -225,6 +263,23 @@ const next = () => {
         :targets="currentTask.targets"
         :disabled="Boolean(answerState)"
         @answered="onAnsweredEmailHotspots"
+      />
+      <SortIntoBucketsTemplate
+        v-else-if="currentTask?.templateKind === 'sort-into-buckets'"
+        :key="`${currentTask.id}-sort-into-buckets`"
+        :prompt="currentTask.prompt"
+        :items="currentTask.items"
+        :buckets="currentTask.buckets"
+        :unplaced-label="currentTask.unplacedLabel"
+        :disabled="Boolean(answerState)"
+        @answered="onAnsweredSortIntoBuckets"
+      />
+      <PasswordStrengthTemplate
+        v-else-if="currentTask?.templateKind === 'password-strength'"
+        :key="`${currentTask.id}-password-strength`"
+        :task="currentTask"
+        :disabled="Boolean(answerState)"
+        @answered="onAnsweredPasswordStrength"
       />
     </div>
 
@@ -310,7 +365,7 @@ const next = () => {
 .station-page__board {
   padding: clamp(0.8rem, 1.4vw, 1.1rem);
   border-radius: 1.6rem;
-  background: #f7fbff;
+  background: #f5f5f4;
 }
 
 @media (max-width: 780px) {

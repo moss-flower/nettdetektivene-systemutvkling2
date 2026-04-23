@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import StationCard from "~/components/station/station.vue";
-import { routePaths } from "~/composables/routePaths";
+import { routePaths } from "~/composables/utils/routePaths";
 import { Station } from "~/composables/types/StationType";
 
 const stations = Station.backendFetchAllStations();

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import WorldFactoryEditor from "~/components/teacher/factory/WorldFactoryEditor.vue";
-import { routePaths } from "~/composables/routePaths";
+import { routePaths } from "~/composables/utils/routePaths";
 import {
 	getWorldFactorySelectionOptions,
 	type WorldFactorySelectableOption,

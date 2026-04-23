@@ -41,6 +41,9 @@ public class Classroom {
   @Column(length = 1000)
   private String description;
 
+  @Column(length = 100)
+  private String worldUid;
+
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
       name = "classroom_owners",

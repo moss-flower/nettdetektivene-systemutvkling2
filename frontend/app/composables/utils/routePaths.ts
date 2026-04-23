@@ -1,10 +1,10 @@
 export enum routePaths {
     home = '/',
-    studentLevels = '/student/home/directions/stations',
-    login = '/login/login',
+    studentLevels = '/student/game/stations',
+    login = '/login',
     join = '/login/join',
     register = '/login/register',
-    teacherOverview = '/teacher/home',
+    teacherOverview = '/teacher',
     teacherClassroomOverview = '/teacher/classroom/overview',
     teacherClassroomMystery = '/teacher/classroom/mystery',
     teacherClassroomNotifications = '/teacher/classroom/notifications',
@@ -14,19 +14,19 @@ export enum routePaths {
     teacherFactoryExercise = '/teacher/factory/exerciseFactory',
     teacherFactoryStation = '/teacher/factory/stationFactory',
     teacherFactoryWorld = '/teacher/factory/worldFactory',
-    studentHome = '/student/home/home',
-    studentProfile = '/student/home/directions/profile',
-    studentAchievements = '/student/home/directions/achievements',
-    studentExerciseDifficultySelect = '/student/task/exerciseDifficultySelect',
+    studentHome = '/student',
+    studentProfile = '/student/profile',
+    studentAchievements = '/student/achievements',
+    studentExerciseDifficultySelect = '/student/game/selectDifficulty',
     
     // to implement next
-    studentLeaderboard = '/student/home/directions/leaderboard',
-    studentMystery = '/student/home/directions/mystery',
-    studentNotes = '/student/home/directions/notes',
-    studentSettings = '/student/home/directions/settings',
+    studentLeaderboard = '/student/leaderboard',
+    studentMystery = '/student/mystery',
+    studentNotes = '/student/notes',
+    studentSettings = '/student/settings',
 
     notYetImplemented = '/shared/notYetImplemented',
-    studentHelp = '/student/home/directions/help',
+    studentHelp = '/student/help',
 }
 
 export const routePathsWithString = (path: routePaths, string: string) => `${path}${string}`;

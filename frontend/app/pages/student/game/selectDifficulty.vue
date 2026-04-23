@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DifficultySelect from "~/components/station/difficultySelect.vue";
-import { routePaths } from "~/composables/routePaths";
+import { routePaths } from "~/composables/utils/routePaths";
 import { Exercise } from "~/composables/types/ExerciseType";
 import { Station } from "~/composables/types/StationType";
 

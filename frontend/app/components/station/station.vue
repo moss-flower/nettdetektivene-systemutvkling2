@@ -2,7 +2,7 @@
 import { NuxtLink } from "#components";
 import starEmpty from "~/assets/images/star/spStarEmpty.png";
 import starFilled from "~/assets/images/star/spStarFilled.png";
-import { routePaths } from "~/composables/routePaths";
+import { routePaths } from "~/composables/utils/routePaths";
 import type { Station } from "~/composables/types/StationType";
 
 const props = defineProps<{

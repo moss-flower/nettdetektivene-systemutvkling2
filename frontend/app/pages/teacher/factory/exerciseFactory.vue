@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ExerciseFactoryEditor from "~/components/teacher/factory/ExerciseFactoryEditor.vue";
-import { routePaths } from "~/composables/routePaths";
+import { routePaths } from "~/composables/utils/routePaths";
 import {
 	exerciseFactoryNewSelectionKey,
 	getExerciseFactorySelectionOptions,
