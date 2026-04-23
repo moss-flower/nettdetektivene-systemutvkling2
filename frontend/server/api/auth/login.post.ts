@@ -5,21 +5,27 @@ export default defineEventHandler(async (event) => {
   const api = getBackendAPI(event);
   const body = await readBody<LoginRequest>(event);
 
-  console.log("REACHED ROUTE")
+  try {
+    const response = await api.raw<AuthResponse>("v1/auth/login", {
+      method: "POST",
+      body,
+    });
 
-  const response = await api.raw<AuthResponse>("v1/auth/login", {
-    method: "POST",
-    body,
-  });
+    const setCookies =
+      typeof response.headers.getSetCookie === "function"
+        ? response.headers.getSetCookie()
+        : [];
 
-  const setCookies =
-    typeof response.headers.getSetCookie === "function"
-      ? response.headers.getSetCookie()
-      : [];
+    for (const cookie of setCookies) {
+      appendResponseHeader(event, "set-cookie", cookie);
+    }
 
-  for (const cookie of setCookies) {
-    appendResponseHeader(event, "set-cookie", cookie);
+    return response._data;
+  } catch (error: any) {
+    throw createError({
+      statusCode: error?.response?.status ?? error?.statusCode ?? 500,
+      statusMessage: error?.data?.detail ?? error?.statusMessage ?? "Login failed",
+      data: error?.data,
+    });
   }
-
-  return response._data;
 });

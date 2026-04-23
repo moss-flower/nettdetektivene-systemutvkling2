@@ -2,8 +2,6 @@ export const useAuth = () => {
   const { $api } = useNuxtApp();
 
   const login = async (email: string, password: string) => {
-    console.log("REACHED LOGIN")
-
     return await $api("/auth/login", {
       method: "POST",
       body: { email, password },
