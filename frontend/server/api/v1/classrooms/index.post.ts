@@ -5,10 +5,9 @@ export default defineEventHandler(async (event) => {
   const api = getBackendAPI(event);
   const body = await readBody<ClassroomRequest>(event);
 
-  console.log("Reached route");
-
   return await api("classrooms", {
     method: "POST",
     body,
   });
 });
+

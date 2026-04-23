@@ -55,7 +55,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 class ClassroomManagementIntegrationTest {
 
-  private static final String DEFAULT_WORLD_UID = "schoolyard";
+  private static final UUID DEFAULT_WORLD_UID = no.safety.backend.configs.GameplayMockDataInitializer.SCHOOLYARD_WORLD_UID;
+  private static final UUID QUICKSTART_WORLD_UID = no.safety.backend.configs.GameplayMockDataInitializer.QUICKSTART_WORLD_UID;
 
   @Container
   @ServiceConnection
@@ -130,17 +131,17 @@ class ClassroomManagementIntegrationTest {
     TeacherUser teacher = saveTeacher("teacher1");
     ClassroomResponse created = createClassroom(teacher, "Klasse 5B");
 
-    client.put().uri("/api/v1/classrooms/{id}", created.id())
+    client.put().uri("/api/v1/classrooms/{id}", created.uid())
         .header("X-Test-User", teacher.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Klasse 7C", "En seriøs klasse", "quickstart"))
+        .body(new ClassroomRequest("Klasse 7C", "En seriøs klasse", QUICKSTART_WORLD_UID))
         .exchange()
         .expectStatus().isOk()
         .expectBody(ClassroomResponse.class)
         .value(r -> {
           assertThat(r.name()).isEqualTo("Klasse 7C");
           assertThat(r.description()).isEqualTo("En seriøs klasse");
-          assertThat(r.worldUid()).isEqualTo("quickstart");
+          assertThat(r.worldUid()).isEqualTo(QUICKSTART_WORLD_UID);
         });
   }
 
@@ -150,10 +151,10 @@ class ClassroomManagementIntegrationTest {
     TeacherUser other = saveTeacher("teacher2");
     ClassroomResponse created = createClassroom(owner, "Klasse 5B");
 
-    client.put().uri("/api/v1/classrooms/{id}", created.id())
+    client.put().uri("/api/v1/classrooms/{id}", created.uid())
         .header("X-Test-User", other.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Hacked", "Hacked", "quickstart"))
+        .body(new ClassroomRequest("Hacked", "Hacked", QUICKSTART_WORLD_UID))
         .exchange()
         .expectStatus().isForbidden();
   }
@@ -165,7 +166,7 @@ class ClassroomManagementIntegrationTest {
     client.put().uri("/api/v1/classrooms/{id}", 9999)
         .header("X-Test-User", teacher.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ClassroomRequest("Klasse 7C", "En seriøs klasse", "quickstart"))
+        .body(new ClassroomRequest("Klasse 7C", "En seriøs klasse", QUICKSTART_WORLD_UID))
         .exchange()
         .expectStatus().isNotFound();
   }
@@ -175,7 +176,7 @@ class ClassroomManagementIntegrationTest {
     TeacherUser teacher = saveTeacher("teacher1");
     ClassroomResponse created = createClassroom(teacher, "Klasse 5B");
 
-    client.delete().uri("/api/v1/classrooms/{id}", created.id())
+    client.delete().uri("/api/v1/classrooms/{id}", created.uid())
         .header("X-Test-User", teacher.getPublicUuid().toString())
         .exchange()
         .expectStatus().isNoContent();
@@ -187,7 +188,7 @@ class ClassroomManagementIntegrationTest {
     TeacherUser other = saveTeacher("teacher2");
     ClassroomResponse created = createClassroom(owner, "Klasse 5B");
 
-    client.delete().uri("/api/v1/classrooms/{id}", created.id())
+    client.delete().uri("/api/v1/classrooms/{id}", created.uid())
         .header("X-Test-User", other.getPublicUuid().toString())
         .exchange()
         .expectStatus().isForbidden();
@@ -210,7 +211,7 @@ class ClassroomManagementIntegrationTest {
     TeacherUser newOwner = saveTeacher("teacher2");
     ClassroomResponse created = createClassroom(owner, "Klasse 5B");
 
-    client.post().uri("/api/v1/classrooms/{id}/owners/{uuid}", created.id(), newOwner.getPublicUuid())
+    client.post().uri("/api/v1/classrooms/{id}/owners/{uuid}", created.uid(), newOwner.getPublicUuid())
         .header("X-Test-User", owner.getPublicUuid().toString())
         .exchange()
         .expectStatus().isOk()
@@ -225,7 +226,7 @@ class ClassroomManagementIntegrationTest {
     TeacherUser third = saveTeacher("teacher3");
     ClassroomResponse created = createClassroom(owner, "Klasse 5B");
 
-    client.post().uri("/api/v1/classrooms/{id}/owners/{uuid}", created.id(), third.getPublicUuid())
+    client.post().uri("/api/v1/classrooms/{id}/owners/{uuid}", created.uid(), third.getPublicUuid())
         .header("X-Test-User", other.getPublicUuid().toString())
         .exchange()
         .expectStatus().isForbidden();
@@ -300,7 +301,7 @@ class ClassroomManagementIntegrationTest {
         .exchange()
         .expectStatus().isOk();
 
-    client.delete().uri("/api/v1/classrooms/{id}/members/{uuid}", created.id(), student.getPublicUuid())
+    client.delete().uri("/api/v1/classrooms/{id}/members/{uuid}", created.uid(), student.getPublicUuid())
         .header("X-Test-User", teacher.getPublicUuid().toString())
         .exchange()
         .expectStatus().isOk()
@@ -320,7 +321,7 @@ class ClassroomManagementIntegrationTest {
         .exchange()
         .expectStatus().isOk();
 
-    client.delete().uri("/api/v1/classrooms/{id}/members/{uuid}", created.id(), student.getPublicUuid())
+    client.delete().uri("/api/v1/classrooms/{id}/members/{uuid}", created.uid(), student.getPublicUuid())
         .header("X-Test-User", other.getPublicUuid().toString())
         .exchange()
         .expectStatus().isForbidden();
@@ -337,7 +338,7 @@ class ClassroomManagementIntegrationTest {
         .exchange()
         .expectStatus().isOk();
 
-    client.delete().uri("/api/v1/classrooms/{id}/members/me", created.id())
+    client.delete().uri("/api/v1/classrooms/{id}/members/me", created.uid())
         .header("X-Test-User", student.getPublicUuid().toString())
         .exchange()
         .expectStatus().isNoContent();
@@ -349,7 +350,7 @@ class ClassroomManagementIntegrationTest {
     StudentUser student = saveStudent("student1");
     ClassroomResponse created = createClassroom(teacher, "Klasse 5B");
 
-    client.delete().uri("/api/v1/classrooms/{id}/members/me", created.id())
+    client.delete().uri("/api/v1/classrooms/{id}/members/me", created.uid())
         .header("X-Test-User", student.getPublicUuid().toString())
         .exchange()
         .expectStatus().isNotFound();
@@ -361,7 +362,7 @@ class ClassroomManagementIntegrationTest {
     ClassroomResponse created = createClassroom(owner, "Klasse 5B");
     String oldCode = created.code();
 
-    client.post().uri("/api/v1/classrooms/{id}/code", created.id())
+    client.post().uri("/api/v1/classrooms/{id}/code", created.uid())
         .header("X-Test-User", owner.getPublicUuid().toString()).exchange().expectStatus()
         .isOk()
         .expectBody(ClassroomResponse.class).value(r -> {
@@ -377,7 +378,7 @@ class ClassroomManagementIntegrationTest {
 
     ClassroomResponse created = createClassroom(owner, "Klasse 5B");
 
-    client.post().uri("/api/v1/classrooms/{id}/code", created.id())
+    client.post().uri("/api/v1/classrooms/{id}/code", created.uid())
         .header("X-Test-User", other.getPublicUuid().toString()).exchange().expectStatus()
         .isForbidden();
   }

@@ -51,7 +51,7 @@ public class ProgressValidationService {
 
       if (stationIndex > 0) {
         UUID previousStationUid = stationsInWorld.get(stationIndex - 1);
-        Station previousStation = stationRepository.findById(previousStationUid)
+        Station previousStation = stationRepository.findByUid(previousStationUid)
             .orElseThrow(() -> new NotFoundException("Previous station not found: " + previousStationUid));
 
         List<UUID> prevExercises = previousStation.getExerciseUids();
@@ -77,13 +77,13 @@ public class ProgressValidationService {
       throw new NotFoundException("Classroom has no assigned world");
     }
 
-    return worldRepository.findById(worldUid)
+    return worldRepository.findByUid(worldUid)
         .orElseThrow(() -> new NotFoundException("World not found with uid: " + worldUid));
   }
 
   private Station findStationInWorld(World world, UUID exerciseUid) {
     for (UUID stationUid : world.getStationUids()) {
-      Station station = stationRepository.findById(stationUid)
+      Station station = stationRepository.findByUid(stationUid)
           .orElseThrow(() -> new NotFoundException("Station not found with uid: " + stationUid));
       if (station.getExerciseUids().contains(exerciseUid)) {
         return station;

@@ -24,7 +24,7 @@ public class WorldService {
 
   @Transactional(readOnly = true)
   public WorldResponse getWorldByUid(UUID uid) {
-    return worldRepository.findById(uid)
+    return worldRepository.findByUid(uid)
         .map(WorldResponse::from)
         .orElseThrow(() -> new NotFoundException("World not found with uid: " + uid));
   }

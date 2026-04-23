@@ -6,7 +6,8 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<LoginRequest>(event);
 
   try {
-    const response = await api.raw<AuthResponse>("auth/login", {
+    const response = await api.raw<AuthResponse>("/auth/login", {
+
       method: "POST",
       body,
     });

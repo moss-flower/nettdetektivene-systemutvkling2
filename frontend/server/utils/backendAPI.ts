@@ -2,7 +2,7 @@ import type { H3Event } from "h3";
 
 export function getBackendAPI(event: H3Event) {
   const config = useRuntimeConfig(event);
-  const baseURL = (config.apiBase as string);
+  const baseURL = (config.public.apiBase as string);
 
   return $fetch.create({
     baseURL,
@@ -17,7 +17,7 @@ export function getBackendAPI(event: H3Event) {
       }
 
       if (cookieHeader) {
-        headers.set("Cookie", cookieHeader);
+        headers.set("cookie", cookieHeader);
       }
 
       options.headers = headers;
