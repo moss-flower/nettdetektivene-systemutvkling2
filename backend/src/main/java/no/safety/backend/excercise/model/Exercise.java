@@ -42,7 +42,7 @@ public class Exercise {
   @Column(nullable = false, length = 50)
   private String difficultyName;
 
-  @Column(length = 100)
+  @Column(columnDefinition = "TEXT")
   private String description;
 
   @OneToMany(mappedBy = "exercise", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)

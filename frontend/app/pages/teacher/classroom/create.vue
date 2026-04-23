@@ -18,7 +18,7 @@ const draft = reactive({
 const formError = ref("");
 const loading = ref(false);
 
-const availableWorlds = computed(() => World.backendFetchAllWorlds());
+const { data: availableWorlds } = await useAsyncData("available-worlds", () => World.backendFetchAllWorlds());
 
 const lockedWorldUid = computed(() => {
   const uid = route.query.uid;
@@ -128,7 +128,8 @@ const createClassroom = async () => {
               <select v-model="draft.worldUid">
                 <option value="">Velg verden</option>
                 <option
-                  v-for="world in availableWorlds"
+                  v-for="world in availableWorlds ?? []"
+
                   :key="world.uid"
                   :value="world.uid"
                 >

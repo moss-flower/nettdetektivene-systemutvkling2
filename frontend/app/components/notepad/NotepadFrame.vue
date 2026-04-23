@@ -30,10 +30,12 @@ const props = defineProps<{
   display: flex;
   flex-direction: column;
 
-  background-image: url("~/assets/images/notepad.png");
+  background-image: url("~/assets/images/notepad2.png");
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100% 100%;
+
+  filter: drop-shadow(0 var(--space-4) var(--space-6) var(--palette-overlay-dark-deep));
 }
 
 .notesScroll {
@@ -44,6 +46,6 @@ const props = defineProps<{
 
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 </style>

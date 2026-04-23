@@ -22,5 +22,13 @@ export function getBackendAPI(event: H3Event) {
 
       options.headers = headers;
     },
+
+    onResponseError({ response }) {
+      throw createError({
+        statusCode: response.status,
+        statusMessage: response._data?.detail ?? response.statusText,
+        data: response._data,
+      });
+    },
   });
 }

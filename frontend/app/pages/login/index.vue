@@ -74,12 +74,11 @@ async function handleLogin() {
   try {
     await login(email.value.trim(), password.value);
 
-    console.log("CLICKED LOGIN")
-
     await navigateTo(targetRoute.value);
 
   } catch (error: any) {
     formError.value =
+      error?.data?.detail ||
       error?.data?.message ||
       error?.data?.error ||
       error?.statusMessage ||

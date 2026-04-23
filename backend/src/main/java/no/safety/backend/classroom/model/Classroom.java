@@ -3,6 +3,8 @@ package no.safety.backend.classroom.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -29,7 +31,10 @@ import no.safety.backend.user.model.User;
 public class Classroom {
 
   @Id
-  @Column(name = "uid", nullable = false, updatable = false, columnDefinition = "BINARY(16)")
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long internalId;
+
+  @Column(name = "uid", nullable = false, updatable = false, unique = true, columnDefinition = "BINARY(16)")
   private UUID uid;
 
   @Column(nullable = false, unique = true, length = 40)
@@ -47,7 +52,7 @@ public class Classroom {
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
       name = "classroom_owners",
-      joinColumns = @JoinColumn(name="classroom_uid"),
+      joinColumns = @JoinColumn(name = "classroom_uid", referencedColumnName = "uid"),
       inverseJoinColumns = @JoinColumn(name = "user_id")
   )
   private Set<User> owners = new HashSet<>();

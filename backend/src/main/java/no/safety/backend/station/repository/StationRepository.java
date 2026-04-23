@@ -9,7 +9,9 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface StationRepository extends JpaRepository<Station, UUID> {
+public interface StationRepository extends JpaRepository<Station, Long> {
+
+  Optional<Station> findByUid(UUID uid);
 
   @Query("SELECT s FROM Station s JOIN s.exerciseUids e WHERE e = :exerciseUid")
   Optional<Station> findByExerciseUid(@Param("exerciseUid") UUID exerciseUid);
