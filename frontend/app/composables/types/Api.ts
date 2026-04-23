@@ -17,7 +17,7 @@ export interface MemberSummary {
 }
 
 export interface ClassroomResponse {
-  id: number;
+  uid: string;
   name: string;
   description: string;
   worldUid: string;

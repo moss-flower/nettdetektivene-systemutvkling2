@@ -3,8 +3,8 @@ import StationCard from "~/components/station/station.vue";
 import { routePaths } from "~/composables/utils/routePaths";
 import { Station } from "~/composables/types/StationType";
 
-const stations = Station.backendFetchAllStations();
 const router = useRouter();
+const { data: stations } = await useAsyncData("student-stations", () => Station.backendFetchAllStations());
 
 function goBack() {
   router.push(routePaths.studentHome);
@@ -28,7 +28,7 @@ function goBack() {
 
     <div class="stationGrid">
       <StationCard
-        v-for="station in stations"
+        v-for="station in stations ?? []"
         :key="station.uid"
         :station="station"
       />

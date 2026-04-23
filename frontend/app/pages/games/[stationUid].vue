@@ -6,7 +6,7 @@ import SortIntoBucketsTemplate from '~/components/gameplay/templates/SortIntoBuc
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoiceTemplate.vue'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
-import { markExerciseCompleted } from '~/composables/utils/gameProgress'
+import { markExerciseCompleted, useCompletedExerciseUids } from '~/composables/utils/gameProgress'
 import { routePaths } from '~/composables/utils/routePaths'
 import { Exercise } from '~/composables/types/ExerciseType'
 import { Station } from '~/composables/types/StationType'
@@ -33,7 +33,8 @@ const requestedStationUid = Array.isArray(route.params.stationUid)
 const requestedExerciseUid = typeof route.query.exerciseUid === 'string'
   ? route.query.exerciseUid
   : ''
-const station = Station.backendFetchStationByUid(requestedStationUid)
+
+const station = await Station.backendFetchStationByUid(requestedStationUid)
 
 if (!station) {
   throw createError({
@@ -43,23 +44,33 @@ if (!station) {
 }
 
 const { celebrateCorrectAnswer, stop } = useGameConfetti()
+const completedExerciseUids = await useCompletedExerciseUids()
 
 const activeExerciseUid = station.exerciseUids.includes(requestedExerciseUid)
   ? requestedExerciseUid
   : station.exerciseUids[0] ?? null
 
-if (!station.isUnlocked()) {
-  await navigateTo(routePaths.studentLevels)
+if (activeExerciseUid) {
+  const activeExerciseIndex = station.exerciseUids.findIndex((exerciseUid) => exerciseUid === activeExerciseUid)
+  const previousExerciseUid = activeExerciseIndex > 0 ? station.exerciseUids[activeExerciseIndex - 1] : null
+
+  if (previousExerciseUid && !completedExerciseUids.includes(previousExerciseUid)) {
+    await navigateTo({
+      path: routePaths.studentExerciseDifficultySelect,
+      query: { uid: station.uid },
+    })
+  }
 }
 
-if (activeExerciseUid && !station.isExerciseUnlocked(activeExerciseUid)) {
+const activeExercise = activeExerciseUid ? await Exercise.backendFetchExerciseByUid(activeExerciseUid) : null
+
+if (!activeExercise) {
   await navigateTo({
     path: routePaths.studentExerciseDifficultySelect,
     query: { uid: station.uid },
   })
 }
 
-const activeExercise = activeExerciseUid ? Exercise.backendFetchExerciseByUid(activeExerciseUid) : null
 const tasks = activeExercise
   ? sampleAndShuffle(activeExercise.tasks, activeExercise.tasks.length)
   : []
@@ -224,7 +235,7 @@ const onAnsweredPasswordStrength = (result: PasswordStrengthResult) => {
   }
 }
 
-const next = () => {
+const next = async () => {
   stop()
   answerState.value = null
 
@@ -232,7 +243,7 @@ const next = () => {
     currentIndex.value++
   } else {
     if (activeExercise && correctCount.value === tasks.length) {
-      markExerciseCompleted(activeExercise.uid)
+      await markExerciseCompleted(activeExercise.uid)
     }
 
     showExerciseResultDialog.value = true

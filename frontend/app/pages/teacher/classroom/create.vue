@@ -12,7 +12,7 @@ const draft = reactive({
 
 const submittedPayload = ref<null | { name: string; worldUid: string }>(null);
 
-const availableWorlds = computed(() => World.backendFetchAllWorlds());
+const { data: availableWorlds } = await useAsyncData("available-worlds", () => World.backendFetchAllWorlds());
 const lockedWorldUid = computed(() => {
 	const uid = route.query.uid;
 
@@ -23,7 +23,7 @@ const selectedWorldUid = computed(() => lockedWorldUid.value || draft.worldUid);
 const selectedWorld = computed(() => {
 	const nextUid = selectedWorldUid.value.trim().toLowerCase();
 
-	return availableWorlds.value.find((world) => world.uid.trim().toLowerCase() === nextUid) ?? null;
+	return (availableWorlds.value ?? []).find((world) => world.uid.trim().toLowerCase() === nextUid) ?? null;
 });
 const canCreate = computed(() => draft.name.trim().length > 0 && selectedWorld.value !== null);
 
@@ -105,7 +105,7 @@ watch(
 							<span>Velg verden</span>
 							<select v-model="draft.worldUid">
 								<option value="">Velg verden</option>
-								<option v-for="world in availableWorlds" :key="world.uid" :value="world.uid">
+								<option v-for="world in availableWorlds ?? []" :key="world.uid" :value="world.uid">
 									{{ world.uid }}
 								</option>
 							</select>

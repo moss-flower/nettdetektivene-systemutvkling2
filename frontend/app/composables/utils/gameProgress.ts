@@ -1,83 +1,26 @@
-export type StoredGameProgress = {
-  completedExerciseUids: string[];
+type CompletedExerciseResponse = {
+  exerciseUid: string;
 };
 
-const storageKey = "student.gameProgress";
-
-const defaultProgress = (): StoredGameProgress => ({
-  completedExerciseUids: [],
-});
-
-const canUseStorage = () => typeof window !== "undefined" && typeof window.localStorage !== "undefined";
-
-const normalizeExerciseUids = (uids: unknown): string[] => {
-  if (!Array.isArray(uids)) {
-    return [];
-  }
-
-  return Array.from(
-    new Set(
-      uids.filter((uid): uid is string => typeof uid === "string" && uid.trim().length > 0),
-    ),
-  );
-};
-
-const readStoredProgress = (): StoredGameProgress => {
-  if (!canUseStorage()) {
-    return defaultProgress();
-  }
-
-  const raw = window.localStorage.getItem(storageKey);
-
-  if (!raw) {
-    return defaultProgress();
-  }
+export const useCompletedExerciseUids = async (): Promise<string[]> => {
+  const { $api } = useNuxtApp();
 
   try {
-    const parsed = JSON.parse(raw) as Partial<StoredGameProgress>;
+    const completedExercises = await $api<CompletedExerciseResponse[]>("/completed-exercises/me", {
+      method: "GET",
+    });
 
-    return {
-      completedExerciseUids: normalizeExerciseUids(parsed.completedExerciseUids),
-    };
+    return completedExercises.map((entry) => entry.exerciseUid);
   } catch {
-    return defaultProgress();
+    return [];
   }
 };
 
-const writeStoredProgress = (progress: StoredGameProgress) => {
-  if (!canUseStorage()) {
-    return;
-  }
+export const markExerciseCompleted = async (exerciseUid: string) => {
+  const { $api } = useNuxtApp();
 
-  window.localStorage.setItem(storageKey, JSON.stringify(progress));
-};
-
-export const getCompletedExerciseUids = (): string[] => readStoredProgress().completedExerciseUids;
-
-export const isExerciseCompleted = (exerciseUid: string): boolean =>
-  getCompletedExerciseUids().includes(exerciseUid);
-
-export const getCompletedExercisesForStation = (exerciseUids: string[]): boolean[] => {
-  const completedExerciseUidSet = new Set(getCompletedExerciseUids());
-
-  return exerciseUids.map((exerciseUid) => completedExerciseUidSet.has(exerciseUid));
-};
-
-export const areAllExerciseUidsCompleted = (exerciseUids: string[]): boolean => {
-  const completedExerciseUidSet = new Set(getCompletedExerciseUids());
-
-  return exerciseUids.every((exerciseUid) => completedExerciseUidSet.has(exerciseUid));
-};
-
-export const markExerciseCompleted = (exerciseUid: string) => {
-  const progress = readStoredProgress();
-
-  if (progress.completedExerciseUids.includes(exerciseUid)) {
-    return;
-  }
-
-  progress.completedExerciseUids.push(exerciseUid);
-  writeStoredProgress({
-    completedExerciseUids: normalizeExerciseUids(progress.completedExerciseUids),
+  await $api("/completed-exercises", {
+    method: "POST",
+    body: { exerciseUid },
   });
 };
