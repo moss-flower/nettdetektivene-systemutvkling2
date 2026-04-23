@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
 
   console.log("Reached route");
 
-  return await api("/classrooms", {
+  return await api("classrooms", {
     method: "POST",
     body,
   });
