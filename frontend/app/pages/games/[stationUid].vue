@@ -6,6 +6,7 @@ import SortIntoBucketsTemplate from '~/components/gameplay/templates/SortIntoBuc
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoiceTemplate.vue'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
+import { markExerciseCompleted } from '~/composables/utils/gameProgress'
 import { routePaths } from '~/composables/utils/routePaths'
 import { Exercise } from '~/composables/types/ExerciseType'
 import { Station } from '~/composables/types/StationType'
@@ -46,6 +47,18 @@ const { celebrateCorrectAnswer, stop } = useGameConfetti()
 const activeExerciseUid = station.exerciseUids.includes(requestedExerciseUid)
   ? requestedExerciseUid
   : station.exerciseUids[0] ?? null
+
+if (!station.isUnlocked()) {
+  await navigateTo(routePaths.studentLevels)
+}
+
+if (activeExerciseUid && !station.isExerciseUnlocked(activeExerciseUid)) {
+  await navigateTo({
+    path: routePaths.studentExerciseDifficultySelect,
+    query: { uid: station.uid },
+  })
+}
+
 const activeExercise = activeExerciseUid ? Exercise.backendFetchExerciseByUid(activeExerciseUid) : null
 const tasks = activeExercise
   ? sampleAndShuffle(activeExercise.tasks, activeExercise.tasks.length)
@@ -218,6 +231,10 @@ const next = () => {
   if (currentIndex.value < tasks.length - 1) {
     currentIndex.value++
   } else {
+    if (activeExercise && correctCount.value === tasks.length) {
+      markExerciseCompleted(activeExercise.uid)
+    }
+
     showExerciseResultDialog.value = true
   }
 }

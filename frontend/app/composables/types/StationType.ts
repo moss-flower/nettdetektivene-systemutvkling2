@@ -1,4 +1,5 @@
 import placeholderImage from "~/assets/images/placeholder.jpeg";
+import { areAllExerciseUidsCompleted, getCompletedExercisesForStation } from "~/composables/utils/gameProgress";
 import { Exercise } from "~/composables/types/ExerciseType";
 
 export type StationStatus = {
@@ -39,6 +40,25 @@ export class Station {
   }
 
   isUnlocked(): boolean {
+    const stations = Station.backendFetchAllStations();
+    const stationIndex = stations.findIndex((station) => station.uid === this.uid);
+
+    if (stationIndex === -1) {
+      return false;
+    }
+
+    if (stationIndex === 0) {
+      return true;
+    }
+
+    for (let index = 1; index <= stationIndex; index++) {
+      const previousStation = stations[index - 1];
+
+      if (!areAllExerciseUidsCompleted(previousStation.exerciseUids)) {
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -57,11 +77,13 @@ export class Station {
       return true;
     }
 
-    return this.getMockStatus().completedExercises.slice(0, exerciseIndex).every(Boolean);
+    return areAllExerciseUidsCompleted(this.exerciseUids.slice(0, exerciseIndex));
   }
 
   getMockStatus(): StationStatus {
-    return Station.getMockStatusById(this.exerciseUids.length);
+    return {
+      completedExercises: getCompletedExercisesForStation(this.exerciseUids),
+    };
   }
 
   static getMockStatusById(exerciseCount = 0): StationStatus {
