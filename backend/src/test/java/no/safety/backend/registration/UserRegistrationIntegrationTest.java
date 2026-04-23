@@ -22,7 +22,7 @@ public class UserRegistrationIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void shouldRegisterStudentUserSuccessfully() {
-        StudentUserRegistrationRequest request = new StudentUserRegistrationRequest("student", "student@email.no", "password");
+        StudentUserRegistrationRequest request = new StudentUserRegistrationRequest("student", "student@email.no", "secret_password");
 
         client.post()
             .uri("/api/v1/register/student")
@@ -37,7 +37,7 @@ public class UserRegistrationIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void shouldRegisterTeacherUserSuccessfully() {
-        TeacherUserRegistrationRequest request = new TeacherUserRegistrationRequest("teacher", "teacher@email.no", "passord");
+        TeacherUserRegistrationRequest request = new TeacherUserRegistrationRequest("teacher", "teacher@email.no", "secret_password");
 
         client.post()
             .uri("/api/v1/register/teacher")
