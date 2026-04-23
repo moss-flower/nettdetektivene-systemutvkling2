@@ -37,6 +37,7 @@ onMounted(async () => {
 </script>
 
 <template>
+  <UiStudentHomeBackButton class="returnButton" />
   <section class="medalsPage">
     <template v-if="loading">
       <div class="achievementsSection">
@@ -73,8 +74,15 @@ onMounted(async () => {
   background: rgb(94, 37, 0);
   display: grid;
   grid-template-columns: 64% 34%;
+  grid-template-rows: auto 1fr;
   gap: 2%;
   padding: var(--space-6);
+}
+
+.returnButton {
+  grid-column: 1 / -1;
+  justify-self: start;
+  margin-bottom: 0.5rem;
 }
 
 .pageLabel {

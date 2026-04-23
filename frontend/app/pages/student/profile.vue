@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { routePaths } from '~/composables/utils/routePaths';
+import { routePaths } from '~/composables/utils/routePaths'
 
 const studentName = 'Saddam Hussein'
 const currentLevel = 7
@@ -11,7 +11,7 @@ const xpProgress = Math.round((currentXp / nextLevelXp) * 100)
 <template>
   <section class="profilePage">
     <header class="pageHeader">
-      <NuxtLink class="backLink" :to="routePaths.studentHome">Tilbake</NuxtLink>
+      <UiStudentHomeBackButton class="backLink" label="Tilbake" />
       <p class="eyebrow">Min profil</p>
       <h1>{{ studentName }}</h1>
       <p class="subtitle">Oversikt over navn, nivå og progresjon.</p>
@@ -65,10 +65,8 @@ const xpProgress = Math.round((currentXp / nextLevelXp) * 100)
 }
 
 .backLink {
-  display: inline-block;
+  display: inline-flex;
   margin-bottom: 0.75rem;
-  color: var(--primary);
-  font-weight: 600;
 }
 
 .eyebrow {
