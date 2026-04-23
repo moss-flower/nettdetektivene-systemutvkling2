@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   const api = getBackendAPI(event);
   const classroomId = getRouterParam(event, "classroomId");
 
-  return await api(`classrooms/${classroomId}/members/me`, {
+  return await api(`/classrooms/${classroomId}/members/me`, {
     method: "DELETE",
   });
 });
