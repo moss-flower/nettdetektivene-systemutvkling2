@@ -40,7 +40,11 @@ public class NotificationService {
             .build();
 
             repository.save(notification);
-            registry.send(user.getInternalId(), notification);
+            try {
+                registry.send(user.getInternalId(), notification);
+            } catch (Exception e) {
+                logger.debug("Error: Failed to send");
+            }
         }
     }
 
