@@ -19,7 +19,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 /**
@@ -46,23 +45,14 @@ public class NotepadEntryService {
 
     @Transactional
     public NotepadEntryResponse create(@NonNull Long callerUserInternalId, @NonNull NotepadEntryCreateRequest request) {
-
         log.info("Creating new notepad entry for user: {}, request: {}", callerUserInternalId, request);
 
         User user = userRepository.findById(callerUserInternalId)
             .orElseThrow(() -> new UserNotFoundException("User not found."));
 
-        var entry = new NotepadEntry();
-
-        entry.setGameId(request.gameId());
-        entry.setDateCreated(LocalDate.now());
-        entry.setTitle(request.title());
-        entry.setContent(request.content());
-        entry.setType(request.type());
-        entry.setSource(request.source());
-        entry.addUser(user);
-
+        NotepadEntry entry = NotepadEntry.createFrom(request, user);
         NotepadEntry savedNotepadEntry = notepadEntryRepository.save(entry);
+
         log.info("Successfully created notepad entry with UUID: {}", savedNotepadEntry.getPublicUuid());
 
         return NotepadEntryResponse.fromEntity(savedNotepadEntry);
@@ -72,25 +62,11 @@ public class NotepadEntryService {
     public NotepadEntryResponse update(@NonNull Long callerUserInternalId, @NonNull UUID notepadEntryPublicUuid, @NonNull NotepadEntryUpdateRequest request) {
         log.info("Updating notepad entry: {}, called by user: {}, with request {}", notepadEntryPublicUuid, callerUserInternalId, request);
 
-        NotepadEntry entry = notepadEntryRepository.findByPublicUuid(notepadEntryPublicUuid)
-                .orElseThrow(() -> {
-                    log.debug("Resource not found: Entry UUID {}", notepadEntryPublicUuid);
-                    return new NotepadEntryNotFoundException("Notepad entry not found with ID: " + notepadEntryPublicUuid);
-                });
+        NotepadEntry entry = getNotepadEntryFromRepositoryOrThrow(notepadEntryPublicUuid);
+        
+        verifyAccessOrThrow(callerUserInternalId, entry);
 
-        boolean hasAccess = entry.getUsers().stream()
-        .anyMatch(u -> u.getInternalId().equals(callerUserInternalId));
-
-        if (!hasAccess) {
-            log.warn("Security Violation: User ID {} attempted unauthorized access to Entry UUID {}", 
-                    callerUserInternalId, notepadEntryPublicUuid);
-            throw new AccessDeniedException("You do not have permission to access this entry.");
-        }
-
-        entry.setTitle(request.title());
-        entry.setContent(request.content());
-        entry.setType(request.type());
-        entry.setSource(request.source());
+        entry.updateValuesFrom(request);
 
         log.info("Successfully updated notepad entry: {}", notepadEntryPublicUuid);
         
@@ -101,17 +77,50 @@ public class NotepadEntryService {
     public void delete(@NonNull Long callerUserInternalId, @NonNull UUID notepadEntryPublicUuid) {
         log.info("Deleting notepad entry: {}, called by user: {}", notepadEntryPublicUuid, callerUserInternalId);
 
-        User user = userRepository.findById(callerUserInternalId)
-            .orElseThrow(() -> new UserNotFoundException("User not found."));
-
-        NotepadEntry entry = notepadEntryRepository.findByPublicUuidAndUsers_InternalId(notepadEntryPublicUuid, user.getInternalId())
-            .orElseThrow(() -> {
-                log.warn("Security or Resource failure: User ID {} attempted to access Entry UUID {}", 
-                        user.getInternalId(), notepadEntryPublicUuid);
-                return new NotepadEntryNotFoundException("Notepad entry not found or access denied.");
-            });
-
+        NotepadEntry entry = getNotepadEntryFromRepositoryOrThrow(notepadEntryPublicUuid);
+        
+        verifyAccessOrThrow(callerUserInternalId, entry);
+        
         notepadEntryRepository.delete(entry);
+
         log.info("Successfully deleted notepad entry: {}", notepadEntryPublicUuid);
+    }
+
+    /**
+     * Tries to get the {@link NotepadEntry} matching the specified {@link UUID}, from the {@link NotepadEntryRepository}.
+     * Throws {@link NotepadEntryNotFoundException} if the entry was not found in the repository.
+     * @param notepadEntryPublicUuid
+     * @return
+     */
+    private NotepadEntry getNotepadEntryFromRepositoryOrThrow(UUID notepadEntryPublicUuid){
+        NotepadEntry entry = notepadEntryRepository.findByPublicUuid(notepadEntryPublicUuid)
+                .orElseThrow(() -> {
+                    log.debug("Resource not found: Entry UUID {}", notepadEntryPublicUuid);
+                    return new NotepadEntryNotFoundException("Notepad entry not found with ID: " + notepadEntryPublicUuid);
+                });
+        return entry;
+    }
+
+    /**
+     * Verifies that the user has access to the {@link NoteEntry}.
+     * Throws {@link NotepadEntryNotFoundException} if the specified entry is null.
+     * Throws {@link AccessDeniedException} if the user does not have access.
+     * @param userInternalId
+     * @param entry
+     */
+    private void verifyAccessOrThrow(Long userInternalId, NotepadEntry entry){
+        if (entry == null){
+            log.debug("Notepad entry is null.");
+            throw new NotepadEntryNotFoundException("Notepad entry not found");
+        }
+
+        boolean hasAccess = entry.getUsers().stream()
+        .anyMatch(u -> u.getInternalId().equals(userInternalId));
+
+        if (!hasAccess) {
+            log.warn("Security Violation: User ID {} attempted unauthorized access to Entry UUID {}", 
+                    userInternalId, entry.getPublicUuid());
+            throw new AccessDeniedException("You do not have permission to access this entry.");
+        }
     }
 }

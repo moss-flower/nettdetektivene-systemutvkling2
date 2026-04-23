@@ -47,7 +47,6 @@ class NotepadEntryServiceTest {
     @Test
     void create_ShouldReturnSavedEntry_WhenUserExists() {
         var request = new NotepadEntryCreateRequest(
-            100L, 
             "Test Title", 
             NotepadEntryType.TIP, 
             "Test Content", 
@@ -73,7 +72,7 @@ class NotepadEntryServiceTest {
 
     @Test
     void create_ShouldThrowUserNotFoundException_WhenUserDoesNotExist() {
-        var request = new NotepadEntryCreateRequest(100L, "Title", NotepadEntryType.TIP, "Content", null);
+        var request = new NotepadEntryCreateRequest("Title", NotepadEntryType.TIP, "Content", null);
         given(userRepository.findById(USER_ID)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> notepadEntryService.create(USER_ID, request))

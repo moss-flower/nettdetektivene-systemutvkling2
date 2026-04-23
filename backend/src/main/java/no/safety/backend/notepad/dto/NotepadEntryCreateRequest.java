@@ -11,9 +11,6 @@ import org.jspecify.annotations.Nullable;
  * Defines a {@link NotepadEntry} request for POST requests.
  */
 public record NotepadEntryCreateRequest(
-    @NotNull 
-    Long gameId,
-
     @NotBlank 
     @Size(max = 128) 
     String title,
