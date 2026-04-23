@@ -44,7 +44,7 @@ public class SecurityConfig {
                 // header on requests (everything other than GETs responds 401). We do not want
                 // this in the final product.
                 //TODO: Remove eventually.
-                .ignoringRequestMatchers("/api/v1/auth/**", "/api/v1/register/**", "/api/v1/classrooms/**")
+                .ignoringRequestMatchers("/api/v1/auth/**", "/api/v1/register/**", "/api/v1/classrooms/**", "/api/v1/exercises/**")
             )
 
             .headers(headers -> headers
