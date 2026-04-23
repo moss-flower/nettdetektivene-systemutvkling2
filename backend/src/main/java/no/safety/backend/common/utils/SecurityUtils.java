@@ -2,14 +2,14 @@ package no.safety.backend.common.utils;
 
 import java.util.UUID;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.user.model.User;
 import no.safety.backend.user.repository.UserRepository;
 
-@Component
+@Service
 @RequiredArgsConstructor
 public class SecurityUtils {
     private final UserRepository userRepository;

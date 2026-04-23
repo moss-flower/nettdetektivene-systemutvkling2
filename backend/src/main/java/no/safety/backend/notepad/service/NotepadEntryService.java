@@ -11,7 +11,11 @@ import no.safety.backend.notepad.dto.NotepadEntryUpdateRequest;
 import no.safety.backend.notepad.exception.NotepadEntryNotFoundException;
 import no.safety.backend.notepad.model.NotepadEntry;
 import no.safety.backend.notepad.repository.NotepadEntryRepository;
+import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.model.User;
+import no.safety.backend.user.repository.StudentUserRepository;
+import no.safety.backend.user.repository.TeacherUserRepository;
 import no.safety.backend.user.repository.UserRepository;
 
 import org.jspecify.annotations.NonNull;
@@ -31,6 +35,8 @@ public class NotepadEntryService {
 
     private final NotepadEntryRepository notepadEntryRepository;
     private final UserRepository userRepository;
+    private final StudentUserRepository studentUserRepository;
+    private final TeacherUserRepository teacherUserRepository;
 
     @Transactional(readOnly = true)
     public Page<NotepadEntryResponse> findAll(@NonNull Long callerUserInternalId, @NonNull NotepadEntryReadRequest request) {
@@ -40,6 +46,22 @@ public class NotepadEntryService {
             .orElseThrow(() -> new UserNotFoundException("User not found."));
 
         return notepadEntryRepository.findAllByUsers_InternalId(user.getInternalId(), request.toPageable())
+                .map(NotepadEntryResponse::fromEntity);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<NotepadEntryResponse> findAllStudentNotes(@NonNull Long callerUserInternalId, @NonNull UUID studentUserUuid, @NonNull NotepadEntryReadRequest request) {
+        log.debug("Fetching page of notepad entries for user: {}, request: {}", callerUserInternalId, request);
+
+        TeacherUser teacherUser = teacherUserRepository.findById(callerUserInternalId)
+            .orElseThrow(() -> new UserNotFoundException("Teacher user not found."));
+
+        StudentUser studentUser = studentUserRepository.findByPublicUuid(studentUserUuid)
+            .orElseThrow(() -> new UserNotFoundException("Student user not found."));
+        
+        //TODO: Verify that the teacher has read access to this student's notes.
+
+        return notepadEntryRepository.findAllByUsers_InternalId(studentUser.getInternalId(), request.toPageable())
                 .map(NotepadEntryResponse::fromEntity);
     }
 

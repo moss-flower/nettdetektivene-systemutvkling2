@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -48,6 +50,22 @@ public class NotepadController {
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid NotepadEntryReadRequest request) {
         return notepadEntryService.findAll(userPrincipal.getUserInternalId(), request);
+    }
+
+    /**
+     * Fetches all {@link NotepadEntry} the {@link User} has access to. 
+     * Filters based on the provided pagination values in the {@link NotepadEntryReadRequest}.
+     * @param userPrincipal
+     * @param request
+     * @return
+     */
+    @GetMapping(value = "/students/{studentUuid}/notes/")
+    @PreAuthorize("hasRole('TEACHER')")
+    public Page<NotepadEntryResponse> getNotepadEntriesForStudent(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable UUID studentUuid, 
+            @Valid NotepadEntryReadRequest request) {
+        return notepadEntryService.findAllStudentNotes(userPrincipal.getUserInternalId(), studentUuid, request);
     }
 
     /**

@@ -180,6 +180,22 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles {@link org.springframework.security.access.AccessDeniedException} exceptions.
+     * @return Returns a {@link ProblemDetail} with HTTP status code: 403 Forbidden.
+     */
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ProblemDetail handleStudentNotInClass(org.springframework.security.access.AccessDeniedException ex) {
+
+        log.error("AccessDeniedException: {}",ex.getMessage());
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Access Denied");
+        problem.setTitle("Forbidden");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+
+    /**
      * Handles all {@link Exception} that are not specifically defined in this handler.
      * Catches unhandled exceptions to protect against data leaks.
      * @return Returns a {@link ProblemDetail} with HTTP status code: 500 INTERNAL_SERVER_ERROR.

@@ -67,7 +67,7 @@ public class NotepadEntry {
     private String content;
 
     /**
-     * Creates a many to many database relation between notepad entries and users.
+     * Creates a many to many database relation between {@link NotepadEntry} and {@link User}.
      * Allows multiple users to have access to the same note. e.g. student and teacher.
      */
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
