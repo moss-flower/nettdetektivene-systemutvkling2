@@ -9,3 +9,4 @@ export default defineEventHandler(async (event) => {
     method: "POST",
   });
 });
+

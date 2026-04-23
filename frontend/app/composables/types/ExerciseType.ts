@@ -13,16 +13,24 @@ type ExerciseData = {
 };
 
 export class Exercise {
-  uid: string;
+  publicId: string;
   title: string;
-  entryName: string;
+  difficultyName: string;
   description?: string;
   tasks: ExerciseTask[];
 
-  constructor(data: { uid: string; title: string; entryName: string; description?: string; tasks: ExerciseTask[] }) {
-    this.uid = data.uid;
+  constructor(data: {
+    publicId?: string;
+    uid?: string;
+    title: string;
+    difficultyName?: string;
+    entryName?: string;
+    description?: string;
+    tasks: ExerciseTask[];
+  }) {
+    this.publicId = data.publicId ?? data.uid ?? "";
     this.title = data.title;
-    this.entryName = data.entryName;
+    this.difficultyName = data.difficultyName ?? data.entryName ?? "";
     this.description = data.description;
     this.tasks = data.tasks;
   }
@@ -38,6 +46,7 @@ export class Exercise {
         id: String(task.internalId ?? `${data.publicId}-${index + 1}`),
       })) as ExerciseTask[],
     });
+
   }
 
   static async backendFetchExerciseByUid(uid: string): Promise<Exercise | null> {

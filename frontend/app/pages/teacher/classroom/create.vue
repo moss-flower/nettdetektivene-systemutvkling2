@@ -19,6 +19,7 @@ const formError = ref("");
 const loading = ref(false);
 
 const { data: availableWorlds } = await useAsyncData("available-worlds", () => World.backendFetchAllWorlds());
+
 const lockedWorldUid = computed(() => {
   const uid = route.query.uid;
   return typeof uid === "string" ? uid.trim() : "";
@@ -128,6 +129,7 @@ const createClassroom = async () => {
                 <option value="">Velg verden</option>
                 <option
                   v-for="world in availableWorlds ?? []"
+
                   :key="world.uid"
                   :value="world.uid"
                 >
