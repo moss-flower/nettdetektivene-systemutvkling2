@@ -1,13 +1,42 @@
 <script setup lang="ts">
 import StationCard from "~/components/station/station.vue";
 import { Station } from "~/composables/types/StationType";
+import { World } from "~/composables/types/WorldTypes";
 
-const router = useRouter();
-const { data: stations } = await useAsyncData("student-stations", () => Station.backendFetchAllStations());
+const { student } = useClassrooms();
 
-function goBack() {
-  router.push(routePaths.studentHome);
-}
+const { data: classroom } = await useAsyncData("student-classroom", () => student.getMyClassroom().catch(() => null));
+
+const worldUid = computed(() => classroom.value?.worldUid?.trim() ?? "");
+
+const { data: world } = await useAsyncData(
+  "student-world",
+  () => (worldUid.value ? World.backendFetchWorldByUid(worldUid.value) : null),
+  {
+    watch: [worldUid],
+  },
+);
+
+const { data: stations } = await useAsyncData(
+  "student-stations",
+  () => {
+    const stationUids = world.value?.stationUids ?? [];
+
+    if (stationUids.length === 0) {
+      return [];
+    }
+
+    return Promise.all(stationUids.map((stationUid) => Station.backendFetchStationByUid(stationUid))).then((loadedStations) =>
+      loadedStations.filter((station): station is Station => station !== null),
+    );
+  },
+  {
+    watch: [world],
+  },
+);
+
+const pageTitle = computed(() => world.value?.uid || "Stasjonskart");
+const hasStations = computed(() => (stations.value?.length ?? 0) > 0);
 
 </script>
 
@@ -17,19 +46,26 @@ function goBack() {
 
     <header class="pageIntro">
       <p class="pageEyebrow">Stasjonskart</p>
-      <h1 class="pageTitle">Info here</h1>
+      <h1 class="pageTitle">{{ pageTitle }}</h1>
       <p class="pageSummary">
         Start på den første åpne stasjonen og jobb deg videre bortover banen.
       </p>
     </header>
 
-    <div class="stationGrid">
-      <StationCard
-        v-for="station in stations ?? []"
+    <section v-if="hasStations" class="stationPath" aria-label="Stasjonsløype">
+      <div
+        v-for="(station, index) in stations ?? []"
         :key="station.uid"
-        :station="station"
-      />
-    </div>
+        :class="['stationPath__node', `stationPath__node--${index % 2 === 0 ? 'left' : 'right'}`]"
+      >
+        <StationCard :station="station" />
+      </div>
+    </section>
+
+    <section v-else class="emptyState">
+      <h2>Ingen stasjoner tilgjengelig</h2>
+      <p>Denne verdenen har ingen stasjoner ennå, eller du er ikke koblet til et klasserom.</p>
+    </section>
   </section>
 </template>
 
@@ -83,11 +119,48 @@ function goBack() {
   color: var(--stations-summary);
 }
 
-.stationGrid {
+.stationPath {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: var(--space-4);
-  justify-items: center;
+}
+
+.stationPath__node {
+  width: min(100%, 18rem);
+}
+
+.stationPath__node--left {
+  justify-self: start;
+  margin-left: max(0rem, 10%);
+}
+
+.stationPath__node--right {
+  justify-self: end;
+  margin-right: max(0rem, 10%);
+}
+
+.emptyState {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border: var(--border-width-hairline) solid var(--palette-gray-200);
+  border-radius: var(--radius-3);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.emptyState h2,
+.emptyState p {
+  margin: 0;
+}
+
+@media (max-width: 800px) {
+  .stationPath__node,
+  .stationPath__node--left,
+  .stationPath__node--right {
+    width: 100%;
+    justify-self: stretch;
+    margin-left: 0;
+    margin-right: 0;
+  }
 }
 
 </style>
