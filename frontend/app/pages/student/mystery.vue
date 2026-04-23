@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { routePaths } from '~/composables/utils/routePaths';
+import { useStudentMystery } from '~/composables/useStudentMystery';
 
 definePageMeta({
   layout: 'game',
@@ -12,10 +13,12 @@ const errorMessage = ref('');
 const successMessage = ref('');
 const previewUrl = ref('');
 const showPreviousMysteries = ref(false);
+const showSuggestionDialog = ref(false);
 
 function handleDialogKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
     showPreviousMysteries.value = false;
+    showSuggestionDialog.value = false;
   }
 }
 
@@ -29,6 +32,13 @@ const {
 const canSubmit = computed(() => {
   return selectedFile.value !== null && studentMessage.value.trim().length >= 8;
 });
+
+const anyDialogOpen = computed(() => showPreviousMysteries.value || showSuggestionDialog.value);
+
+const currentMysteryPlayPath = computed(() => ({
+  path: routePaths.studentExerciseDifficultySelect,
+  query: { uid: 'newsstand' },
+}));
 
 watch(selectedFile, (file, previousFile) => {
   if (previewUrl.value) {
@@ -52,7 +62,7 @@ onBeforeUnmount(() => {
   }
 });
 
-watch(showPreviousMysteries, (isOpen) => {
+watch(anyDialogOpen, (isOpen) => {
   if (import.meta.client) {
     document.body.style.overflow = isOpen ? 'hidden' : '';
   }
@@ -107,92 +117,144 @@ function sendMysterySubmission() {
           <p class="student-mystery__week student-mystery__week--hero">{{ currentMystery.weekLabel }}</p>
         </div>
         <p class="student-mystery__intro">
-          Finn et eksempel, legg ved et bilde og skriv kort hvorfor du reagerte. Læreren sjekker det etterpå.
+          Her er denne ukens sak. Spill den først, og send gjerne inn tips hvis du finner noe som passer til en senere uke.
         </p>
-        <button
-          type="button"
-          class="student-mystery__secondaryAction"
-          @click="showPreviousMysteries = true"
-        >
-          Se tidligere mysterier
-        </button>
       </header>
 
-      <section class="student-mystery__section student-mystery__section--feature" aria-labelledby="submit-example-heading">
+      <section class="student-mystery__section student-mystery__section--feature" aria-labelledby="current-mystery-heading">
         <div class="student-mystery__sectionHeader">
-          <h2 id="submit-example-heading">Send inn eksempel</h2>
-          <p class="student-mystery__helper">Et bilde og en kort forklaring holder.</p>
+          <h2 id="current-mystery-heading">Denne ukens sak</h2>
+          <p class="student-mystery__helper">Spill mysteriet først. Hvis du finner noe spennende selv, kan du sende inn tips til neste uke.</p>
         </div>
 
-        <label class="student-mystery__field student-mystery__field--upload">
-          <span>Bilde</span>
-          <span class="student-mystery__uploadControl">
-            <input
-              :key="fileInputKey"
-              class="student-mystery__fileInput"
-              type="file"
-              accept="image/*"
-              @change="handleFileChange"
-            >
-            <span class="student-mystery__uploadMain">
-              <span class="student-mystery__uploadButton">Velg bilde</span>
-              <span class="student-mystery__uploadText">{{ selectedFile ? selectedFile.name : 'Ingen fil valgt ennå' }}</span>
-            </span>
-            <img
-              v-if="previewUrl"
-              :src="previewUrl"
-              alt="Forhåndsvisning av valgt bilde"
-              class="student-mystery__uploadPreview"
-            >
-          </span>
-        </label>
+        <div class="student-mystery__playCard">
+          <p class="student-mystery__playPrompt">{{ currentMystery.prompt }}</p>
+          <p class="student-mystery__playClue"><strong>Tips:</strong> {{ currentMystery.clue }}</p>
 
-        <label class="student-mystery__field">
-          <span>Kort melding</span>
-          <textarea
-            v-model="studentMessage"
-            rows="4"
-            maxlength="280"
-            placeholder="For eksempel: Overskriften virker overdrevet og prøver å gjøre meg redd."
-          />
-        </label>
+          <div class="student-mystery__actionsRow">
+            <NuxtLink :to="currentMysteryPlayPath" class="student-mystery__playAction">
+              Spill ukens mysterium
+            </NuxtLink>
 
-        <div class="student-mystery__formFooter">
-          <p class="student-mystery__meta">{{ studentMessage.length }} / 280</p>
+            <button
+              type="button"
+              class="student-mystery__secondaryAction"
+              @click="showPreviousMysteries = true"
+            >
+              Se tidligere mysterier
+            </button>
+
+            <button
+              type="button"
+              class="student-mystery__secondaryAction"
+              @click="showSuggestionDialog = true"
+            >
+              Tips læreren om neste uke
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div
+      v-if="showSuggestionDialog"
+      class="student-mystery__dialog"
+      @click.self="showSuggestionDialog = false"
+    >
+      <div
+        class="student-mystery__dialogPanel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="suggestion-dialog-title"
+      >
+        <div class="student-mystery__dialogHeader">
+          <div class="student-mystery__sectionHeader">
+            <p class="student-mystery__eyebrow">Neste uke</p>
+            <h2 id="suggestion-dialog-title">Tips læreren om et nytt mysterium</h2>
+            <p class="student-mystery__helper">Send inn et bilde og en kort forklaring. Læreren kan bruke det i et senere mysterium.</p>
+          </div>
+
           <button
             type="button"
-            class="student-mystery__submit"
-            :disabled="!canSubmit"
-            @click="sendMysterySubmission"
+            class="student-mystery__dialogClose"
+            aria-label="Lukk dialog"
+            @click="showSuggestionDialog = false"
           >
-            Send til lærer
+            Lukk
           </button>
         </div>
 
-        <p v-if="errorMessage" class="student-mystery__error">{{ errorMessage }}</p>
-        <p v-if="successMessage" class="student-mystery__success">{{ successMessage }}</p>
-      </section>
+        <div class="student-mystery__dialogBody">
+          <label class="student-mystery__field student-mystery__field--upload">
+            <span>Bilde</span>
+            <span class="student-mystery__uploadControl">
+              <input
+                :key="fileInputKey"
+                class="student-mystery__fileInput"
+                type="file"
+                accept="image/*"
+                @change="handleFileChange"
+              >
+              <span class="student-mystery__uploadMain">
+                <span class="student-mystery__uploadButton">Velg bilde</span>
+                <span class="student-mystery__uploadText">{{ selectedFile ? selectedFile.name : 'Ingen fil valgt ennå' }}</span>
+              </span>
+              <img
+                v-if="previewUrl"
+                :src="previewUrl"
+                alt="Forhåndsvisning av valgt bilde"
+                class="student-mystery__uploadPreview"
+              >
+            </span>
+          </label>
 
-      <section
-        v-if="submissionHistory.length > 0"
-        class="student-mystery__section student-mystery__section--compact"
-        aria-labelledby="submissions-heading"
-      >
-        <div class="student-mystery__sectionHeader">
-          <h2 id="submissions-heading">Siste innsendinger</h2>
+          <label class="student-mystery__field">
+            <span>Kort melding</span>
+            <textarea
+              v-model="studentMessage"
+              rows="4"
+              maxlength="280"
+              placeholder="For eksempel: Overskriften virker overdrevet og prøver å gjøre meg redd."
+            />
+          </label>
+
+          <div class="student-mystery__formFooter">
+            <p class="student-mystery__meta">{{ studentMessage.length }} / 280</p>
+            <button
+              type="button"
+              class="student-mystery__submit"
+              :disabled="!canSubmit"
+              @click="sendMysterySubmission"
+            >
+              Send til lærer
+            </button>
+          </div>
+
+          <p v-if="errorMessage" class="student-mystery__error">{{ errorMessage }}</p>
+          <p v-if="successMessage" class="student-mystery__success">{{ successMessage }}</p>
         </div>
 
-        <ul class="student-mystery__list">
-          <li v-for="submission in submissionHistory.slice(0, 3)" :key="submission.id" class="student-mystery__listItem">
-            <div class="student-mystery__statusRow">
-              <strong>{{ submission.status }}</strong>
-              <span>{{ submission.submittedAt }}</span>
-            </div>
-            <p>{{ submission.message }}</p>
-            <p class="student-mystery__meta">{{ submission.screenshotName }}</p>
-          </li>
-        </ul>
-      </section>
+        <section
+          v-if="submissionHistory.length > 0"
+          class="student-mystery__section student-mystery__section--compact"
+          aria-labelledby="submissions-heading"
+        >
+          <div class="student-mystery__sectionHeader">
+            <h2 id="submissions-heading">Siste innsendinger</h2>
+          </div>
+
+          <ul class="student-mystery__list">
+            <li v-for="submission in submissionHistory.slice(0, 3)" :key="submission.id" class="student-mystery__listItem">
+              <div class="student-mystery__statusRow">
+                <strong>{{ submission.status }}</strong>
+                <span>{{ submission.submittedAt }}</span>
+              </div>
+              <p>{{ submission.message }}</p>
+              <p class="student-mystery__meta">{{ submission.screenshotName }}</p>
+            </li>
+          </ul>
+        </section>
+      </div>
     </div>
 
     <div
@@ -310,6 +372,46 @@ function sendMysterySubmission() {
   font: inherit;
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
+}
+
+.student-mystery__playCard {
+  display: grid;
+  gap: var(--space-3);
+  padding: clamp(1rem, 2vw, 1.35rem);
+  border: 1px solid color-mix(in srgb, var(--color-brand-primary) 14%, var(--color-border-default));
+  border-radius: clamp(1rem, 2vw, 1.2rem);
+  background: color-mix(in srgb, var(--color-bg-surface) 90%, var(--color-semantic-info) 10%);
+}
+
+.student-mystery__playPrompt {
+  margin: 0;
+  font-size: clamp(1.1rem, 1.8vw, 1.25rem);
+  line-height: 1.45;
+}
+
+.student-mystery__playClue {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.student-mystery__actionsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.student-mystery__playAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--size-control-md);
+  padding: 0.7rem 1.1rem;
+  border-radius: var(--radius-2);
+  background: var(--color-brand-primary);
+  color: var(--color-text-onDark);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
 }
 
 .student-mystery__section {
@@ -558,6 +660,11 @@ function sendMysterySubmission() {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.student-mystery__dialogBody {
+  display: grid;
   gap: var(--space-3);
 }
 

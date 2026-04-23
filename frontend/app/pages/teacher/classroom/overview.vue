@@ -1,5 +1,8 @@
 <script setup lang="ts">
 const route = useRoute();
+import { routePaths, routePathsWithString } from '~/composables/utils/routePaths';
+import { useTeacherDashboard } from '~/composables/useTeacherDashboard';
+
 const { getTeacherClassroomById, getClassroomLeaderboard } = useTeacherDashboard();
 
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
