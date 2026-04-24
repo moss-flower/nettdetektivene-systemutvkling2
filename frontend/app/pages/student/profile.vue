@@ -1,11 +1,41 @@
 <script setup lang="ts">
 import { routePaths } from '~/composables/utils/routePaths'
+import { useStudentProfile } from '~/composables/useStudentProfile'
 
-const studentName = 'Saddam Hussein'
-const currentLevel = 7
-const currentXp = 840
-const nextLevelXp = 1000
-const xpProgress = Math.round((currentXp / nextLevelXp) * 100)
+const { getMyProfile } = useStudentProfile()
+
+const studentName = ref('Laster...')
+const currentLevel = ref(1)
+const currentXp = ref(0)
+const nextLevelXp = ref(500)
+
+const isLoading = ref(true)
+const profileError = ref('')
+
+const xpProgress = computed(() => {
+  if (nextLevelXp.value <= 0) {
+    return 0
+  }
+
+  return Math.min(100, Math.round((currentXp.value / nextLevelXp.value) * 100))
+})
+
+onMounted(async () => {
+  isLoading.value = true
+  profileError.value = ''
+
+  try {
+    const profile = await getMyProfile()
+    studentName.value = profile.studentName
+    currentLevel.value = profile.currentLevel
+    currentXp.value = profile.currentXp
+    nextLevelXp.value = profile.nextLevelXp
+  } catch {
+    profileError.value = 'Kunne ikke laste profildata akkurat naa.'
+  } finally {
+    isLoading.value = false
+  }
+})
 </script>
 
 <template>
@@ -15,6 +45,8 @@ const xpProgress = Math.round((currentXp / nextLevelXp) * 100)
       <p class="eyebrow">Min profil</p>
       <h1>{{ studentName }}</h1>
       <p class="subtitle">Oversikt over navn, nivå og progresjon.</p>
+      <p v-if="isLoading" class="statusText">Laster profil...</p>
+      <p v-if="profileError" class="errorText">{{ profileError }}</p>
     </header>
 
     <div class="profileCard">
@@ -85,6 +117,20 @@ h1 {
 .subtitle {
   margin: 0;
   color: var(--muted);
+}
+
+.statusText,
+.errorText {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.statusText {
+  color: var(--muted);
+}
+
+.errorText {
+  color: #b42318;
 }
 
 .profileCard {
