@@ -6,6 +6,10 @@ import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import { useStudentMysteryPlay } from '~/composables/useStudentMysteryPlay'
 import { routePaths } from '~/composables/utils/routePaths'
 
+definePageMeta({
+  layout: 'game',
+})
+
 import type {
   MultipleChoiceOptionKey,
   MultipleChoiceResult,

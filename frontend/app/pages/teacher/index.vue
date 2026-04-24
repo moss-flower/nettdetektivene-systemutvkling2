@@ -3,8 +3,6 @@ import { useThemeAttributes } from '~/composables/useThemeAttributes';
 const { getTeacherClassroomSummaries } = useTeacherDashboard();
 import { routePaths, routePathsWithString } from '~/composables/utils/routePaths';
 
-useThemeAttributes('teacher');
-
 const classroomSummaries = computed(() => getTeacherClassroomSummaries());
 </script>
 

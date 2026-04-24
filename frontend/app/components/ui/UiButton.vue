@@ -56,9 +56,9 @@ const classes = computed(() => [
 const bindings = computed(() => {
   const shared: Record<string, unknown> = {
     class: classes.value,
-    'ariaBusy': props.loading || undefined,
-    'ariaDisabled': isInert.value || undefined,
-    'dataVariant': props.variant,
+    'aria-busy': props.loading || undefined,
+    'aria-disabled': isInert.value || undefined,
+    'data-variant': props.variant,
     onClick: (e: MouseEvent) => {
       if (isInert.value) {
         e.preventDefault()
@@ -97,7 +97,7 @@ const bindings = computed(() => {
 // Dev-only (a11y nudge): icon only buttons must be labeled
 if (import.meta.dev) {
   const hasText = !!slots.default
-  const hasAriaLabel = typeof (props as any)['ariaLabel'] === 'string' && (props as any)['ariaLabel'].length > 0
+  const hasAriaLabel = typeof (props as any)['aria-label'] === 'string' && (props as any)['aria-label'].length > 0
 
   if (!hasText && !hasAriaLabel) {
     console.warn('[UiButton] Icon-only button is missing `Aria-label`. ' +
