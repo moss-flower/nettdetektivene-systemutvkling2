@@ -181,6 +181,17 @@ const feedbackText = computed(() => {
 })
 
 const showAnswerDialog = computed(() => Boolean(answerState.value))
+const taskResultActionLabel = computed(() => {
+  if (!answerState.value) {
+    return 'Neste sak'
+  }
+
+  if (!answerState.value.correct) {
+    return 'Tilbake til stasjonen'
+  }
+
+  return currentIndex.value >= tasks.length - 1 ? 'Fullfor' : 'Neste sak'
+})
 
 const onAnswered = (result: XOrYResult) => {
   answerState.value = {
@@ -245,6 +256,14 @@ const onAnsweredPasswordStrength = (result: PasswordStrengthResult) => {
 
 const next = async () => {
   stop()
+
+  if (answerState.value && !answerState.value.correct) {
+    answerState.value = null
+    completionError.value = ''
+    await navigateTo(exerciseSelectRoute.value)
+    return
+  }
+
   answerState.value = null
   completionError.value = ''
 
@@ -339,6 +358,7 @@ const next = async () => {
       :message="feedbackText"
       :is-last="currentIndex >= tasks.length - 1"
       :correct="answerState.correct"
+      :action-label="taskResultActionLabel"
       @next="next"
     />
 
