@@ -3,26 +3,41 @@ package no.safety.backend.avatar.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.auth.model.UserPrincipal;
 import no.safety.backend.avatar.dto.AvatarConfigRequest;
+import no.safety.backend.avatar.dto.AvatarConfigResponse;
 import no.safety.backend.avatar.service.AvatarService;
-import no.safety.backend.exception.NotFoundException;
 
 @RestController
-@RequestMapping("/api/v1/")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
+@Tag(name = "Profile Management for Students")
 public class AvatarController {
 
     
     private final AvatarService avatarService;
+
+    @Operation(
+        summary = "Get student Avatar",
+        description = "Returns the logged-in student's avatar configuration",
+        tags = {"Profile Management for Students"}
+    )
+    @PreAuthorize("hasRole('STUDENT')")
+    @GetMapping("/avatar")
+    public AvatarConfigResponse getAvatar(
+        @AuthenticationPrincipal UserPrincipal principal) {
+            return avatarService.getAvatar(principal.getUserInternalId());
+    }
 
     /**
      * Allows a Student to update the Configuration for their Avatar.
@@ -39,16 +54,11 @@ public class AvatarController {
     )
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/avatar")
-    public ResponseEntity<?> updateAvatar(
+    public ResponseEntity<Void> updateAvatar(
         @Valid @RequestBody AvatarConfigRequest request,
         @AuthenticationPrincipal UserPrincipal principal) {
-            try {
-                avatarService.updateAvatar(principal.getUserInternalId(), request);
-            } catch (NotFoundException e) {
-                return ResponseEntity.notFound().build();
-            }
-            
-            return ResponseEntity.ok(null);
-        }
+            avatarService.updateAvatar(principal.getUserInternalId(), request);
+            return ResponseEntity.ok().build();
+    }
     
 }

@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import no.safety.backend.avatar.dto.AvatarConfigRequest;
+import no.safety.backend.avatar.dto.AvatarConfigResponse;
 import no.safety.backend.avatar.enums.EyeColor;
 import no.safety.backend.avatar.enums.HairColor;
 import no.safety.backend.avatar.enums.HairStyle;
@@ -64,6 +65,27 @@ public class AvatarServiceTest {
             .avatarConfig(defaulAvatarConfig)
             .build();
         
+    }
+
+    @Test
+    void successfulRead() {
+        when(studentUserRepository.findById(internalUserId)).thenReturn(Optional.of(student));
+
+        AvatarConfigResponse response = avatarService.getAvatar(internalUserId);
+
+        assertEquals(student.getAvatarConfig().getSkinColor(), response.skinColor());
+        assertEquals(student.getAvatarConfig().getHairStyle(), response.hairStyle());
+    }
+
+    @Test
+    void readReturnsDefaultConfigWhenAvatarIsMissing() {
+        student.setAvatarConfig(null);
+        when(studentUserRepository.findById(internalUserId)).thenReturn(Optional.of(student));
+
+        AvatarConfigResponse response = avatarService.getAvatar(internalUserId);
+
+        assertEquals(AvatarConfig.defaultConfig().getSkinColor(), response.skinColor());
+        assertEquals(AvatarConfig.defaultConfig().getHairStyle(), response.hairStyle());
     }
 
     @Test
