@@ -1,9 +1,16 @@
 <script setup lang="ts">
-const { getTeacherClassroomSummaries } = useTeacherDashboard();
 import { routePaths, routePathsWithString } from '~/composables/utils/routePaths';
 import { useAuth } from '~/composables/useAuth';
+import { toClassroomSummaries } from '~/composables/useTeacherDashboard';
 
-const classroomSummaries = computed(() => getTeacherClassroomSummaries());
+const { teacher } = useClassrooms();
+
+const { data: ownedClassrooms, pending: classroomsPending } = await useAsyncData(
+  'teacher-owned-classrooms',
+  () => teacher.getOwnedClassrooms().catch(() => []),
+);
+
+const classroomSummaries = computed(() => toClassroomSummaries(ownedClassrooms.value ?? []));
 const { logout } = useAuth();
 const isLoggingOut = ref(false);
 
@@ -47,6 +54,8 @@ const handleLogout = async () => {
         </NuxtLink>
 
         <div class="classroomCards">
+          <p v-if="classroomsPending" class="panelMessage">Laster klasserom...</p>
+          <p v-else-if="classroomSummaries.length === 0" class="panelMessage">Du har ingen klasserom ennå.</p>
           <NuxtLink
             v-for="(classroom, index) in classroomSummaries"
             :key="classroom.id"
@@ -55,7 +64,7 @@ const handleLogout = async () => {
             :to="routePathsWithString(routePaths.teacherClassroomOverview, `?classroomId=${classroom.id}`)"
           >
             <span class="classroomName">{{ classroom.name }}</span>
-            <span class="classScore">{{ classroom.totalScore }} poeng</span>
+            <span class="classScore">{{ classroom.studentCount }} elever</span>
           </NuxtLink>
 		  </div>
 		</aside>
@@ -234,6 +243,11 @@ h2 {
 .classroomCards {
   display: grid;
   gap: 0.75rem;
+}
+
+.panelMessage {
+  margin: 0;
+  color: var(--muted);
 }
 
 .classroomCard {

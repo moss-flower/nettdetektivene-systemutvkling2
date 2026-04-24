@@ -1,20 +1,19 @@
 <script setup lang="ts">
 import { routePaths, routePathsWithString } from '~/composables/utils/routePaths';
+import { getClassroomMemberById } from '~/composables/useTeacherDashboard';
 const route = useRoute();
-const { getTeacherClassroomById, getStudentById } = useTeacherDashboard();
+const { teacher } = useClassrooms();
 
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
 const studentId = computed(() => String(route.query.studentId ?? ''));
 
-const classroom = computed(() => getTeacherClassroomById(classroomId.value));
-const student = computed(() => getStudentById(classroomId.value, studentId.value));
-const progressPercent = computed(() => {
-  if (!student.value) {
-    return 0;
-  }
+const { data: classroom } = await useAsyncData(
+  'teacher-classroom-student-progress',
+  () => (classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : null),
+  { watch: [classroomId] },
+);
 
-  return Math.round((student.value.completedLevels / student.value.totalLevels) * 100);
-});
+const student = computed(() => getClassroomMemberById(classroom.value, studentId.value));
 </script>
 
 <template>
@@ -22,33 +21,29 @@ const progressPercent = computed(() => {
     <header class="pageHeader">
       <NuxtLink class="backLink" :to="routePathsWithString(routePaths.teacherClassroomStudents, `?classroomId=${classroomId}`)">Tilbake til elevoversikt</NuxtLink>
       <p class="eyebrow">Enkeltelev</p>
-      <h1>{{ student?.name ?? 'Ukjent elev' }}</h1>
+      <h1>{{ student?.username ?? 'Ukjent elev' }}</h1>
       <p class="subtitle">{{ classroom?.name ?? 'Ukjent klasserom' }}</p>
     </header>
 
     <div v-if="student" class="summaryGrid">
       <article class="summaryCard">
-        <span class="summaryLabel">Progresjon</span>
-        <strong>{{ progressPercent }} %</strong>
+        <span class="summaryLabel">Elev</span>
+        <strong>{{ student.username }}</strong>
       </article>
       <article class="summaryCard">
-        <span class="summaryLabel">Fullførte nivåer</span>
-        <strong>{{ student.completedLevels }} / {{ student.totalLevels }}</strong>
+        <span class="summaryLabel">Bruker-ID</span>
+        <strong>{{ student.publicUuid }}</strong>
       </article>
       <article class="summaryCard">
-        <span class="summaryLabel">Poeng</span>
-        <strong>{{ student.points }}</strong>
-      </article>
-      <article class="summaryCard">
-        <span class="summaryLabel">Medaljer</span>
-        <strong>{{ student.badges }}</strong>
+        <span class="summaryLabel">Klasserom</span>
+        <strong>{{ classroom?.name }}</strong>
       </article>
     </div>
 
     <div v-if="student" class="detailCard">
-      <h2>Logg</h2>
-      <p>Sist aktiv: {{ student.lastActive }}</p>
-      <p>Her kan vi kanskje ha en tabell med spillhistorikken til eleven.</p>
+      <h2>Elevdata</h2>
+      <p>Denne siden viser nå ekte medlemsdata fra backend.</p>
+      <p>Detaljert progresjon per elev finnes ikke som lærer-endepunkt i backend ennå.</p>
     </div>
   </section>
 </template>

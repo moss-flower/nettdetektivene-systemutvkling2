@@ -1,25 +1,41 @@
 <script setup lang="ts">
+import { routePaths, routePathsWithString } from '~/composables/utils/routePaths';
+import { getClassroomExercises } from '~/composables/useTeacherDashboard';
 const route = useRoute();
-const { getTeacherClassroomById, getTeacherClassroomExercises } = useTeacherDashboard();
+const { teacher } = useClassrooms();
 
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
-const classroom = computed(() => getTeacherClassroomById(classroomId.value));
-const exercises = computed(() => getTeacherClassroomExercises(classroomId.value));
+
+const { data: classroom } = await useAsyncData(
+  'teacher-classroom-tasks',
+  () => (classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : null),
+  { watch: [classroomId] },
+);
+
+const { data: exercises } = await useAsyncData(
+  'teacher-classroom-exercises',
+  () => getClassroomExercises(classroom.value ?? null),
+  { watch: [classroom] },
+);
 </script>
 
 <template>
   <section class="pageShell">
     <header class="pageHeader">
-      <NuxtLink class="backLink" :to="`/classroom/overview?classroomId=${classroomId}`">Tilbake til klasserommet</NuxtLink>
+      <NuxtLink class="backLink" :to="routePathsWithString(routePaths.teacherClassroomOverview, `?classroomId=${classroomId}`)">Tilbake til klasserommet</NuxtLink>
       <p class="eyebrow">Oppgaver</p>
       <h1>{{ classroom?.name ?? 'Ukjent klasserom' }}</h1>
     </header>
 
     <div class="stack">
+      <article v-if="(exercises ?? []).length === 0" class="card">
+        <h2>Ingen oppgaver tilgjengelig</h2>
+        <p>Fant ingen oppgaver via klasserommets verden og stasjoner.</p>
+      </article>
       <article v-for="exercise in exercises" :key="exercise.uid" class="card">
         <h2>{{ exercise.title }}</h2>
-        <p>{{ exercise.level }}</p>
-        <span>{{ exercise.status }}</span>
+        <p>{{ exercise.stationTitle }}</p>
+        <span>{{ exercise.difficultyName }} · {{ exercise.taskCount }} oppgaver</span>
       </article>
     </div>
   </section>
