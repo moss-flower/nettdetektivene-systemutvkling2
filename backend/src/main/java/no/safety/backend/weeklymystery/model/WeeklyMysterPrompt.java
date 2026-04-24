@@ -54,7 +54,7 @@ public class WeeklyMysterPrompt {
 
     @ManyToOne
     @JoinColumn(name = "teacher_id")
-    private TeacherUser createdByTeacherUser;
+    private TeacherUser teacherUser;
 
     @ManyToMany
     @Builder.Default
