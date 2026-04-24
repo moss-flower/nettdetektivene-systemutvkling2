@@ -77,4 +77,8 @@ public class UserService {
         
         userRepository.delete(user);
     }
+
+    public User findByInternalId(Long id) {
+        return userRepository.findById(id).get();
+    }
 }
