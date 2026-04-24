@@ -10,6 +10,13 @@ export type WorldFactoryPayload = {
 	stationUids: Station["uid"][];
 };
 
+type BackendWorldRequestPayload = {
+	title: string;
+	description: string;
+	image: string;
+	stationUids: Station["uid"][];
+};
+
 export type WorldFactoryStoredRecord = {
 	localId: string;
 	sourceUid?: string;
@@ -312,9 +319,33 @@ export const parseWorldFactorySelectionKey = (selectionKey: string) => {
 
 export const getWorldFactorySelectionOptions = (): WorldFactorySelectableOption[] => {
 	const store = readWorldFactoryStore();
-	const existingOptions = World.backendFetchAllWorlds().map((world) => ({
+	const existingOptions = Object.values(store.overrides).map((record) => ({
+		selectionKey: makeWorldFactoryExistingSelectionKey(record.sourceUid ?? record.localId),
+		label: record.payload.title || record.payload.uid,
+		description: record.payload.description || `${record.payload.stationUids.length} stasjoner`,
+		kind: "existing" as const,
+		badge: "Eksisterende verden · lokal override",
+	}));
+	const draftOptions = [...store.drafts]
+		.sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
+		.map((draft) => ({
+			selectionKey: makeWorldFactoryDraftSelectionKey(draft.localId),
+			label: draft.payload.title || "Ny verden uten tittel",
+			description: draft.payload.description || `${draft.payload.stationUids.length} stasjoner`,
+			kind: "draft" as const,
+			badge: "Ny lokal verden",
+		}));
+
+	return [...existingOptions, ...draftOptions];
+};
+
+export const getWorldFactorySelectionOptionsFromWorlds = (
+	worlds: World[],
+): WorldFactorySelectableOption[] => {
+	const store = readWorldFactoryStore();
+	const existingOptions = worlds.map((world) => ({
 		selectionKey: makeWorldFactoryExistingSelectionKey(world.uid),
-		label: world.uid,
+		label: world.title || world.uid,
 		description: world.description || `${world.stationUids.length} stasjoner`,
 		kind: "existing" as const,
 		badge: store.overrides[world.uid] ? "Eksisterende verden · lokal override" : "Eksisterende verden",
@@ -330,4 +361,139 @@ export const getWorldFactorySelectionOptions = (): WorldFactorySelectableOption[
 		}));
 
 	return [...existingOptions, ...draftOptions];
+};
+
+export const fetchAllWorldFactoryWorlds = () => World.backendFetchAllWorlds();
+
+export const loadWorldFactoryPayload = async (selectionKey: string): Promise<{
+	payload: WorldFactoryPayload;
+	localId: string;
+}> => {
+	const selection = parseWorldFactorySelectionKey(selectionKey);
+	const store = readWorldFactoryStore();
+
+	if (selection.kind === "existing") {
+		const override = store.overrides[selection.uid] ?? null;
+
+		if (override) {
+			return {
+				payload: createWorldDraft(override.payload),
+				localId: "",
+			};
+		}
+
+		const backendWorld = await World.backendFetchWorldByUid(selection.uid);
+
+		return {
+			payload: createWorldDraft({
+				title: backendWorld?.title ?? backendWorld?.uid ?? selection.uid,
+				uid: backendWorld?.uid ?? selection.uid,
+				description: backendWorld?.description ?? "",
+				image: backendWorld?.image ?? defaultImage,
+				stationUids: backendWorld?.stationUids ?? [],
+			}),
+			localId: "",
+		};
+	}
+
+	if (selection.kind === "draft") {
+		const storedDraft = store.drafts.find((draft) => draft.localId === selection.localId) ?? null;
+
+		return {
+			payload: storedDraft?.payload ?? createWorldDraft(),
+			localId: storedDraft?.localId ?? "",
+		};
+	}
+
+	return {
+		payload: createWorldDraft(),
+		localId: "",
+	};
+};
+
+const mapWorldToBackendRequest = (payload: WorldFactoryPayload): BackendWorldRequestPayload => ({
+	title: payload.title.trim(),
+	description: payload.description.trim(),
+	image: payload.image.trim() || defaultImage,
+	stationUids: normalizeWorldStationUids(payload.stationUids),
+});
+
+const toWorldFactoryPayload = (world: World): WorldFactoryPayload => createWorldDraft({
+	title: world.title,
+	uid: world.uid,
+	description: world.description,
+	image: world.image,
+	stationUids: world.stationUids,
+});
+
+export const saveWorldFactoryPayload = async (
+	selectionKey: string,
+	payload: WorldFactoryPayload,
+): Promise<{ selectionKey: string; payload: WorldFactoryPayload }> => {
+	const selection = parseWorldFactorySelectionKey(selectionKey);
+	const requestBody = mapWorldToBackendRequest(payload);
+	const { $api } = useNuxtApp();
+
+	if (selection.kind === "existing") {
+		await $api<World>(`/worlds/${selection.uid}`, {
+			method: "PUT",
+			body: requestBody,
+		});
+
+		clearWorldFactoryOverride(selection.uid);
+		const world = await World.backendFetchWorldByUid(selection.uid);
+
+		return {
+			selectionKey: makeWorldFactoryExistingSelectionKey(selection.uid),
+			payload: world ? toWorldFactoryPayload(world) : createWorldDraft({ ...payload, uid: selection.uid }),
+		};
+	}
+
+	const createdWorld = await $api<World>("/worlds", {
+		method: "POST",
+		body: requestBody,
+	});
+
+	if (selection.kind === "draft") {
+		removeWorldFactoryDraft(selection.localId);
+	}
+
+	return {
+		selectionKey: makeWorldFactoryExistingSelectionKey(createdWorld.uid),
+		payload: toWorldFactoryPayload(createdWorld),
+	};
+};
+
+export const saveWorldFactoryPayloadAsNew = async (
+	payload: WorldFactoryPayload,
+): Promise<{ selectionKey: string; payload: WorldFactoryPayload }> => {
+	const { $api } = useNuxtApp();
+	const createdWorld = await $api<World>("/worlds", {
+		method: "POST",
+		body: mapWorldToBackendRequest(payload),
+	});
+
+	return {
+		selectionKey: makeWorldFactoryExistingSelectionKey(createdWorld.uid),
+		payload: toWorldFactoryPayload(createdWorld),
+	};
+};
+
+export const deleteWorldFactorySelection = async (selectionKey: string) => {
+	const selection = parseWorldFactorySelectionKey(selectionKey);
+
+	if (selection.kind === "existing") {
+		const { $api } = useNuxtApp();
+
+		await $api(`/worlds/${selection.uid}`, {
+			method: "DELETE",
+		});
+
+		clearWorldFactoryOverride(selection.uid);
+		return;
+	}
+
+	if (selection.kind === "draft") {
+		removeWorldFactoryDraft(selection.localId);
+	}
 };

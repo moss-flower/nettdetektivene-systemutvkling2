@@ -2,11 +2,14 @@
 import { routePaths, routePathsWithString } from '~/composables/utils/routePaths';
 
 const route = useRoute();
-const { getTeacherClassroomById, getteacherClassroomMystery } = useTeacherDashboard();
+const { teacher } = useClassrooms();
 
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
-const classroom = computed(() => getTeacherClassroomById(classroomId.value));
-const mystery = computed(() => getteacherClassroomMystery(classroomId.value));
+const { data: classroom } = await useAsyncData(
+  'teacher-classroom-mystery',
+  () => (classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : null),
+  { watch: [classroomId] },
+);
 </script>
 
 <template>
@@ -17,13 +20,12 @@ const mystery = computed(() => getteacherClassroomMystery(classroomId.value));
       <h1>{{ classroom?.name ?? 'Ukjent klasserom' }}</h1>
     </header>
 
-    <div v-if="mystery" class="card">
+    <div class="card">
       <div class="mysteryHeader">
-        <h2>{{ mystery.title }}</h2>
-        <span>{{ mystery.status }}</span>
+        <h2>Ingen publisert mysteriedata ennå</h2>
       </div>
-      <p>{{ mystery.description }}</p>
-      <button type="button">Rediger mysterium</button>
+      <p>Frontend viser ikke lenger mockede mysterier for klasserom.</p>
+      <p>Backend har foreløpig ikke et endepunkt for å hente ukens mysterium per klasserom.</p>
     </div>
   </section>
 </template>

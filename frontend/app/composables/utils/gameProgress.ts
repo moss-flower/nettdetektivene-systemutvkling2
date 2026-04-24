@@ -19,8 +19,29 @@ export const useCompletedExerciseUids = async (): Promise<string[]> => {
 export const markExerciseCompleted = async (exerciseUid: string) => {
   const { $api } = useNuxtApp();
 
-  await $api("/completed-exercises", {
-    method: "POST",
-    body: { exerciseUid },
-  });
+  try {
+    await $api("/completed-exercises", {
+      method: "POST",
+      body: { exerciseUid },
+    });
+
+    await Promise.all([
+      refreshNuxtData("completed-exercises"),
+      refreshNuxtData("student-completed-exercises"),
+    ]);
+  } catch (error: any) {
+    const statusCode = error?.statusCode ?? error?.status ?? error?.data?.status;
+
+    // Replaying an already completed exercise should not block the end-of-exercise flow.
+    if (statusCode === 409) {
+      await Promise.all([
+        refreshNuxtData("completed-exercises"),
+        refreshNuxtData("student-completed-exercises"),
+      ]);
+
+      return;
+    }
+
+    throw error;
+  }
 };

@@ -6,6 +6,7 @@ import no.safety.backend.world.model.World;
 
 public record WorldResponse(
     UUID uid,
+    String title,
     String description,
     String image,
     List<UUID> stationUids
@@ -13,6 +14,7 @@ public record WorldResponse(
   public static WorldResponse from(World world) {
     return new WorldResponse(
         world.getUid(),
+        world.getTitle(),
         world.getDescription(),
         world.getImage(),
         world.getStationUids()

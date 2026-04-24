@@ -43,8 +43,8 @@ const choose = (choice: MultipleChoiceOptionKey) => {
 
     <div class="templateImageFrame">
       <img
-        :src="props.prompt.imageUrl"
-        :alt="props.prompt.imageAlt"
+        :src="props.prompt?.imageUrl ?? ''"
+        :alt="props.prompt?.imageAlt ?? ''"
         class="choiceTemplateImage"
       >
     </div>

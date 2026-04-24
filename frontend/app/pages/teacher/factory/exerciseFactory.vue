@@ -4,7 +4,9 @@ import PopupFactorySaved from "~/components/teacher/factory/PopupFactorySaved.vu
 import { routePaths } from "~/composables/utils/routePaths";
 import {
 	exerciseFactoryNewSelectionKey,
+	fetchAllExerciseFactoryExercises,
 	getExerciseFactorySelectionOptions,
+	getExerciseFactorySelectionOptionsFromExercises,
 	makeExerciseFactoryExistingSelectionKey,
 	type ExerciseFactorySelectableOption,
 } from "~/composables/useExerciseFactory";
@@ -30,25 +32,33 @@ const goBack = () => {
 	void navigateTo(routePaths.teacherOverview);
 };
 
-const refreshSelectableOptions = () => {
-	selectableOptions.value = getExerciseFactorySelectionOptions();
+const refreshSelectableOptions = async () => {
+	try {
+		const exercises = await fetchAllExerciseFactoryExercises();
+
+		selectableOptions.value = getExerciseFactorySelectionOptionsFromExercises(exercises);
+	} catch {
+		selectableOptions.value = getExerciseFactorySelectionOptions();
+	}
 };
 
-const handleSelectionUpdated = (selectionKey: string) => {
-	refreshSelectableOptions();
+const handleSelectionUpdated = async (selectionKey: string) => {
+	await refreshSelectableOptions();
 	selectedExerciseKey.value = selectionKey;
 };
 
-const handleSaved = () => {
-	refreshSelectableOptions();
-	selectedExerciseKey.value = lockedExerciseUid.value
-		? makeExerciseFactoryExistingSelectionKey(lockedExerciseUid.value)
-		: "";
+const handleSaved = async () => {
+	await refreshSelectableOptions();
+
+	if (lockedExerciseUid.value) {
+		selectedExerciseKey.value = makeExerciseFactoryExistingSelectionKey(lockedExerciseUid.value);
+	}
+
 	showSavedPopup.value = true;
 };
 
-const handleDeleted = () => {
-	refreshSelectableOptions();
+const handleDeleted = async () => {
+	await refreshSelectableOptions();
 	selectedExerciseKey.value = lockedExerciseUid.value
 		? makeExerciseFactoryExistingSelectionKey(lockedExerciseUid.value)
 		: "";
@@ -58,8 +68,8 @@ const closeSavedPopup = () => {
 	showSavedPopup.value = false;
 };
 
-onMounted(() => {
-	refreshSelectableOptions();
+onMounted(async () => {
+	await refreshSelectableOptions();
 });
 
 watch(

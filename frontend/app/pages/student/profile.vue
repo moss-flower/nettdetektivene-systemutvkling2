@@ -1,23 +1,45 @@
 <script setup lang="ts">
 import { routePaths } from '~/composables/utils/routePaths'
+import { useStudentProfile } from '~/composables/useStudentProfile'
+import { getStudentProgress } from '~/composables/utils/studentProgress'
 
-const studentName = 'Saddam Hussein'
-const currentLevel = 7
-const currentXp = 840
-const nextLevelXp = 1000
-const xpProgress = Math.round((currentXp / nextLevelXp) * 100)
+const { getMyProfile } = useStudentProfile()
+
+const studentName = ref('Laster...')
+const totalXp = ref(0)
+
+const isLoading = ref(true)
+const profileError = ref('')
+
+const progress = computed(() => getStudentProgress(totalXp.value))
+
+onMounted(async () => {
+  isLoading.value = true
+  profileError.value = ''
+
+  try {
+    const profile = await getMyProfile()
+    studentName.value = profile.studentName
+    totalXp.value = profile.totalXp
+  } catch {
+    profileError.value = 'Kunne ikke laste profildata akkurat nå.'
+  } finally {
+    isLoading.value = false
+  }
+})
 </script>
 
 <template>
   <section class="profilePage">
     <header class="pageHeader">
-      <p class="eyebrow">Min profil</p>
-      <h1>{{ studentName }}</h1>
-      <p class="subtitle">Oversikt over navn, nivå og progresjon.</p>
+      <p v-if="isLoading" class="statusText">Laster profil...</p>
+      <p v-if="profileError" class="errorText">{{ profileError }}</p>
     </header>
 
     <div class="profileCard">
-      <div class="avatarWrap" aria-hidden="true">placeholder</div>
+        <p class="eyebrow">Min profil</p>
+      <p class="subtitle">Oversikt over navn, level og progresjon.</p>
+      
 
       <div class="infoBlock">
         <p class="label">Navn</p>
@@ -25,22 +47,22 @@ const xpProgress = Math.round((currentXp / nextLevelXp) * 100)
       </div>
 
       <div class="infoBlock">
-        <p class="label">Nivå</p>
-        <p class="value">{{ currentLevel }}</p>
+        <p class="label">Level</p>
+        <p class="value">{{ progress.level }}</p>
       </div>
 
       <div class="infoBlock">
         <p class="label">XP</p>
-        <p class="value">{{ currentXp }} / {{ nextLevelXp }}</p>
+        <p class="value">{{ progress.currentXp }} / {{ progress.nextLevelXp }}</p>
       </div>
 
       <div class="progressSection">
         <div class="progressHeader">
-          <span>Fremdrift til neste nivå</span>
-          <span>{{ xpProgress }}%</span>
+          <span>Fremdrift til neste level</span>
+          <span>{{ progress.progressPercent }}%</span>
         </div>
-        <div class="progressBar" role="progressbar" :aria-valuenow="xpProgress" aria-valuemin="0" aria-valuemax="100">
-          <div class="progressFill" :style="{ width: `${xpProgress}%` }"></div>
+        <div class="progressBar" role="progressbar" :aria-valuenow="progress.progressPercent" aria-valuemin="0" aria-valuemax="100">
+          <div class="progressFill" :style="{ width: `${progress.progressPercent}%` }"></div>
         </div>
       </div>
 
@@ -79,6 +101,20 @@ h1 {
 .subtitle {
   margin: 0;
   color: var(--color-text-secondary);
+}
+
+.statusText,
+.errorText {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.statusText {
+  color: var(--muted);
+}
+
+.errorText {
+  color: #b42318;
 }
 
 .profileCard {

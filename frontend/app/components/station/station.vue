@@ -7,10 +7,12 @@ import type { Station } from "~/composables/types/StationType";
 
 const props = defineProps<{
   station: Station;
+  isUnlocked?: boolean;
+  completedExercises?: boolean[];
 }>();
 
-const stationStatus = computed(() => props.station.getMockStatus());
-const stationIsUnlocked = computed(() => props.station.isUnlocked());
+const stationIsUnlocked = computed(() => props.isUnlocked ?? true);
+const completedExercises = computed(() => props.completedExercises ?? []);
 
 const stationPath = computed(() => ({
   path: routePaths.studentExerciseDifficultySelect,
@@ -22,12 +24,12 @@ const totalExercises = computed(() => {
     return props.station.exerciseUids.length;
   }
 
-  return stationStatus.value.completedExercises.length;
+  return completedExercises.value.length;
 });
 
 const stars = computed(() =>
   Array.from({ length: totalExercises.value }, (_, index) => {
-    const isCompleted = stationStatus.value.completedExercises[index] ?? false;
+    const isCompleted = completedExercises.value[index] ?? false;
 
     return {
       id: `${props.station.uid}-star-${index}`,
@@ -45,9 +47,9 @@ const stars = computed(() =>
   :class="{ lockedCard: !stationIsUnlocked }"
   :to="stationIsUnlocked ? stationPath : undefined"
   >
-    <img :src="station.image" :alt="station.name" class="levelImage">
+    <img :src="station.image" :alt="station.title" class="levelImage">
 
-    <h4 class="levelName">{{ station.name }}</h4>
+    <h4 class="levelName">{{ station.title }}</h4>
     <div class="starRow">
       <img
         v-for="star in stars"

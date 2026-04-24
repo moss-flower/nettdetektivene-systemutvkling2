@@ -34,6 +34,9 @@ public class World {
   @Column(name = "uid", nullable = false, updatable = false, unique = true, columnDefinition = "BINARY(16)")
   private UUID uid;
 
+  @Column(nullable = false, length = 100)
+  private String title;
+
   @Column(nullable = false, columnDefinition = "TEXT")
   private String description;
 

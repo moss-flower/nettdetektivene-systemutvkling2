@@ -2,11 +2,14 @@
 import { routePaths, routePathsWithString } from '~/composables/utils/routePaths';
 
 const route = useRoute();
-const { getTeacherClassroomById, getteacherClassroomNotifications } = useTeacherDashboard();
+const { teacher } = useClassrooms();
 
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
-const classroom = computed(() => getTeacherClassroomById(classroomId.value));
-const notifications = computed(() => getteacherClassroomNotifications(classroomId.value));
+const { data: classroom } = await useAsyncData(
+  'teacher-classroom-notifications',
+  () => (classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : null),
+  { watch: [classroomId] },
+);
 </script>
 
 <template>
@@ -18,10 +21,10 @@ const notifications = computed(() => getteacherClassroomNotifications(classroomI
     </header>
 
     <div class="stack">
-      <article v-for="notification in notifications" :key="notification.id" class="card">
-        <h2>{{ notification.title }}</h2>
-        <p>{{ notification.description }}</p>
-        <span>{{ notification.timeLabel }}</span>
+      <article class="card">
+        <h2>Ingen klasseromsvarsler ennå</h2>
+        <p>Frontend bruker ikke lenger mockede varsler her.</p>
+        <span>Backend har foreløpig ingen lese-endepunkt for klasseromsvarsler.</span>
       </article>
     </div>
   </section>

@@ -3,7 +3,9 @@ import StationFactoryEditor from "~/components/teacher/factory/StationFactoryEdi
 import PopupFactorySaved from "~/components/teacher/factory/PopupFactorySaved.vue";
 import { routePaths } from "~/composables/utils/routePaths";
 import {
+	fetchAllStationFactoryStations,
 	getStationFactorySelectionOptions,
+	getStationFactorySelectionOptionsFromStations,
 	makeStationFactoryExistingSelectionKey,
 	stationFactoryNewSelectionKey,
 	type StationFactorySelectableOption,
@@ -30,24 +32,32 @@ const goBack = () => {
 	void navigateTo(routePaths.teacherOverview);
 };
 
-const refreshSelectableOptions = () => {
-	selectableOptions.value = getStationFactorySelectionOptions();
+const refreshSelectableOptions = async () => {
+	try {
+		const stations = await fetchAllStationFactoryStations();
+
+		selectableOptions.value = getStationFactorySelectionOptionsFromStations(stations);
+	} catch {
+		selectableOptions.value = getStationFactorySelectionOptions();
+	}
 };
-const handleSelectionUpdated = (selectionKey: string) => {
-	refreshSelectableOptions();
+const handleSelectionUpdated = async (selectionKey: string) => {
+	await refreshSelectableOptions();
 	selectedStationKey.value = selectionKey;
 };
 
-const handleSaved = () => {
-	refreshSelectableOptions();
-	selectedStationKey.value = lockedStationUid.value
-		? makeStationFactoryExistingSelectionKey(lockedStationUid.value)
-		: "";
+const handleSaved = async () => {
+	await refreshSelectableOptions();
+
+	if (lockedStationUid.value) {
+		selectedStationKey.value = makeStationFactoryExistingSelectionKey(lockedStationUid.value);
+	}
+
 	showSavedPopup.value = true;
 };
 
-const handleDeleted = () => {
-	refreshSelectableOptions();
+const handleDeleted = async () => {
+	await refreshSelectableOptions();
 	selectedStationKey.value = lockedStationUid.value
 		? makeStationFactoryExistingSelectionKey(lockedStationUid.value)
 		: "";
@@ -57,8 +67,8 @@ const closeSavedPopup = () => {
 	showSavedPopup.value = false;
 };
 
-onMounted(() => {
-	refreshSelectableOptions();
+onMounted(async () => {
+	await refreshSelectableOptions();
 });
 
 watch(

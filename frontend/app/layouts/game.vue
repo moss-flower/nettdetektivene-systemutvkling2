@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { Station } from '~/composables/types/StationType'
+import { useStudentProfile } from '~/composables/useStudentProfile'
 import { useThemeAttributes } from '~/composables/useThemeAttributes'
+import { getStudentProgress } from '~/composables/utils/studentProgress'
 
 provideGameConfetti()
 useThemeAttributes('game')
+const { getMyProfile } = useStudentProfile()
 
 const route = useRoute()
+const profileName = ref('Detektiv')
+const profileLevelText = ref('Laster nivå...')
 
 const stationUid = computed(() => {
   const routeParam = route.params.stationUid
@@ -31,6 +36,16 @@ const layoutStyle = computed(() => {
     '--game-layout-center-color': `color-mix(in srgb, ${backgroundColor} 22%, white)`,
   }
 })
+
+onMounted(async () => {
+  try {
+    const profile = await getMyProfile()
+    profileName.value = profile.studentName
+    profileLevelText.value = `Level ${getStudentProgress(profile.totalXp).level}`
+  } catch (error) {
+    console.error('Error fetching student profile:', error)
+  }
+})
 </script>
 
 <template>
@@ -48,8 +63,8 @@ const layoutStyle = computed(() => {
             class="game-layout__avatar-image"
           />
         </div>
-        <p class="game-layout__rail-title">Detektiv Navn</p>
-        <p class="game-layout__rail-text">Nivå her kanskje?</p>
+        <p class="game-layout__rail-title">{{ profileName }}</p>
+        <p class="game-layout__rail-text">{{ profileLevelText }}</p>
       </NuxtLink>
     </aside>
 

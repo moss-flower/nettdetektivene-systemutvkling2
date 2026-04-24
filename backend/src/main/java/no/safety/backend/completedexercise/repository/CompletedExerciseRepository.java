@@ -17,4 +17,6 @@ public interface CompletedExerciseRepository
   List<CompletedExercise> findAllByStudentUidOrderByExerciseUidAsc(UUID studentUid);
 
   long countByStudentUidAndExerciseUidIn(UUID studentUid, Collection<UUID> exerciseUids);
+
+  long countByStudentUid(UUID studentUid);
 }

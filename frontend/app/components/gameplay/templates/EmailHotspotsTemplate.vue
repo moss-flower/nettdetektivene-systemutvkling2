@@ -537,6 +537,7 @@ const activateTarget = (targetId?: string) => {
 .templateTargetPlain.templateAttachmentInteractive.templateTargetFound {
   border-radius: 0.45rem;
   background: var(--color-semantic-info);
+  box-shadow: inset 0 0 0 2px #4a9b5a;
 }
 
 .templateTargetPlain.templateTargetIncorrect,
