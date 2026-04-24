@@ -23,6 +23,9 @@ public record StationRequest(
     String backgroundColor,
 
     @NotEmpty(message = "A station must contain at least one exercise.")
-    List<UUID> exerciseUids
+    List<UUID> exerciseUids,
+
+    @NotEmpty(message = "A station must specify if it is a boss station")
+    boolean isBoss
 ) {
 }
