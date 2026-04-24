@@ -66,8 +66,8 @@ function selectFilter(level: string) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
-  gap: 4px;
+  padding: var(--space-4);
+  gap: var(--space-1);
 }
 
 .filterButton {
@@ -77,7 +77,7 @@ function selectFilter(level: string) {
   justify-content: center;
   padding: 0.8rem; 
   margin: auto;
-  font-size: 1rem;
+  font-size: var(--font-size-16);
   border-radius: 10px;
   background-color: white;
   

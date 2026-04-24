@@ -17,22 +17,22 @@ defineEmits<{
   <DialogTemplate :aria-label="title">
     <template #badge>
       <p
-        class="task-result-dialog__badge"
+        class="resultDialogBadge"
         :class="{
-          'task-result-dialog__badge--correct': correct,
-          'task-result-dialog__badge--incorrect': !correct,
+          'dialogBadgeCorrect': correct,
+          'dialogBadgeIncorrect': !correct,
         }"
       >
         {{ correct ? 'Riktig svar' : 'Ikke helt' }}
       </p>
     </template>
 
-    <h2 class="task-result-dialog__title">{{ title }}</h2>
-    <p class="task-result-dialog__message">{{ message }}</p>
+    <h2 class="resultTitle">{{ title }}</h2>
+    <p class="resultMessage">{{ message }}</p>
 
     <template #actions>
       <button
-        class="task-result-dialog__button"
+        class="resultButton"
         type="button"
         @click="$emit('next')"
       >
@@ -43,56 +43,51 @@ defineEmits<{
 </template>
 
 <style scoped>
-.task-result-dialog__badge {
+.resultDialogBadge {
   justify-self: start;
   padding: 0.35rem 0.7rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-size: 0.88rem;
   font-weight: 700;
 }
 
-.task-result-dialog__badge--correct {
-  background: #dcfce7;
-  color: #166534;
+.dialogBadgeCorrect {
+  background: var(--palette-green-100);
+  color: var(--palette-green-700);
 }
 
-.task-result-dialog__badge--incorrect {
-  background: #fee2e2;
-  color: #991b1b;
+.dialogBadgeIncorrect {
+  background: var(--palette-red-200);
+  color: var(--palette-red-700);
 }
 
-.task-result-dialog__title {
+.resultTitle {
   font-size: 1.4rem;
   line-height: 1.1;
-  color: #172033;
+  color: var(--color-text-primary);
 }
 
-.task-result-dialog__message {
-  font-size: 1rem;
+.resultMessage {
+  font-size: var(--font-size-16);
   line-height: 1.5;
-  color: #374151;
+  color: var(--palette-gray-700);
 }
 
-.task-result-dialog__button {
+.resultButton {
   padding: 0.85rem 1.2rem;
   border: 0;
-  border-radius: 999px;
-  background: #1f3657;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-primary);
   color: #f9fbff;
   font-weight: 700;
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  transition: transform var(--transition-base) ease, background-color var(--transition-base) ease;
 }
 
-.task-result-dialog__button:hover,
-.task-result-dialog__button:focus-visible {
-  background: #27456f;
+.resultButton:hover,
+.resultButton:focus-visible {
+  background: var(--palette-navy-700);
   transform: translateY(-1px);
   outline: none;
 }
 
-@media (max-width: 640px) {
-  .task-result-dialog__button {
-    width: 100%;
-  }
-}
 </style>

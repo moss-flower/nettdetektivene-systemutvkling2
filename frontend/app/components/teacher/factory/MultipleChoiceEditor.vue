@@ -20,7 +20,7 @@ const emit = defineEmits<{
 				<input v-model="props.task.prompt.title" type="text" >
 			</label>
 
-			<label class="field field--full">
+			<label class="field fieldFull">
 				<span>Prompt-tekst</span>
 				<textarea v-model="props.task.prompt.text" rows="2"></textarea>
 			</label>
@@ -59,14 +59,14 @@ const emit = defineEmits<{
 					type="button"
 					class="deleteButton"
 					:disabled="props.task.options.length <= 2"
-					@click="emit('remove-option', optionIndex)"
+					@click="emit('removeOption', optionIndex)"
 				>
 					Fjern
 				</button>
 			</div>
 		</div>
 
-		<button type="button" class="ghostButton" @click="emit('add-option')">
+		<button type="button" class="ghostButton" @click="emit('addOption')">
 			+ Legg til svaralternativ
 		</button>
 	</div>
@@ -74,9 +74,9 @@ const emit = defineEmits<{
 
 <style scoped>
 .templateSection {
-	margin-top: 1rem;
-	padding-top: 1rem;
-	border-top: 1px solid var(--border);
+	margin-top: var(--space-4);
+	padding-top: var(--space-4);
+	border-top: var(--border-width-hairline) solid var(--color-border-default);
 }
 
 .templateSection h4 {
@@ -95,7 +95,7 @@ const emit = defineEmits<{
 	gap: 0.45rem;
 }
 
-.field--full {
+.fieldFull {
 	grid-column: 1 / -1;
 }
 
@@ -107,11 +107,11 @@ const emit = defineEmits<{
 .field select,
 .field textarea {
 	width: 100%;
-	padding: 0.85rem 1rem;
-	border: 1px solid var(--border);
+	padding: 0.85rem var(--space-4);
+	border: var(--border-width-hairline) solid var(--color-border-default);
 	border-radius: 0.9rem;
 	background: rgba(0, 0, 0, 0.16);
-	color: var(--text);
+	color: var(--color-text-primary);
 	font: inherit;
 }
 
@@ -123,12 +123,12 @@ const emit = defineEmits<{
 .field select:focus,
 .field textarea:focus {
 	outline: none;
-	border-color: var(--primary);
+	border-color: var(--color-brand-primary);
 }
 
 .optionList {
 	display: grid;
-	gap: 0.75rem;
+	gap: var(--space-3);
 	margin-top: 0.9rem;
 	margin-bottom: 0.9rem;
 }
@@ -137,10 +137,10 @@ const emit = defineEmits<{
 	display: flex;
 	align-items: flex-start;
 	justify-content: space-between;
-	gap: 0.75rem;
-	padding: 0.85rem 1rem;
-	border: 1px solid var(--border);
-	border-radius: 1rem;
+	gap: var(--space-3);
+	padding: 0.85rem var(--space-4);
+	border: var(--border-width-hairline) solid var(--color-border-default);
+	border-radius: var(--radius-2);
 	background: rgba(255, 255, 255, 0.02);
 }
 
@@ -150,16 +150,16 @@ const emit = defineEmits<{
 
 .ghostButton,
 .deleteButton {
-	border: 1px solid var(--border);
-	border-radius: 999px;
-	padding: 0.7rem 1rem;
+	border: var(--border-width-hairline) solid var(--color-border-default);
+	border-radius: var(--radius-pill);
+	padding: 0.7rem var(--space-4);
 	font-weight: 700;
 	transition: transform var(--transition), border-color var(--transition), background var(--transition);
 }
 
 .ghostButton {
 	background: transparent;
-	color: var(--text);
+	color: var(--color-text-primary);
 }
 
 .deleteButton {

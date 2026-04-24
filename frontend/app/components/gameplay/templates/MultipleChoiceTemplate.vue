@@ -31,40 +31,40 @@ const choose = (choice: MultipleChoiceOptionKey) => {
 </script>
 
 <template>
-  <section class="multiple-choice-template">
-    <header v-if="props.prompt.title || props.prompt.text" class="multiple-choice-template__header">
-      <h2 v-if="props.prompt.title" class="multiple-choice-template__title">
+  <section class="multipleChoiceTemplate">
+    <header v-if="props.prompt.title || props.prompt.text" class="choiceTemplateHeader">
+      <h2 v-if="props.prompt.title" class="choiceTemplateTitle">
         {{ props.prompt.title }}
       </h2>
-      <p v-if="props.prompt.text" class="multiple-choice-template__text">
+      <p v-if="props.prompt.text" class="choiceTemplateText">
         {{ props.prompt.text }}
       </p>
     </header>
 
-    <div class="multiple-choice-template__image-frame">
+    <div class="templateImageFrame">
       <img
         :src="props.prompt.imageUrl"
         :alt="props.prompt.imageAlt"
-        class="multiple-choice-template__image"
+        class="choiceTemplateImage"
       >
     </div>
 
-    <div class="multiple-choice-template__options">
+    <div class="choiceTemplateOptions">
       <button
         v-for="option in props.options"
         :key="option.key"
-        class="multiple-choice-template__option"
+        class="choiceTemplateOption"
         :class="{
-          'multiple-choice-template__option--selected': props.selectedChoice === option.key,
-          'multiple-choice-template__option--locked': props.disabled && props.selectedChoice !== option.key,
+          'templateOptionSelected': props.selectedChoice === option.key,
+          'templateOptionLocked': props.disabled && props.selectedChoice !== option.key,
         }"
         type="button"
         :disabled="props.disabled"
         @click="choose(option.key)"
       >
-        <span class="multiple-choice-template__option-badge">{{ option.key.toUpperCase() }}</span>
-        <span class="multiple-choice-template__option-copy">
-          <span class="multiple-choice-template__option-title">{{ option.title }}</span>
+        <span class="templateOptionBadge">{{ option.key.toUpperCase() }}</span>
+        <span class="templateOptionCopy">
+          <span class="templateOptionTitle">{{ option.title }}</span>
         </span>
       </button>
     </div>
@@ -72,121 +72,116 @@ const choose = (choice: MultipleChoiceOptionKey) => {
 </template>
 
 <style scoped>
-.multiple-choice-template {
+.multipleChoiceTemplate {
   display: grid;
-  gap: clamp(1rem, 2vw, 1.5rem);
-  color: #1f2937;
+  gap: clamp(var(--space-4), 2vw, var(--space-6));
+  color: var(--palette-gray-900);
 }
 
-.multiple-choice-template__header {
+.choiceTemplateHeader {
   display: grid;
   gap: 0.45rem;
 }
 
-.multiple-choice-template__title {
+.choiceTemplateTitle {
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(1.5rem, 3vw, 2.4rem);
   line-height: 1;
-  color: #201716;
+  color: var(--palette-cork-900);
 }
 
-.multiple-choice-template__text {
+.choiceTemplateText {
   max-width: 58rem;
-  font-size: 1rem;
+  font-size: var(--font-size-16);
   line-height: 1.5;
-  color: #4b5563;
+  color: var(--color-text-secondary);
 }
 
-.multiple-choice-template__image-frame {
+.templateImageFrame {
   padding: 0.85rem;
   border-radius: 1.6rem;
-  background: #fffdfa;
-  border: 2px solid #d6d3ce;
+  background: var(--color-bg-surface);
+  border: var(--border-width-thin) solid var(--color-border-default);
   box-shadow: 0 14px 26px rgba(47, 39, 28, 0.08);
 }
 
-.multiple-choice-template__image {
+.choiceTemplateImage {
   width: 100%;
   max-height: min(48dvh, 34rem);
   object-fit: cover;
   display: block;
-  border-radius: 1rem;
+  border-radius: var(--radius-2);
 }
 
-.multiple-choice-template__options {
+.choiceTemplateOptions {
   display: grid;
   gap: 0.9rem;
 }
 
-.multiple-choice-template__option {
+.choiceTemplateOption {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 1rem;
+  gap: var(--space-4);
   align-items: center;
   width: 100%;
-  padding: 1rem 1.15rem;
-  border: 2px solid #d8dde5;
+  padding: var(--space-4) 1.15rem;
+  border: var(--border-width-thin) solid var(--color-border-default);
   border-radius: 1.2rem;
-  background: #fbfcff;
-  color: #1f2937;
+  background: var(--color-bg-surface);
+  color: var(--palette-gray-900);
   text-align: left;
   box-shadow: 0 10px 18px rgba(53, 75, 108, 0.07);
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition: transform var(--transition-base) ease, border-color var(--transition-base) ease, box-shadow var(--transition-base) ease, background-color var(--transition-base) ease;
 }
 
-.multiple-choice-template__option:hover:not(:disabled),
-.multiple-choice-template__option:focus-visible {
+.choiceTemplateOption:hover:not(:disabled),
+.choiceTemplateOption:focus-visible {
   transform: translateY(-2px);
   border-color: #9db7d6;
   box-shadow: 0 14px 24px rgba(53, 75, 108, 0.12);
   outline: none;
 }
 
-.multiple-choice-template__option-badge {
+.templateOptionBadge {
   display: grid;
   place-items: center;
   width: 2.25rem;
   height: 2.25rem;
-  border-radius: 999px;
-  background: #e6edf7;
-  color: #27456f;
+  border-radius: var(--radius-pill);
+  background: var(--color-semantic-info);
+  color: var(--palette-navy-700);
   font-weight: 800;
   font-size: 0.95rem;
 }
 
-.multiple-choice-template__option-copy {
+.templateOptionCopy {
   display: grid;
   align-self: center;
 }
 
-.multiple-choice-template__option-title {
+.templateOptionTitle {
   font-size: 1.05rem;
   font-weight: 700;
   line-height: 1.35;
 }
 
-.multiple-choice-template__option--selected {
+.templateOptionSelected {
   border-color: #4c7bb0;
-  background: #eef5ff;
+  background: var(--color-semantic-info);
   box-shadow: 0 16px 28px rgba(65, 104, 150, 0.16);
 }
 
-.multiple-choice-template__option--selected .multiple-choice-template__option-badge {
+.templateOptionSelected .templateOptionBadge {
   background: #4c7bb0;
-  color: #f8fbff;
+  color: var(--palette-white);
 }
 
-.multiple-choice-template__option--locked {
+.templateOptionLocked {
   opacity: 0.82;
 }
 
-.multiple-choice-template__option:disabled {
+.choiceTemplateOption:disabled {
   cursor: default;
 }
 
-@media (max-width: 760px) {
-  .multiple-choice-template__option {
-    padding: 0.95rem 1rem;
-  }
-}
 </style>

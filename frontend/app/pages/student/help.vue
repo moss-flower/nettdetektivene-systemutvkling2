@@ -11,26 +11,25 @@ const replayHelp = () => {
 </script>
 
 <template>
-  <section class="student-help">
-    <header class="student-help__header">
-      <UiStudentHomeBackButton class="student-help__back" />
-      <p class="student-help__eyebrow">Hjelp</p>
+  <section class="studentHelp">
+    <header class="studentHelpHeader">
+      <p class="studentHelpEyebrow">Hjelp</p>
       <h2>Hjelpemeldinger for elev</h2>
-      <p class="student-help__intro">
+      <p class="studentHelpIntro">
         Denne siden er en mal for hjelpetekster som vises ved forste innlogging.
         Selve tekstene legges inn senere.
       </p>
     </header>
 
-    <article class="student-help__card">
+    <article class="studentHelpCard">
       <h3>Førstegangsveiledning</h3>
-      <div class="student-help__placeholder">
+      <div class="studentHelpPlaceholder">
         <p>Placeholder: Her kommer stegvise hjelpetekster for nye brukere.</p>
       </div>
 
       <button
         type="button"
-        class="student-help__replay"
+        class="studentHelpReplay"
         :disabled="!canReplay"
         @click="replayHelp"
       >
@@ -41,72 +40,65 @@ const replayHelp = () => {
 </template>
 
 <style scoped>
-.student-help {
+.studentHelp {
   min-height: 100%;
   display: grid;
   gap: var(--space-3);
   padding: var(--space-3);
 }
 
-.student-help__header {
+.studentHelpHeader {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
-.student-help__back {
-  width: fit-content;
-}
-
-.student-help__eyebrow {
-  color: var(--primary);
+.studentHelpEyebrow {
+  color: var(--color-brand-primary);
   font-size: 0.9rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.student-help__intro {
+.studentHelpIntro {
   max-width: 65ch;
-  color: var(--muted);
+  color: var(--color-text-secondary);
   line-height: 1.5;
 }
 
-.student-help__card {
+.studentHelpCard {
   display: grid;
-  gap: 1rem;
-  padding: 1rem;
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  border-radius: var(--radius-3);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-1);
 }
 
-.student-help__placeholder {
+.studentHelpPlaceholder {
   min-height: 7rem;
-  padding: 1rem;
-  border: 1px dashed var(--border);
-  border-radius: var(--radius);
-  color: var(--muted);
+  padding: var(--space-4);
+  border: var(--border-width-hairline) dashed var(--color-border-default);
+  border-radius: var(--radius-2);
+  background: color-mix(in srgb, var(--color-bg-surface) 94%, var(--color-semantic-info) 6%);
+  color: var(--color-text-secondary);
   display: grid;
   align-items: center;
 }
 
-.student-help__replay {
+.studentHelpReplay {
   width: fit-content;
-  padding: 0.7rem 1rem;
-  border: 1px solid var(--primary);
-  border-radius: var(--radius);
-  background: transparent;
-  color: var(--primary);
+  padding: 0.7rem var(--space-4);
+  border: var(--border-width-hairline) solid var(--color-brand-primary);
+  border-radius: var(--radius-2);
+  background: color-mix(in srgb, var(--color-bg-surface) 92%, var(--color-semantic-info) 8%);
+  color: var(--color-brand-primary);
   font-weight: 700;
 }
 
-.student-help__replay:disabled {
+.studentHelpReplay:disabled {
   opacity: 0.6;
 }
 
-@media (max-width: 560px) {
-  .student-help {
-    padding: var(--space-2);
-  }
-}
 </style>

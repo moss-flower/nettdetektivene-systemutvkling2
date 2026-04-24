@@ -1,11 +1,11 @@
 <template>
-  <div class="app-shell">
+  <div class="appShell">
     <aside class="sidebar">
       <div class="profile">
         <!-- avatar +(?) detektiv navn -->
       </div>
 
-      <button class="nav-home" type="button" aria-label="Tilbake til hovedmeny">
+      <button class="navHome" type="button" aria-label="Tilbake til hovedmeny">
         <!-- map-pin icon -->
       </button>
     </aside>
@@ -17,7 +17,7 @@
 </template>
 
 <style scoped>
-.app-shell {
+.appShell {
   min-height: 100dvh;
   width: 100%;
   display: grid;
@@ -42,7 +42,7 @@
   text-align: center;
 }
 
-.nav-home {
+.navHome {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -54,7 +54,7 @@
   transition: transform var(--transition-fast);
 }
 
-.nav-home:hover {
+.navHome:hover {
   transform: translateY(-2px);
 }
 

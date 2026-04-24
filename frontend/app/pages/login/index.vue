@@ -216,7 +216,7 @@ async function handleLogin() {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  padding: 1rem;
+  padding: var(--space-4);
   background: #c5d4e7;
   color: #020202;
 }
@@ -224,15 +224,15 @@ async function handleLogin() {
 .feideShell {
   width: min(100%, 32rem);
   align-self: flex-start;
-  margin: 1rem auto;
-  background: #ffffff;
+  margin: var(--space-4) auto;
+  background: var(--palette-white);
   box-shadow: 0 18px 40px rgba(45, 56, 76, 0.15);
 }
 
 .shellHeader {
   display: flex;
   justify-content: flex-end;
-  padding: 0.5rem;
+  padding: var(--space-2);
   background: #dbe5f1;
 }
 
@@ -249,7 +249,7 @@ async function handleLogin() {
 .languageButton:hover,
 .languageButton:focus-visible {
   background: #606ca5;
-  color: #ffffff;
+  color: var(--palette-white);
   outline: none;
 }
 
@@ -272,7 +272,7 @@ async function handleLogin() {
 }
 
 h1 {
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
   color: #333333;
   font-size: clamp(1.8rem, 3vw, 2.1rem);
   font-weight: 900;
@@ -281,8 +281,8 @@ h1 {
 
 .summaryPanels {
   display: grid;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 
 .summaryPanel {
@@ -290,7 +290,7 @@ h1 {
   gap: 0.85rem;
   align-items: flex-start;
   padding: 0.85rem 0;
-  border-bottom: 2px solid #c5d4e7;
+  border-bottom: var(--border-width-thin) solid #c5d4e7;
 }
 
 .panelMark {
@@ -301,7 +301,7 @@ h1 {
   place-items: center;
   border-radius: 0.75rem;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--palette-white);
 }
 
 .serviceMark {
@@ -347,12 +347,12 @@ h1 {
 }
 
 .mainCard {
-  margin-top: 1rem;
+  margin-top: var(--space-4);
 }
 
 .providerList {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .providerButton,
@@ -363,10 +363,10 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 0.9rem;
-  padding: 0 1rem;
+  padding: 0 var(--space-4);
   border: 0;
   font: inherit;
-  font-size: 1rem;
+  font-size: var(--font-size-16);
   cursor: pointer;
   transition:
     background-color 160ms ease,
@@ -379,13 +379,13 @@ h1 {
 .submitButton:hover,
 .submitButton:focus-visible {
   background: #283678;
-  color: #ffffff;
+  color: var(--palette-white);
   outline: none;
 }
 
 .providerButton.active {
-  outline: 2px solid #606ca5;
-  outline-offset: -2px;
+  outline: var(--border-width-thin) solid #606ca5;
+  outline-offset: -var(--border-width-thin);
 }
 
 .providerButton.primary,
@@ -405,9 +405,9 @@ h1 {
   height: 2rem;
   display: grid;
   place-items: center;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(255, 255, 255, 0.65);
-  font-size: 0.75rem;
+  font-size: var(--font-size-12);
   font-weight: 800;
 }
 
@@ -428,12 +428,12 @@ h1 {
 }
 
 .formDivider span {
-  padding: 0 0.75rem;
+  padding: 0 var(--space-3);
 }
 
 .mockForm {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .fieldGroup {
@@ -448,16 +448,16 @@ h1 {
 .fieldInput {
   width: 100%;
   min-height: 4.125rem;
-  padding: 0 1rem;
-  border: 2px solid #606ca5;
-  background: #ffffff;
+  padding: 0 var(--space-4);
+  border: var(--border-width-thin) solid #606ca5;
+  background: var(--palette-white);
   color: #020202;
   font: inherit;
-  font-size: 1rem;
+  font-size: var(--font-size-16);
 }
 
 .fieldInput:focus {
-  outline: 2px solid #606ca5;
+  outline: var(--border-width-thin) solid #606ca5;
   outline-offset: 0;
 }
 
@@ -474,9 +474,9 @@ h1 {
 }
 
 .helpPanel {
-  margin-top: 1.5rem;
-  border-top: 2px solid #c5d4e7;
-  border-bottom: 2px solid #c5d4e7;
+  margin-top: var(--space-6);
+  border-top: var(--border-width-thin) solid #c5d4e7;
+  border-bottom: var(--border-width-thin) solid #c5d4e7;
   padding: 0.8rem 0;
 }
 
@@ -501,16 +501,16 @@ h1 {
 }
 
 .helpContent {
-  padding-top: 1rem;
+  padding-top: var(--space-4);
 }
 
 .helpContent p {
-  margin: 0 0 0.75rem;
+  margin: 0 0 var(--space-3);
   line-height: 1.45;
 }
 
 .shellFooter {
-  padding: 1rem;
+  padding: var(--space-4);
   background: #dbe5f1;
   text-align: center;
   color: #2d384c;
@@ -529,25 +529,4 @@ h1 {
   flex-wrap: wrap;
 }
 
-@media (max-width: 640px) {
-  .mockFeidePage {
-    padding: 0;
-  }
-
-  .feideShell {
-    width: 100%;
-    margin: 0;
-    min-height: 100vh;
-  }
-
-  .shellContent {
-    padding: 1rem;
-  }
-
-  .providerButton,
-  .submitButton,
-  .fieldInput {
-    min-height: 3.75rem;
-  }
-}
 </style>

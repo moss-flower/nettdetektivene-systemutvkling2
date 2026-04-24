@@ -108,12 +108,12 @@ function handleInput(event: Event) {
 
 .label {
   font-weight: 700;
-  color: var(--text);
+  color: var(--color-text-primary);
 }
 
 .description {
   font-size: 0.95rem;
-  color: var(--muted);
+  color: var(--color-text-secondary);
 }
 
 .displayError {
@@ -123,11 +123,11 @@ function handleInput(event: Event) {
 
 .input {
   width: 100%;
-  padding: 0.85rem 1rem;
-  border: 1px solid var(--border);
+  padding: 0.85rem var(--space-4);
+  border: var(--border-width-hairline) solid var(--color-border-default);
   border-radius: var(--radius);
   background: var(--surface);
-  color: var(--text);
+  color: var(--color-text-primary);
   font: inherit;
   transition:
     border-color var(--transition),
@@ -136,7 +136,7 @@ function handleInput(event: Event) {
 
 .input:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: var(--color-brand-primary);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 

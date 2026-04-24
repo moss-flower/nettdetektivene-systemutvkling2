@@ -73,37 +73,37 @@ const activateTarget = (targetId?: string) => {
 </script>
 
 <template>
-  <section class="email-hotspots-template">
+  <section class="emailHotspotsTemplate">
     <header
       v-if="props.prompt?.title || props.prompt?.text"
-      class="email-hotspots-template__header"
+      class="hotspotsTemplateHeader"
     >
-      <div class="email-hotspots-template__heading">
-        <h2 v-if="props.prompt?.title" class="email-hotspots-template__title">
+      <div class="hotspotsTemplateHeading">
+        <h2 v-if="props.prompt?.title" class="hotspotsTemplateTitle">
           {{ props.prompt.title }}
         </h2>
-        <p v-if="props.prompt?.text" class="email-hotspots-template__text">
+        <p v-if="props.prompt?.text" class="hotspotsTemplateText">
           {{ props.prompt.text }}
         </p>
       </div>
-      <p v-if="needsMultipleSelections" class="email-hotspots-template__progress-pill">
+      <p v-if="needsMultipleSelections" class="templateProgressPill">
         {{ progressText }}
       </p>
     </header>
 
-    <article class="email-hotspots-template__mail">
-      <header class="email-hotspots-template__mail-header">
-        <div class="email-hotspots-template__sender">
-          <div class="email-hotspots-template__avatar" aria-hidden="true">
+    <article class="hotspotsTemplateMail">
+      <header class="templateMailHeader">
+        <div class="hotspotsTemplateSender">
+          <div class="hotspotsTemplateAvatar" aria-hidden="true">
             {{ props.email.senderAvatarText ?? props.email.senderName.slice(0, 2).toUpperCase() }}
           </div>
-          <div class="email-hotspots-template__sender-copy">
+          <div class="templateSenderCopy">
             <button
               type="button"
-              class="email-hotspots-template__target email-hotspots-template__target--plain email-hotspots-template__target--sender-name"
+              class="hotspotsTemplateTarget templateTargetPlain targetSenderName"
               :class="{
-                'email-hotspots-template__target--found': isFound(props.email.senderNameTargetId),
-                'email-hotspots-template__target--incorrect': isIncorrect(props.email.senderNameTargetId),
+                'templateTargetFound': isFound(props.email.senderNameTargetId),
+                'templateTargetIncorrect': isIncorrect(props.email.senderNameTargetId),
               }"
               :disabled="props.disabled || !props.email.senderNameTargetId"
               @click="activateTarget(props.email.senderNameTargetId)"
@@ -112,10 +112,10 @@ const activateTarget = (targetId?: string) => {
             </button>
             <button
               type="button"
-              class="email-hotspots-template__target email-hotspots-template__target--plain email-hotspots-template__target--inline"
+              class="hotspotsTemplateTarget templateTargetPlain templateTargetInline"
               :class="{
-                'email-hotspots-template__target--found': isFound(props.email.senderAddressTargetId),
-                'email-hotspots-template__target--incorrect': isIncorrect(props.email.senderAddressTargetId),
+                'templateTargetFound': isFound(props.email.senderAddressTargetId),
+                'templateTargetIncorrect': isIncorrect(props.email.senderAddressTargetId),
               }"
               :disabled="props.disabled || !props.email.senderAddressTargetId"
               @click="activateTarget(props.email.senderAddressTargetId)"
@@ -127,11 +127,11 @@ const activateTarget = (targetId?: string) => {
         <button
           v-if="props.email.receivedLabel"
           type="button"
-          class="email-hotspots-template__target email-hotspots-template__target--plain email-hotspots-template__target--received-label"
+          class="hotspotsTemplateTarget templateTargetPlain targetReceivedLabel"
           :class="{
-            'email-hotspots-template__target--found': isFound(props.email.receivedLabelTargetId),
-            'email-hotspots-template__target--incorrect': isIncorrect(props.email.receivedLabelTargetId),
-          }"
+              'templateTargetFound': isFound(props.email.receivedLabelTargetId),
+              'templateTargetIncorrect': isIncorrect(props.email.receivedLabelTargetId),
+            }"
           :disabled="props.disabled || !props.email.receivedLabelTargetId"
           @click="activateTarget(props.email.receivedLabelTargetId)"
         >
@@ -139,13 +139,13 @@ const activateTarget = (targetId?: string) => {
         </button>
       </header>
 
-      <div class="email-hotspots-template__subject-row">
+      <div class="templateSubjectRow">
         <button
           type="button"
-          class="email-hotspots-template__target email-hotspots-template__target--plain email-hotspots-template__target--subject"
+          class="hotspotsTemplateTarget templateTargetPlain templateTargetSubject"
           :class="{
-            'email-hotspots-template__target--found': isFound(props.email.subjectTargetId),
-            'email-hotspots-template__target--incorrect': isIncorrect(props.email.subjectTargetId),
+            'templateTargetFound': isFound(props.email.subjectTargetId),
+            'templateTargetIncorrect': isIncorrect(props.email.subjectTargetId),
           }"
           :disabled="props.disabled || !props.email.subjectTargetId"
           @click="activateTarget(props.email.subjectTargetId)"
@@ -154,14 +154,14 @@ const activateTarget = (targetId?: string) => {
         </button>
       </div>
 
-      <div class="email-hotspots-template__body">
+      <div class="hotspotsTemplateBody">
         <button
           v-if="props.email.greeting"
           type="button"
-          class="email-hotspots-template__target email-hotspots-template__target--plain email-hotspots-template__target--paragraph"
+          class="hotspotsTemplateTarget templateTargetPlain templateTargetParagraph"
           :class="{
-            'email-hotspots-template__target--found': isFound(props.email.greetingTargetId),
-            'email-hotspots-template__target--incorrect': isIncorrect(props.email.greetingTargetId),
+            'templateTargetFound': isFound(props.email.greetingTargetId),
+            'templateTargetIncorrect': isIncorrect(props.email.greetingTargetId),
           }"
           :disabled="props.disabled || !props.email.greetingTargetId"
           @click="activateTarget(props.email.greetingTargetId)"
@@ -173,10 +173,10 @@ const activateTarget = (targetId?: string) => {
           <button
             v-if="block.type === 'text'"
             type="button"
-            class="email-hotspots-template__target email-hotspots-template__target--plain email-hotspots-template__target--paragraph"
+            class="hotspotsTemplateTarget templateTargetPlain templateTargetParagraph"
             :class="{
-              'email-hotspots-template__target--found': isFound(block.targetId),
-              'email-hotspots-template__target--incorrect': isIncorrect(block.targetId),
+              'templateTargetFound': isFound(block.targetId),
+              'templateTargetIncorrect': isIncorrect(block.targetId),
             }"
             :disabled="props.disabled || !block.targetId"
             @click="activateTarget(block.targetId)"
@@ -187,56 +187,56 @@ const activateTarget = (targetId?: string) => {
           <button
             v-else-if="block.type === 'link'"
             type="button"
-            class="email-hotspots-template__target email-hotspots-template__target--link"
+            class="hotspotsTemplateTarget templateTargetLink"
             :class="{
-              'email-hotspots-template__target--found': isFound(block.targetId),
-              'email-hotspots-template__target--incorrect': isIncorrect(block.targetId),
+              'templateTargetFound': isFound(block.targetId),
+              'templateTargetIncorrect': isIncorrect(block.targetId),
             }"
             :disabled="props.disabled || !block.targetId"
             @click="activateTarget(block.targetId)"
           >
-            <span class="email-hotspots-template__link-label">{{ block.label }}</span>
-            <span class="email-hotspots-template__link-url">{{ block.urlText }}</span>
-            <span v-if="block.helperText" class="email-hotspots-template__link-helper">{{ block.helperText }}</span>
+            <span class="templateLinkLabel">{{ block.label }}</span>
+            <span class="templateLinkUrl">{{ block.urlText }}</span>
+            <span v-if="block.helperText" class="templateLinkHelper">{{ block.helperText }}</span>
           </button>
         </template>
 
         <button
           v-if="props.email.actionButton"
           type="button"
-          class="email-hotspots-template__target email-hotspots-template__target--cta"
+          class="hotspotsTemplateTarget templateTargetCta"
           :class="{
-            'email-hotspots-template__target--found': isFound(props.email.actionButton.targetId),
-            'email-hotspots-template__target--incorrect': isIncorrect(props.email.actionButton.targetId),
+            templateTargetFound: isFound(props.email.actionButton.targetId),
+            templateTargetIncorrect: isIncorrect(props.email.actionButton.targetId),
           }"
           :disabled="props.disabled || !props.email.actionButton.targetId"
           @click="activateTarget(props.email.actionButton.targetId)"
         >
           <span>{{ props.email.actionButton.label }}</span>
-          <span v-if="props.email.actionButton.helperText" class="email-hotspots-template__cta-helper">
+          <span v-if="props.email.actionButton.helperText" class="templateCtaHelper">
             {{ props.email.actionButton.helperText }}
           </span>
         </button>
 
         <div
           v-if="props.email.attachments?.length"
-          class="email-hotspots-template__attachments"
+          class="templateAttachments"
         >
           <button
             v-for="attachment in props.email.attachments"
             :key="attachment.id"
             type="button"
-            class="email-hotspots-template__attachment"
+            class="templateAttachment"
             :class="{
-              'email-hotspots-template__attachment--interactive': Boolean(attachment.targetId),
-              'email-hotspots-template__target--found': isFound(attachment.targetId),
-              'email-hotspots-template__target--incorrect': isIncorrect(attachment.targetId),
+              templateAttachmentInteractive: Boolean(attachment.targetId),
+              templateTargetFound: isFound(attachment.targetId),
+              templateTargetIncorrect: isIncorrect(attachment.targetId),
             }"
             :disabled="props.disabled || !attachment.targetId"
             @click="activateTarget(attachment.targetId)"
           >
-            <span class="email-hotspots-template__attachment-name">{{ attachment.name }}</span>
-            <span v-if="attachment.details" class="email-hotspots-template__attachment-details">
+            <span class="templateAttachmentName">{{ attachment.name }}</span>
+            <span v-if="attachment.details" class="templateAttachmentDetails">
               {{ attachment.details }}
             </span>
           </button>
@@ -245,10 +245,10 @@ const activateTarget = (targetId?: string) => {
         <button
           v-if="props.email.closing"
           type="button"
-          class="email-hotspots-template__target email-hotspots-template__target--plain email-hotspots-template__target--paragraph"
+          class="hotspotsTemplateTarget templateTargetPlain templateTargetParagraph"
           :class="{
-            'email-hotspots-template__target--found': isFound(props.email.closingTargetId),
-            'email-hotspots-template__target--incorrect': isIncorrect(props.email.closingTargetId),
+            templateTargetFound: isFound(props.email.closingTargetId),
+            templateTargetIncorrect: isIncorrect(props.email.closingTargetId),
           }"
           :disabled="props.disabled || !props.email.closingTargetId"
           @click="activateTarget(props.email.closingTargetId)"
@@ -261,157 +261,157 @@ const activateTarget = (targetId?: string) => {
 </template>
 
 <style scoped>
-.email-hotspots-template {
+.emailHotspotsTemplate {
   display: grid;
-  gap: 1rem;
-  color: #223044;
+  gap: var(--space-4);
+  color: var(--color-text-primary);
 }
 
-.email-hotspots-template__header {
+.hotspotsTemplateHeader {
   display: flex;
   align-items: start;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
-.email-hotspots-template__heading {
+.hotspotsTemplateHeading {
   display: grid;
   gap: 0.35rem;
 }
 
-.email-hotspots-template__title {
+.hotspotsTemplateTitle {
   font-size: clamp(1.15rem, 1.8vw, 1.45rem);
   line-height: 1.15;
-  color: #172033;
+  color: var(--color-text-primary);
 }
 
-.email-hotspots-template__text {
+.hotspotsTemplateText {
   max-width: 46rem;
   font-size: 0.95rem;
   line-height: 1.45;
-  color: #4b5563;
+  color: var(--color-text-secondary);
 }
 
-.email-hotspots-template__progress-pill {
+.templateProgressPill {
   flex-shrink: 0;
   padding: 0.45rem 0.8rem;
-  border-radius: 999px;
-  background: #e8f1fb;
+  border-radius: var(--radius-pill);
+  background: var(--color-semantic-info);
   color: #24456e;
   font-size: 0.88rem;
   font-weight: 700;
 }
 
-.email-hotspots-template__mail {
+.hotspotsTemplateMail {
   border-radius: 1.6rem;
-  background: #fffdfa;
-  border: 2px solid #d6dce6;
+  background: var(--color-bg-surface);
+  border: var(--border-width-thin) solid var(--color-border-default);
   box-shadow: 0 16px 34px rgba(50, 72, 103, 0.1);
   overflow: hidden;
 }
 
-.email-hotspots-template__mail-header {
+.templateMailHeader {
   display: flex;
   align-items: start;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem 1.15rem;
-  background: #f5f9ff;
-  border-bottom: 1px solid #d9e2ef;
+  gap: var(--space-4);
+  padding: var(--space-4) 1.15rem;
+  background: var(--color-semantic-info);
+  border-bottom: var(--border-width-hairline) solid var(--color-border-default);
 }
 
-.email-hotspots-template__sender {
+.hotspotsTemplateSender {
   display: flex;
   gap: 0.85rem;
   min-width: 0;
 }
 
-.email-hotspots-template__avatar {
+.hotspotsTemplateAvatar {
   display: grid;
   place-items: center;
   width: 2.8rem;
   height: 2.8rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: #dce9f8;
   color: #234369;
   font-weight: 800;
 }
 
-.email-hotspots-template__sender-copy {
+.templateSenderCopy {
   display: grid;
   gap: 0.2rem;
   min-width: 0;
 }
 
-.email-hotspots-template__sender-name {
+.templateSenderName {
   font-weight: 700;
-  color: #172033;
+  color: var(--color-text-primary);
 }
 
-.email-hotspots-template__sender-address,
-.email-hotspots-template__received-label {
+.templateSenderAddress,
+.templateReceivedLabel {
   font-size: 0.9rem;
   color: #617083;
 }
 
-.email-hotspots-template__subject-row {
-  padding: 1rem 1.15rem 0;
+.templateSubjectRow {
+  padding: var(--space-4) 1.15rem 0;
 }
 
-.email-hotspots-template__subject {
+.hotspotsTemplateSubject {
   font-size: clamp(1.2rem, 1.9vw, 1.6rem);
   line-height: 1.15;
-  color: #172033;
+  color: var(--color-text-primary);
 }
 
-.email-hotspots-template__body {
+.hotspotsTemplateBody {
   display: grid;
   gap: 0.8rem;
-  padding: 1rem 1.15rem 1.2rem;
+  padding: var(--space-4) 1.15rem 1.2rem;
 }
 
-.email-hotspots-template__greeting,
-.email-hotspots-template__paragraph,
-.email-hotspots-template__closing {
-  font-size: 1rem;
+.hotspotsTemplateGreeting,
+.hotspotsTemplateParagraph,
+.hotspotsTemplateClosing {
+  font-size: var(--font-size-16);
   line-height: 1.55;
   color: #334155;
 }
 
-.email-hotspots-template__link-card,
-.email-hotspots-template__target {
+.templateLinkCard,
+.hotspotsTemplateTarget {
   display: grid;
   gap: 0.2rem;
   width: 100%;
   text-align: left;
-  border-radius: 1rem;
+  border-radius: var(--radius-2);
 }
 
-.email-hotspots-template__target {
+.hotspotsTemplateTarget {
   padding: 0.8rem 0.9rem;
-  border: 2px dashed #b9cae1;
-  background: #f8fbff;
-  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  border: var(--border-width-thin) dashed #b9cae1;
+  background: var(--palette-white);
+  transition: transform var(--transition-base) ease, border-color var(--transition-base) ease, background-color var(--transition-base) ease, box-shadow var(--transition-base) ease;
 }
 
-.email-hotspots-template__target--plain {
+.templateTargetPlain {
   padding: 0;
   border: 0;
   background: transparent;
   box-shadow: none;
 }
 
-.email-hotspots-template__target:hover:not(:disabled),
-.email-hotspots-template__target:focus-visible,
-.email-hotspots-template__attachment--interactive:hover:not(:disabled),
-.email-hotspots-template__attachment--interactive:focus-visible {
+.hotspotsTemplateTarget:hover:not(:disabled),
+.hotspotsTemplateTarget:focus-visible,
+.templateAttachmentInteractive:hover:not(:disabled),
+.templateAttachmentInteractive:focus-visible {
   transform: translateY(-1px);
   border-color: #7ea1ca;
   box-shadow: 0 12px 24px rgba(71, 107, 153, 0.12);
   outline: none;
 }
 
-.email-hotspots-template__target--inline {
+.templateTargetInline {
   justify-self: start;
   width: auto;
   color: #4f6683;
@@ -422,140 +422,127 @@ const activateTarget = (targetId?: string) => {
   box-shadow: none;
 }
 
-.email-hotspots-template__target--subject {
+.templateTargetSubject {
   font-size: clamp(1.2rem, 1.9vw, 1.6rem);
   line-height: 1.15;
-  color: #172033;
+  color: var(--color-text-primary);
   box-shadow: none;
 }
 
-.email-hotspots-template__target--sender-name {
+.targetSenderName {
   justify-self: start;
   width: auto;
   font-weight: 700;
-  color: #172033;
+  color: var(--color-text-primary);
 }
 
-.email-hotspots-template__target--received-label {
+.targetReceivedLabel {
   justify-self: start;
   width: auto;
   font-size: 0.9rem;
   color: #617083;
 }
 
-.email-hotspots-template__target--paragraph {
-  font-size: 1rem;
+.templateTargetParagraph {
+  font-size: var(--font-size-16);
   line-height: 1.55;
   color: #334155;
 }
 
-.email-hotspots-template__target--plain:hover:not(:disabled),
-.email-hotspots-template__target--plain:focus-visible {
+.templateTargetPlain:hover:not(:disabled),
+.templateTargetPlain:focus-visible {
   transform: none;
   box-shadow: none;
   outline: none;
 }
 
-.email-hotspots-template__link-card {
+.templateLinkCard {
   padding: 0.85rem 0.95rem;
-  background: #eef5ff;
-  border: 1px solid #d3e1f4;
+  background: var(--color-semantic-info);
+  border: var(--border-width-hairline) solid #d3e1f4;
 }
 
-.email-hotspots-template__target--link {
+.templateTargetLink {
   border-style: solid;
 }
 
-.email-hotspots-template__link-label,
-.email-hotspots-template__attachment-name {
+.templateLinkLabel,
+.templateAttachmentName {
   font-weight: 700;
   color: #173556;
 }
 
-.email-hotspots-template__link-url,
-.email-hotspots-template__link-helper,
-.email-hotspots-template__attachment-details,
-.email-hotspots-template__cta-helper {
+.templateLinkUrl,
+.templateLinkHelper,
+.templateAttachmentDetails,
+.templateCtaHelper {
   font-size: 0.88rem;
   color: #5f7289;
 }
 
-.email-hotspots-template__target--cta,
-.email-hotspots-template__cta-static {
+.templateTargetCta,
+.templateCtaStatic {
   justify-self: start;
   padding: 0.9rem 1.1rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 0;
   background: #2d5a8f;
-  color: #f8fbff;
+  color: var(--palette-white);
   font-weight: 700;
 }
 
-.email-hotspots-template__target--cta {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+.templateTargetCta {
+  transition: transform var(--transition-base) ease, box-shadow var(--transition-base) ease, background-color var(--transition-base) ease;
 }
 
-.email-hotspots-template__target--cta:hover:not(:disabled),
-.email-hotspots-template__target--cta:focus-visible {
+.templateTargetCta:hover:not(:disabled),
+.templateTargetCta:focus-visible {
   background: #3468a7;
   box-shadow: 0 12px 24px rgba(52, 104, 167, 0.22);
   outline: none;
 }
 
-.email-hotspots-template__attachments {
+.templateAttachments {
   display: grid;
   gap: 0.7rem;
 }
 
-.email-hotspots-template__attachment {
+.templateAttachment {
   display: grid;
   gap: 0.15rem;
   justify-items: start;
   padding: 0.8rem 0.9rem;
   border-radius: 0.95rem;
-  border: 1px solid #d9e1ec;
+  border: var(--border-width-hairline) solid #d9e1ec;
   background: #fbfcfe;
   text-align: left;
 }
 
-.email-hotspots-template__attachment--interactive {
-  border: 2px dashed #b9cae1;
-  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+.templateAttachmentInteractive {
+  border: var(--border-width-thin) dashed #b9cae1;
+  transition: transform var(--transition-base) ease, border-color var(--transition-base) ease, background-color var(--transition-base) ease, box-shadow var(--transition-base) ease;
 }
 
-.email-hotspots-template__target--found {
+.templateTargetFound {
   border-color: #4a9b5a;
   background: #eefaf0;
 }
 
-.email-hotspots-template__target--incorrect {
+.templateTargetIncorrect {
   border-color: #d66363;
   background: #fff0f0;
 }
 
-.email-hotspots-template__target--plain.email-hotspots-template__target--found,
-.email-hotspots-template__target--plain.email-hotspots-template__attachment--interactive.email-hotspots-template__target--found {
+.templateTargetPlain.templateTargetFound,
+.templateTargetPlain.templateAttachmentInteractive.templateTargetFound {
   border-radius: 0.45rem;
-  background: #eef5ff;
+  background: var(--color-semantic-info);
 }
 
-.email-hotspots-template__target--plain.email-hotspots-template__target--incorrect,
-.email-hotspots-template__target--plain.email-hotspots-template__attachment--interactive.email-hotspots-template__target--incorrect {
+.templateTargetPlain.templateTargetIncorrect,
+.templateTargetPlain.templateAttachmentInteractive.templateTargetIncorrect {
   border-radius: 0.45rem;
   background: #fff0f0;
 }
 
-@media (max-width: 760px) {
-  .email-hotspots-template__header,
-  .email-hotspots-template__mail-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .email-hotspots-template__target--cta,
-  .email-hotspots-template__cta-static {
-    width: 100%;
-    justify-self: stretch;
-  }
-}
 </style>

@@ -40,7 +40,7 @@ const titlePrefix = computed(() => {
 .notepadEntry {
   width: 100%;
   border-radius: 1.75rem;
-  padding: 1.25rem 1.5rem 1.25rem 1.5rem;
+  padding: 1.25rem var(--space-6) 1.25rem var(--space-6);
   box-sizing: border-box;
   color: black;
 }
@@ -50,7 +50,7 @@ const titlePrefix = computed(() => {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
 }
 
 .date,
@@ -60,27 +60,27 @@ const titlePrefix = computed(() => {
 }
 
 .title {
-  font-size: 1rem;
+  font-size: var(--font-size-16);
   font-weight: 700;
 }
 
 .content {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--font-size-16);
 }
 
 .tip {
-  border: 3px limegreen solid;
+  border: var(--border-width-thick) limegreen solid;
   background-color: rgb(169, 228, 153, 0.3);
 }
 
 .info {
-  border: 3px crimson solid;
+  border: var(--border-width-thick) crimson solid;
   background-color: rgba(228, 153, 153, 0.3);
 }
 
 .observation {
-  border: 3px gray solid;
+  border: var(--border-width-thick) gray solid;
   background-color: rgba(218, 218, 218, 0.3);
 }
 </style>

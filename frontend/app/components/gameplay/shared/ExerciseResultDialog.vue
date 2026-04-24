@@ -25,23 +25,23 @@ const emit = defineEmits<{
   <DialogTemplate :aria-label="isComplete ? msgCompleted : msgFailed">
     <template #badge>
       <p
-        class="exercise-result-dialog__badge"
+        class="resultDialogBadge"
         :class="{
-          'exercise-result-dialog__badge--complete': isComplete,
-          'exercise-result-dialog__badge--incomplete': !isComplete,
+          'dialogBadgeComplete': isComplete,
+          'dialogBadgeIncomplete': !isComplete,
         }"
       >
         {{ isComplete ? 'Øvelse fullført' : 'Prøv igjen' }}
       </p>
     </template>
 
-    <h2 class="exercise-result-dialog__title">{{ isComplete ? msgCompleted : msgFailed }}</h2>
-    <p class="exercise-result-dialog__message">Du fikk {{ correctCount }} / {{ total }} riktig.</p>
+    <h2 class="resultTitle">{{ isComplete ? msgCompleted : msgFailed }}</h2>
+    <p class="resultMessage">Du fikk {{ correctCount }} / {{ total }} riktig.</p>
 
     <template #actions>
       <component
         :is="to ? NuxtLink : 'button'"
-        class="exercise-result-dialog__button"
+        class="resultButton"
         :to="to"
         :type="to ? undefined : 'button'"
         @click="to ? undefined : emit('next')"
@@ -53,60 +53,55 @@ const emit = defineEmits<{
 </template>
 
 <style scoped>
-.exercise-result-dialog__badge {
+.resultDialogBadge {
   justify-self: start;
   padding: 0.35rem 0.7rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-size: 0.88rem;
   font-weight: 700;
 }
 
-.exercise-result-dialog__badge--complete {
-  background: #dcfce7;
-  color: #166534;
+.dialogBadgeComplete {
+  background: var(--palette-green-100);
+  color: var(--palette-green-700);
 }
 
-.exercise-result-dialog__badge--incomplete {
-  background: #fee2e2;
-  color: #991b1b;
+.dialogBadgeIncomplete {
+  background: var(--palette-red-200);
+  color: var(--palette-red-700);
 }
 
-.exercise-result-dialog__title {
+.resultTitle {
   font-size: 1.4rem;
   line-height: 1.1;
-  color: #172033;
+  color: var(--color-text-primary);
 }
 
-.exercise-result-dialog__message {
-  font-size: 1rem;
+.resultMessage {
+  font-size: var(--font-size-16);
   line-height: 1.5;
-  color: #374151;
+  color: var(--palette-gray-700);
 }
 
-.exercise-result-dialog__button {
+.resultButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0.85rem 1.2rem;
   border: 0;
-  border-radius: 999px;
-  background: #1f3657;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-primary);
   color: #f9fbff;
   font-weight: 700;
   text-decoration: none;
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  transition: transform var(--transition-base) ease, background-color var(--transition-base) ease;
 }
 
-.exercise-result-dialog__button:hover,
-.exercise-result-dialog__button:focus-visible {
-  background: #27456f;
+.resultButton:hover,
+.resultButton:focus-visible {
+  background: var(--palette-navy-700);
   transform: translateY(-1px);
   outline: none;
 }
 
-@media (max-width: 640px) {
-  .exercise-result-dialog__button {
-    width: 100%;
-  }
-}
 </style>

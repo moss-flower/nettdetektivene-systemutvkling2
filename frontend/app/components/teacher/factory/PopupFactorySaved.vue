@@ -28,7 +28,7 @@ const closePopup = () => {
 	inset: 0;
 	display: grid;
 	place-items: center;
-	padding: 1.5rem;
+	padding: var(--space-6);
 	background: rgba(0, 0, 0, 0.6);
 	z-index: 1000;
 }
@@ -36,9 +36,9 @@ const closePopup = () => {
 .popupCard {
 	width: min(100%, 28rem);
 	display: grid;
-	gap: 1rem;
-	padding: 1.5rem;
-	border: 1px solid var(--border);
+	gap: var(--space-4);
+	padding: var(--space-6);
+	border: var(--border-width-hairline) solid var(--color-border-default);
 	border-radius: 1.2rem;
 	background: var(--surface);
 	box-shadow: var(--shadow);
@@ -50,17 +50,17 @@ const closePopup = () => {
 }
 
 .popupCard p {
-	color: var(--muted);
+	color: var(--color-text-secondary);
 	line-height: 1.5;
 }
 
 .primaryButton {
 	justify-self: flex-start;
-	border: 1px solid var(--primary);
-	border-radius: 999px;
-	padding: 0.75rem 1rem;
+	border: var(--border-width-hairline) solid var(--color-brand-primary);
+	border-radius: var(--radius-pill);
+	padding: var(--space-3) var(--space-4);
 	font-weight: 700;
-	background: var(--primary);
+	background: var(--color-brand-primary);
 	color: var(--bg);
 	transition: transform var(--transition), border-color var(--transition), background var(--transition);
 }

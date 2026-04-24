@@ -78,12 +78,12 @@ const setBucketColorEnabled = (bucketIndex: number, enabled: boolean) => {
 				<input v-model="props.task.prompt!.title" type="text" >
 			</label>
 
-			<label class="field field--full">
+			<label class="field fieldFull">
 				<span>Prompt-tekst</span>
 				<textarea v-model="props.task.prompt!.text" rows="2"></textarea>
 			</label>
 
-			<label class="field field--full">
+			<label class="field fieldFull">
 				<span>Etikett for usorterte kort</span>
 				<input v-model="props.task.unplacedLabel" type="text" >
 			</label>
@@ -124,12 +124,12 @@ const setBucketColorEnabled = (bucketIndex: number, enabled: boolean) => {
 						<input v-model="bucket.title" type="text" >
 					</label>
 
-					<label class="field field--full">
+					<label class="field fieldFull">
 						<span>Beskrivelse</span>
 						<textarea v-model="bucket.description" rows="2"></textarea>
 					</label>
 
-					<div class="colorField field--full">
+					<div class="colorField fieldFull">
 						<label class="toggleRow">
 							<input
 								:checked="hasBucketColor(bucketIndex)"
@@ -147,7 +147,7 @@ const setBucketColorEnabled = (bucketIndex: number, enabled: boolean) => {
 			</article>
 		</div>
 
-		<div class="sectionRow sectionRow--top">
+		<div class="sectionRow sectionRowTop">
 			<div>
 				<h5>Kort</h5>
 				<p>Hvert kort trenger en riktig boks.</p>
@@ -186,7 +186,7 @@ const setBucketColorEnabled = (bucketIndex: number, enabled: boolean) => {
 						</select>
 					</label>
 
-					<label class="field field--full">
+					<label class="field fieldFull">
 						<span>Forklaring</span>
 						<textarea v-model="item.explanation" rows="2"></textarea>
 					</label>
@@ -198,9 +198,9 @@ const setBucketColorEnabled = (bucketIndex: number, enabled: boolean) => {
 
 <style scoped>
 .templateSection {
-	margin-top: 1rem;
-	padding-top: 1rem;
-	border-top: 1px solid var(--border);
+	margin-top: var(--space-4);
+	padding-top: var(--space-4);
+	border-top: var(--border-width-hairline) solid var(--color-border-default);
 }
 
 .templateSection h4,
@@ -222,7 +222,7 @@ const setBucketColorEnabled = (bucketIndex: number, enabled: boolean) => {
 	gap: 0.45rem;
 }
 
-.field--full {
+.fieldFull {
 	grid-column: 1 / -1;
 }
 
@@ -235,11 +235,11 @@ const setBucketColorEnabled = (bucketIndex: number, enabled: boolean) => {
 .field select,
 .field textarea {
 	width: 100%;
-	padding: 0.85rem 1rem;
-	border: 1px solid var(--border);
+	padding: 0.85rem var(--space-4);
+	border: var(--border-width-hairline) solid var(--color-border-default);
 	border-radius: 0.9rem;
 	background: rgba(0, 0, 0, 0.16);
-	color: var(--text);
+	color: var(--color-text-primary);
 	font: inherit;
 }
 
@@ -251,38 +251,38 @@ const setBucketColorEnabled = (bucketIndex: number, enabled: boolean) => {
 .field select:focus,
 .field textarea:focus {
 	outline: none;
-	border-color: var(--primary);
+	border-color: var(--color-brand-primary);
 }
 
 .sectionRow,
 .configCardHeader {
 	display: flex;
 	justify-content: space-between;
-	gap: 0.75rem;
+	gap: var(--space-3);
 	align-items: center;
-	margin-top: 1rem;
+	margin-top: var(--space-4);
 	margin-bottom: 0.9rem;
 }
 
 .sectionRow p {
 	margin: 0.3rem 0 0;
-	color: var(--muted);
+	color: var(--color-text-secondary);
 	line-height: 1.5;
 }
 
-.sectionRow--top {
+.sectionRowTop {
 	margin-top: 1.25rem;
 }
 
 .stackList {
 	display: grid;
-	gap: 0.75rem;
+	gap: var(--space-3);
 }
 
 .configCard {
-	padding: 1rem;
-	border: 1px solid var(--border);
-	border-radius: 1rem;
+	padding: var(--space-4);
+	border: var(--border-width-hairline) solid var(--color-border-default);
+	border-radius: var(--radius-2);
 	background: rgba(255, 255, 255, 0.02);
 }
 
@@ -300,7 +300,7 @@ const setBucketColorEnabled = (bucketIndex: number, enabled: boolean) => {
 	width: 3.25rem;
 	height: 3rem;
 	padding: 0;
-	border: 1px solid var(--border);
+	border: var(--border-width-hairline) solid var(--color-border-default);
 	border-radius: 0.75rem;
 	background: transparent;
 	overflow: hidden;
@@ -308,16 +308,16 @@ const setBucketColorEnabled = (bucketIndex: number, enabled: boolean) => {
 
 .ghostButton,
 .deleteButton {
-	border: 1px solid var(--border);
-	border-radius: 999px;
-	padding: 0.7rem 1rem;
+	border: var(--border-width-hairline) solid var(--color-border-default);
+	border-radius: var(--radius-pill);
+	padding: 0.7rem var(--space-4);
 	font-weight: 700;
 	transition: transform var(--transition), border-color var(--transition), background var(--transition);
 }
 
 .ghostButton {
 	background: transparent;
-	color: var(--text);
+	color: var(--color-text-primary);
 }
 
 .deleteButton {

@@ -94,39 +94,39 @@ const submit = () => {
 </script>
 
 <template>
-  <section class="password-strength-template">
-    <header v-if="props.task.prompt?.title || props.task.prompt?.text" class="password-strength-template__header">
-      <h2 v-if="props.task.prompt?.title" class="password-strength-template__title">
+  <section class="passwordStrengthTemplate">
+    <header v-if="props.task.prompt?.title || props.task.prompt?.text" class="strengthTemplateHeader">
+      <h2 v-if="props.task.prompt?.title" class="strengthTemplateTitle">
         {{ props.task.prompt.title }}
       </h2>
-      <p v-if="props.task.prompt?.text" class="password-strength-template__text">
+      <p v-if="props.task.prompt?.text" class="strengthTemplateText">
         {{ props.task.prompt.text }}
       </p>
     </header>
 
-    <div class="password-strength-template__panel">
-      <p v-if="props.task.mode === 'improve' && props.task.startingPassword" class="password-strength-template__starting-password">
+    <div class="strengthTemplatePanel">
+      <p v-if="props.task.mode === 'improve' && props.task.startingPassword" class="templateStartingPassword">
         Startpassord: <strong>{{ props.task.startingPassword }}</strong>
       </p>
 
-      <label class="password-strength-template__field">
+      <label class="strengthTemplateField">
         <span>{{ props.task.mode === 'improve' ? 'Skriv et tryggere passord' : 'Skriv et nytt passord' }}</span>
         <input
           v-model="password"
-          class="password-strength-template__input"
+          class="strengthTemplateInput"
           type="text"
           :placeholder="props.task.placeholder ?? 'Skriv passordet ditt her'"
           :disabled="props.disabled"
         >
       </label>
 
-      <p v-if="props.task.prompt?.helperText" class="password-strength-template__helper">
+      <p v-if="props.task.prompt?.helperText" class="strengthTemplateHelper">
         {{ props.task.prompt.helperText }}
       </p>
 
-      <div class="password-strength-template__actions">
+      <div class="strengthTemplateActions">
         <button
-          class="password-strength-template__submit"
+          class="strengthTemplateSubmit"
           type="button"
           :disabled="props.disabled || normalizedPassword.length === 0"
           @click="submit"
@@ -139,106 +139,97 @@ const submit = () => {
 </template>
 
 <style scoped>
-.password-strength-template {
+.passwordStrengthTemplate {
   display: grid;
-  gap: 1rem;
-  color: #1f2937;
+  gap: var(--space-4);
+  color: var(--palette-gray-900);
 }
 
-.password-strength-template__header {
+.strengthTemplateHeader {
   display: grid;
   gap: 0.45rem;
 }
 
-.password-strength-template__title {
+.strengthTemplateTitle {
   font-size: clamp(1.35rem, 2.4vw, 2rem);
   line-height: 1.1;
-  color: #172033;
+  color: var(--color-text-primary);
 }
 
-.password-strength-template__text {
+.strengthTemplateText {
   max-width: 58rem;
   line-height: 1.5;
-  color: #4b5563;
+  color: var(--color-text-secondary);
 }
 
-.password-strength-template__panel {
+.strengthTemplatePanel {
   display: grid;
-  gap: 1rem;
-  padding: clamp(1rem, 2vw, 1.5rem);
+  gap: var(--space-4);
+  padding: clamp(var(--space-4), 2vw, var(--space-6));
   border-radius: 1.6rem;
-  border: 2px solid #d7dfeb;
-  background: linear-gradient(180deg, #fffdfa 0%, #f8fbff 100%);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  background: linear-gradient(180deg, var(--color-bg-surface) 0%, var(--palette-white) 100%);
   box-shadow: 0 14px 26px rgba(52, 77, 115, 0.08);
 }
 
-.password-strength-template__starting-password,
-.password-strength-template__helper {
+.templateStartingPassword,
+.strengthTemplateHelper {
   margin: 0;
 }
 
-.password-strength-template__starting-password {
-  padding: 0.85rem 1rem;
-  border-radius: 1rem;
-  background: #fff5df;
-  color: #744210;
+.templateStartingPassword {
+  padding: 0.85rem var(--space-4);
+  border-radius: var(--radius-2);
+  background: var(--palette-cream-200);
+  color: var(--palette-cork-700);
 }
 
-.password-strength-template__field {
+.strengthTemplateField {
   display: grid;
   gap: 0.45rem;
 }
 
-.password-strength-template__field span {
+.strengthTemplateField span {
   font-weight: 700;
 }
 
-.password-strength-template__input {
+.strengthTemplateInput {
   width: 100%;
-  padding: 1rem 1.1rem;
-  border: 2px solid #cfd9e6;
-  border-radius: 1rem;
-  background: #fff;
-  color: #172033;
+  padding: var(--space-4) 1.1rem;
+  border: var(--border-width-thin) solid var(--color-border-default);
+  border-radius: var(--radius-2);
+  background: var(--palette-white);
+  color: var(--color-text-primary);
   font: inherit;
 }
 
-.password-strength-template__input:focus {
+.strengthTemplateInput:focus {
   outline: none;
   border-color: #4c7bb0;
 }
 
-.password-strength-template__helper {
-  color: #576273;
+.strengthTemplateHelper {
+  color: var(--color-text-secondary);
 }
 
-.password-strength-template__actions {
+.strengthTemplateActions {
   display: flex;
   justify-content: flex-end;
 }
 
-.password-strength-template__submit {
+.strengthTemplateSubmit {
   padding: 0.9rem 1.15rem;
   border: 0;
-  border-radius: 999px;
-  background: #1f3657;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-primary);
   color: #f9fbff;
   font-weight: 700;
 }
 
-.password-strength-template__submit:disabled,
-.password-strength-template__input:disabled {
+.strengthTemplateSubmit:disabled,
+.strengthTemplateInput:disabled {
   cursor: default;
   opacity: 0.72;
 }
 
-@media (max-width: 760px) {
-  .password-strength-template__actions {
-    flex-direction: column;
-  }
-
-  .password-strength-template__submit {
-    width: 100%;
-  }
-}
 </style>

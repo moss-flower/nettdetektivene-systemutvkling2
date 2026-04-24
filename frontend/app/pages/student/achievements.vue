@@ -37,7 +37,6 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UiStudentHomeBackButton class="returnButton" />
   <section class="medalsPage">
     <template v-if="loading">
       <div class="achievementsSection">
@@ -153,7 +152,13 @@ onMounted(async () => {
   justify-content: center;
   align-items: center;
   gap: var(--space-6);
-  background: transparent;
+  padding: var(--space-6) var(--space-5);
+  border-radius: var(--radius-1);
+  background:
+    radial-gradient(ellipse 75% 55% at 28% 18%, var(--trophy-highlight), transparent 62%),
+    radial-gradient(ellipse 70% 90% at 95% 95%, var(--trophy-shadow), transparent 65%),
+    var(--trophy-canvas);
+  box-shadow: 0 var(--space-2) var(--space-5) var(--palette-overlay-dark-deep);
 }
 
 
