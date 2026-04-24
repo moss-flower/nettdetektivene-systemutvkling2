@@ -22,6 +22,16 @@ const loginOptions: LoginOption[] = [
     to: routePathsWithString(routePaths.login, '?role=lærer'),
     variant: 'teacher',
   },
+  {
+    label: 'ElevRegister',
+    to: routePathsWithString(routePaths.register, '?role=elev'),
+    variant: 'teacher',
+  },
+  {
+    label: 'LærerRegister',
+    to: routePathsWithString(routePaths.register, '?role=lærer'),
+    variant: 'teacher',
+  },
 ];
 </script>
 

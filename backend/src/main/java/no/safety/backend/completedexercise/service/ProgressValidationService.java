@@ -5,7 +5,6 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
 import no.safety.backend.exception.NotFoundException;
-import no.safety.backend.exception.domain.StudentNotInClassException;
 import no.safety.backend.station.model.Station;
 import no.safety.backend.station.repository.StationRepository;
 import no.safety.backend.user.model.StudentUser;
@@ -24,6 +23,10 @@ public class ProgressValidationService {
 
   @Transactional(readOnly = true)
   public boolean isLocked(StudentUser student, UUID exerciseUid) {
+    if (student.getClassroom() == null) {
+      return false;
+    }
+
     UUID studentUid = student.getPublicUuid();
     World world = getStudentWorld(student);
     Station station = findStationInWorld(world, exerciseUid);
@@ -68,10 +71,6 @@ public class ProgressValidationService {
   }
 
   private World getStudentWorld(StudentUser student) {
-    if (student.getClassroom() == null) {
-      throw new StudentNotInClassException("Student is not in a classroom");
-    }
-
     UUID worldUid = student.getClassroom().getWorldUid();
     if (worldUid == null) {
       throw new NotFoundException("Classroom has no assigned world");

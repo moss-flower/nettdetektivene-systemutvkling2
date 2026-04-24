@@ -8,7 +8,9 @@ import no.safety.backend.auth.model.UserPrincipal;
 import no.safety.backend.completedexercise.dto.CompletedExerciseRequest;
 import no.safety.backend.completedexercise.dto.CompletedExerciseResponse;
 import no.safety.backend.completedexercise.service.CompletedExerciseService;
+import no.safety.backend.exception.NotFoundException;
 import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.repository.StudentUserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class CompletedExerciseController {
 
   private final CompletedExerciseService completedExerciseService;
+  private final StudentUserRepository studentUserRepository;
 
   @Operation(
       summary = "Mark an exercise as completed",
@@ -53,6 +56,7 @@ public class CompletedExerciseController {
   }
 
   private StudentUser getStudent(UserPrincipal principal) {
-    return (StudentUser) principal.user();
+    return studentUserRepository.findByPublicUuid(principal.getUserPublicUuid())
+        .orElseThrow(() -> new NotFoundException("Student not found"));
   }
 }

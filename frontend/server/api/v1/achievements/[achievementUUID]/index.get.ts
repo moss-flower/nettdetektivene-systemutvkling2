@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  return await api(`/v1/achievements/${achievementUUID}`, {
+  return await api(`/achievements/${achievementUUID}`, {
     method: "GET",
   });
 });

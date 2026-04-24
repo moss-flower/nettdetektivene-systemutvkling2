@@ -45,6 +45,7 @@ if (!station) {
 
 const { celebrateCorrectAnswer, stop } = useGameConfetti()
 const completedExerciseUids = await useCompletedExerciseUids()
+const completionError = ref('')
 
 const activeExerciseUid = station.exerciseUids.includes(requestedExerciseUid)
   ? requestedExerciseUid
@@ -69,6 +70,11 @@ if (!activeExercise) {
     path: routePaths.studentExerciseDifficultySelect,
     query: { uid: station.uid },
   })
+
+  throw createError({
+    statusCode: 404,
+    statusMessage: 'Fant ikke denne oppgaven.',
+  })
 }
 
 const tasks = activeExercise
@@ -78,6 +84,8 @@ const currentIndex = ref(0)
 const showExerciseResultDialog = ref(false)
 const correctCount = ref(0)
 const answerState = ref<{ correct: boolean, choice: string, missingStartingPassword?: boolean } | null>(null)
+
+const isExerciseComplete = computed(() => tasks.length > 0 && correctCount.value === tasks.length)
 
 const currentTask = computed(() => tasks[currentIndex.value] ?? null)
 const currentOptions = computed(() => {
@@ -173,6 +181,77 @@ const feedbackText = computed(() => {
 })
 
 const showAnswerDialog = computed(() => Boolean(answerState.value))
+const canAutoSolve = computed(() => Boolean(currentTask.value) && !answerState.value)
+const taskResultActionLabel = computed(() => {
+  if (!answerState.value) {
+    return 'Neste sak'
+  }
+
+  if (!answerState.value.correct) {
+    return 'Tilbake til stasjonen'
+  }
+
+  return currentIndex.value >= tasks.length - 1 ? 'Fullfor' : 'Neste sak'
+})
+
+const autoSolveCurrentTask = () => {
+  if (!currentTask.value || answerState.value) {
+    return
+  }
+
+  if (currentTask.value.templateKind === 'multiple-choice') {
+    onAnsweredMultipleChoice({
+      correct: true,
+      choice: currentTask.value.correctChoice,
+    })
+    return
+  }
+
+  if (currentTask.value.templateKind === 'x-or-y') {
+    onAnswered({
+      correct: true,
+      choice: currentTask.value.correctChoice,
+    })
+    return
+  }
+
+  if (currentTask.value.templateKind === 'email-hotspots') {
+    onAnsweredEmailHotspots({
+      correct: true,
+      selectedTargetIds: currentTask.value.targets
+        .filter((target) => target.isSuspicious)
+        .map((target) => target.id),
+    })
+    return
+  }
+
+  if (currentTask.value.templateKind === 'sort-into-buckets') {
+    const placements = currentTask.value.items.reduce<Record<string, string[]>>((accumulator, item) => {
+      if (!accumulator[item.correctBucketKey]) {
+        accumulator[item.correctBucketKey] = []
+      }
+
+      accumulator[item.correctBucketKey].push(item.id)
+      return accumulator
+    }, {})
+
+    onAnsweredSortIntoBuckets({
+      correct: true,
+      placements,
+    })
+    return
+  }
+
+  const fallbackPassword = currentTask.value.mode === 'improve'
+    ? `${currentTask.value.startingPassword ?? 'TryggStart'}!9X`
+    : 'TryggMaanebase!9X'
+
+  onAnsweredPasswordStrength({
+    correct: true,
+    password: fallbackPassword,
+    score: currentTask.value.minScoreToPass,
+  })
+}
 
 const onAnswered = (result: XOrYResult) => {
   answerState.value = {
@@ -237,13 +316,35 @@ const onAnsweredPasswordStrength = (result: PasswordStrengthResult) => {
 
 const next = async () => {
   stop()
+
+  if (answerState.value && !answerState.value.correct) {
+    answerState.value = null
+    completionError.value = ''
+    await navigateTo(exerciseSelectRoute.value)
+    return
+  }
+
   answerState.value = null
+  completionError.value = ''
 
   if (currentIndex.value < tasks.length - 1) {
     currentIndex.value++
   } else {
-    if (activeExercise && correctCount.value === tasks.length) {
-      await markExerciseCompleted(activeExercise.uid)
+    if (
+      isExerciseComplete.value
+      && activeExercise
+      && !completedExerciseUids.includes(activeExercise.uid)
+    ) {
+      try {
+        await markExerciseCompleted(activeExercise.uid)
+        completedExerciseUids.push(activeExercise.uid)
+      } catch (error: any) {
+        completionError.value =
+          error?.data?.detail
+          || error?.data?.message
+          || error?.statusMessage
+          || 'Kunne ikke lagre at oppgaven er fullført.'
+      }
     }
 
     showExerciseResultDialog.value = true
@@ -311,12 +412,24 @@ const next = async () => {
       />
     </div>
 
+    <div class="station-page__test-tools">
+      <button
+        class="station-page__test-button"
+        type="button"
+        :disabled="!canAutoSolve"
+        @click="autoSolveCurrentTask"
+      >
+        Autosolve
+      </button>
+    </div>
+
     <TaskResultDialog
       v-if="showAnswerDialog && answerState"
       :title="feedbackTitle"
       :message="feedbackText"
       :is-last="currentIndex >= tasks.length - 1"
       :correct="answerState.correct"
+      :action-label="taskResultActionLabel"
       @next="next"
     />
 
@@ -324,8 +437,12 @@ const next = async () => {
       v-if="showExerciseResultDialog"
       :correct-count="correctCount"
       :total="tasks.length"
+      msg-completed="Øvelse fullført!"
+      msg-failed="Øvelse ikke fullført"
       :to="exerciseSelectRoute"
     />
+
+    <p v-if="completionError" class="station-page__completion-error">{{ completionError }}</p>
   </section>
 </template>
 
@@ -394,6 +511,31 @@ const next = async () => {
   padding: clamp(0.8rem, 1.4vw, 1.1rem);
   border-radius: 1.6rem;
   background: #f5f5f4;
+}
+
+.station-page__test-tools {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.station-page__test-button {
+  padding: 0.75rem 1rem;
+  border: 1px dashed #1d4f91;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4f91;
+  font-weight: 700;
+}
+
+.station-page__test-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.station-page__completion-error {
+  margin: 0;
+  color: #991b1b;
+  font-size: 0.95rem;
 }
 
 @media (max-width: 780px) {

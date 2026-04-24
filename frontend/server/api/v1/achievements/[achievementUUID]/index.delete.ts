@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  await api(`/v1/achievements/${achievementUUID}`, {
+  await api(`/achievements/${achievementUUID}`, {
     method: "DELETE",
   });
 

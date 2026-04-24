@@ -5,20 +5,16 @@ import PasswordStrengthEditor from "~/components/teacher/factory/PasswordStrengt
 import SortIntoBucketsEditor from "~/components/teacher/factory/SortIntoBucketsEditor.vue";
 import XOrYEditor from "~/components/teacher/factory/XOrYEditor.vue";
 import {
-	clearExerciseFactoryOverride,
 	createExerciseDraft,
 	createTaskDraft,
-	makeExerciseFactoryDraftSelectionKey,
-	makeExerciseFactoryExistingSelectionKey,
+	deleteExerciseFactorySelection,
+	loadExerciseFactoryPayload,
 	mapExerciseToBackendRequest,
 	parseExerciseFactorySelectionKey,
-	readExerciseFactoryStore,
-	removeExerciseFactoryDraft,
-	saveExerciseFactoryDraft,
-	saveExerciseFactoryOverride,
+	saveExerciseFactoryPayload,
+	saveExerciseFactoryPayloadAsNew,
 	type ExerciseFactoryPayload,
 } from "~/composables/useExerciseFactory";
-import { Exercise } from "~/composables/types/ExerciseType";
 import type {
 	EmailHotspotTaskData,
 	ExerciseTask,
@@ -148,46 +144,12 @@ const updateLoadedSnapshot = (payload: ExerciseFactoryPayload) => {
 	loadedSnapshot.value = cloneExercisePayload(payload);
 };
 
-const loadSelection = (selectionKey: string) => {
-	const selection = parseExerciseFactorySelectionKey(selectionKey);
-	const store = readExerciseFactoryStore();
+const loadSelection = async (selectionKey: string) => {
+	const loaded = await loadExerciseFactoryPayload(selectionKey);
 
-	loadedLocalId.value = "";
-
-	if (selection.kind === "existing") {
-		const backendExercise = Exercise.backendFetchExerciseByUid(selection.uid);
-		const override = store.overrides[selection.uid] ?? null;
-		const nextPayload = override?.payload
-			?? createExerciseDraft();
-
-		if (!override && backendExercise) {
-			nextPayload.title = backendExercise.title;
-			nextPayload.difficultyName = backendExercise.difficultyName;
-			nextPayload.description = backendExercise.description ?? "";
-			nextPayload.tasks = cloneExercisePayload({
-				title: backendExercise.title,
-				difficultyName: backendExercise.difficultyName,
-				description: backendExercise.description ?? "",
-				tasks: backendExercise.tasks,
-			}).tasks;
-		}
-
-		applyDraft(nextPayload);
-		updateLoadedSnapshot(nextPayload);
-	} else if (selection.kind === "draft") {
-		const storedDraft = store.drafts.find((draftEntry) => draftEntry.localId === selection.localId) ?? null;
-		const nextPayload = storedDraft?.payload ?? createExerciseDraft();
-
-		loadedLocalId.value = storedDraft?.localId ?? "";
-		applyDraft(nextPayload);
-		updateLoadedSnapshot(nextPayload);
-	} else {
-		const nextPayload = createExerciseDraft();
-
-		applyDraft(nextPayload);
-		updateLoadedSnapshot(nextPayload);
-	}
-
+	loadedLocalId.value = loaded.localId;
+	applyDraft(loaded.payload);
+	updateLoadedSnapshot(loaded.payload);
 	copyState.value = "idle";
 };
 
@@ -276,52 +238,35 @@ const finishSave = (selectionKey: string) => {
 	emit("saved");
 };
 
-const savePayload = () => {
+const savePayload = async () => {
 	if (!canSave.value) {
 		return;
 	}
 
 	const nextPayload = cloneExercisePayload(payloadPreview.value);
+	const saved = await saveExerciseFactoryPayload(props.selectionKey, nextPayload);
 
-	if (parsedSelection.value.kind === "existing") {
-		saveExerciseFactoryOverride(parsedSelection.value.uid, nextPayload);
-
-		updateLoadedSnapshot(nextPayload);
-		finishSave(makeExerciseFactoryExistingSelectionKey(parsedSelection.value.uid));
-		return;
-	}
-
-	const record = saveExerciseFactoryDraft(nextPayload, loadedLocalId.value || undefined);
-
-	loadedLocalId.value = record.localId;
-	updateLoadedSnapshot(nextPayload);
-	finishSave(makeExerciseFactoryDraftSelectionKey(record.localId));
+	loadedLocalId.value = "";
+	updateLoadedSnapshot(saved.payload);
+	finishSave(saved.selectionKey);
 };
 
-const saveAsNew = () => {
+const saveAsNew = async () => {
 	if (!canSave.value) {
 		return;
 	}
 
 	const nextPayload = cloneExercisePayload(payloadPreview.value);
-	const record = saveExerciseFactoryDraft(nextPayload);
+	const saved = await saveExerciseFactoryPayloadAsNew(nextPayload);
 
-	loadedLocalId.value = record.localId;
-	updateLoadedSnapshot(nextPayload);
-	finishSave(makeExerciseFactoryDraftSelectionKey(record.localId));
+	loadedLocalId.value = "";
+	updateLoadedSnapshot(saved.payload);
+	finishSave(saved.selectionKey);
 };
 
-const deleteSelection = () => {
-	if (parsedSelection.value.kind === "existing") {
-		clearExerciseFactoryOverride(parsedSelection.value.uid);
-		emit("deleted");
-		return;
-	}
-
-	if (parsedSelection.value.kind === "draft" && loadedLocalId.value) {
-		removeExerciseFactoryDraft(loadedLocalId.value);
-		emit("deleted");
-	}
+const deleteSelection = async () => {
+	await deleteExerciseFactorySelection(props.selectionKey);
+	emit("deleted");
 };
 const copyPayload = async () => {
 	try {
@@ -334,8 +279,8 @@ const copyPayload = async () => {
 
 watch(
 	() => props.selectionKey,
-	(selectionKey) => {
-		loadSelection(selectionKey);
+	async (selectionKey) => {
+		await loadSelection(selectionKey);
 	},
 	{ immediate: true },
 );
