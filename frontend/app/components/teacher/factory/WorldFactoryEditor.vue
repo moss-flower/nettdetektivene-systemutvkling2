@@ -1,22 +1,20 @@
 <script setup lang="ts">
 import { routePaths } from "~/composables/utils/routePaths";
 import {
-	clearWorldFactoryOverride,
 	createWorldDraft,
-	makeWorldFactoryDraftSelectionKey,
-	makeWorldFactoryExistingSelectionKey,
+	deleteWorldFactorySelection,
+	fetchAllWorldFactoryWorlds,
+	loadWorldFactoryPayload,
 	normalizeWorldStationUids,
 	parseWorldFactorySelectionKey,
 	readWorldFactoryStore,
-	removeWorldFactoryDraft,
-	saveWorldFactoryDraft,
-	saveWorldFactoryOverride,
+	saveWorldFactoryPayload,
+	saveWorldFactoryPayloadAsNew,
 	worldFactoryDefaultImage,
 	type WorldFactoryPayload,
 	type WorldFactoryStoredRecord,
 } from "~/composables/useWorldFactory";
 import { Station } from "~/composables/types/StationType";
-import { World } from "~/composables/types/WorldTypes";
 
 const props = defineProps<{
 	selectionKey: string;
@@ -34,8 +32,9 @@ const storedDrafts = ref<WorldFactoryStoredRecord[]>([]);
 const copyState = ref<"idle" | "copied" | "failed">("idle");
 const loadedLocalId = ref("");
 const showStationPicker = ref(false);
+const availableStations = ref<Station[]>([]);
+const knownExistingUids = ref<Set<string>>(new Set());
 
-const availableStations = computed(() => Station.backendFetchAllStations());
 const knownStationMap = computed(() => new Map(availableStations.value.map((station) => [station.uid, station])));
 const unselectedStations = computed(() => availableStations.value.filter((station) => !draft.stationUids.includes(station.uid)));
 const parsedSelection = computed(() => parseWorldFactorySelectionKey(props.selectionKey));
@@ -43,12 +42,10 @@ const parsedSelection = computed(() => parseWorldFactorySelectionKey(props.selec
 const payloadPreview = computed<WorldFactoryPayload>(() => ({
 	title: draft.title.trim(),
 	uid: draft.uid.trim(),
-	description: "",
+	description: draft.description.trim(),
 	image: draft.image.trim() || worldFactoryDefaultImage,
 	stationUids: normalizeWorldStationUids(draft.stationUids),
 }));
-
-const knownExistingUids = computed(() => new Set(World.backendFetchAllWorlds().map((world) => world.uid)));
 const uidConflict = computed(() => {
 	const nextUid = payloadPreview.value.uid;
 
@@ -70,7 +67,9 @@ const uidConflict = computed(() => {
 });
 
 const payloadPreviewText = computed(() => JSON.stringify(payloadPreview.value, null, 2));
-const canSave = computed(() => payloadPreview.value.title.length > 0);
+const canSave = computed(() => payloadPreview.value.title.length > 0
+	&& payloadPreview.value.description.length > 0
+	&& payloadPreview.value.image.length > 0);
 const hasChanges = computed(() => JSON.stringify(payloadPreview.value) !== JSON.stringify(loadedSnapshot.value));
 
 const selectedStations = computed(() => payloadPreview.value.stationUids.map((uid, index) => {
@@ -114,7 +113,7 @@ const editorDescription = computed(() => {
 const applyDraft = (payload: WorldFactoryPayload) => {
 	draft.title = payload.title;
 	draft.uid = payload.uid;
-	draft.description = "";
+	draft.description = payload.description;
 	draft.image = payload.image;
 	draft.stationUids.splice(0, draft.stationUids.length, ...payload.stationUids);
 };
@@ -123,47 +122,20 @@ const updateLoadedSnapshot = (payload: WorldFactoryPayload) => {
 	loadedSnapshot.value = {
 		title: payload.title,
 		uid: payload.uid,
-		description: "",
+		description: payload.description,
 		image: payload.image,
 		stationUids: [...payload.stationUids],
 	};
 };
 
-const loadSelection = (selectionKey: string) => {
-	const selection = parseWorldFactorySelectionKey(selectionKey);
+const loadSelection = async (selectionKey: string) => {
+	const loaded = await loadWorldFactoryPayload(selectionKey);
 	const store = readWorldFactoryStore();
 
 	storedDrafts.value = store.drafts;
-	loadedLocalId.value = "";
-
-	if (selection.kind === "existing") {
-		const backendWorld = World.backendFetchWorldByUid(selection.uid);
-		const override = store.overrides[selection.uid] ?? null;
-		const nextPayload = override?.payload
-			?? createWorldDraft({
-				title: backendWorld?.uid ?? selection.uid,
-				uid: backendWorld?.uid ?? selection.uid,
-				description: backendWorld?.description ?? "",
-				image: backendWorld?.image ?? worldFactoryDefaultImage,
-				stationUids: backendWorld?.stationUids ?? [],
-			});
-
-		applyDraft(nextPayload);
-		updateLoadedSnapshot(nextPayload);
-	} else if (selection.kind === "draft") {
-		const storedDraft = store.drafts.find((draftRecord) => draftRecord.localId === selection.localId) ?? null;
-		const nextPayload = storedDraft?.payload ?? createWorldDraft();
-
-		loadedLocalId.value = storedDraft?.localId ?? "";
-		applyDraft(nextPayload);
-		updateLoadedSnapshot(nextPayload);
-	} else {
-		const nextPayload = createWorldDraft();
-
-		applyDraft(nextPayload);
-		updateLoadedSnapshot(nextPayload);
-	}
-
+	loadedLocalId.value = loaded.localId;
+	applyDraft(loaded.payload);
+	updateLoadedSnapshot(loaded.payload);
 	copyState.value = "idle";
 };
 
@@ -228,52 +200,35 @@ const finishSave = (selectionKey: string) => {
 	emit("saved");
 };
 
-const savePayload = () => {
+const savePayload = async () => {
 	if (!canSave.value) {
 		return;
 	}
 
-	if (parsedSelection.value.kind === "existing") {
-		saveWorldFactoryOverride(parsedSelection.value.uid, payloadPreview.value);
-
-		storedDrafts.value = readWorldFactoryStore().drafts;
-		updateLoadedSnapshot(payloadPreview.value);
-		finishSave(makeWorldFactoryExistingSelectionKey(parsedSelection.value.uid));
-		return;
-	}
-
-	const record = saveWorldFactoryDraft(payloadPreview.value, loadedLocalId.value || undefined);
+	const saved = await saveWorldFactoryPayload(props.selectionKey, payloadPreview.value);
 
 	storedDrafts.value = readWorldFactoryStore().drafts;
-	loadedLocalId.value = record.localId;
-	updateLoadedSnapshot(payloadPreview.value);
-	finishSave(makeWorldFactoryDraftSelectionKey(record.localId));
+	loadedLocalId.value = "";
+	updateLoadedSnapshot(saved.payload);
+	finishSave(saved.selectionKey);
 };
 
-const saveAsNew = () => {
+const saveAsNew = async () => {
 	if (!canSave.value) {
 		return;
 	}
 
-	const record = saveWorldFactoryDraft(payloadPreview.value);
+	const saved = await saveWorldFactoryPayloadAsNew(payloadPreview.value);
 
 	storedDrafts.value = readWorldFactoryStore().drafts;
-	loadedLocalId.value = record.localId;
-	updateLoadedSnapshot(payloadPreview.value);
-	finishSave(makeWorldFactoryDraftSelectionKey(record.localId));
+	loadedLocalId.value = "";
+	updateLoadedSnapshot(saved.payload);
+	finishSave(saved.selectionKey);
 };
 
-const deleteSelection = () => {
-	if (parsedSelection.value.kind === "existing") {
-		clearWorldFactoryOverride(parsedSelection.value.uid);
-		emit("deleted");
-		return;
-	}
-
-	if (parsedSelection.value.kind === "draft" && loadedLocalId.value) {
-		removeWorldFactoryDraft(loadedLocalId.value);
-		emit("deleted");
-	}
+const deleteSelection = async () => {
+	await deleteWorldFactorySelection(props.selectionKey);
+	emit("deleted");
 };
 
 const copyPayload = async () => {
@@ -287,11 +242,17 @@ const copyPayload = async () => {
 
 watch(
 	() => props.selectionKey,
-	(selectionKey) => {
-		loadSelection(selectionKey);
+	async (selectionKey) => {
+		await loadSelection(selectionKey);
 	},
 	{ immediate: true },
 );
+
+onMounted(async () => {
+	availableStations.value = await Station.backendFetchAllStations();
+	knownExistingUids.value = new Set((await fetchAllWorldFactoryWorlds()).map((world) => world.uid));
+	storedDrafts.value = readWorldFactoryStore().drafts;
+});
 
 watch(payloadPreviewText, () => {
 	if (copyState.value !== "idle") {
@@ -313,6 +274,16 @@ watch(payloadPreviewText, () => {
 					<label class="field">
 						<span>Tittel</span>
 						<input v-model="draft.title" type="text" placeholder="For eksempel: Skolegarden" >
+					</label>
+
+					<label class="field">
+						<span>Bilde-URL</span>
+						<input v-model="draft.image" type="url" placeholder="https://..." >
+					</label>
+
+					<label class="field field--full">
+						<span>Beskrivelse</span>
+						<textarea v-model="draft.description" rows="3" placeholder="Kort beskrivelse av verdenen." />
 					</label>
 
 				</div>
@@ -430,7 +401,7 @@ watch(payloadPreviewText, () => {
 					<article class="summaryCard">
 						<p class="cardEyebrow">Tittel</p>
 						<h3>{{ payloadPreview.title || 'Ingen tittel ennå' }}</h3>
-						<p>Backend skal senere lage uid for verdenen automatisk.</p>
+						<p>{{ payloadPreview.description || 'Legg til en beskrivelse for verdenen.' }}</p>
 					</article>
 				</div>
 			</section>

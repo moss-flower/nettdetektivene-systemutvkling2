@@ -4,7 +4,13 @@ type BackendTask = Omit<ExerciseTask, "id"> & {
   internalId?: number | null;
 };
 
-type ExerciseData = {
+type BackendExercisePage = {
+  content: ExerciseData[];
+  last?: boolean;
+  totalPages?: number;
+};
+
+export type ExerciseData = {
   publicId: string;
   title: string;
   difficultyName: string;
@@ -35,6 +41,14 @@ export class Exercise {
     this.tasks = data.tasks;
   }
 
+  get uid() {
+    return this.publicId;
+  }
+
+  get entryName() {
+    return this.difficultyName;
+  }
+
   static fromBackend(data: ExerciseData): Exercise {
     return new Exercise({
       uid: data.publicId,
@@ -46,7 +60,30 @@ export class Exercise {
         id: String(task.internalId ?? `${data.publicId}-${index + 1}`),
       })) as ExerciseTask[],
     });
+  }
 
+  static async backendFetchAllExercises(): Promise<Exercise[]> {
+    const { $api } = useNuxtApp();
+    const exercises: Exercise[] = [];
+    let page = 0;
+
+    while (true) {
+      const response = await $api<BackendExercisePage>("/exercises", {
+        method: "GET",
+        query: {
+          page,
+          size: 100,
+        },
+      });
+
+      exercises.push(...response.content.map((exercise) => Exercise.fromBackend(exercise)));
+
+      if (response.last ?? page + 1 >= (response.totalPages ?? 1)) {
+        return exercises;
+      }
+
+      page += 1;
+    }
   }
 
   static async backendFetchExerciseByUid(uid: string): Promise<Exercise | null> {
