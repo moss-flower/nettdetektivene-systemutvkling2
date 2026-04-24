@@ -1,9 +1,7 @@
 export interface StudentProfileResponse {
   studentUid: string;
   studentName: string;
-  currentLevel: number;
-  currentXp: number;
-  nextLevelXp: number;
+  totalXp: number;
   completedExercises: number;
   unlockedAchievements: number;
 }

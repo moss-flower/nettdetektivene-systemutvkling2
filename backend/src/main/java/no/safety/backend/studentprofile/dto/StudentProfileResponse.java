@@ -5,9 +5,7 @@ import java.util.UUID;
 public record StudentProfileResponse(
     UUID studentUid,
     String studentName,
-    int currentLevel,
-    int currentXp,
-    int nextLevelXp,
+    int totalXp,
     int completedExercises,
     int unlockedAchievements
 ) {

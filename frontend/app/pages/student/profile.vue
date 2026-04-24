@@ -1,24 +1,17 @@
 <script setup lang="ts">
 import { routePaths } from '~/composables/utils/routePaths'
 import { useStudentProfile } from '~/composables/useStudentProfile'
+import { getStudentProgress } from '~/composables/utils/studentProgress'
 
 const { getMyProfile } = useStudentProfile()
 
 const studentName = ref('Laster...')
-const currentLevel = ref(1)
-const currentXp = ref(0)
-const nextLevelXp = ref(500)
+const totalXp = ref(0)
 
 const isLoading = ref(true)
 const profileError = ref('')
 
-const xpProgress = computed(() => {
-  if (nextLevelXp.value <= 0) {
-    return 0
-  }
-
-  return Math.min(100, Math.round((currentXp.value / nextLevelXp.value) * 100))
-})
+const progress = computed(() => getStudentProgress(totalXp.value))
 
 onMounted(async () => {
   isLoading.value = true
@@ -27,11 +20,9 @@ onMounted(async () => {
   try {
     const profile = await getMyProfile()
     studentName.value = profile.studentName
-    currentLevel.value = profile.currentLevel
-    currentXp.value = profile.currentXp
-    nextLevelXp.value = profile.nextLevelXp
+    totalXp.value = profile.totalXp
   } catch {
-    profileError.value = 'Kunne ikke laste profildata akkurat naa.'
+    profileError.value = 'Kunne ikke laste profildata akkurat nå.'
   } finally {
     isLoading.value = false
   }
@@ -42,15 +33,14 @@ onMounted(async () => {
   <section class="profilePage">
     <header class="pageHeader">
       <UiStudentHomeBackButton class="backLink" label="Tilbake" />
-      <p class="eyebrow">Min profil</p>
-      <h1>{{ studentName }}</h1>
-      <p class="subtitle">Oversikt over navn, nivå og progresjon.</p>
       <p v-if="isLoading" class="statusText">Laster profil...</p>
       <p v-if="profileError" class="errorText">{{ profileError }}</p>
     </header>
 
     <div class="profileCard">
-      <div class="avatarWrap" aria-hidden="true">placeholder</div>
+        <p class="eyebrow">Min profil</p>
+      <p class="subtitle">Oversikt over navn, level og progresjon.</p>
+      
 
       <div class="infoBlock">
         <p class="label">Navn</p>
@@ -58,22 +48,22 @@ onMounted(async () => {
       </div>
 
       <div class="infoBlock">
-        <p class="label">Nivå</p>
-        <p class="value">{{ currentLevel }}</p>
+        <p class="label">Level</p>
+        <p class="value">{{ progress.level }}</p>
       </div>
 
       <div class="infoBlock">
         <p class="label">XP</p>
-        <p class="value">{{ currentXp }} / {{ nextLevelXp }}</p>
+        <p class="value">{{ progress.currentXp }} / {{ progress.nextLevelXp }}</p>
       </div>
 
       <div class="progressSection">
         <div class="progressHeader">
-          <span>Fremdrift til neste nivå</span>
-          <span>{{ xpProgress }}%</span>
+          <span>Fremdrift til neste level</span>
+          <span>{{ progress.progressPercent }}%</span>
         </div>
-        <div class="progressBar" role="progressbar" :aria-valuenow="xpProgress" aria-valuemin="0" aria-valuemax="100">
-          <div class="progressFill" :style="{ width: `${xpProgress}%` }"></div>
+        <div class="progressBar" role="progressbar" :aria-valuenow="progress.progressPercent" aria-valuemin="0" aria-valuemax="100">
+          <div class="progressFill" :style="{ width: `${progress.progressPercent}%` }"></div>
         </div>
       </div>
 

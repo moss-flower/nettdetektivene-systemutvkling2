@@ -15,7 +15,6 @@ public class StudentProfileService {
 
   private static final int XP_PER_COMPLETED_EXERCISE = 100;
   private static final int XP_PER_UNLOCKED_ACHIEVEMENT = 50;
-  private static final int XP_PER_LEVEL = 500;
 
   private final CompletedExerciseRepository completedExerciseRepository;
   private final UserAchievementRepository userAchievementRepository;
@@ -29,16 +28,10 @@ public class StudentProfileService {
     int totalXp = (completedExercises * XP_PER_COMPLETED_EXERCISE)
         + (unlockedAchievements * XP_PER_UNLOCKED_ACHIEVEMENT);
 
-    int currentLevel = Math.max(1, (totalXp / XP_PER_LEVEL) + 1);
-    int xpAtLevelStart = (currentLevel - 1) * XP_PER_LEVEL;
-    int currentXp = Math.max(0, totalXp - xpAtLevelStart);
-
     return new StudentProfileResponse(
         studentUid,
         student.getUsername(),
-        currentLevel,
-        currentXp,
-        XP_PER_LEVEL,
+        totalXp,
         completedExercises,
         unlockedAchievements
     );

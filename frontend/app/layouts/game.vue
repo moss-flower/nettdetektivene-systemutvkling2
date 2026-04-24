@@ -2,6 +2,7 @@
 import { Station } from '~/composables/types/StationType'
 import { useStudentProfile } from '~/composables/useStudentProfile'
 import { useThemeAttributes } from '~/composables/useThemeAttributes'
+import { getStudentProgress } from '~/composables/utils/studentProgress'
 
 provideGameConfetti()
 useThemeAttributes('game')
@@ -9,7 +10,7 @@ const { getMyProfile } = useStudentProfile()
 
 const route = useRoute()
 const profileName = ref('Detektiv')
-const profileLevelText = ref('Laster niva...')
+const profileLevelText = ref('Laster nivå...')
 
 const stationUid = computed(() => {
   const routeParam = route.params.stationUid
@@ -40,9 +41,9 @@ onMounted(async () => {
   try {
     const profile = await getMyProfile()
     profileName.value = profile.studentName
-    profileLevelText.value = `Niva ${profile.currentLevel}`
-  } catch {
-    profileLevelText.value = 'Niva ukjent'
+    profileLevelText.value = `Level ${getStudentProgress(profile.totalXp).level}`
+  } catch (error) {
+    console.error('Error fetching student profile:', error)
   }
 })
 </script>
@@ -53,7 +54,7 @@ onMounted(async () => {
       <NuxtLink
         to="/student/profile"
         class="game-layout__rail-card game-layout__rail-card--avatar game-layout__rail-link"
-        aria-label="Ga til elevprofil"
+        aria-label="Gå til elevprofil"
       >
         <div class="game-layout__avatar-placeholder" aria-hidden="true">
           <img
