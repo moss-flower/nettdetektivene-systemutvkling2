@@ -1,9 +1,37 @@
 <script setup lang="ts">
 import StationCard from "~/components/station/station.vue";
 import { Station } from "~/composables/types/StationType";
+import { useCompletedExerciseUids } from "~/composables/utils/gameProgress";
 
 const router = useRouter();
 const { data: stations } = await useAsyncData("student-stations", () => Station.backendFetchAllStations());
+const { data: completedExerciseUids } = await useAsyncData(
+  "student-completed-exercises",
+  () => useCompletedExerciseUids(),
+);
+
+const hydratedStations = computed(() =>
+  (stations.value ?? []).map((station) => Station.fromBackend(station)),
+);
+
+const stationCards = computed(() => {
+  const completedUids = completedExerciseUids.value ?? [];
+  let previousStationCompleted = true;
+
+  return hydratedStations.value.map((station) => {
+    const completedExercises = station.exerciseUids.map((exerciseUid) => completedUids.includes(exerciseUid));
+    const isUnlocked = previousStationCompleted;
+    const isCompleted = station.exerciseUids.length > 0 && completedExercises.every(Boolean);
+
+    previousStationCompleted = isCompleted;
+
+    return {
+      station,
+      completedExercises,
+      isUnlocked,
+    };
+  });
+});
 
 function goBack() {
   router.push(routePaths.studentHome);
@@ -25,9 +53,11 @@ function goBack() {
 
     <div class="stationGrid">
       <StationCard
-        v-for="station in stations ?? []"
-        :key="station.uid"
-        :station="station"
+        v-for="entry in stationCards"
+        :key="entry.station.uid"
+        :station="entry.station"
+        :is-unlocked="entry.isUnlocked"
+        :completed-exercises="entry.completedExercises"
       />
     </div>
   </section>

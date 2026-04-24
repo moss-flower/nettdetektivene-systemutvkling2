@@ -1,7 +1,10 @@
 import type { ExerciseTask } from "~/composables/types/TaskTypes";
 
+type BackendTaskContent = Partial<Omit<ExerciseTask, "id" | "templateKind" | "introText" | "feedbackCorrect" | "feedbackIncorrect">>;
+
 type BackendTask = Omit<ExerciseTask, "id"> & {
   internalId?: number | null;
+  content?: BackendTaskContent;
 };
 
 type BackendExercisePage = {
@@ -55,10 +58,15 @@ export class Exercise {
       title: data.title,
       entryName: data.difficultyName,
       description: data.description,
-      tasks: data.tasks.map((task, index) => ({
-        ...task,
-        id: String(task.internalId ?? `${data.publicId}-${index + 1}`),
-      })) as ExerciseTask[],
+      tasks: data.tasks.map((task, index) => {
+        const { content, ...taskBase } = task;
+
+        return {
+          ...taskBase,
+          ...(content ?? {}),
+          id: String(task.internalId ?? `${data.publicId}-${index + 1}`),
+        };
+      }) as ExerciseTask[],
     });
   }
 
