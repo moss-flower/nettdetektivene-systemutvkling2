@@ -89,7 +89,7 @@ class ExerciseControllerTest {
         .expectStatus().isCreated()
         .expectBody(ExerciseResponse.class).value(response -> {
           assertThat(response.title()).isEqualTo("Bokstavenes rangering");
-          assertThat(response.publicId()).isEqualTo(publicId);
+          assertThat(response.uid()).isEqualTo(publicId);
           assertThat(response.tasks()).hasSize(1);
         });
   }
@@ -128,7 +128,7 @@ class ExerciseControllerTest {
         .exchange()
         .expectStatus().isOk()
         .expectBody(ExerciseResponse.class).value(response -> {
-          assertThat(response.publicId()).isEqualTo(publicId);
+          assertThat(response.uid()).isEqualTo(publicId);
           assertThat(response.title()).isEqualTo("Bokstavenes rangering");
           assertThat(response.tasks()).hasSize(1);
         });
@@ -178,7 +178,7 @@ class ExerciseControllerTest {
         .exchange()
         .expectStatus().isOk()
         .expectBody(ExerciseResponse.class).value(response -> {
-          assertThat(response.publicId()).isEqualTo(publicId);
+          assertThat(response.uid()).isEqualTo(publicId);
           assertThat(response.title()).isEqualTo("Bokstavenes rangering");
         });
   }
