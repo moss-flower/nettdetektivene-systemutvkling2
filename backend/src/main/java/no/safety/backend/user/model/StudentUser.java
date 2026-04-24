@@ -11,6 +11,7 @@ import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import no.safety.backend.avatar.model.AvatarConfig;
@@ -24,6 +25,7 @@ import no.safety.backend.classroom.model.Classroom;
 @PrimaryKeyJoinColumn(name = "user_id")
 @Getter
 @Setter
+@NoArgsConstructor
 @SuperBuilder
 public class StudentUser extends User {
 
