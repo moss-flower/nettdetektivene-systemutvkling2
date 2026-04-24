@@ -44,7 +44,7 @@ public class FileService {
             if(file.getOriginalFilename() == null || file.getOriginalFilename().isEmpty()) {
                 throw new  IllegalArgumentException("File name is empty");
             }
-            Path destination = Paths.get(rootPathString).resolve(storageKey);
+            Path destination = resolvePath(storageKey);
             if(exists(destination)) {
                 throw new FileAlreadyExistsException(storageKey);
             }
@@ -84,7 +84,8 @@ public class FileService {
      * Handles deletion of an item in physical storage
      * @param path a Java Path object
      */
-    public void delete(Path path) {
+    public void delete(String storageKey) {
+        Path path = resolvePath(storageKey);
         try {
             Files.deleteIfExists(path);
         } catch (IOException e) {
@@ -98,12 +99,17 @@ public class FileService {
      * @param path a Java path to the desired object.
      * @return a Spring Resource object containing the file
      */
-    public Resource load(Path path){
+    public Resource load(String storageKey){
+        Path path = resolvePath(storageKey);
         try{
             return new UrlResource(path.toUri());
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Path resolvePath(String storageKey) {
+        return Paths.get(rootPathString).resolve(storageKey);
     }
     
 }
