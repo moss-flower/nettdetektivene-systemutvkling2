@@ -88,6 +88,25 @@ const answerState = ref<{ correct: boolean, choice: string, missingStartingPassw
 
 const isExerciseComplete = computed(() => tasks.length > 0 && correctCount.value === tasks.length)
 
+const isBossStation = station.isBoss
+const bossMaxHp = tasks.length
+const bossHp = computed(() => Math.max(0, bossMaxHp - correctCount.value))
+const bossDamaged = ref(false)
+let bossDamageTimeout: ReturnType<typeof setTimeout> | null = null
+
+const triggerBossDamage = () => {
+  if (bossDamageTimeout) {
+    clearTimeout(bossDamageTimeout)
+  }
+  bossDamaged.value = false
+  requestAnimationFrame(() => {
+    bossDamaged.value = true
+    bossDamageTimeout = setTimeout(() => {
+      bossDamaged.value = false
+    }, 400)
+  })
+}
+
 const currentTask = computed(() => tasks[currentIndex.value] ?? null)
 const currentOptions = computed(() => {
   if (!currentTask.value || currentTask.value.templateKind !== 'x-or-y') {
@@ -182,6 +201,12 @@ const feedbackText = computed(() => {
 })
 
 const showAnswerDialog = computed(() => Boolean(answerState.value))
+
+watch(correctCount, (next, prev) => {
+  if (isBossStation && next > prev) {
+    triggerBossDamage()
+  }
+})
 
 const onAnswered = (result: XOrYResult) => {
   answerState.value = {
@@ -282,6 +307,12 @@ const next = async () => {
           <p class="station-page__eyebrow">{{ station.title }}</p>
           <p class="station-page__progress-pill">{{ progressLabel }}</p>
         </div>
+        <BossCharacter
+          v-if="isBossStation"
+          :hp="bossHp"
+          :max-hp="bossMaxHp"
+          :damaged="bossDamaged"
+        />
       </div>
     </header>
 

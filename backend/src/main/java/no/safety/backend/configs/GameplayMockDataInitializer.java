@@ -424,6 +424,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     station.setImage(image);
     station.setBackgroundColor(backgroundColor);
     station.setExerciseUids(new ArrayList<>(exerciseUids));
+    station.setBoss(true); //TODO: Bytt ut med noe annet. Dette er kun for testing.
 
     stationRepository.save(station);
   }
