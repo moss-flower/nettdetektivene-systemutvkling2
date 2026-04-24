@@ -1,7 +1,6 @@
 <template>
   <section class="pageWrap">
     <h1>leaderboard</h1>
-    <UiStudentHomeBackButton class="returnButton" />
   </section>
 </template>
 
@@ -9,11 +8,8 @@
 .pageWrap {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  min-height: 100vh;
+  gap: var(--space-4);
+  min-height: 100%;
 }
 
-.returnButton {
-  width: fit-content;
-}
 </style>

@@ -59,14 +59,14 @@ const emit = defineEmits<{
 					type="button"
 					class="deleteButton"
 					:disabled="props.task.options.length <= 2"
-					@click="emit('removeOption', optionIndex)"
+					@click="emit('remove-option', optionIndex)"
 				>
 					Fjern
 				</button>
 			</div>
 		</div>
 
-		<button type="button" class="ghostButton" @click="emit('addOption')">
+		<button type="button" class="ghostButton" @click="emit('add-option')">
 			+ Legg til svaralternativ
 		</button>
 	</div>

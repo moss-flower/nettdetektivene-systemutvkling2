@@ -100,7 +100,6 @@ function handleNewNoteClick() {
     <div class="leftColumn">
       <div></div>
       <p>PLACEHOLDER FOR PROFILE</p>
-      <UiStudentHomeBackButton class="arrowButton" label="Tilbake" />
     </div>
 
     <div class="notepadWrapper">
@@ -137,9 +136,9 @@ function handleNewNoteClick() {
   --notepad-arrow-hover-ring: var(--palette-gold-500);
 
   display: grid;
-  grid-template-columns: 0.2fr 1fr 0.2fr;
+  grid-template-columns: minmax(0, 0.22fr) minmax(0, 1fr) minmax(0, 0.22fr);
   gap: var(--space-4);
-  height: 100dvh;
+  height: 100%;
   min-height: 0;
   padding: var(--layout-page-padding);
   box-sizing: border-box;
@@ -191,29 +190,25 @@ function handleNewNoteClick() {
   justify-content: space-around;
 }
 
-.arrowButton {
-  width: 70%;
-  margin: 0 auto 15%;
-  padding: var(--space-1);
-  border: var(--border-width-hairline) solid var(--notepad-arrow-border);
-  border-radius: var(--radius-pill);
-  background: var(--notepad-arrow-bg);
-  box-shadow: 0 var(--space-1) var(--space-3) var(--notepad-arrow-shadow);
-  cursor: pointer;
-  transition:
-    box-shadow var(--transition-fast),
-    transform var(--transition-fast);
-}
+@media (max-width: 1100px) {
+  .notepadPage {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+    overflow-y: auto;
+  }
 
-.arrowButton:hover {
-  transform: translateY(-1px);
-  box-shadow:
-    0 0 0 var(--border-width-thin) var(--notepad-arrow-hover-ring),
-    0 var(--space-1) var(--space-4) var(--notepad-arrow-shadow);
-}
+  .leftColumn,
+  .rightColumn,
+  .notepadWrapper {
+    height: auto;
+  }
 
-.arrowButton img {
-  display: block;
-  max-width: 100%;
+  .leftColumn {
+    justify-content: flex-start;
+  }
+
+  .rightColumn {
+    justify-content: flex-start;
+  }
 }
 </style>

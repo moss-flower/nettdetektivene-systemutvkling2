@@ -11,7 +11,6 @@ const xpProgress = Math.round((currentXp / nextLevelXp) * 100)
 <template>
   <section class="profilePage">
     <header class="pageHeader">
-      <UiStudentHomeBackButton class="backLink" label="Tilbake" />
       <p class="eyebrow">Min profil</p>
       <h1>{{ studentName }}</h1>
       <p class="subtitle">Oversikt over navn, nivå og progresjon.</p>
@@ -64,36 +63,31 @@ const xpProgress = Math.round((currentXp / nextLevelXp) * 100)
   margin-bottom: var(--space-4);
 }
 
-.backLink {
-  display: inline-flex;
-  margin-bottom: 0.75rem;
-}
-
 .eyebrow {
-  color: var(--primary);
+  color: var(--color-brand-primary);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
 }
 
 h1 {
-  margin: 0 0 0.5rem 0;
-  color: var(--text);
+  margin: 0 0 var(--space-2) 0;
+  color: var(--color-text-primary);
 }
 
 .subtitle {
   margin: 0;
-  color: var(--muted);
+  color: var(--color-text-secondary);
 }
 
 .profileCard {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-4);
   padding: var(--space-4);
-  border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-2);
+  background: linear-gradient(180deg, var(--palette-white) 0%, var(--palette-white) 100%);
 }
 
 .avatarWrap {
@@ -101,58 +95,58 @@ h1 {
   height: 88px;
   display: grid;
   place-items: center;
-  border-radius: 999px;
-  background: var(--primary);
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-primary);
   color: #111827;
-  font-size: 2.25rem;
+  font-size: var(--font-size-36);
   font-weight: 700;
 }
 
 .infoBlock {
   display: grid;
-  gap: 0.25rem;
+  gap: var(--space-1);
 }
 
 .label {
-  color: var(--muted);
+  color: var(--color-text-secondary);
   font-size: 0.9rem;
 }
 
 .value {
   font-size: 1.2rem;
   font-weight: 700;
-  color: var(--text);
+  color: var(--color-text-primary);
 }
 
 .progressSection {
   display: grid;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .progressHeader {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
-  color: var(--muted);
+  gap: var(--space-4);
+  color: var(--color-text-secondary);
 }
 
 .progressBar {
   width: 100%;
   height: 0.9rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   overflow: hidden;
   background: #dbe4ee;
 }
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary), #8afcc6);
+  background: linear-gradient(90deg, var(--color-brand-primary), #8afcc6);
 }
 
 .actions {
   display: flex;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
 }
 
 .secondaryButton {
@@ -161,9 +155,9 @@ h1 {
   justify-content: center;
   padding: 0.8rem 1.1rem;
   border-radius: 0.6rem;
-  border: 1px solid var(--primary);
+  border: var(--border-width-hairline) solid var(--color-brand-primary);
   background: transparent;
-  color: var(--primary);
+  color: var(--color-brand-primary);
   font-weight: 700;
 }
 </style>

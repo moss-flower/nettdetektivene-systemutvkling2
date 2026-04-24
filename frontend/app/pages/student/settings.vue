@@ -4,26 +4,25 @@ const volumeLabel = computed(() => `${volume.value}%`)
 </script>
 
 <template>
-  <section class="student-settings">
-    <header class="student-settings__header">
-      <UiStudentHomeBackButton class="student-settings__back" />
-      <p class="student-settings__eyebrow">Innstillinger</p>
+  <section class="studentSettings">
+    <header class="studentSettingsHeader">
+      <p class="studentSettingsEyebrow">Innstillinger</p>
       <h2>Volum på nettsiden</h2>
-      <p class="student-settings__intro">
+      <p class="studentSettingsIntro">
         Midlertidig settings-side med volum.
       </p>
     </header>
 
-    <article class="student-settings__card">
-      <div class="student-settings__volume-row">
-        <label class="student-settings__label" for="volume">Volum</label>
-        <span class="student-settings__value">{{ volumeLabel }}</span>
+    <article class="studentSettingsCard">
+      <div class="settingsVolumeRow">
+        <label class="studentSettingsLabel" for="volume">Volum</label>
+        <span class="studentSettingsValue">{{ volumeLabel }}</span>
       </div>
 
       <input
         id="volume"
         v-model="volume"
-        class="student-settings__slider"
+        class="studentSettingsSlider"
         type="range"
         min="0"
         max="100"
@@ -31,7 +30,7 @@ const volumeLabel = computed(() => `${volume.value}%`)
         aria-label="Juster volum for nettsiden"
       >
 
-      <p class="student-settings__note">
+      <p class="studentSettingsNote">
         bare en mal rn.
       </p>
     </article>
@@ -39,76 +38,63 @@ const volumeLabel = computed(() => `${volume.value}%`)
 </template>
 
 <style scoped>
-.student-settings {
+.studentSettings {
   min-height: 100%;
   display: grid;
   gap: var(--space-3);
   padding: var(--space-3);
 }
 
-.student-settings__header {
+.studentSettingsHeader {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
-.student-settings__back {
-  width: fit-content;
-}
-
-.student-settings__eyebrow {
-  color: var(--primary);
+.studentSettingsEyebrow {
+  color: var(--color-brand-primary);
   font-size: 0.9rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.student-settings__intro,
-.student-settings__note {
+.studentSettingsIntro,
+.studentSettingsNote {
   max-width: 65ch;
-  color: var(--muted);
+  color: var(--color-text-secondary);
   line-height: 1.5;
 }
 
-.student-settings__card {
+.studentSettingsCard {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-4);
   max-width: 36rem;
-  padding: 1rem;
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
+  padding: var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  border-radius: var(--radius-3);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-1);
 }
 
-.student-settings__volume-row {
+.settingsVolumeRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
-.student-settings__label {
+.studentSettingsLabel {
   font-weight: 800;
 }
 
-.student-settings__value {
-  color: var(--primary);
+.studentSettingsValue {
+  color: var(--color-brand-primary);
   font-weight: 800;
 }
 
-.student-settings__slider {
+.studentSettingsSlider {
   width: 100%;
-  accent-color: var(--primary);
+  accent-color: var(--color-brand-primary);
 }
 
-@media (max-width: 560px) {
-  .student-settings {
-    padding: var(--space-2);
-  }
-
-  .student-settings__volume-row {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-}
 </style>

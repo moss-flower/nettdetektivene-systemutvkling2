@@ -32,17 +32,24 @@ const goBack = () => {
 }
 
 .pageHeader {
-	margin-bottom: 1rem;
+	display: grid;
+	gap: var(--space-2);
+	margin-bottom: var(--space-4);
+	padding: var(--space-5);
+	border: var(--border-width-hairline) solid var(--color-border-default);
+	border-radius: var(--radius-3);
+	background: var(--color-bg-surface);
+	box-shadow: var(--shadow-1);
 }
 
 .backButton {
 	display: inline-flex;
 	align-items: center;
-	margin-bottom: 0.75rem;
+	margin-bottom: var(--space-3);
 	padding: 0;
 	border: 0;
 	background: transparent;
-	color: var(--primary);
+	color: var(--color-brand-primary);
 	font: inherit;
 	font-weight: 600;
 	cursor: pointer;
@@ -58,7 +65,7 @@ p {
 }
 
 p {
-	margin-top: 0.5rem;
-	color: var(--muted);
+	margin-top: var(--space-2);
+	color: var(--color-text-secondary);
 }
 </style>
