@@ -95,6 +95,17 @@ public class WeeklyMysteryService {
         return WeeklyMysterPromptResponse.fromEntity(prompt);
     }
 
+    public HashSet<WeeklyMysterPromptResponse> fetchUsersPrompts(Long internalUserId) {
+        HashSet<WeeklyMysteryPrompt> prompts = promptRepository.findAllByTeacher_id(internalUserId);
+
+        HashSet<WeeklyMysterPromptResponse> responses = new HashSet<>();
+
+        for (WeeklyMysteryPrompt prompt : prompts) {
+            responses.add(WeeklyMysterPromptResponse.fromEntity(prompt));
+        }
+        return responses; 
+    }
+
     private String generateStorageKey(Long userId, Long promptId, String fileName) {
         return "/" + userId.toString() + "/" + promptId.toString() + "/" + fileName;
     }

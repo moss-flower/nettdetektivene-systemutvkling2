@@ -1,5 +1,7 @@
 package no.safety.backend.weeklymystery.controller;
 
+import java.util.HashSet;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -44,12 +46,25 @@ public class WeeklyMysteryController {
      * @return a response entity containing the submitted prompt information plus public UUID for prompt on success.
      */
     @PreAuthorize("hasRole('TEACHER')")
-    @PostMapping(value = "/prompt")
+    @PostMapping(value = "/prompts")
     public ResponseEntity<WeeklyMysterPromptResponse> submitPrompt(
             @Valid @RequestBody WeeklyMysteryPromptCreateRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(weeklyMysteryService.savePrompt(request, principal.getUserInternalId()));
         
+    }
+
+    /**
+     * Allows teachers to retrieve a list of all prompts that they have created.
+     * @param principal user information (Automatically provided by spring)
+     * @return a response entity a set of Prompt Responses
+     */
+    @PreAuthorize("hasRole('TEACHER')")
+    @RequestMapping(value = "/prompts")
+    public ResponseEntity<HashSet<WeeklyMysterPromptResponse>> fetchPrompts(
+        @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return ResponseEntity.ok(weeklyMysteryService.fetchUsersPrompts(principal.getUserInternalId()));
     }
 
 }
