@@ -58,7 +58,7 @@ public class WeeklyMysteryService {
 
         try {
             submissionRepository.save(submission);
-            NotificationEvent event = new NotificationEvent(sender.getPublicUuid(), "Elev " + sender.getUsername() + "har lastet opp et nytt inlegg på Ukens Mysterium", 0);
+            NotificationEvent event = new NotificationEvent(studentId, "Elev " + sender.getUsername() + "har lastet opp et nytt inlegg på Ukens Mysterium", 0);
             eventPublisher.publishEvent(event);
         } catch (Exception e) {
             logger.error("Error storing submission " + submission);

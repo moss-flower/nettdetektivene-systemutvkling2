@@ -136,7 +136,7 @@ public class ClassroomService {
     member.setClassroom(null);
     c.getMembers().remove(member);
 
-    eventPublisher.publishEvent(new NotificationEvent(memberUuid, "Do a thing!", 0));
+    eventPublisher.publishEvent(new NotificationEvent(member.getInternalId(), "Do a thing!", 0));
     return ClassroomResponse.from(c);
   }
 

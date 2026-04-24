@@ -46,7 +46,7 @@ public class NotificationServiceTest {
 
     @BeforeEach
     void setUp() {
-        mockEvent = new NotificationEvent(new UUID(0, 0), "Something Happened!", 2);
+        mockEvent = new NotificationEvent(42l, "Something Happened!", 2);
         target = User.builder()
             .publicUuid(new UUID(1, 0))
             .internalId((2l))

@@ -32,7 +32,7 @@ public class NotificationService {
     @EventListener
     public void handleNotificationEvent(NotificationEvent event) {
         logger.debug("Notification event Triggered with event" + event);
-        StudentUser sender = (StudentUser) userService.findByPublicUuid(event.getSenderUserUuid()).get();
+        StudentUser sender = (StudentUser) userService.findByInternalId(event.getSenderInternalId());
         Set<User> targets = sender.getClassroom().getOwners();
 
         for (User user : targets) {
