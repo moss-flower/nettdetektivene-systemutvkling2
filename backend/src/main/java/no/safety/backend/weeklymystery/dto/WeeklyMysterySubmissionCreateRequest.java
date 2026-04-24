@@ -11,7 +11,7 @@ import jakarta.validation.constraints.Size;
  * Represents a data transfer object for handling submission data
  * for weekly mystery
  */
-public record WeeklyMysterySubmissionRequest(
+public record WeeklyMysterySubmissionCreateRequest(
     @NotBlank(message = "Screenshot Required")
     @Size(max = 1, message = "Please only attach a single image.")
     MultipartFile file, 
