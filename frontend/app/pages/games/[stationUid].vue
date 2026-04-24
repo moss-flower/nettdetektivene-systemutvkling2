@@ -85,6 +85,8 @@ const showExerciseResultDialog = ref(false)
 const correctCount = ref(0)
 const answerState = ref<{ correct: boolean, choice: string, missingStartingPassword?: boolean } | null>(null)
 
+const isExerciseComplete = computed(() => tasks.length > 0 && correctCount.value === tasks.length)
+
 const currentTask = computed(() => tasks[currentIndex.value] ?? null)
 const currentOptions = computed(() => {
   if (!currentTask.value || currentTask.value.templateKind !== 'x-or-y') {
@@ -250,7 +252,8 @@ const next = async () => {
     currentIndex.value++
   } else {
     if (
-      activeExercise
+      isExerciseComplete.value
+      && activeExercise
       && !completedExerciseUids.includes(activeExercise.uid)
     ) {
       try {
@@ -344,7 +347,7 @@ const next = async () => {
       :correct-count="correctCount"
       :total="tasks.length"
       msg-completed="Øvelse fullført!"
-      msg-failed="Øvelse fullført!"
+      msg-failed="Øvelse ikke fullført"
       :to="exerciseSelectRoute"
     />
 
