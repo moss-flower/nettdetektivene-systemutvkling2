@@ -32,10 +32,14 @@ public class WeeklyMysterySubmission {
     @Column(name = "public_Uuid", nullable = false, updatable = false, columnDefinition = "BINARY(16)")
     private UUID publicUuid;
 
+    @Column
     private String message;
 
+    @Column
     private String fileName;
-    private String storagePath;
+
+    @Column
+    private String storageKey;
 
     @ManyToOne
     @JoinColumn(name = "student_id")
