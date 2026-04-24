@@ -64,7 +64,7 @@ const showBackToHome = computed(() => ![
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, var(--board-highlight) 0, transparent 35%),
+    radial-gradient(circle at top left, var(--board-highlight) 0, transparent 28%),
     repeating-linear-gradient(
       135deg,
       var(--board-hatch) 0,
