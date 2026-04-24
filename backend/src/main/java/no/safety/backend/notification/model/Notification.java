@@ -44,7 +44,7 @@ public class Notification {
     private LocalDateTime createdAt;
 
     @Column
-    private UUID publicId;
+    private UUID uid;
 
     @ManyToOne
     @JoinColumn(name = "target_id", nullable = false)
@@ -53,6 +53,6 @@ public class Notification {
     @PrePersist
     protected void onCreate(){
         this.createdAt = LocalDateTime.now();
-        this.publicId = UUID.randomUUID();
+        this.uid = UUID.randomUUID();
     }
 }

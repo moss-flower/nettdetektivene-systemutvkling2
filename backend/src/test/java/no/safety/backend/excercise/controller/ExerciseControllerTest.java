@@ -56,7 +56,7 @@ class ExerciseControllerTest {
 
   private ExerciseRequest validRequest;
   private ExerciseResponse savedResponse;
-  private UUID publicId;
+  private UUID uid;
 
   @BeforeEach
   void setUp() {
@@ -71,7 +71,7 @@ class ExerciseControllerTest {
     validRequest = new ExerciseRequest("Bokstavenes rangering", "67% Vanskelig",
         "Hvordan rangerer du bokstavene i alfabetet?", List.of(tr1));
 
-    publicId = UUID.randomUUID();
+    uid = UUID.randomUUID();
     TaskResponse taskResp = new TaskResponse(
         1L,
         TemplateKind.MULTIPLE_CHOICE,
@@ -80,7 +80,7 @@ class ExerciseControllerTest {
         tr1.feedbackIncorrect(),
         tc1);
     savedResponse = new ExerciseResponse(
-        publicId,
+        uid,
         validRequest.title(),
         validRequest.difficultyName(),
         validRequest.description(),
@@ -99,7 +99,7 @@ class ExerciseControllerTest {
         .expectStatus().isCreated()
         .expectBody(ExerciseResponse.class).value(response -> {
           assertThat(response.title()).isEqualTo("Bokstavenes rangering");
-          assertThat(response.publicId()).isEqualTo(publicId);
+          assertThat(response.uid()).isEqualTo(uid);
           assertThat(response.tasks()).hasSize(1);
         });
   }
@@ -131,14 +131,14 @@ class ExerciseControllerTest {
 
   @Test
   @WithMockUser(roles = "TEACHER")
-  void get_withValidPublicId_returnsExerciseResponse() {
-    when(mockService.get(publicId)).thenReturn(savedResponse);
+  void get_withValidUid_returnsExerciseResponse() {
+    when(mockService.get(uid)).thenReturn(savedResponse);
 
-    client.get().uri("/api/v1/exercises/{publicId}", publicId)
+    client.get().uri("/api/v1/exercises/{uid}", uid)
         .exchange()
         .expectStatus().isOk()
         .expectBody(ExerciseResponse.class).value(response -> {
-          assertThat(response.publicId()).isEqualTo(publicId);
+          assertThat(response.uid()).isEqualTo(uid);
           assertThat(response.title()).isEqualTo("Bokstavenes rangering");
           assertThat(response.tasks()).hasSize(1);
         });
@@ -146,11 +146,11 @@ class ExerciseControllerTest {
 
   @Test
   @WithMockUser(roles = "TEACHER")
-  void get_withUnknownPublicId_returns404NotFound() {
+  void get_withUnknownUid_returns404NotFound() {
     when(mockService.get(any(UUID.class)))
         .thenThrow(new NotFoundException("Exercise not found"));
 
-    client.get().uri("/api/v1/exercises/{publicId}", UUID.randomUUID())
+    client.get().uri("/api/v1/exercises/{uid}", UUID.randomUUID())
         .exchange()
         .expectStatus().isNotFound();
   }
@@ -179,16 +179,16 @@ class ExerciseControllerTest {
   @Test
   @WithMockUser(roles = "TEACHER")
   void update_withValidRequest_returnsUpdatedResponse() {
-    when(mockService.update(eq(publicId), any(ExerciseRequest.class)))
+    when(mockService.update(eq(uid), any(ExerciseRequest.class)))
         .thenReturn(savedResponse);
 
-    client.put().uri("/api/v1/exercises/{publicId}", publicId)
+    client.put().uri("/api/v1/exercises/{uid}", uid)
         .contentType(MediaType.APPLICATION_JSON)
         .body(validRequest)
         .exchange()
         .expectStatus().isOk()
         .expectBody(ExerciseResponse.class).value(response -> {
-          assertThat(response.publicId()).isEqualTo(publicId);
+          assertThat(response.uid()).isEqualTo(uid);
           assertThat(response.title()).isEqualTo("Bokstavenes rangering");
         });
   }
@@ -198,7 +198,7 @@ class ExerciseControllerTest {
   void update_withInvalidRequest_returns400BadRequest() {
     ExerciseRequest invalidRequest = new ExerciseRequest("", "", "", null);
 
-    client.put().uri("/api/v1/exercises/{publicId}", publicId)
+    client.put().uri("/api/v1/exercises/{uid}", uid)
         .contentType(MediaType.APPLICATION_JSON)
         .body(invalidRequest)
         .exchange()
@@ -209,11 +209,11 @@ class ExerciseControllerTest {
 
   @Test
   @WithMockUser(roles = "TEACHER")
-  void update_withUnknownPublicId_returns404NotFound() {
+  void update_withUnknownUid_returns404NotFound() {
     when(mockService.update(any(UUID.class), any(ExerciseRequest.class)))
         .thenThrow(new NotFoundException("Exercise not found"));
 
-    client.put().uri("/api/v1/exercises/{publicId}", UUID.randomUUID())
+    client.put().uri("/api/v1/exercises/{uid}", UUID.randomUUID())
         .contentType(MediaType.APPLICATION_JSON)
         .body(validRequest)
         .exchange()
@@ -222,21 +222,21 @@ class ExerciseControllerTest {
 
   @Test
   @WithMockUser(roles = "TEACHER")
-  void delete_withValidPublicId_returns204NoContent() {
-    client.delete().uri("/api/v1/exercises/{publicId}", publicId)
+  void delete_withValidUid_returns204NoContent() {
+    client.delete().uri("/api/v1/exercises/{uid}", uid)
         .exchange()
         .expectStatus().isNoContent();
 
-    verify(mockService).delete(publicId);
+    verify(mockService).delete(uid);
   }
 
   @Test
   @WithMockUser(roles = "TEACHER")
-  void delete_withUnknownPublicId_returns404NotFound() {
+  void delete_withUnknownUid_returns404NotFound() {
     doThrow(new NotFoundException("Exercise not found"))
         .when(mockService).delete(any(UUID.class));
 
-    client.delete().uri("/api/v1/exercises/{publicId}", UUID.randomUUID())
+    client.delete().uri("/api/v1/exercises/{uid}", UUID.randomUUID())
         .exchange()
         .expectStatus().isNotFound();
   }
@@ -244,7 +244,7 @@ class ExerciseControllerTest {
   @Test
   @WithMockUser(roles = "STUDENT")
   void delete_withoutTeacherRole_returns403Forbidden() {
-    client.delete().uri("/api/v1/exercises/{publicId}", publicId)
+    client.delete().uri("/api/v1/exercises/{uid}", uid)
         .exchange()
         .expectStatus().isForbidden();
 

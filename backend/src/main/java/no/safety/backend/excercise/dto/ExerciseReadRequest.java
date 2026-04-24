@@ -23,7 +23,7 @@ public record ExerciseReadRequest(
   }
 
   public Pageable toPageable() {
-    Sort sort = Sort.by(Direction.DESC, "publicId");
+    Sort sort = Sort.by(Direction.DESC, "uid");
     return PageRequest.of(page, size, sort);
   }
 

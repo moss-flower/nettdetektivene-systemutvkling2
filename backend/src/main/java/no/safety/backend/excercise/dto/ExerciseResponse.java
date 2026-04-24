@@ -6,7 +6,7 @@ import no.safety.backend.excercise.model.Exercise;
 import no.safety.backend.task.dto.TaskResponse;
 
 public record ExerciseResponse(
-    UUID publicId,
+    UUID uid,
     String title,
     String difficultyName,
     String description,
@@ -19,7 +19,7 @@ public record ExerciseResponse(
         .toList();
 
     return new ExerciseResponse(
-        e.getPublicId(),
+        e.getUid(),
         e.getTitle(),
         e.getDifficultyName(),
         e.getDescription(),

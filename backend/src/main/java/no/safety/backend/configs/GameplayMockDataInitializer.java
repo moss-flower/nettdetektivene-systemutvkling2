@@ -843,11 +843,11 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
         List.of(PHOTOGRAPH_STATION_UID, SOCIALMEDIA_STATION_UID, MARKETPLACE_STATION_UID, DATACENTER_STATION_UID));
   }
 
-  private void upsertExercise(UUID publicId, String title, String difficultyName, String description,
+  private void upsertExercise(UUID uid, String title, String difficultyName, String description,
       List<TaskRequest> taskRequests) {
-    Exercise exercise = exerciseRepository.findByPublicId(publicId).orElseGet(Exercise::new);
+    Exercise exercise = exerciseRepository.findByUid(uid).orElseGet(Exercise::new);
 
-    exercise.setPublicId(publicId);
+    exercise.setUid(uid);
     exercise.setTitle(title);
     exercise.setDifficultyName(difficultyName);
     exercise.setDescription(description);

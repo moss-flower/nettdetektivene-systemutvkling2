@@ -32,9 +32,8 @@ public class Exercise {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long internalId;
 
-  //Public UID for api calls
-  @Column(updatable = false, nullable = false, unique = true, columnDefinition = "BINARY(16)")
-  private UUID publicId;
+  @Column(name = "uid", updatable = false, nullable = false, unique = true, columnDefinition = "BINARY(16)")
+  private UUID uid;
 
   @Column(nullable = false, length = 100)
   private String title;
@@ -50,8 +49,8 @@ public class Exercise {
 
   @PrePersist
   private void OnCreate() {
-    if (this.publicId == null) {
-      this.publicId = UUID.randomUUID();
+    if (this.uid == null) {
+      this.uid = UUID.randomUUID();
     }
   }
 
@@ -63,7 +62,7 @@ public class Exercise {
     if (!(o instanceof Exercise exercise)) {
       return false;
     }
-    return publicId != null && publicId.equals(exercise.getPublicId());
+    return uid != null && uid.equals(exercise.getUid());
   }
 
   @Override
