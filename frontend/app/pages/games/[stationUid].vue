@@ -45,6 +45,7 @@ if (!station) {
 
 const { celebrateCorrectAnswer, stop } = useGameConfetti()
 const completedExerciseUids = await useCompletedExerciseUids()
+const completionError = ref('')
 
 const activeExerciseUid = station.exerciseUids.includes(requestedExerciseUid)
   ? requestedExerciseUid
@@ -68,6 +69,11 @@ if (!activeExercise) {
   await navigateTo({
     path: routePaths.studentExerciseDifficultySelect,
     query: { uid: station.uid },
+  })
+
+  throw createError({
+    statusCode: 404,
+    statusMessage: 'Fant ikke denne oppgaven.',
   })
 }
 
@@ -238,12 +244,25 @@ const onAnsweredPasswordStrength = (result: PasswordStrengthResult) => {
 const next = async () => {
   stop()
   answerState.value = null
+  completionError.value = ''
 
   if (currentIndex.value < tasks.length - 1) {
     currentIndex.value++
   } else {
-    if (activeExercise && correctCount.value === tasks.length) {
-      await markExerciseCompleted(activeExercise.uid)
+    if (
+      activeExercise
+      && !completedExerciseUids.includes(activeExercise.uid)
+    ) {
+      try {
+        await markExerciseCompleted(activeExercise.uid)
+        completedExerciseUids.push(activeExercise.uid)
+      } catch (error: any) {
+        completionError.value =
+          error?.data?.detail
+          || error?.data?.message
+          || error?.statusMessage
+          || 'Kunne ikke lagre at oppgaven er fullført.'
+      }
     }
 
     showExerciseResultDialog.value = true
@@ -324,8 +343,12 @@ const next = async () => {
       v-if="showExerciseResultDialog"
       :correct-count="correctCount"
       :total="tasks.length"
+      msg-completed="Øvelse fullført!"
+      msg-failed="Øvelse fullført!"
       :to="exerciseSelectRoute"
     />
+
+    <p v-if="completionError" class="station-page__completion-error">{{ completionError }}</p>
   </section>
 </template>
 
@@ -394,6 +417,12 @@ const next = async () => {
   padding: clamp(0.8rem, 1.4vw, 1.1rem);
   border-radius: 1.6rem;
   background: #f5f5f4;
+}
+
+.station-page__completion-error {
+  margin: 0;
+  color: #991b1b;
+  font-size: 0.95rem;
 }
 
 @media (max-width: 780px) {

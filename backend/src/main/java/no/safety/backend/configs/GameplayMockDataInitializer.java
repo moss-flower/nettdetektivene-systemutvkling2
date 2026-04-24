@@ -359,7 +359,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   }
 
   private void seedWorlds() {
-    upsertWorld(SCHOOLYARD_WORLD_UID,
+    upsertWorld(SCHOOLYARD_WORLD_UID, "Skolegarden",
         "Hovedloypa som tar eleven gjennom nyheter, bilder, e-post, passord, nettbutikker, sosiale medier og finalen.",
         PLACEHOLDER_IMAGE,
         List.of(
@@ -372,12 +372,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
             DATACENTER_STATION_UID
         ));
 
-    upsertWorld(QUICKSTART_WORLD_UID,
+    upsertWorld(QUICKSTART_WORLD_UID, "Quickstart",
         "En kortere verden for testing og rask gjennomspilling av utvalgte stasjoner.",
         PLACEHOLDER_IMAGE,
         List.of(NEWSSTAND_STATION_UID, POSTOFFICE_STATION_UID, DATACENTER_STATION_UID));
 
-    upsertWorld(CREATIVE_LAB_WORLD_UID,
+    upsertWorld(CREATIVE_LAB_WORLD_UID, "Kreativt laboratorium",
         "En verden for klassen som tester ulike kombinasjoner av stasjoner i en egen rekkefolge.",
         PLACEHOLDER_IMAGE,
         List.of(PHOTOGRAPH_STATION_UID, SOCIALMEDIA_STATION_UID, MARKETPLACE_STATION_UID, DATACENTER_STATION_UID));
@@ -428,10 +428,11 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     stationRepository.save(station);
   }
 
-  private void upsertWorld(UUID uid, String description, String image, List<UUID> stationUids) {
+  private void upsertWorld(UUID uid, String title, String description, String image, List<UUID> stationUids) {
     World world = worldRepository.findByUid(uid).orElseGet(World::new);
 
     world.setUid(uid);
+    world.setTitle(title);
     world.setDescription(description);
     world.setImage(image);
     world.setStationUids(new ArrayList<>(stationUids));

@@ -32,19 +32,19 @@ const choose = (choice: MultipleChoiceOptionKey) => {
 
 <template>
   <section class="multiple-choice-template">
-    <header v-if="props.prompt.title || props.prompt.text" class="multiple-choice-template__header">
-      <h2 v-if="props.prompt.title" class="multiple-choice-template__title">
+    <header v-if="props.prompt?.title || props.prompt?.text" class="multiple-choice-template__header">
+      <h2 v-if="props.prompt?.title" class="multiple-choice-template__title">
         {{ props.prompt.title }}
       </h2>
-      <p v-if="props.prompt.text" class="multiple-choice-template__text">
+      <p v-if="props.prompt?.text" class="multiple-choice-template__text">
         {{ props.prompt.text }}
       </p>
     </header>
 
     <div class="multiple-choice-template__image-frame">
       <img
-        :src="props.prompt.imageUrl"
-        :alt="props.prompt.imageAlt"
+        :src="props.prompt?.imageUrl ?? ''"
+        :alt="props.prompt?.imageAlt ?? ''"
         class="multiple-choice-template__image"
       >
     </div>
