@@ -52,7 +52,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 )
 @AutoConfigureRestTestClient
 @ActiveProfiles("test")
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 class ClassroomManagementIntegrationTest {
 
   private static final UUID DEFAULT_WORLD_UID = no.safety.backend.configs.GameplayMockDataInitializer.SCHOOLYARD_WORLD_UID;

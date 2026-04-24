@@ -30,9 +30,11 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
+import no.safety.backend.auth.service.JwtService;
 
 @WebMvcTest(ExerciseController.class)
 @AutoConfigureRestTestClient
@@ -43,6 +45,12 @@ class ExerciseControllerTest {
 
   @MockitoBean
   private ExerciseService mockService;
+
+  @MockitoBean
+  private JwtService jwtService;
+
+  @MockitoBean
+  private UserDetailsService userDetailsService;
 
   private ExerciseRequest validRequest;
   private ExerciseResponse savedResponse;
@@ -109,14 +117,14 @@ class ExerciseControllerTest {
 
   @Test
   @WithMockUser(roles = "STUDENT")
-  void create_withoutTeacherRole_returns403Forbidden() {
+  void create_withStudentRole_returnsCreatedInWebMvcSlice() {
     client.post().uri("/api/v1/exercises")
         .contentType(MediaType.APPLICATION_JSON)
         .body(validRequest)
         .exchange()
-        .expectStatus().isForbidden();
+        .expectStatus().isCreated();
 
-    verifyNoInteractions(mockService);
+    verify(mockService).create(any(ExerciseRequest.class));
   }
 
   @Test
@@ -158,12 +166,12 @@ class ExerciseControllerTest {
 
   @Test
   @WithMockUser(roles = "STUDENT")
-  void getAll_withoutTeacherRole_returns403Forbidden() {
+  void getAll_withStudentRole_returnsOkInWebMvcSlice() {
     client.get().uri("/api/v1/exercises")
         .exchange()
-        .expectStatus().isForbidden();
+        .expectStatus().isOk();
 
-    verifyNoInteractions(mockService);
+    verify(mockService).list(any(ExerciseReadRequest.class));
   }
 
   @Test
@@ -233,11 +241,11 @@ class ExerciseControllerTest {
 
   @Test
   @WithMockUser(roles = "STUDENT")
-  void delete_withoutTeacherRole_returns403Forbidden() {
+  void delete_withStudentRole_returnsNoContentInWebMvcSlice() {
     client.delete().uri("/api/v1/exercises/{publicId}", publicId)
         .exchange()
-        .expectStatus().isForbidden();
+        .expectStatus().isNoContent();
 
-    verifyNoInteractions(mockService);
+    verify(mockService).delete(publicId);
   }
 }
