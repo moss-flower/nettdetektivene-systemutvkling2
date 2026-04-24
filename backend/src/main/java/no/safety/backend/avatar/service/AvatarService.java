@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.avatar.dto.AvatarConfigRequest;
+import no.safety.backend.exception.NotFoundException;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.repository.StudentUserRepository;
 
@@ -21,7 +22,7 @@ public class AvatarService {
     public void updateAvatar(Long internalUserId, AvatarConfigRequest request) throws RuntimeException {
         logger.debug("AvatarService: Request made for update for user with internalid " + internalUserId);
         StudentUser student = studentUserRepository.findById(internalUserId)
-            .orElseThrow(() -> new RuntimeException("No student found with this Id"));
+            .orElseThrow(() -> new NotFoundException("No student found with this Id"));
         
         student.setAvatarConfig(request.toEntity());
     }

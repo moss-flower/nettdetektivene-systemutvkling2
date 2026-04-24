@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import no.safety.backend.auth.model.UserPrincipal;
 import no.safety.backend.avatar.dto.AvatarConfigRequest;
 import no.safety.backend.avatar.service.AvatarService;
+import no.safety.backend.exception.NotFoundException;
 
 @RestController
 @RequestMapping("/api/v1/")
@@ -43,8 +44,8 @@ public class AvatarController {
         @AuthenticationPrincipal UserPrincipal principal) {
             try {
                 avatarService.updateAvatar(principal.getUserInternalId(), request);
-            } catch (RuntimeException e) {
-                return ResponseEntity.badRequest().body(e);
+            } catch (NotFoundException e) {
+                return ResponseEntity.notFound().build();
             }
             
             return ResponseEntity.ok(null);
