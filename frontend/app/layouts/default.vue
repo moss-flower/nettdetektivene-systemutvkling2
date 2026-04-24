@@ -1,3 +1,9 @@
+<script setup lang="ts">
+import { useThemeAttributes } from '~/composables/useThemeAttributes'
+
+useThemeAttributes('teacher')
+</script>
+
 <template>
   <div class="appShell">
     <aside class="sidebar">
@@ -22,6 +28,7 @@
   width: 100%;
   display: grid;
   grid-template-columns: var(--layout-sidebar-width) 1fr;
+  background: var(--color-bg-canvas);
 }
 
 .sidebar {
@@ -61,5 +68,6 @@
 .content {
   min-width: 0;
   min-height: 0;
+  background: var(--color-bg-canvas);
 }
 </style>

@@ -72,6 +72,7 @@
 :root {
   /* Colors: Brand & semantic */
   --color-brand-primary: var(--palette-navy-900);
+  --primary: var(--color-brand-primary);
 
   --color-semantic-success: var(--palette-green-600);
   --color-semantic-success-hover: var(--palette-green-700);
@@ -82,6 +83,9 @@
   --color-semantic-error-hover: var(--palette-red-700);
 
   --color-semantic-info: var(--palette-ice-200);
+  --text: var(--color-text-primary);
+  --muted: var(--color-text-secondary);
+  --border: var(--color-border-default);
 
   /* Typography */
   --font-family-display: 'Nunito', 'Fredoka', system-ui, sans-serif;
