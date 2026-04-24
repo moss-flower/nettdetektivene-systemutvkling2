@@ -29,6 +29,43 @@ docker compose down
 docker compose up --build
 ```
 
+## Test Data
+
+Backend seeds demo users and classrooms for local testing.
+
+### Login
+
+Shared password for all demo accounts: `test123`
+
+Teacher accounts:
+- `lisa.laerer@test.com` (`Lisa Lærer`)
+- `per.laerer@test.com` (`Per Lærer`)
+
+Student accounts:
+- `ada.elev@test.com` (`Ada Elev`)
+- `elias.elev@test.com` (`Elias Elev`)
+- `sara.elev@test.com` (`Sara Elev`)
+- `noah.elev@test.com` (`Noah Elev`)
+- `ingrid.elev@test.com` (`Ingrid Elev`)
+- `emil.elev@test.com` (`Emil Elev`)
+- `mia.elev@test.com` (`Mia Elev`)
+- `lukas.elev@test.com` (`Lukas Elev`)
+
+### Classrooms
+
+- `Klasse 5B` with code `SUPER-SKOG-KOPP`
+- `Klasse 6A` with code `MODIG-TAVLE-BRUS`
+- `Nettdetektivene` with code `KONGE-LAVA-TRE`
+
+### Current memberships
+
+- `Ada Elev`, `Elias Elev` and `Sara Elev` belong to `Klasse 5B`
+- `Noah Elev` and `Ingrid Elev` belong to `Klasse 6A`
+- `Emil Elev` belongs to `Nettdetektivene`
+- `Mia Elev` and `Lukas Elev` are not in a classroom yet
+
+Teachers can log in directly to test teacher views. Students already assigned to a classroom can log in and test student flows without joining first. Use `Mia Elev` or `Lukas Elev` together with the join codes above to test classroom join flows.
+
 ### Aktivitetsdiagram
 ![Aktivitetsdiagram](docs/flowchart.png)
 
