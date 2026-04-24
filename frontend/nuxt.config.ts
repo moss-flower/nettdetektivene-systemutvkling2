@@ -13,6 +13,6 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    apiBase: process.env.NUXT_API_BASE || 'http://localhost:8080/api/v1',
+    apiBase: import.meta.env.NUXT_API_BASE || 'http://localhost:8080/api/v1',
   },
 })
