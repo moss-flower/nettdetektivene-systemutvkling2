@@ -2,6 +2,10 @@
 import { routePaths } from '~/composables/utils/routePaths';
 import { useStudentMystery } from '~/composables/useStudentMystery';
 
+definePageMeta({
+  layout: 'game',
+});
+
 const selectedFile = ref<File | null>(null);
 const fileInputKey = ref(0);
 const studentMessage = ref('');
