@@ -50,7 +50,7 @@ const layoutStyle = computed(() => {
     </aside>
 
     <main class="game-layout__content" aria-label="Spillinnhold">
-      <div class="game-layout__content-shell">
+      <div :key="route.fullPath" class="game-layout__content-shell">
         <slot />
       </div>
     </main>

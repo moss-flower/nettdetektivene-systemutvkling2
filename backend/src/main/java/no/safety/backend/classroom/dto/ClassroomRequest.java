@@ -1,7 +1,9 @@
 package no.safety.backend.classroom.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.util.UUID;
 
 public record ClassroomRequest(
     @NotBlank(message = "Name is required.")
@@ -9,9 +11,8 @@ public record ClassroomRequest(
     String name,
     @Size(max=1000, message = "Description cannot exceed 1000 characters.")
     String description,
-    @NotBlank(message = "World UID is required.")
-    @Size(max = 100, message = "World UID cannot exceed 100 characters.")
-    String worldUid
+    @NotNull(message = "World UID is required.")
+    UUID worldUid
 ) {
 
 }

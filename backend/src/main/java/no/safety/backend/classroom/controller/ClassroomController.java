@@ -78,7 +78,7 @@ public class ClassroomController {
   @PreAuthorize("hasRole('TEACHER')")
   @PutMapping("/{classroomId}")
   public ClassroomResponse update(
-      @PathVariable Long classroomId,
+      @PathVariable UUID classroomId,
       @Valid @RequestBody ClassroomRequest request,
       @AuthenticationPrincipal UserPrincipal principal) {
     return classroomService.update(classroomId, request, getCallerUuid(principal));
@@ -102,7 +102,7 @@ public class ClassroomController {
   @PreAuthorize("hasRole('TEACHER')")
   @DeleteMapping("/{classroomId}")
   public ResponseEntity<Void> delete(
-      @PathVariable Long classroomId,
+      @PathVariable UUID classroomId,
       @AuthenticationPrincipal UserPrincipal principal) {
     classroomService.delete(classroomId, getCallerUuid(principal));
     return ResponseEntity.noContent().build();
@@ -132,7 +132,7 @@ public class ClassroomController {
   @PreAuthorize("hasRole('TEACHER')")
   @PostMapping("/{classroomId}/owners/{userUuid}")
   public ClassroomResponse addOwner(
-      @PathVariable Long classroomId,
+      @PathVariable UUID classroomId,
       @PathVariable UUID userUuid,
       @AuthenticationPrincipal UserPrincipal principal) {
     return classroomService.addOwner(classroomId, userUuid, getCallerUuid(principal));
@@ -161,7 +161,7 @@ public class ClassroomController {
   @PreAuthorize("hasRole('TEACHER')")
   @DeleteMapping("/{classroomId}/owners/{userUuid}")
   public ClassroomResponse removeOwner(
-      @PathVariable Long classroomId,
+      @PathVariable UUID classroomId,
       @PathVariable UUID userUuid,
       @AuthenticationPrincipal UserPrincipal principal) {
     return classroomService.removeOwner(classroomId, userUuid, getCallerUuid(principal));
@@ -182,7 +182,7 @@ public class ClassroomController {
   @PreAuthorize("hasRole('TEACHER')")
   @PostMapping("/{classroomId}/code")
   public ClassroomResponse regenerateCode(
-      @PathVariable Long classroomId,
+      @PathVariable UUID classroomId,
       @AuthenticationPrincipal UserPrincipal principal) {
     return classroomService.regenerateCode(classroomId, getCallerUuid(principal));
   }
@@ -221,7 +221,7 @@ public class ClassroomController {
   )
   @PreAuthorize("hasRole('TEACHER')")
   @GetMapping("/{classroomId}")
-  public ClassroomResponse getClassroom(@PathVariable Long classroomId,
+  public ClassroomResponse getClassroom(@PathVariable UUID classroomId,
       @AuthenticationPrincipal UserPrincipal principal) {
     return classroomService.getClassroom(classroomId, getCallerUuid(principal));
   }
@@ -289,7 +289,7 @@ public class ClassroomController {
   @PreAuthorize("hasRole('TEACHER')")
   @DeleteMapping("/{classroomId}/members/{userUuid}")
   public ClassroomResponse removeMember(
-      @PathVariable Long classroomId,
+      @PathVariable UUID classroomId,
       @PathVariable UUID userUuid,
       @AuthenticationPrincipal UserPrincipal principal) {
     return classroomService.removeMember(classroomId, userUuid, getCallerUuid(principal));
@@ -312,7 +312,7 @@ public class ClassroomController {
   @PreAuthorize("hasRole('STUDENT')")
   @DeleteMapping("/{classroomId}/members/me")
   public ResponseEntity<Void> leaveClassroom(
-      @PathVariable Long classroomId,
+      @PathVariable UUID classroomId,
       @AuthenticationPrincipal UserPrincipal principal) {
     classroomService.leaveClassroom(classroomId, getCallerUuid(principal));
     return ResponseEntity.noContent().build();

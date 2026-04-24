@@ -11,9 +11,23 @@ import { Exercise } from "~/composables/types/ExerciseType";
 
 export type ExerciseFactoryPayload = {
   title: string;
-  entryName: string;
+  difficultyName: string;
   description: string;
   tasks: ExerciseTask[];
+};
+
+export type BackendExerciseRequestPayload = {
+  title: string;
+  difficultyName: string;
+  description: string;
+  tasks: BackendTaskRequestPayload[];
+};
+
+export type BackendTaskRequestPayload = {
+  introText: string;
+  feedbackCorrect: string;
+  feedbackIncorrect: string;
+  content: Record<string, unknown>;
 };
 
 export type StoredExerciseFactoryPayload = ExerciseFactoryPayload & {
@@ -240,7 +254,7 @@ export const createTaskDraft = (kind: ExerciseTemplateKind, index: number): Exer
 
 export const createExerciseDraft = (): ExerciseFactoryPayload => ({
   title: "",
-  entryName: "",
+  difficultyName: "",
   description: "",
   tasks: [],
 });
@@ -249,8 +263,10 @@ const canUseStorage = () => typeof window !== "undefined" && typeof window.local
 
 const normalizeStoredPayload = (payload: Record<string, unknown>): StoredExerciseFactoryPayload | null => {
   const title = typeof payload.title === "string" ? payload.title : "";
-  const entryName = typeof payload.entryName === "string"
-    ? payload.entryName
+  const difficultyName = typeof payload.difficultyName === "string"
+    ? payload.difficultyName
+    : typeof payload.entryName === "string"
+      ? payload.entryName
     : typeof payload.difficultyText === "string"
       ? payload.difficultyText
       : "";
@@ -259,13 +275,13 @@ const normalizeStoredPayload = (payload: Record<string, unknown>): StoredExercis
   const localId = typeof payload.localId === "string" ? payload.localId : createDraftId("exercise");
   const createdAt = typeof payload.createdAt === "string" ? payload.createdAt : new Date().toISOString();
 
-  if (!title && !entryName && !description && tasks.length === 0) {
+  if (!title && !difficultyName && !description && tasks.length === 0) {
     return null;
   }
 
   return {
     title,
-    entryName,
+    difficultyName,
     description,
     tasks,
     localId,
@@ -362,7 +378,7 @@ const normalizeExerciseFactoryRecord = (record: Record<string, unknown>): Exerci
     sourceUid: typeof record.sourceUid === "string" && record.sourceUid.trim().length > 0 ? record.sourceUid.trim() : undefined,
     payload: {
       title: payload.title,
-      entryName: payload.entryName,
+      difficultyName: payload.difficultyName,
       description: payload.description,
       tasks: payload.tasks,
     },
@@ -390,7 +406,7 @@ export const readExerciseFactoryStore = (): ExerciseFactoryStore => {
         localId: payload.localId,
         payload: {
           title: payload.title,
-          entryName: payload.entryName,
+          difficultyName: payload.difficultyName,
           description: payload.description,
           tasks: payload.tasks,
         },
@@ -537,7 +553,7 @@ export const getExerciseFactorySelectionOptions = (): ExerciseFactorySelectableO
   const store = readExerciseFactoryStore();
   const existingOptions = Exercise.backendFetchAllExercises().map((exercise) => ({
     selectionKey: makeExerciseFactoryExistingSelectionKey(exercise.uid),
-    label: `${exercise.title} (${exercise.entryName})`,
+    label: `${exercise.title} (${exercise.difficultyName})`,
     description: exercise.uid,
     kind: "existing" as const,
     badge: store.overrides[exercise.uid] ? "Eksisterende oppgave · lokal override" : "Eksisterende oppgave",
@@ -547,10 +563,78 @@ export const getExerciseFactorySelectionOptions = (): ExerciseFactorySelectableO
     .map((draft) => ({
       selectionKey: makeExerciseFactoryDraftSelectionKey(draft.localId),
       label: draft.payload.title || "Ny oppgave uten tittel",
-      description: draft.payload.entryName || draft.localId,
+      description: draft.payload.difficultyName || draft.localId,
       kind: "draft" as const,
       badge: "Ny lokal oppgave",
     }));
 
   return [...existingOptions, ...draftOptions];
 };
+
+const mapTaskToBackendContent = (task: ExerciseTask): Record<string, unknown> => {
+  const templateKind = task.templateKind;
+
+  if (templateKind === "multiple-choice") {
+    return {
+      templateKind,
+      prompt: task.prompt,
+      options: task.options,
+      correctChoice: task.correctChoice,
+    };
+  }
+
+  if (templateKind === "x-or-y") {
+    return {
+      templateKind,
+      prompt: task.prompt ?? {},
+      options: task.options,
+      correctChoice: task.correctChoice,
+    };
+  }
+
+  if (templateKind === "email-hotspots") {
+    return {
+      templateKind,
+      prompt: task.prompt ?? {},
+      email: task.email,
+      targets: task.targets,
+    };
+  }
+
+  if (templateKind === "sort-into-buckets") {
+    return {
+      templateKind,
+      prompt: task.prompt ?? {},
+      unplacedLabel: task.unplacedLabel,
+      buckets: task.buckets,
+      items: task.items,
+    };
+  }
+
+  return {
+    templateKind,
+    prompt: task.prompt ?? {},
+    mode: task.mode,
+    placeholder: task.placeholder,
+    startingPassword: task.startingPassword,
+    minLength: task.minLength,
+    minScoreToPass: task.minScoreToPass,
+    commonPatterns: task.commonPatterns,
+  };
+};
+
+export const mapTaskToBackendTaskRequest = (task: ExerciseTask): BackendTaskRequestPayload => ({
+  introText: task.introText,
+  feedbackCorrect: task.feedbackCorrect,
+  feedbackIncorrect: task.feedbackIncorrect,
+  content: mapTaskToBackendContent(task),
+});
+
+export const mapExerciseToBackendRequest = (
+  payload: ExerciseFactoryPayload,
+): BackendExerciseRequestPayload => ({
+  title: payload.title,
+  difficultyName: payload.difficultyName,
+  description: payload.description,
+  tasks: payload.tasks.map(mapTaskToBackendTaskRequest),
+});

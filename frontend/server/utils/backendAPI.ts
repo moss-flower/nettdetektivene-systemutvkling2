@@ -1,18 +1,34 @@
 import type { H3Event } from "h3";
 
 export function getBackendAPI(event: H3Event) {
+  const config = useRuntimeConfig(event);
+  const baseURL = (config.apiBase as string);
+
   return $fetch.create({
-    baseURL: "http://backend:8080/api",
+    baseURL,
 
     onRequest({ options }) {
       const authHeader = getHeader(event, "authorization");
+      const cookieHeader = getHeader(event, "cookie");
+      const headers = new Headers(options.headers || {});
 
       if (authHeader) {
-        const headers = new Headers(options.headers || {});
         headers.set("Authorization", authHeader);
-        options.headers = headers;
       }
+
+      if (cookieHeader) {
+        headers.set("Cookie", cookieHeader);
+      }
+
+      options.headers = headers;
+    },
+
+    onResponseError({ response }) {
+      throw createError({
+        statusCode: response.status,
+        statusMessage: response._data?.detail ?? response.statusText,
+        data: response._data,
+      });
     },
   });
 }
-

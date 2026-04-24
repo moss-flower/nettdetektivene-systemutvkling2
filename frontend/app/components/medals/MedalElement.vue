@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { Medal } from "~/composables/types/MedalTypes";
+import type { AchievementResponse } from "~/composables/types/AchievementTypes";
 import filledStar from "~/assets/images/star/spStarFilled.png";
 import emptyStar from "~/assets/images/star/spStarEmpty.png";
 
 const paths = ["~/assets/images/star/spStarFilled.png", "~/assets/images/star/spStarEmpty.png"]
 
 const props = defineProps<{
-  medal: Medal;
+  medal: AchievementResponse;
 }>();
 
 const categoryLabel = computed(() => {
