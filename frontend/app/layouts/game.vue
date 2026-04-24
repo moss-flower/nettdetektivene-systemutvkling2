@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { Station } from '~/composables/types/StationType'
+import { useStudentProfile } from '~/composables/useStudentProfile'
 import { useThemeAttributes } from '~/composables/useThemeAttributes'
+import { getStudentProgress } from '~/composables/utils/studentProgress'
 
 provideGameConfetti()
 useThemeAttributes('game')
+const { getMyProfile } = useStudentProfile()
 
 const route = useRoute()
+const profileName = ref('Detektiv')
+const profileLevelText = ref('Laster nivå...')
 
 const stationUid = computed(() => {
   const routeParam = route.params.stationUid
@@ -17,7 +22,11 @@ const stationUid = computed(() => {
   return typeof routeParam === 'string' ? routeParam : ''
 })
 
-const station = computed(() => stationUid.value ? Station.backendFetchStationByUid(stationUid.value) : null)
+const { data: station } = await useAsyncData(
+  () => `layout-station-${stationUid.value}`,
+  () => stationUid.value ? Station.backendFetchStationByUid(stationUid.value) : null,
+  { watch: [stationUid] },
+)
 
 const layoutStyle = computed(() => {
   const backgroundColor = station.value?.backgroundColor ?? '#cfe9ff'
@@ -25,6 +34,16 @@ const layoutStyle = computed(() => {
   return {
     '--game-layout-side-color': backgroundColor,
     '--game-layout-center-color': `color-mix(in srgb, ${backgroundColor} 22%, white)`,
+  }
+})
+
+onMounted(async () => {
+  try {
+    const profile = await getMyProfile()
+    profileName.value = profile.studentName
+    profileLevelText.value = `Level ${getStudentProgress(profile.totalXp).level}`
+  } catch (error) {
+    console.error('Error fetching student profile:', error)
   }
 })
 </script>
@@ -44,13 +63,13 @@ const layoutStyle = computed(() => {
             class="game-layout__avatar-image"
           />
         </div>
-        <p class="game-layout__rail-title">Detektiv Navn</p>
-        <p class="game-layout__rail-text">Nivå her kanskje?</p>
+        <p class="game-layout__rail-title">{{ profileName }}</p>
+        <p class="game-layout__rail-text">{{ profileLevelText }}</p>
       </NuxtLink>
     </aside>
 
     <main class="game-layout__content" aria-label="Spillinnhold">
-      <div class="game-layout__content-shell">
+      <div :key="route.fullPath" class="game-layout__content-shell">
         <slot />
       </div>
     </main>

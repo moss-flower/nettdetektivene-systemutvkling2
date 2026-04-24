@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import StudentHomeMenuItem from '~/components/student/StudentHomeMenuItem.vue';
 import { routePaths } from '~/composables/utils/routePaths';
+import { useAuth } from '~/composables/useAuth';
 import mapImage from "~/assets/images/studentHome/map.png";
 import helpImage from "~/assets/images/studentHome/help.png";
 import profileImage from "~/assets/images/studentHome/profile.png";
@@ -9,6 +10,8 @@ import medalsImage from "~/assets/images/studentHome/medals.png";
 import mysteryImage from "~/assets/images/studentHome/mystery.png";
 import notebookImage from "~/assets/images/studentHome/notebook.png";
 import settingsImage from "~/assets/images/studentHome/settings.png";
+
+definePageMeta( { layout: false })
 
 type StudentHomeItem = {
   id: string;
@@ -96,6 +99,8 @@ const items: StudentHomeItem[] = [
 ];
 
 const router = useRouter();
+const { logout } = useAuth();
+const isLoggingOut = ref(false);
 
 function handleClick(item: StudentHomeItem) {
   if (!item.route) {
@@ -104,10 +109,29 @@ function handleClick(item: StudentHomeItem) {
 
   router.push(item.route);
 }
+
+async function handleLogout() {
+  if (isLoggingOut.value) {
+    return;
+  }
+
+  isLoggingOut.value = true;
+
+  try {
+    await logout();
+    await navigateTo(routePaths.home);
+  } finally {
+    isLoggingOut.value = false;
+  }
+}
 </script>
 
 <template>
   <section class="student-home">
+    <button class="student-home__logout" type="button" :disabled="isLoggingOut" @click="handleLogout">
+      {{ isLoggingOut ? 'Logger ut...' : 'Logg ut' }}
+    </button>
+
     <div class="student-home__board" aria-label="Elevens hjemskjerm">
       <StudentHomeMenuItem
         v-for="item in items"
@@ -126,36 +150,84 @@ function handleClick(item: StudentHomeItem) {
 
 <style scoped>
 .student-home {
-  min-height: 100%;
+  --board-border: var(--palette-cork-470);
+  --board-gradient-top: var(--palette-cork-450);
+  --board-gradient-bottom: var(--palette-cork-470);
+  --board-inner-frame: var(--palette-overlay-cork-strong);
+  --board-hatch: var(--palette-overlay-cork-soft);
+  --board-highlight: var(--palette-overlay-light-soft);
+  --board-inset-ring: var(--palette-overlay-cork-medium);
+  --board-shadow: var(--palette-overlay-cork-shadow);
+
+  min-height: 100dvh;
   display: grid;
+  place-items: center;
+  /* fluid sizing (deliberate exception to token system),
+     scales cleanly across devices */
   gap: clamp(1.5rem, 2vw, 2.25rem);
-  padding: clamp(1rem, 2vw, 2rem);
+  padding: var(--layout-page-padding);
+  overflow: hidden;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.student-home__logout {
+  position: fixed;
+  top: var(--space-4);
+  right: var(--space-4);
+  z-index: 30;
+  border: var(--border-width-thin) solid var(--palette-gray-300);
+  border-radius: 999px;
+  padding: 0.75rem 1rem;
+  background: var(--palette-white);
+  color: var(--palette-navy-900);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 var(--space-2) var(--space-4) var(--board-shadow);
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.student-home__logout:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.student-home__logout:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .student-home__board {
   position: relative;
-  min-height: clamp(32rem, 64vw, 44rem);
+  width: 100%;
+  /* fluid aspect-constrained max-width (see note on .student-home) */
+  max-width: calc((100dvh - 2 * clamp(1rem, 2vw, 2rem)) * 16 / 9);
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  border: 0.45rem solid #a66f43;
-  border-radius: 1.75rem;
+  border: var(--border-width-chunky) solid var(--board-border);
+  border-radius: var(--radius-4);
   background:
-    linear-gradient(180deg, #b57d4d 0%, #a86f42 100%);
+    linear-gradient(
+      180deg,
+      var(--board-gradient-top) 0%,
+      var(--board-gradient-bottom) 100%
+    );
   box-shadow:
-    0 1.4rem 3rem rgb(74 39 15 / 0.18),
-    inset 0 0 0 0.12rem rgb(111 66 33 / 0.22);
+    0 var(--space-5) var(--space-8) var(--board-shadow),
+    inset 0 0 0 var(--border-width-thin) var(--board-inset-ring);
 }
 
 .student-home__board::before {
   content: "";
   position: absolute;
   inset: 0;
+  /* decorative left-edge gloss + diagonal cork hatch */
   background:
-    linear-gradient(90deg, rgb(255 255 255 / 0.05) 0, transparent 35%),
+    linear-gradient(90deg, var(--board-highlight) 0, transparent 35%),
     repeating-linear-gradient(
       135deg,
-      rgb(123 73 34 / 0.03) 0,
-      rgb(123 73 34 / 0.03) 7px,
+      var(--board-hatch) 0,
+      var(--board-hatch) 7px,
       transparent 7px,
       transparent 20px
     );
@@ -165,9 +237,9 @@ function handleClick(item: StudentHomeItem) {
 .student-home__board::after {
   content: "";
   position: absolute;
-  inset: 1rem;
-  border: 0.18rem solid rgb(125 79 42 / 0.52);
-  border-radius: 1.1rem;
+  inset: var(--space-4);
+  border: var(--border-width-thick) solid var(--board-inner-frame);
+  border-radius: var(--radius-3);
   pointer-events: none;
 }
 
@@ -243,8 +315,8 @@ function handleClick(item: StudentHomeItem) {
     aspect-ratio: auto;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
-    padding: 1.25rem;
+    gap: var(--space-4);
+    padding: var(--space-4);
   }
 
   .student-home__item {
@@ -261,7 +333,7 @@ function handleClick(item: StudentHomeItem) {
 @media (max-width: 560px) {
   .student-home__board {
     grid-template-columns: 1fr;
-    padding: 1rem;
+    padding: var(--space-4);
   }
 }
 </style>

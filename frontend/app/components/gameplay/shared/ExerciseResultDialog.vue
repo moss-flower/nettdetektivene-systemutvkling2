@@ -8,10 +8,14 @@ const props = withDefaults(defineProps<{
   total: number
   msgCompleted?: string
   msgFailed?: string
+  badgeCompleted?: string
+  badgeFailed?: string
   to?: RouteLocationRaw
 }>(), {
   msgCompleted: 'Ferdig, du klarte det!',
   msgFailed: 'Ikke helt, bedre lykke neste gang!',
+  badgeCompleted: 'Øvelse fullført',
+  badgeFailed: 'Prøv igjen',
 })
 
 const isComplete = computed(() => props.correctCount === props.total)
@@ -31,7 +35,7 @@ const emit = defineEmits<{
           'exercise-result-dialog__badge--incomplete': !isComplete,
         }"
       >
-        {{ isComplete ? 'Øvelse fullført' : 'Prøv igjen' }}
+        {{ isComplete ? badgeCompleted : badgeFailed }}
       </p>
     </template>
 

@@ -25,6 +25,7 @@ export enum routePaths {
     // to implement next
     studentLeaderboard = '/student/leaderboard',
     studentMystery = '/student/mystery',
+    studentMysteryPlay = '/student/mystery/play',
     studentNotes = '/student/notepad',
     studentSettings = '/student/settings',
 

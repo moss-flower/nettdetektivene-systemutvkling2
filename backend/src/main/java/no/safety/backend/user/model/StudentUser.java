@@ -28,7 +28,7 @@ import no.safety.backend.classroom.model.Classroom;
 public class StudentUser extends User {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "classroom_id")
+    @JoinColumn(name = "classroom_uid", referencedColumnName = "uid")
     private Classroom classroom;
 
     @Embedded

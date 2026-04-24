@@ -16,7 +16,7 @@ public record ExerciseRequest(
     @Size(max = 50, message = "difficultyName cannot exceed 50 characters.")
     String difficultyName,
 
-    @Size(max = 100, message = "description cannot exceed 100 characters.")
+    @Size(max = 2000, message = "description cannot exceed 2000 characters.")
     String description,
 
     @NotEmpty(message = "An exercise must contain at least one task.")

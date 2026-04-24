@@ -11,9 +11,38 @@ import { Exercise } from "~/composables/types/ExerciseType";
 
 export type ExerciseFactoryPayload = {
   title: string;
-  entryName: string;
+  difficultyName: string;
   description: string;
   tasks: ExerciseTask[];
+};
+
+export type BackendExerciseRequestPayload = {
+  title: string;
+  difficultyName: string;
+  description: string;
+  tasks: BackendTaskRequestPayload[];
+};
+
+type BackendExerciseResponsePayload = {
+  publicId: string;
+  title: string;
+  difficultyName: string;
+  description?: string;
+  tasks: Array<{
+    internalId?: number | null;
+    templateKind: ExerciseTemplateKind;
+    introText: string;
+    feedbackCorrect: string;
+    feedbackIncorrect: string;
+    content: Record<string, unknown>;
+  }>;
+};
+
+export type BackendTaskRequestPayload = {
+  introText: string;
+  feedbackCorrect: string;
+  feedbackIncorrect: string;
+  content: Record<string, unknown>;
 };
 
 export type StoredExerciseFactoryPayload = ExerciseFactoryPayload & {
@@ -240,7 +269,7 @@ export const createTaskDraft = (kind: ExerciseTemplateKind, index: number): Exer
 
 export const createExerciseDraft = (): ExerciseFactoryPayload => ({
   title: "",
-  entryName: "",
+  difficultyName: "",
   description: "",
   tasks: [],
 });
@@ -249,8 +278,10 @@ const canUseStorage = () => typeof window !== "undefined" && typeof window.local
 
 const normalizeStoredPayload = (payload: Record<string, unknown>): StoredExerciseFactoryPayload | null => {
   const title = typeof payload.title === "string" ? payload.title : "";
-  const entryName = typeof payload.entryName === "string"
-    ? payload.entryName
+  const difficultyName = typeof payload.difficultyName === "string"
+    ? payload.difficultyName
+    : typeof payload.entryName === "string"
+      ? payload.entryName
     : typeof payload.difficultyText === "string"
       ? payload.difficultyText
       : "";
@@ -259,13 +290,13 @@ const normalizeStoredPayload = (payload: Record<string, unknown>): StoredExercis
   const localId = typeof payload.localId === "string" ? payload.localId : createDraftId("exercise");
   const createdAt = typeof payload.createdAt === "string" ? payload.createdAt : new Date().toISOString();
 
-  if (!title && !entryName && !description && tasks.length === 0) {
+  if (!title && !difficultyName && !description && tasks.length === 0) {
     return null;
   }
 
   return {
     title,
-    entryName,
+    difficultyName,
     description,
     tasks,
     localId,
@@ -362,7 +393,7 @@ const normalizeExerciseFactoryRecord = (record: Record<string, unknown>): Exerci
     sourceUid: typeof record.sourceUid === "string" && record.sourceUid.trim().length > 0 ? record.sourceUid.trim() : undefined,
     payload: {
       title: payload.title,
-      entryName: payload.entryName,
+      difficultyName: payload.difficultyName,
       description: payload.description,
       tasks: payload.tasks,
     },
@@ -390,7 +421,7 @@ export const readExerciseFactoryStore = (): ExerciseFactoryStore => {
         localId: payload.localId,
         payload: {
           title: payload.title,
-          entryName: payload.entryName,
+          difficultyName: payload.difficultyName,
           description: payload.description,
           tasks: payload.tasks,
         },
@@ -535,9 +566,33 @@ export const parseExerciseFactorySelectionKey = (selectionKey: string) => {
 
 export const getExerciseFactorySelectionOptions = (): ExerciseFactorySelectableOption[] => {
   const store = readExerciseFactoryStore();
-  const existingOptions = Exercise.backendFetchAllExercises().map((exercise) => ({
+  const existingOptions = Object.values(store.overrides).map((record) => ({
+    selectionKey: makeExerciseFactoryExistingSelectionKey(record.sourceUid ?? record.localId),
+    label: `${record.payload.title} (${record.payload.difficultyName})`,
+    description: record.sourceUid ?? record.localId,
+    kind: "existing" as const,
+    badge: "Eksisterende oppgave · lokal override",
+  }));
+  const draftOptions = [...store.drafts]
+    .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
+    .map((draft) => ({
+      selectionKey: makeExerciseFactoryDraftSelectionKey(draft.localId),
+      label: draft.payload.title || "Ny oppgave uten tittel",
+      description: draft.payload.difficultyName || draft.localId,
+      kind: "draft" as const,
+      badge: "Ny lokal oppgave",
+    }));
+
+  return [...existingOptions, ...draftOptions];
+};
+
+export const getExerciseFactorySelectionOptionsFromExercises = (
+  exercises: Exercise[],
+): ExerciseFactorySelectableOption[] => {
+  const store = readExerciseFactoryStore();
+  const existingOptions = exercises.map((exercise) => ({
     selectionKey: makeExerciseFactoryExistingSelectionKey(exercise.uid),
-    label: `${exercise.title} (${exercise.entryName})`,
+    label: `${exercise.title} (${exercise.difficultyName})`,
     description: exercise.uid,
     kind: "existing" as const,
     badge: store.overrides[exercise.uid] ? "Eksisterende oppgave · lokal override" : "Eksisterende oppgave",
@@ -547,10 +602,216 @@ export const getExerciseFactorySelectionOptions = (): ExerciseFactorySelectableO
     .map((draft) => ({
       selectionKey: makeExerciseFactoryDraftSelectionKey(draft.localId),
       label: draft.payload.title || "Ny oppgave uten tittel",
-      description: draft.payload.entryName || draft.localId,
+      description: draft.payload.difficultyName || draft.localId,
       kind: "draft" as const,
       badge: "Ny lokal oppgave",
     }));
 
   return [...existingOptions, ...draftOptions];
 };
+
+const toExercisePayloadFromBackend = (exercise: Exercise): ExerciseFactoryPayload => ({
+  title: exercise.title,
+  difficultyName: exercise.difficultyName,
+  description: exercise.description ?? "",
+  tasks: exercise.tasks,
+});
+
+export const loadExerciseFactoryPayload = async (selectionKey: string): Promise<{
+  payload: ExerciseFactoryPayload;
+  localId: string;
+}> => {
+  const selection = parseExerciseFactorySelectionKey(selectionKey);
+  const store = readExerciseFactoryStore();
+
+  if (selection.kind === "existing") {
+    const override = store.overrides[selection.uid] ?? null;
+
+    if (override) {
+      return {
+        payload: {
+          ...override.payload,
+          tasks: [...override.payload.tasks],
+        },
+        localId: "",
+      };
+    }
+
+    const backendExercise = await Exercise.backendFetchExerciseByUid(selection.uid);
+
+    return {
+      payload: backendExercise ? toExercisePayloadFromBackend(backendExercise) : createExerciseDraft(),
+      localId: "",
+    };
+  }
+
+  if (selection.kind === "draft") {
+    const storedDraft = store.drafts.find((draft) => draft.localId === selection.localId) ?? null;
+
+    return {
+      payload: storedDraft?.payload ?? createExerciseDraft(),
+      localId: storedDraft?.localId ?? "",
+    };
+  }
+
+  return {
+    payload: createExerciseDraft(),
+    localId: "",
+  };
+};
+
+export const fetchAllExerciseFactoryExercises = () => Exercise.backendFetchAllExercises();
+
+export const saveExerciseFactoryPayload = async (
+  selectionKey: string,
+  payload: ExerciseFactoryPayload,
+): Promise<{ selectionKey: string; payload: ExerciseFactoryPayload }> => {
+  const selection = parseExerciseFactorySelectionKey(selectionKey);
+  const requestBody = mapExerciseToBackendRequest(payload);
+  const { $api } = useNuxtApp();
+
+  if (selection.kind === "existing") {
+    const response = await $api<BackendExerciseResponsePayload>(`/exercises/${selection.uid}`, {
+      method: "PUT",
+      body: requestBody,
+    });
+
+    clearExerciseFactoryOverride(selection.uid);
+
+    return {
+      selectionKey: makeExerciseFactoryExistingSelectionKey(response.publicId),
+      payload: {
+        title: response.title,
+        difficultyName: response.difficultyName,
+        description: response.description ?? "",
+        tasks: payload.tasks,
+      },
+    };
+  }
+
+  const response = await $api<BackendExerciseResponsePayload>("/exercises", {
+    method: "POST",
+    body: requestBody,
+  });
+
+  if (selection.kind === "draft") {
+    removeExerciseFactoryDraft(selection.localId);
+  }
+
+  return {
+    selectionKey: makeExerciseFactoryExistingSelectionKey(response.publicId),
+    payload: {
+      title: response.title,
+      difficultyName: response.difficultyName,
+      description: response.description ?? "",
+      tasks: payload.tasks,
+    },
+  };
+};
+
+export const saveExerciseFactoryPayloadAsNew = async (
+  payload: ExerciseFactoryPayload,
+): Promise<{ selectionKey: string; payload: ExerciseFactoryPayload }> => {
+  const { $api } = useNuxtApp();
+  const response = await $api<BackendExerciseResponsePayload>("/exercises", {
+    method: "POST",
+    body: mapExerciseToBackendRequest(payload),
+  });
+
+  return {
+    selectionKey: makeExerciseFactoryExistingSelectionKey(response.publicId),
+    payload: {
+      title: response.title,
+      difficultyName: response.difficultyName,
+      description: response.description ?? "",
+      tasks: payload.tasks,
+    },
+  };
+};
+
+export const deleteExerciseFactorySelection = async (selectionKey: string) => {
+  const selection = parseExerciseFactorySelectionKey(selectionKey);
+
+  if (selection.kind === "existing") {
+    const { $api } = useNuxtApp();
+
+    await $api(`/exercises/${selection.uid}`, {
+      method: "DELETE",
+    });
+
+    clearExerciseFactoryOverride(selection.uid);
+    return;
+  }
+
+  if (selection.kind === "draft") {
+    removeExerciseFactoryDraft(selection.localId);
+  }
+};
+
+const mapTaskToBackendContent = (task: ExerciseTask): Record<string, unknown> => {
+  const templateKind = task.templateKind;
+
+  if (templateKind === "multiple-choice") {
+    return {
+      templateKind,
+      prompt: task.prompt,
+      options: task.options,
+      correctChoice: task.correctChoice,
+    };
+  }
+
+  if (templateKind === "x-or-y") {
+    return {
+      templateKind,
+      prompt: task.prompt ?? {},
+      options: task.options,
+      correctChoice: task.correctChoice,
+    };
+  }
+
+  if (templateKind === "email-hotspots") {
+    return {
+      templateKind,
+      prompt: task.prompt ?? {},
+      email: task.email,
+      targets: task.targets,
+    };
+  }
+
+  if (templateKind === "sort-into-buckets") {
+    return {
+      templateKind,
+      prompt: task.prompt ?? {},
+      unplacedLabel: task.unplacedLabel,
+      buckets: task.buckets,
+      items: task.items,
+    };
+  }
+
+  return {
+    templateKind,
+    prompt: task.prompt ?? {},
+    mode: task.mode,
+    placeholder: task.placeholder,
+    startingPassword: task.startingPassword,
+    minLength: task.minLength,
+    minScoreToPass: task.minScoreToPass,
+    commonPatterns: task.commonPatterns,
+  };
+};
+
+export const mapTaskToBackendTaskRequest = (task: ExerciseTask): BackendTaskRequestPayload => ({
+  introText: task.introText,
+  feedbackCorrect: task.feedbackCorrect,
+  feedbackIncorrect: task.feedbackIncorrect,
+  content: mapTaskToBackendContent(task),
+});
+
+export const mapExerciseToBackendRequest = (
+  payload: ExerciseFactoryPayload,
+): BackendExerciseRequestPayload => ({
+  title: payload.title,
+  difficultyName: payload.difficultyName,
+  description: payload.description,
+  tasks: payload.tasks.map(mapTaskToBackendTaskRequest),
+});

@@ -536,7 +536,8 @@ const activateTarget = (targetId?: string) => {
 .email-hotspots-template__target--plain.email-hotspots-template__target--found,
 .email-hotspots-template__target--plain.email-hotspots-template__attachment--interactive.email-hotspots-template__target--found {
   border-radius: 0.45rem;
-  background: #eef5ff;
+  background: #eefaf0;
+  box-shadow: inset 0 0 0 2px #4a9b5a;
 }
 
 .email-hotspots-template__target--plain.email-hotspots-template__target--incorrect,

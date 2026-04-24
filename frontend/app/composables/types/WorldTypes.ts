@@ -1,77 +1,60 @@
-import placeholderImage from "~/assets/images/placeholder.jpeg";
-import { Station } from "~/composables/types/StationType";
-
 export type WorldData = {
-	uid: string;
-	description: string;
-	image: string;
-	stationUids?: Station["uid"][];
+  uid: string;
+  title: string;
+  description: string;
+  image: string;
+  stationUids?: string[];
+};
+
+const seededWorldUidAliases: Record<string, string> = {
+  "schoolyard": "c63c53d3-23bb-3f8c-b511-6f3d106f1fa9",
+  "quickstart": "0bc7b944-1356-300f-84ed-5bccb0bbc7ce",
+  "creative-lab": "fa26a14f-445a-35bb-9c76-a25ec44579f7",
 };
 
 export class World {
-	uid: string;
-	description: string;
-	image: string;
-	stationUids: Station["uid"][];
+  uid: string;
+  title: string;
+  description: string;
+  image: string;
+  stationUids: string[];
 
-	constructor(data: WorldData) {
-		this.uid = data.uid;
-		this.description = data.description;
-		this.image = data.image;
-		this.stationUids = data.stationUids ?? [];
-	}
+  constructor(data: WorldData) {
+    this.uid = data.uid;
+    this.title = data.title;
+    this.description = data.description;
+    this.image = data.image;
+    this.stationUids = data.stationUids ?? [];
+  }
 
-	static mockData(): World[] {
-		return [
-			new World({
-				uid: "schoolyard",
-				description: "Hovedløypa som tar eleven gjennom nyheter, bilder, e-post, passord, nettbutikker, sosiale medier og finalen.",
-				image: placeholderImage,
-				stationUids: [
-					"newsstand",
-					"photograph",
-					"postoffice",
-					"passwordbank",
-					"marketplace",
-					"socialmedia",
-					"datacenter",
-				],
-			}),
-			new World({
-				uid: "quickstart",
-				description: "En kortere verden for testing og rask gjennomspilling av utvalgte stasjoner.",
-				image: placeholderImage,
-				stationUids: ["newsstand", "postoffice", "datacenter"],
-			}),
-			new World({
-				uid: "creative-lab",
-				description: "En verden for klassen som tester ulike kombinasjoner av stasjoner i en egen rekkefølge.",
-				image: placeholderImage,
-				stationUids: ["photograph", "socialmedia", "marketplace", "datacenter"],
-			}),
-		];
-	}
+  static fromBackend(data: WorldData): World {
+    return new World(data);
+  }
 
-	static findByUid(uid: string): World | null {
-		const normalizedUid = uid.trim().toLowerCase();
+  static resolveBackendUid(uid: string): string {
+    return seededWorldUidAliases[uid] ?? uid;
+  }
 
-		return this.mockData().find((world) => world.uid.trim().toLowerCase() === normalizedUid) ?? null;
-	}
+  static async backendFetchAllWorlds(): Promise<World[]> {
+    const { $api } = useNuxtApp();
+    const worlds = await $api<WorldData[]>("/worlds", {
+      method: "GET",
+    });
 
-	static backendFetchAllWorlds(): World[] {
-		return this.mockData();
-	}
+    return worlds.map((world) => World.fromBackend(world));
+  }
 
-	// push a world to backend and retriev a uid from backend, then return the uid
-	static backendCreateWorld(world: World): string {
-		if (world.uid) {
-			throw new Error("World already has a uid. Cannot create world with existing uid.");
-		}
+  static async backendFetchWorldByUid(uid: string): Promise<World | null> {
+    const { $api } = useNuxtApp();
 
-		return "some uid here from backend";
-	}
+    try {
+      const world = await $api<WorldData>(`/worlds/${World.resolveBackendUid(uid)}`, {
+        method: "GET",
+      });
 
-	static backendFetchWorldByUid(uid: string): World | null {
-		return this.findByUid(uid);
-	}
+      return World.fromBackend(world);
+    } catch {
+      return null;
+    }
+  }
 }

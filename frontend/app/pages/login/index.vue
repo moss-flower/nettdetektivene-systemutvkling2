@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { routePaths } from "~/composables/utils/routePaths";
 import { useAuth } from "~/composables/useAuth";
+import { useClassrooms } from "~/composables/useClassrooms";
 
 type ProviderId = "microsoft" | "idporten";
 
@@ -10,6 +11,7 @@ definePageMeta({
 
 const route = useRoute();
 const { login } = useAuth();
+const { student } = useClassrooms();
 
 const email = ref("");
 const password = ref("");
@@ -45,11 +47,17 @@ const selectedRole = computed<"elev" | "lærer">(() => {
 const targetRoute = computed(() =>
   selectedRole.value === "lærer"
     ? routePaths.teacherOverview
-    : routePaths.studentHome,
+    : routePaths.join,
 );
 
+const redirectRoute = computed(() => {
+  const redirect = route.query.redirect;
+
+  return typeof redirect === "string" && redirect.startsWith("/") ? redirect : "";
+});
+
 const targetLabel = computed(() =>
-  selectedRole.value === "lærer" ? "lærerflaten" : "elevspillet",
+  selectedRole.value === "lærer" ? "lærerflaten" : "klasseromssiden",
 );
 
 const affiliationName = computed(() =>
@@ -72,14 +80,28 @@ async function handleLogin() {
   loading.value = true;
 
   try {
-    await login(email.value.trim(), password.value);
+    const response = await login(email.value.trim(), password.value);
 
-    console.log("CLICKED LOGIN")
+    if (response.roles.includes("ROLE_TEACHER")) {
+      await navigateTo(redirectRoute.value || routePaths.teacherOverview);
+      return;
+    }
 
-    await navigateTo(routePaths.home);
+    if (response.roles.includes("ROLE_STUDENT")) {
+      try {
+        await student.getMyClassroom();
+        await navigateTo(routePaths.studentHome);
+      } catch {
+        await navigateTo(routePaths.join);
+      }
+      return;
+    }
+
+    await navigateTo(targetRoute.value);
 
   } catch (error: any) {
     formError.value =
+      error?.data?.detail ||
       error?.data?.message ||
       error?.data?.error ||
       error?.statusMessage ||
