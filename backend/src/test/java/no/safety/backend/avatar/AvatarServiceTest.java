@@ -51,8 +51,8 @@ public class AvatarServiceTest {
             SkinColor.COLOR5
         );
 
-        AvatarConfig defaulAvatarConfig = AvatarConfig.defaultConfig();
-        defaulAvatarConfig.setSkinColor(SkinColor.COLOR1);
+        AvatarConfig defaultAvatarConfig = AvatarConfig.defaultConfig();
+        defaultAvatarConfig.setSkinColor(SkinColor.COLOR1);
 
         student = StudentUser.builder()
             .internalId(1l)
@@ -62,7 +62,7 @@ public class AvatarServiceTest {
             .password("123password")
             .roles(Set.of())
             .classroom(null)
-            .avatarConfig(defaulAvatarConfig)
+            .avatarConfig(defaultAvatarConfig)
             .build();
         
     }
