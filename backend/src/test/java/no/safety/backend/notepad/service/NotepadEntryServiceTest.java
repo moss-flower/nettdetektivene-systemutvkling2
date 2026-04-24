@@ -7,7 +7,11 @@ import no.safety.backend.notepad.exception.NotepadEntryNotFoundException;
 import no.safety.backend.notepad.model.NotepadEntry;
 import no.safety.backend.notepad.model.NotepadEntryType;
 import no.safety.backend.notepad.repository.NotepadEntryRepository;
+import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.model.User;
+import no.safety.backend.user.repository.StudentUserRepository;
+import no.safety.backend.user.repository.TeacherUserRepository;
 import no.safety.backend.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -38,11 +43,20 @@ class NotepadEntryServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private StudentUserRepository studentUserRepository;
+
+    @Mock
+    private TeacherUserRepository teacherUserRepository;
+
     @InjectMocks
     private NotepadEntryService notepadEntryService;
 
     private final Long USER_ID = 1L;
+    private final Long STUDENT_USER_ID = 2L;
+    private final Long TEACHER_USER_ID = 3L;
     private final UUID ENTRY_UUID = UUID.randomUUID();
+    private final UUID STUDENT_USER_UUID = UUID.randomUUID();
 
     @Test
     void create_ShouldReturnSavedEntry_WhenUserExists() {
@@ -80,7 +94,7 @@ class NotepadEntryServiceTest {
     }
 
     @Test
-    void findAll_ShouldReturnPage_WhenUserExists() {
+    void readCallerNotes_ShouldReturnPage_WhenUserExists() {
         var user = new User();
         user.setInternalId(USER_ID);
         var readRequest = mock(NotepadEntryReadRequest.class);
@@ -93,10 +107,89 @@ class NotepadEntryServiceTest {
         given(userRepository.findById(USER_ID)).willReturn(Optional.of(user));
         given(notepadEntryRepository.findAllByUsers_InternalId(USER_ID, Pageable.unpaged())).willReturn(page);
 
-        Page<NotepadEntryResponse> result = notepadEntryService.findAll(USER_ID, readRequest);
+        Page<NotepadEntryResponse> result = notepadEntryService.readCallerNotes(USER_ID, readRequest);
 
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).publicUuid()).isEqualTo(ENTRY_UUID);
+    }
+
+    @Test
+    void readStudentNotes_ShouldReturnPage_WhenStudentExistAndCallerIsTeacherAndHasAccess() {
+        var teacherUser = new TeacherUser();
+        teacherUser.setInternalId(TEACHER_USER_ID);
+        var studentUser = new StudentUser();
+        studentUser.setInternalId(STUDENT_USER_ID);
+        studentUser.setPublicUuid(STUDENT_USER_UUID);
+
+        var readRequest = mock(NotepadEntryReadRequest.class);
+        given(readRequest.toPageable()).willReturn(Pageable.unpaged());
+
+        var entry = new NotepadEntry();
+        entry.setPublicUuid(ENTRY_UUID);
+        Page<NotepadEntry> page = new PageImpl<>(List.of(entry));
+
+        given(teacherUserRepository.findById(TEACHER_USER_ID)).willReturn(Optional.of(teacherUser));
+        given(studentUserRepository.findByPublicUuid(STUDENT_USER_UUID)).willReturn(Optional.of(studentUser));
+        given(notepadEntryRepository.findAllByUsers_InternalId(STUDENT_USER_ID, Pageable.unpaged())).willReturn(page);
+
+        Page<NotepadEntryResponse> result = notepadEntryService.readStudentNotes(TEACHER_USER_ID, STUDENT_USER_UUID, readRequest);
+
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).publicUuid()).isEqualTo(ENTRY_UUID);
+    }
+
+    @Test
+    void readStudentNotes_ShouldThrowUserNotFoundException_WhenTeacherDoesNotExist() {
+        NotepadEntryReadRequest readRequest = mock(NotepadEntryReadRequest.class);
+
+        given(teacherUserRepository.findById(TEACHER_USER_ID))
+                .willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> notepadEntryService.readStudentNotes(TEACHER_USER_ID, STUDENT_USER_UUID, readRequest))
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("Teacher user not found.");
+    }
+
+    @Test
+    void readStudentNotes_ShouldThrowUserNotFoundException_WhenStudentDoesNotExist() {
+        TeacherUser teacherUser = new TeacherUser();
+        teacherUser.setInternalId(TEACHER_USER_ID);
+        NotepadEntryReadRequest readRequest = mock(NotepadEntryReadRequest.class);
+
+        given(teacherUserRepository.findById(TEACHER_USER_ID))
+                .willReturn(Optional.of(teacherUser));
+        given(studentUserRepository.findByPublicUuid(STUDENT_USER_UUID))
+                .willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> notepadEntryService.readStudentNotes(TEACHER_USER_ID, STUDENT_USER_UUID, readRequest))
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("Student user not found.");
+    }
+
+    @Test
+    void readStudentNotes_ShouldReturnEmptyPage_WhenStudentHasNoNotes() {
+        TeacherUser teacherUser = new TeacherUser();
+        teacherUser.setInternalId(TEACHER_USER_ID);
+        
+        StudentUser studentUser = new StudentUser();
+        studentUser.setInternalId(STUDENT_USER_ID);
+        studentUser.setPublicUuid(STUDENT_USER_UUID);
+
+        NotepadEntryReadRequest readRequest = mock(NotepadEntryReadRequest.class);
+        Pageable pageable = PageRequest.of(0, 10);
+        given(readRequest.toPageable()).willReturn(pageable);
+
+        given(teacherUserRepository.findById(TEACHER_USER_ID))
+                .willReturn(Optional.of(teacherUser));
+        given(studentUserRepository.findByPublicUuid(STUDENT_USER_UUID))
+                .willReturn(Optional.of(studentUser));
+        given(notepadEntryRepository.findAllByUsers_InternalId(STUDENT_USER_ID, pageable))
+                .willReturn(Page.empty());
+
+        Page<NotepadEntryResponse> result = notepadEntryService.readStudentNotes(TEACHER_USER_ID, STUDENT_USER_UUID, readRequest);
+
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.getTotalElements()).isZero();
     }
 
     @Test
@@ -107,9 +200,9 @@ class NotepadEntryServiceTest {
         
         var existingEntry = new NotepadEntry();
         existingEntry.setPublicUuid(ENTRY_UUID);
+        existingEntry.addUser(user);
 
-        given(userRepository.findById(USER_ID)).willReturn(Optional.of(user));
-        given(notepadEntryRepository.findByPublicUuidAndUsers_InternalId(ENTRY_UUID, USER_ID))
+        given(notepadEntryRepository.findByPublicUuid(ENTRY_UUID))
                 .willReturn(Optional.of(existingEntry));
         given(notepadEntryRepository.save(any(NotepadEntry.class))).willReturn(existingEntry);
 
@@ -147,17 +240,24 @@ class NotepadEntryServiceTest {
     }
 
     @Test
-    void delete_ShouldInvokeRepositoryDelete_WhenEntryExistsAndIsOwned() {
-        var user = new User();
-        user.setInternalId(USER_ID);
-        var entry = new NotepadEntry();
+void delete_ShouldThrowEntityNotFoundException_WhenEntryDoesNotExist() {
+    given(notepadEntryRepository.findByPublicUuid(ENTRY_UUID))
+            .willReturn(Optional.empty());
 
-        given(userRepository.findById(USER_ID)).willReturn(Optional.of(user));
-        given(notepadEntryRepository.findByPublicUuidAndUsers_InternalId(ENTRY_UUID, USER_ID))
-                .willReturn(Optional.of(entry));
+    assertThatThrownBy(() -> notepadEntryService.delete(USER_ID, ENTRY_UUID))
+            .isInstanceOf(NotepadEntryNotFoundException.class);
+}
 
-        notepadEntryService.delete(USER_ID, ENTRY_UUID);
+@Test
+void delete_ShouldThrowAccessDeniedException_WhenUserDoesNotHaveAccessToEntry() {
+    NotepadEntry entry = new NotepadEntry();
+    entry.setPublicUuid(ENTRY_UUID);
+    entry.setUsers(Set.of());
 
-        verify(notepadEntryRepository).delete(entry);
-    }
+    given(notepadEntryRepository.findByPublicUuid(ENTRY_UUID))
+            .willReturn(Optional.of(entry));
+
+    assertThatThrownBy(() -> notepadEntryService.delete(USER_ID, ENTRY_UUID))
+            .isInstanceOf(AccessDeniedException.class);
+}
 }

@@ -38,9 +38,15 @@ public class NotepadEntryService {
     private final StudentUserRepository studentUserRepository;
     private final TeacherUserRepository teacherUserRepository;
 
+    /**
+     * Reads the notes of the calling {@link User}.
+     * @param callerUserInternalId
+     * @param request
+     * @return
+     */
     @Transactional(readOnly = true)
-    public Page<NotepadEntryResponse> findAll(@NonNull Long callerUserInternalId, @NonNull NotepadEntryReadRequest request) {
-        log.debug("Fetching page of notepad entries for user: {}, request: {}", callerUserInternalId, request);
+    public Page<NotepadEntryResponse> readCallerNotes(@NonNull Long callerUserInternalId, @NonNull NotepadEntryReadRequest request) {
+        log.info("Fetching page of notepad entries for user: {}, request: {}", callerUserInternalId, request);
 
         User user = userRepository.findById(callerUserInternalId)
             .orElseThrow(() -> new UserNotFoundException("User not found."));
@@ -49,9 +55,17 @@ public class NotepadEntryService {
                 .map(NotepadEntryResponse::fromEntity);
     }
 
+    /**
+     * Reads the notes of the specified {@link StudentUser} based on {@link UUID}.
+     * Only a {@link TeacherUser} with access to the {@link StudentUser}'s notes can use this method.
+     * @param callerUserInternalId
+     * @param studentUserUuid
+     * @param request
+     * @return
+     */
     @Transactional(readOnly = true)
-    public Page<NotepadEntryResponse> findAllStudentNotes(@NonNull Long callerUserInternalId, @NonNull UUID studentUserUuid, @NonNull NotepadEntryReadRequest request) {
-        log.debug("Fetching page of notepad entries for user: {}, request: {}", callerUserInternalId, request);
+    public Page<NotepadEntryResponse> readStudentNotes(@NonNull Long callerUserInternalId, @NonNull UUID studentUserUuid, @NonNull NotepadEntryReadRequest request) {
+        log.info("Fetching page of notepad entries for user: {}, request: {}", callerUserInternalId, request);
 
         TeacherUser teacherUser = teacherUserRepository.findById(callerUserInternalId)
             .orElseThrow(() -> new UserNotFoundException("Teacher user not found."));
@@ -59,12 +73,18 @@ public class NotepadEntryService {
         StudentUser studentUser = studentUserRepository.findByPublicUuid(studentUserUuid)
             .orElseThrow(() -> new UserNotFoundException("Student user not found."));
         
-        //TODO: Verify that the teacher has read access to this student's notes.
+        //TODO: Verify that the teacher has read access to this student's notes. 
 
         return notepadEntryRepository.findAllByUsers_InternalId(studentUser.getInternalId(), request.toPageable())
                 .map(NotepadEntryResponse::fromEntity);
     }
 
+    /**
+     * Creates a new {@link NotepadEntry} that's assigned to the calling {@link User}.
+     * @param callerUserInternalId
+     * @param request
+     * @return
+     */
     @Transactional
     public NotepadEntryResponse create(@NonNull Long callerUserInternalId, @NonNull NotepadEntryCreateRequest request) {
         log.info("Creating new notepad entry for user: {}, request: {}", callerUserInternalId, request);
@@ -80,6 +100,14 @@ public class NotepadEntryService {
         return NotepadEntryResponse.fromEntity(savedNotepadEntry);
     }
 
+    /**
+     * Updates the internal values of the {@link NotepadEntry} tied to the given {@link UUID}.
+     * This can only be done if the caller {@link User} has access to the {@link NotepadEntry}.
+     * @param callerUserInternalId
+     * @param notepadEntryPublicUuid
+     * @param request
+     * @return
+     */
     @Transactional
     public NotepadEntryResponse update(@NonNull Long callerUserInternalId, @NonNull UUID notepadEntryPublicUuid, @NonNull NotepadEntryUpdateRequest request) {
         log.info("Updating notepad entry: {}, called by user: {}, with request {}", notepadEntryPublicUuid, callerUserInternalId, request);
@@ -95,6 +123,12 @@ public class NotepadEntryService {
         return NotepadEntryResponse.fromEntity(notepadEntryRepository.save(entry));
     }
 
+    /**
+     * Updates the {@link NotepadEntry} tied to the given {@link UUID}.
+     * Can only be done if the caller {@link User} is the owner of the {@link NotepadEntry}.
+     * @param callerUserInternalId
+     * @param notepadEntryPublicUuid
+     */
     @Transactional
     public void delete(@NonNull Long callerUserInternalId, @NonNull UUID notepadEntryPublicUuid) {
         log.info("Deleting notepad entry: {}, called by user: {}", notepadEntryPublicUuid, callerUserInternalId);

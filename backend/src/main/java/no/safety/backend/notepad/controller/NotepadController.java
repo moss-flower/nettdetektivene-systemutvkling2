@@ -14,10 +14,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.auth.model.UserPrincipal;
@@ -34,6 +38,7 @@ import no.safety.backend.notepad.service.NotepadEntryService;
 @RestController
 @RequestMapping("/api/v1/notepad")
 @RequiredArgsConstructor
+@Tag(name = "Notepad", description = "CRUD Endpoints for notes")
 public class NotepadController {
 
     private final NotepadEntryService notepadEntryService;
@@ -45,11 +50,19 @@ public class NotepadController {
      * @param request
      * @return
      */
+    @Operation(
+        summary = "Get user notes",
+        description = "Retrieves a paginated list of notepad entries belonging to the authenticated user."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved notes"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
     @GetMapping(value = "notes")
     public Page<NotepadEntryResponse> getNotepadEntries(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid NotepadEntryReadRequest request) {
-        return notepadEntryService.findAll(userPrincipal.getUserInternalId(), request);
+        return notepadEntryService.readCallerNotes(userPrincipal.getUserInternalId(), request);
     }
 
     /**
@@ -59,13 +72,22 @@ public class NotepadController {
      * @param request
      * @return
      */
+    @Operation(
+        summary = "Get student notes",
+        description = "Retrieves a paginated list of notes for a specific student. Requires TEACHER role."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved student notes"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Student not found", content = @Content)
+    })
     @GetMapping(value = "/students/{studentUuid}/notes/")
     @PreAuthorize("hasRole('TEACHER')")
     public Page<NotepadEntryResponse> getNotepadEntriesForStudent(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable UUID studentUuid, 
             @Valid NotepadEntryReadRequest request) {
-        return notepadEntryService.findAllStudentNotes(userPrincipal.getUserInternalId(), studentUuid, request);
+        return notepadEntryService.readStudentNotes(userPrincipal.getUserInternalId(), studentUuid, request);
     }
 
     /**
@@ -74,6 +96,14 @@ public class NotepadController {
      * @param request
      * @return
      */
+    @Operation(
+        summary = "Create note",
+        description = "Creates a new notepad entry for the authenticated user."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Note successfully created"),
+        @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content)
+    })
     @PostMapping(value = "create", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public NotepadEntryResponse createNotepadEntry(
@@ -89,6 +119,14 @@ public class NotepadController {
      * @param request
      * @return
      */
+    @Operation(
+        summary = "Update note",
+        description = "Updates an existing notepad entry identified by UUID."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Note successfully updated"),
+        @ApiResponse(responseCode = "404", description = "Note not found", content = @Content)
+    })
     @PutMapping(value = "update/{uuid}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public NotepadEntryResponse updateNotepadEntry(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -102,6 +140,14 @@ public class NotepadController {
      * @param userPrincipal
      * @param uuid
      */
+    @Operation(
+        summary = "Delete note",
+        description = "Permanently deletes a notepad entry."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Note successfully deleted"),
+        @ApiResponse(responseCode = "404", description = "Note not found", content = @Content)
+    })
     @DeleteMapping("/{uuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteNotepadEntry(
