@@ -30,16 +30,16 @@ const goBack = () => {
 	void navigateTo(routePaths.teacherOverview);
 };
 
-const refreshSelectableOptions = async () => {
-	selectableOptions.value = await getWorldFactorySelectionOptions();
+const refreshSelectableOptions = () => {
+	selectableOptions.value = getWorldFactorySelectionOptions();
 };
 const handleSelectionUpdated = (selectionKey: string) => {
-	void refreshSelectableOptions();
+	refreshSelectableOptions();
 	selectedWorldKey.value = selectionKey;
 };
 
 const handleSaved = () => {
-	void refreshSelectableOptions();
+	refreshSelectableOptions();
 	selectedWorldKey.value = lockedWorldUid.value
 		? makeWorldFactoryExistingSelectionKey(lockedWorldUid.value)
 		: "";
@@ -47,7 +47,7 @@ const handleSaved = () => {
 };
 
 const handleDeleted = () => {
-	void refreshSelectableOptions();
+	refreshSelectableOptions();
 	selectedWorldKey.value = lockedWorldUid.value
 		? makeWorldFactoryExistingSelectionKey(lockedWorldUid.value)
 		: "";
@@ -58,7 +58,7 @@ const closeSavedPopup = () => {
 };
 
 onMounted(() => {
-	void refreshSelectableOptions();
+	refreshSelectableOptions();
 });
 
 watch(
