@@ -8,16 +8,16 @@ export function getBackendAPI(event: H3Event) {
     baseURL,
 
     onRequest({ options }) {
-      const authHeader = getHeader(event, "authorization");
       const cookieHeader = getHeader(event, "cookie");
+      const authHeader = getHeader(event, "authorization");
       const headers = new Headers(options.headers || {});
-
-      if (authHeader) {
-        headers.set("Authorization", authHeader);
-      }
 
       if (cookieHeader) {
         headers.set("cookie", cookieHeader);
+      }
+
+      if (authHeader) {
+        headers.set("Authorization", authHeader);
       }
 
       options.headers = headers;
