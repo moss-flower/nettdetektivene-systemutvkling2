@@ -22,14 +22,13 @@ export type ExerciseData = {
 };
 
 export class Exercise {
-  publicId: string;
+  uid: string;
   title: string;
   difficultyName: string;
   description?: string;
   tasks: ExerciseTask[];
 
   constructor(data: {
-    publicId?: string;
     uid?: string;
     title: string;
     difficultyName?: string;
@@ -37,15 +36,11 @@ export class Exercise {
     description?: string;
     tasks: ExerciseTask[];
   }) {
-    this.publicId = data.publicId ?? data.uid ?? "";
+    this.uid = data.uid ?? "";
     this.title = data.title;
     this.difficultyName = data.difficultyName ?? data.entryName ?? "";
     this.description = data.description;
     this.tasks = data.tasks;
-  }
-
-  get uid() {
-    return this.publicId;
   }
 
   get entryName() {
