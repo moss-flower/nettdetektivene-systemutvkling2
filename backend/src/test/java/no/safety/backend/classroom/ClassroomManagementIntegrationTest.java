@@ -13,6 +13,7 @@ import java.util.UUID;
 import no.safety.backend.classroom.dto.ClassroomRequest;
 import no.safety.backend.classroom.dto.ClassroomResponse;
 import no.safety.backend.classroom.repository.ClassroomRepository;
+import no.safety.backend.notification.repository.NotificationRepository;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.model.User;
@@ -33,6 +34,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.Authentication;
@@ -74,8 +76,12 @@ class ClassroomManagementIntegrationTest {
   @Autowired
   private StudentUserRepository studentRepo;
 
+  @Autowired
+  private NotificationRepository notificationRepository;
+
   @BeforeEach
   void setup() {
+    notificationRepository.deleteAll();
     studentRepo.deleteAll();
     classroomRepository.deleteAll();
     teacherRepo.deleteAll();
@@ -113,17 +119,17 @@ class ClassroomManagementIntegrationTest {
         .contentType(MediaType.APPLICATION_JSON)
         .body(new ClassroomRequest("Klasse 5B", "Har mange tullinger", DEFAULT_WORLD_UID))
         .exchange()
-        .expectStatus().isNotFound();
+        .expectStatus().isForbidden();
   }
 
   @Test
   void createClassroom_withNonexistentUser_returnsNotFound() {
-    client.post().uri("/classrooms")
+    client.post().uri("/api/v1/classrooms")
         .header("X-Test-User", UUID.randomUUID().toString())
         .contentType(MediaType.APPLICATION_JSON)
         .body(new ClassroomRequest("Klasse 5B", "Har mange tullinger", DEFAULT_WORLD_UID))
         .exchange()
-        .expectStatus().isNotFound();
+        .expectStatus().isForbidden();
   }
 
   @Test
@@ -163,7 +169,7 @@ class ClassroomManagementIntegrationTest {
   void updateClassroom_nonexistentClassroom_returnsNotFound() {
     TeacherUser teacher = saveTeacher("teacher1");
 
-    client.put().uri("/api/v1/classrooms/{id}", 9999)
+    client.put().uri("/api/v1/classrooms/{id}", UUID.randomUUID())
         .header("X-Test-User", teacher.getPublicUuid().toString())
         .contentType(MediaType.APPLICATION_JSON)
         .body(new ClassroomRequest("Klasse 7C", "En seriøs klasse", QUICKSTART_WORLD_UID))
@@ -198,7 +204,7 @@ class ClassroomManagementIntegrationTest {
   void deleteClassroom_nonexistentClassroom_returnsNotFound() {
     TeacherUser teacher = saveTeacher("teacher1");
 
-    client.delete().uri("/api/v1/classrooms/{id}", 9999)
+    client.delete().uri("/api/v1/classrooms/{id}", UUID.randomUUID())
         .header("X-Test-User", teacher.getPublicUuid().toString())
         .exchange()
         .expectStatus().isNotFound();
@@ -258,7 +264,7 @@ class ClassroomManagementIntegrationTest {
     client.post().uri("/api/v1/classrooms/join/{code}", created.code())
         .header("X-Test-User", other.getPublicUuid().toString())
         .exchange()
-        .expectStatus().isNotFound();
+        .expectStatus().isForbidden();
   }
 
   @Test
@@ -387,7 +393,7 @@ class ClassroomManagementIntegrationTest {
   void regenerateCode_whenClassroomNotFound_returnsNotFound() {
     TeacherUser teacher = saveTeacher("teacher1");
 
-    client.post().uri("/api/v1/classrooms/{id}/code", 6767)
+    client.post().uri("/api/v1/classrooms/{id}/code", UUID.randomUUID())
         .header("X-Test-User", teacher.getPublicUuid().toString()).exchange().expectStatus()
         .isNotFound();
   }
@@ -455,7 +461,9 @@ class ClassroomManagementIntegrationTest {
       if (header != null) {
         Optional<User> maybeUser = userRepository.findByPublicUuid(UUID.fromString(header));
         if (maybeUser.isPresent()) {
-          UserPrincipal principal = new UserPrincipal(maybeUser.get(), List.of());
+          User user = maybeUser.get();
+          String role = user instanceof TeacherUser ? "ROLE_TEACHER" : "ROLE_STUDENT";
+          UserPrincipal principal = new UserPrincipal(user, List.of(new SimpleGrantedAuthority(role)));
           Authentication auth = new UsernamePasswordAuthenticationToken(
               principal, null, principal.getAuthorities());
           SecurityContextHolder.getContext().setAuthentication(auth);
