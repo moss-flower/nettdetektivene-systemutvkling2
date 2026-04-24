@@ -6,6 +6,7 @@ defineProps<{
   message: string
   isLast: boolean
   correct: boolean
+  actionLabel?: string
 }>()
 
 defineEmits<{
@@ -36,7 +37,7 @@ defineEmits<{
         type="button"
         @click="$emit('next')"
       >
-        {{ isLast ? 'Fullfør' : 'Neste sak' }}
+        {{ actionLabel ?? (isLast ? 'Fullfor' : 'Neste sak') }}
       </button>
     </template>
   </DialogTemplate>
