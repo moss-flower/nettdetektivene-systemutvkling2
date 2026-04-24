@@ -539,7 +539,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "sommer2026",
                 12,
                 4,
-                List.of("sommer", "2026", "123", "passord")
+                List.of("123", "qwerty", "passord")
             ),
             xOrYTask(
                 "Velg passordet som virker sterkest.",
