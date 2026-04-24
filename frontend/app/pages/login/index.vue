@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { routePaths } from "~/composables/utils/routePaths";
 import { useAuth } from "~/composables/useAuth";
+import { useClassrooms } from "~/composables/useClassrooms";
 
 type ProviderId = "microsoft" | "idporten";
 
@@ -10,6 +11,7 @@ definePageMeta({
 
 const route = useRoute();
 const { login } = useAuth();
+const { student } = useClassrooms();
 
 const email = ref("");
 const password = ref("");
@@ -72,7 +74,22 @@ async function handleLogin() {
   loading.value = true;
 
   try {
-    await login(email.value.trim(), password.value);
+    const response = await login(email.value.trim(), password.value);
+
+    if (response.roles.includes("ROLE_TEACHER")) {
+      await navigateTo(routePaths.teacherOverview);
+      return;
+    }
+
+    if (response.roles.includes("ROLE_STUDENT")) {
+      try {
+        await student.getMyClassroom();
+        await navigateTo(routePaths.studentHome);
+      } catch {
+        await navigateTo(routePaths.join);
+      }
+      return;
+    }
 
     await navigateTo(targetRoute.value);
 
