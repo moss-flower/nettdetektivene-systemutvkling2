@@ -11,11 +11,12 @@
   --palette-gold-500: #E8B600;
   --palette-gold-400: #F5CA2E;
 
+  --palette-green-900: #1B5735;
   --palette-green-700: #247048;
   --palette-green-600: #2E8B57;
   --palette-green-100: #D4F5E2;
 
-  --palette-red-700: #A33225;
+  --palette-red-700: #8A2A2A;
   --palette-red-600: #C0392B;
   --palette-red-200: #F3C4BC;
   --palette-red-100: #FFF1EF;
@@ -66,6 +67,9 @@
   --palette-overlay-cork-medium: rgba(111, 66, 33, 0.22);
   --palette-overlay-cork-strong: rgba(125, 79, 42, 0.52);
   --palette-overlay-cork-shadow: rgba(74, 39, 15, 0.18);
+
+  --palette-overlay-red-soft: rgba(163, 50, 37, 0.18);
+  --palette-overlay-green-soft: rgba(36, 122, 72, 0.18);
 }
 
 /* -------- Shared semantic tokens -------- */
