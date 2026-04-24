@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.auth.model.UserPrincipal;
+import no.safety.backend.weeklymystery.dto.WeeklyMysterPromptResponse;
+import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptCreateRequest;
 import no.safety.backend.weeklymystery.dto.WeeklyMysterySubmissionCreateRequest;
 import no.safety.backend.weeklymystery.service.WeeklyMysteryService;
 
@@ -21,14 +23,33 @@ public class WeeklyMysteryController {
 
     private final WeeklyMysteryService weeklyMysteryService;
 
-
+    /**
+     * Allows students to submit files related to a given Weekly Mystery prompt
+     * @param request an object containing a prompt id, file and message.
+     * @param principal user information (Automatically provided by Spring, ignore)
+     * @return an empty response entity indicating success or failure.
+     */
     @PreAuthorize("hasRole('STUDENT')")
-    @PostMapping(value = "/")
+    @PostMapping(value = "/submission")
     public ResponseEntity<?> submitResponse(@Valid @RequestBody WeeklyMysterySubmissionCreateRequest request,
-         @AuthenticationPrincipal UserPrincipal principal) {
-            weeklyMysteryService.saveStudentSubmission(request, principal.getUserInternalId());
-            return ResponseEntity.ok(null); 
-         }
+            @AuthenticationPrincipal UserPrincipal principal) {
+        weeklyMysteryService.saveStudentSubmission(request, principal.getUserInternalId());
+        return ResponseEntity.ok(null);
+    }
 
-    
+    /**
+     * Allows teachers to submit new Weekly Mystery prompts for persistence.
+     * @param request A request containing clue, title, prompt, selected date and selected classroom (public UUID's)
+     * @param principal user information (Automatically provided by spring, Ignore)
+     * @return a response entity containing the submitted prompt information plus public UUID for prompt on success.
+     */
+    @PreAuthorize("hasRole('TEACHER')")
+    @PostMapping(value = "/prompt")
+    public ResponseEntity<WeeklyMysterPromptResponse> submitPrompt(
+            @Valid @RequestBody WeeklyMysteryPromptCreateRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(weeklyMysteryService.savePrompt(request, principal.getUserInternalId()));
+        
+    }
+
 }
