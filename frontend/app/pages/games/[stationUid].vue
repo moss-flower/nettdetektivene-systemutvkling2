@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BossCharacter from '~/components/gameplay/shared/BossCharacter.vue'
 import EmailHotspotsTemplate from '~/components/gameplay/templates/EmailHotspotsTemplate.vue'
 import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDialog.vue'
 import PasswordStrengthTemplate from '~/components/gameplay/templates/PasswordStrengthTemplate.vue'
