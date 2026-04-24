@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import StudentHomeMenuItem from '~/components/student/StudentHomeMenuItem.vue';
 import { routePaths } from '~/composables/utils/routePaths';
+import { useAuth } from '~/composables/useAuth';
 import mapImage from "~/assets/images/studentHome/map.png";
 import helpImage from "~/assets/images/studentHome/help.png";
 import profileImage from "~/assets/images/studentHome/profile.png";
@@ -98,6 +99,8 @@ const items: StudentHomeItem[] = [
 ];
 
 const router = useRouter();
+const { logout } = useAuth();
+const isLoggingOut = ref(false);
 
 function handleClick(item: StudentHomeItem) {
   if (!item.route) {
@@ -106,10 +109,29 @@ function handleClick(item: StudentHomeItem) {
 
   router.push(item.route);
 }
+
+async function handleLogout() {
+  if (isLoggingOut.value) {
+    return;
+  }
+
+  isLoggingOut.value = true;
+
+  try {
+    await logout();
+    await navigateTo(routePaths.home);
+  } finally {
+    isLoggingOut.value = false;
+  }
+}
 </script>
 
 <template>
   <section class="student-home">
+    <button class="student-home__logout" type="button" :disabled="isLoggingOut" @click="handleLogout">
+      {{ isLoggingOut ? 'Logger ut...' : 'Logg ut' }}
+    </button>
+
     <div class="student-home__board" aria-label="Elevens hjemskjerm">
       <StudentHomeMenuItem
         v-for="item in items"
@@ -146,6 +168,33 @@ function handleClick(item: StudentHomeItem) {
   padding: var(--layout-page-padding);
   overflow: hidden;
   box-sizing: border-box;
+  position: relative;
+}
+
+.student-home__logout {
+  position: fixed;
+  top: var(--space-4);
+  right: var(--space-4);
+  z-index: 30;
+  border: var(--border-width-thin) solid var(--palette-gray-300);
+  border-radius: 999px;
+  padding: 0.75rem 1rem;
+  background: var(--palette-white);
+  color: var(--palette-navy-900);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 var(--space-2) var(--space-4) var(--board-shadow);
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.student-home__logout:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.student-home__logout:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .student-home__board {

@@ -249,8 +249,18 @@ watch(
 );
 
 onMounted(async () => {
-	availableStations.value = await Station.backendFetchAllStations();
-	knownExistingUids.value = new Set((await fetchAllWorldFactoryWorlds()).map((world) => world.uid));
+	try {
+		availableStations.value = await Station.backendFetchAllStations();
+	} catch {
+		availableStations.value = [];
+	}
+
+	try {
+		knownExistingUids.value = new Set((await fetchAllWorldFactoryWorlds()).map((world) => world.uid));
+	} catch {
+		knownExistingUids.value = new Set();
+	}
+
 	storedDrafts.value = readWorldFactoryStore().drafts;
 });
 
