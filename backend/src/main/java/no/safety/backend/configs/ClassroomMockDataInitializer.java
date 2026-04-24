@@ -38,6 +38,8 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
   public static final UUID NOAH_ELEV_UID = stableUuid("a14420f5-0361-484c-a693-800330881035");
   public static final UUID INGRID_ELEV_UID = stableUuid("3973814f-8816-4698-925e-40c315472072");
   public static final UUID EMIL_ELEV_UID = stableUuid("87229500-189e-4823-8874-0a6014430d1d");
+  public static final UUID MIA_ELEV_UID = stableUuid("54550c30-f4ac-44f0-96e6-fcfe4d9d9bd5");
+  public static final UUID LUKAS_ELEV_UID = stableUuid("ae7780a8-f017-4956-9468-d72d3617baa0");
 
   public static final UUID KLASSE_5B_UID = stableUuid("729b159a-97a1-4917-a71b-901420a2749d");
   public static final UUID KLASSE_6A_UID = stableUuid("d217f63d-1252-419f-8106-998728797235");
@@ -78,8 +80,11 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     StudentUser noahElev = upsertStudent(NOAH_ELEV_UID, "Noah Elev", "noah.elev@test.com", studentRole);
     StudentUser ingridElev = upsertStudent(INGRID_ELEV_UID, "Ingrid Elev", "ingrid.elev@test.com", studentRole);
     StudentUser emilElev = upsertStudent(EMIL_ELEV_UID, "Emil Elev", "emil.elev@test.com", studentRole);
+    StudentUser miaElev = upsertStudent(MIA_ELEV_UID, "Mia Elev", "mia.elev@test.com", studentRole);
+    StudentUser lukasElev = upsertStudent(LUKAS_ELEV_UID, "Lukas Elev", "lukas.elev@test.com", studentRole);
 
-    clearSeededMemberships(List.of(adaElev, eliasElev, saraElev, noahElev, ingridElev, emilElev));
+    clearSeededMemberships(List.of(adaElev, eliasElev, saraElev, noahElev, ingridElev, emilElev, miaElev,
+        lukasElev));
 
     Classroom klasse5b = upsertClassroom(
         KLASSE_5B_UID,
