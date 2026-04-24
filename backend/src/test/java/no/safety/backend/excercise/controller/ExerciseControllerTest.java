@@ -63,6 +63,7 @@ class ExerciseControllerTest {
 
     publicId = UUID.randomUUID();
     TaskResponse taskResp = new TaskResponse(
+        1L,
         TemplateKind.MULTIPLE_CHOICE,
         tr1.introText(),
         tr1.feedbackCorrect(),

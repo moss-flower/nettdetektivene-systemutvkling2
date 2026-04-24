@@ -10,5 +10,5 @@ import no.safety.backend.notification.model.Notification;
  * Defines a JPA repository for Notifications
  */
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
-    Set<Notification> findByTarget_IntenalId(long id);
+    Set<Notification> findByTarget_InternalId(long id);
 } 

@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
 
   console.log("REACHED ROUTE GET ACHIEVMEENTS UNLOCKED")
 
-  return await api("/v1/achievements/unlocked", {
+  return await api("/achievements/unlocked", {
     method: "GET",
   });
 });

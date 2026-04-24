@@ -4,6 +4,8 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OrderColumn;
@@ -26,7 +28,10 @@ import lombok.Setter;
 public class Station {
 
   @Id
-  @Column(name = "uid", nullable = false, updatable = false, columnDefinition = "BINARY(16)")
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long internalId;
+
+  @Column(name = "uid", nullable = false, updatable = false, unique = true, columnDefinition = "BINARY(16)")
   private UUID uid;
 
   @Column(nullable = false, length = 100)
@@ -42,7 +47,10 @@ public class Station {
   private String backgroundColor;
 
   @ElementCollection
-  @CollectionTable(name = "station_exercises", joinColumns = @JoinColumn(name = "station_uid"))
+  @CollectionTable(
+      name = "station_exercises",
+      joinColumns = @JoinColumn(name = "station_uid", referencedColumnName = "uid")
+  )
   @Column(name = "exercise_uid", columnDefinition = "BINARY(16)")
   @OrderColumn(name = "sort_order")
   private List<UUID> exerciseUids = new ArrayList<>();

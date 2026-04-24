@@ -1,17 +1,12 @@
 package no.safety.backend.notification;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import java.lang.foreign.Linker.Option;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -62,7 +57,16 @@ public class NotificationServiceTest {
         targets = new HashSet<>();
         targets.add(target);
 
-        Classroom classroom = new Classroom(0l, "chicken", "cicada", "desc", "uid", targets, Set.of());
+        Classroom classroom = new Classroom(
+            0L,
+            UUID.randomUUID(),
+            "chicken",
+            "cicada",
+            "desc",
+            UUID.randomUUID(),
+            targets,
+            Set.of()
+        );
         sender = StudentUser.builder()
             .publicUuid(new UUID(0, 0))
             .internalId(0l)

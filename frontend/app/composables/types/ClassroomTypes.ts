@@ -4,7 +4,7 @@ export type ClassroomUser = {
 };
 
 export type Classroom = {
-  id: number;
+  uid: string;
   name: string;
   description: string;
   worldUid: string;
