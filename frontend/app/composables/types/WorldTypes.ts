@@ -6,12 +6,6 @@ export type WorldData = {
   stationUids?: string[];
 };
 
-const seededWorldUidAliases: Record<string, string> = {
-  "schoolyard": "c63c53d3-23bb-3f8c-b511-6f3d106f1fa9",
-  "quickstart": "0bc7b944-1356-300f-84ed-5bccb0bbc7ce",
-  "creative-lab": "fa26a14f-445a-35bb-9c76-a25ec44579f7",
-};
-
 export class World {
   uid: string;
   title: string;
@@ -31,10 +25,6 @@ export class World {
     return new World(data);
   }
 
-  static resolveBackendUid(uid: string): string {
-    return seededWorldUidAliases[uid] ?? uid;
-  }
-
   static async backendFetchAllWorlds(): Promise<World[]> {
     const { $api } = useNuxtApp();
     const worlds = await $api<WorldData[]>("/worlds", {
@@ -48,7 +38,7 @@ export class World {
     const { $api } = useNuxtApp();
 
     try {
-      const world = await $api<WorldData>(`/worlds/${World.resolveBackendUid(uid)}`, {
+      const world = await $api<WorldData>(`/worlds/${uid}`, {
         method: "GET",
       });
 

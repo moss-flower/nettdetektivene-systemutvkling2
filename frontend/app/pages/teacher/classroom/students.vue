@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { routePaths, routePathsWithString } from '~/composables/utils/routePaths';
 const route = useRoute();
-const { getTeacherClassroomById, getteacherClassroomStudents } = useTeacherDashboard();
+const { teacher } = useClassrooms();
   
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
-const classroom = computed(() => getTeacherClassroomById(classroomId.value));
-const students = computed(() => getteacherClassroomStudents(classroomId.value));
+const { data: classroom } = await useAsyncData(
+  'teacher-classroom-students',
+  () => (classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : null),
+  { watch: [classroomId] },
+);
+
+const students = computed(() => classroom.value?.members ?? []);
 </script>
 
 <template>
@@ -22,21 +27,15 @@ const students = computed(() => getteacherClassroomStudents(classroomId.value));
         <thead>
           <tr>
             <th>Elev</th>
-            <th>Progresjon</th>
-            <th>Poeng</th>
-            <th>Medaljer</th>
-            <th>Sist aktiv</th>
+            <th>Bruker-ID</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="student in students" :key="student.id">
+          <tr v-for="student in students" :key="student.publicUuid">
             <td>
-              <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, `?classroomId=${classroomId}&studentId=${student.id}`)">{{ student.name }}</NuxtLink>
+              <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, `?classroomId=${classroomId}&studentId=${student.publicUuid}`)">{{ student.username }}</NuxtLink>
             </td>
-            <td>{{ Math.round((student.completedLevels / student.totalLevels) * 100) }} %</td>
-            <td>{{ student.points }}</td>
-            <td>{{ student.badges }}</td>
-            <td>{{ student.lastActive }}</td>
+            <td>{{ student.publicUuid }}</td>
           </tr>
         </tbody>
       </table>

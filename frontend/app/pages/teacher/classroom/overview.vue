@@ -1,14 +1,25 @@
 <script setup lang="ts">
+import { World } from '~/composables/types/WorldTypes';
 const route = useRoute();
-const { getTeacherClassroomById, getClassroomLeaderboard, getTeacherClassroomPendingStudents } = useTeacherDashboard();
 import { routePaths, routePathsWithString, routePathsWithUid } from '~/composables/utils/routePaths';
+
+const { teacher } = useClassrooms();
 
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
 
-const classroom = computed(() => getTeacherClassroomById(classroomId.value));
+const { data: classroom } = await useAsyncData(
+  'teacher-classroom-overview',
+  () => (classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : null),
+  { watch: [classroomId] },
+);
 
-const leaderboard = computed(() => getClassroomLeaderboard(classroomId.value));
-const pendingStudents = computed(() => getTeacherClassroomPendingStudents(classroomId.value));
+const worldUid = computed(() => classroom.value?.worldUid ?? '');
+
+const { data: world } = await useAsyncData(
+  'teacher-classroom-world',
+  () => (worldUid.value ? World.backendFetchWorldByUid(worldUid.value) : null),
+  { watch: [worldUid] },
+);
 </script>
 
 <template>
@@ -17,11 +28,11 @@ const pendingStudents = computed(() => getTeacherClassroomPendingStudents(classr
       <NuxtLink class="backLink" :to="routePaths.teacherOverview">Tilbake til hjemskjerm</NuxtLink>
       <p class="eyebrow">Klasseromsdetaljer</p>
       <h1>{{ classroom?.name ?? 'Ukjent klasserom' }}</h1>
-      <p class="subtitle">Ledertavle sortert etter progresjon.</p>
+      <p class="subtitle">Viser klasserommet slik det ligger i backend akkurat nå.</p>
     </header>
 
     <div v-if="classroom" class="actionGrid">
-      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomNotifications, `?classroomId=${classroom.id}`)" class="actionCard">
+      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomNotifications, `?classroomId=${classroom.uid}`)" class="actionCard">
         <span class="actionCard__title">Varslingssenter</span>
         <img src="https://placehold.co/128x128?text=VS" alt="Varslingssenter" class="actionCard__image">
       </NuxtLink>
@@ -36,7 +47,7 @@ const pendingStudents = computed(() => getTeacherClassroomPendingStudents(classr
         <img src="https://placehold.co/128x128?text=TS" alt="Test spillet" class="actionCard__image">
       </NuxtLink>
 
-      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomMystery, `?classroomId=${classroom.id}`)" class="actionCard">
+      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomMystery, `?classroomId=${classroom.uid}`)" class="actionCard">
         <span class="actionCard__title">Ukens mysterium</span>
         <img src="https://placehold.co/128x128?text=UM" alt="Ukens mysterium" class="actionCard__image">
       </NuxtLink>
@@ -44,59 +55,46 @@ const pendingStudents = computed(() => getTeacherClassroomPendingStudents(classr
 
     <div v-if="classroom" class="summaryRow">
       <article class="summaryCard">
-        <span class="summaryCard__label">Klassescore</span>
-        <strong>{{ classroom.totalScore }}</strong>
-      </article>
-
-      <article class="summaryCard">
         <span class="summaryCard__label">Elever</span>
-        <strong>{{ classroom.studentCount }}</strong>
+        <strong>{{ classroom.members.length }}</strong>
       </article>
 
       <article class="summaryCard">
-        <span class="summaryCard__label">Gjennomsnittlig progresjon</span>
-        <strong>{{ classroom.averageProgressPercent }} %</strong>
+        <span class="summaryCard__label">Eiere</span>
+        <strong>{{ classroom.owners.length }}</strong>
+      </article>
+
+      <article class="summaryCard">
+        <span class="summaryCard__label">Kode</span>
+        <strong>{{ classroom.code }}</strong>
       </article>
     </div>
 
     <section v-if="classroom" class="pendingCard">
       <div class="pendingCard__header">
-        <h2>Ventende elever</h2>
-        <p>Elever som venter på å bli godkjent inn i klasserommet.</p>
+        <h2>Verden</h2>
+        <p>Klasserommet bruker verdenen som er koblet til i backend.</p>
       </div>
 
-      <div v-if="pendingStudents.length > 0" class="pendingList">
-        <article v-for="student in pendingStudents" :key="student.id" class="pendingStudent">
-          <strong>{{ student.name }}</strong>
-          <span>Sendte forespørsel {{ student.requestedAt }}</span>
-        </article>
-      </div>
-
-      <p v-else class="pendingEmpty">Ingen elever venter på godkjenning.</p>
+      <p class="pendingEmpty">{{ world?.title ?? classroom.worldUid }}</p>
     </section>
 
     <div v-if="classroom" class="tableCard">
       <table>
         <thead>
           <tr>
-            <th>Rang</th>
             <th>Elev</th>
-            <th>Progresjon</th>
-            <th>Fullførte nivåer</th>
-            <th>Poeng</th>
+            <th>Bruker-ID</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(student, index) in leaderboard" :key="student.id">
-            <td>{{ index + 1 }}</td>
+          <tr v-for="student in classroom.members" :key="student.publicUuid">
             <td>
-              <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, `?classroomId=${classroomId}&studentId=${student.id}`)" class="studentLink">
-                {{ student.name }}
+              <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, `?classroomId=${classroomId}&studentId=${student.publicUuid}`)" class="studentLink">
+                {{ student.username }}
               </NuxtLink>
             </td>
-            <td>{{ student.progressPercent }} %</td>
-            <td>{{ student.completedLevels }} / {{ student.totalLevels }}</td>
-            <td>{{ student.points }}</td>
+            <td>{{ student.publicUuid }}</td>
           </tr>
         </tbody>
       </table>
