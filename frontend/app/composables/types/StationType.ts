@@ -28,7 +28,7 @@ export class Station {
     this.image = data.image;
     this.backgroundColor = data.backgroundColor ?? "#cfe9ff";
     this.exerciseUids = data.exerciseUids ?? [];
-    this.isBoss = true; //TODO: true is just for testing, replace with: data.isBoss ?? false;
+    this.isBoss = data.isBoss ?? false;
   }
 
   get name() {

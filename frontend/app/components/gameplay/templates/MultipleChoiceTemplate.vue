@@ -12,6 +12,7 @@ const props = defineProps<{
   correctChoice: MultipleChoiceOptionKey
   disabled?: boolean
   selectedChoice?: MultipleChoiceOptionKey | null
+  hideImages?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -41,7 +42,7 @@ const choose = (choice: MultipleChoiceOptionKey) => {
       </p>
     </header>
 
-    <div class="multiple-choice-template__image-frame">
+    <div v-if="!props.hideImages" class="multiple-choice-template__image-frame">
       <img
         :src="props.prompt?.imageUrl ?? ''"
         :alt="props.prompt?.imageAlt ?? ''"

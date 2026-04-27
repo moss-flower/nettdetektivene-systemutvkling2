@@ -89,8 +89,12 @@ const answerState = ref<{ correct: boolean, choice: string, missingStartingPassw
 const isExerciseComplete = computed(() => tasks.length > 0 && correctCount.value === tasks.length)
 
 const isBossStation = station.isBoss
-const bossMaxHp = tasks.length
-const bossHp = computed(() => Math.max(0, bossMaxHp - correctCount.value))
+const bossMaxHp = 100
+const bossHp = computed(() => {
+  if (tasks.length === 0) return bossMaxHp
+  if (correctCount.value >= tasks.length) return 0
+  return Math.max(0, bossMaxHp - Math.floor((correctCount.value * bossMaxHp) / tasks.length))
+})
 const bossDamaged = ref(false)
 let bossDamageTimeout: ReturnType<typeof setTimeout> | null = null
 
@@ -382,16 +386,16 @@ const next = async () => {
   <section class="station-page">
     <header class="station-page__hero">
       <div class="station-page__header">
-        <div class="station-page__meta">
-          <p class="station-page__eyebrow">{{ station.title }}</p>
-          <p class="station-page__progress-pill">{{ progressLabel }}</p>
-        </div>
         <BossCharacter
           v-if="isBossStation"
           :hp="bossHp"
           :max-hp="bossMaxHp"
           :damaged="bossDamaged"
         />
+        <div v-else class="station-page__meta">
+          <p class="station-page__eyebrow">{{ station.title }}</p>
+          <p class="station-page__progress-pill">{{ progressLabel }}</p>
+        </div>
       </div>
     </header>
 
@@ -404,6 +408,7 @@ const next = async () => {
         :correct-choice="currentTask.correctChoice"
         :disabled="Boolean(answerState)"
         :selected-choice="selectedChoice"
+        :hide-images="isBossStation"
         @answered="onAnswered"
       />
       <MultipleChoiceTemplate
@@ -414,6 +419,7 @@ const next = async () => {
         :correct-choice="currentTask.correctChoice"
         :disabled="Boolean(answerState)"
         :selected-choice="selectedMultipleChoiceOption"
+        :hide-images="isBossStation"
         @answered="onAnsweredMultipleChoice"
       />
       <EmailHotspotsTemplate
