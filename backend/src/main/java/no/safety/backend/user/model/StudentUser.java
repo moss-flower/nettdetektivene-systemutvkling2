@@ -30,6 +30,7 @@ import no.safety.backend.classroom.model.Classroom;
 @SuperBuilder
 public class StudentUser extends User {
 
+    /* The score of the user. */
     @Column(nullable = false)
     @Builder.Default
     private int score = 0;

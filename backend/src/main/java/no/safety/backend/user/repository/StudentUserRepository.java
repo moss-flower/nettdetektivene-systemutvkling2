@@ -1,5 +1,11 @@
 package no.safety.backend.user.repository;
 
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import no.safety.backend.user.model.StudentUser;
@@ -9,4 +15,9 @@ import no.safety.backend.user.model.StudentUser;
  */
 @Repository
 public interface StudentUserRepository extends BaseUserRepository<StudentUser, Long> {
+    Page<StudentUser> findAllByClassroomUid(UUID classroomUid, Pageable pageable);
+
+    @Query("SELECT COUNT(s) + 1 FROM StudentUser s " + 
+        "WHERE s.classroom.internalId = :classroomInternalId AND s.score > :userScore")
+    Optional<Long> findRankByClassroomInternalIdAndScore(Long classroomInternalId, int userScore);
 }
