@@ -312,7 +312,7 @@ const setBucketColorEnabled = (bucketIndex: number, enabled: boolean) => {
 	border-radius: var(--radius-pill);
 	padding: 0.7rem var(--space-4);
 	font-weight: 700;
-	transition: transform var(--transition), border-color var(--transition), background var(--transition);
+	transition: transform var(--transition-base), border-color var(--transition-base), background var(--transition-base);
 }
 
 .ghostButton {

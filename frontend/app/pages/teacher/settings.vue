@@ -29,6 +29,11 @@ const goBack = () => {
 	max-width: 1000px;
 	margin: 0 auto;
 	padding: var(--space-4);
+	color: var(--color-text-primary);
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.88)),
+		linear-gradient(180deg, var(--palette-gray-50) 0%, var(--palette-cream-100) 100%);
+	border-radius: var(--radius-4);
 }
 
 .pageHeader {

@@ -40,8 +40,8 @@ const closePopup = () => {
 	padding: var(--space-6);
 	border: var(--border-width-hairline) solid var(--color-border-default);
 	border-radius: 1.2rem;
-	background: var(--surface);
-	box-shadow: var(--shadow);
+	background: var(--color-bg-surface);
+	box-shadow: var(--shadow-1);
 }
 
 .popupCard h2,
@@ -61,8 +61,8 @@ const closePopup = () => {
 	padding: var(--space-3) var(--space-4);
 	font-weight: 700;
 	background: var(--color-brand-primary);
-	color: var(--bg);
-	transition: transform var(--transition), border-color var(--transition), background var(--transition);
+	color: var(--color-text-onDark);
+	transition: transform var(--transition-base), border-color var(--transition-base), background var(--transition-base);
 }
 
 .primaryButton:hover {

@@ -52,7 +52,7 @@ const star = computed(() => ({
   text-decoration: none;
   color: #1d2433;
   background: linear-gradient(180deg, #f9f5ea 0%, #efe2bf 100%);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-1);
   transition:
     transform 160ms ease,
     box-shadow 160ms ease,

@@ -118,20 +118,20 @@ function handleInput(event: Event) {
 
 .displayError {
   font-size: 0.9rem;
-  color: var(--danger);
+  color: var(--color-semantic-error);
 }
 
 .input {
   width: 100%;
   padding: 0.85rem var(--space-4);
   border: var(--border-width-hairline) solid var(--color-border-default);
-  border-radius: var(--radius);
-  background: var(--surface);
+  border-radius: var(--radius-2);
+  background: var(--color-bg-surface);
   color: var(--color-text-primary);
   font: inherit;
   transition:
-    border-color var(--transition),
-    box-shadow var(--transition);
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
 }
 
 .input:focus {
@@ -141,6 +141,6 @@ function handleInput(event: Event) {
 }
 
 .inputError {
-  border-color: var(--danger);
+  border-color: var(--color-semantic-error);
 }
 </style>

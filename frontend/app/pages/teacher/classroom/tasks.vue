@@ -43,7 +43,7 @@ const { data: exercises } = await useAsyncData(
 </template>
 
 <style scoped>
-.pageShell { width: 100%; max-width: 1000px; margin: 0 auto; padding: var(--space-4); }
+.pageShell { width: 100%; max-width: 1000px; margin: 0 auto; padding: var(--space-4); color: var(--color-text-primary); background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.88)), linear-gradient(180deg, var(--palette-gray-50) 0%, var(--palette-cream-100) 100%); border-radius: var(--radius-4); }
 .pageHeader { margin-bottom: var(--space-4); }
 .backLink { display: inline-block; margin-bottom: 0.75rem; color: var(--color-brand-primary); font-weight: 600; }
 .eyebrow { color: var(--color-brand-primary); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }

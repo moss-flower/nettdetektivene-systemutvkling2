@@ -31,20 +31,21 @@ const handleLogout = async () => {
 </script>
 
 <template>
-  <section class="overviewPage">
-    <header class="overviewHeader">
-      <div class="overviewHeader__content">
-        <p class="eyebrow">Læreroversikt</p>
-        <h1>Hjemskjerm</h1>
-        <p class="subtitle">Administrer klasserom og følg aktivitet.</p>
-      </div>
-      <button class="logoutButton" type="button" :disabled="isLoggingOut" @click="handleLogout">
-        {{ isLoggingOut ? 'Logger ut...' : 'Logg ut' }}
-      </button>
-    </header>
+  <section class="overviewShell">
+    <div class="overviewPage">
+      <header class="overviewHeader">
+        <div class="overviewHeader__content">
+          <p class="eyebrow">Læreroversikt</p>
+          <h1>Hjemskjerm</h1>
+          <p class="subtitle">Administrer klasserom og følg aktivitet.</p>
+        </div>
+        <button class="logoutButton" type="button" :disabled="isLoggingOut" @click="handleLogout">
+          {{ isLoggingOut ? 'Logger ut...' : 'Logg ut' }}
+        </button>
+      </header>
 
-	<div class="dashboardGrid">
-	  <aside class="panel classesPanel">
+		<div class="dashboardGrid">
+		  <aside class="panel classesPanel">
         <h2>Dine klasserom</h2>
         <NuxtLink class="buttonLink createClassroomButton" :to="routePaths.teacherClassroomCreate">
           + Lag klasserom
@@ -96,22 +97,39 @@ const handleLogout = async () => {
         </div>
       </article>
 
-      <article class="panel mysteryPanel">
-        <h2>Ukens mysterium</h2>
-        <button type="button" class="buttonLink buttonLinkSecondary mysteryButton">
-          Placeholder
-        </button>
-      </article>
+        <article class="panel mysteryPanel">
+          <h2>Ukens mysterium</h2>
+          <button type="button" class="buttonLink buttonLinkSecondary mysteryButton">
+            Placeholder
+          </button>
+        </article>
+      </div>
     </div>
   </section>
 </template>
 
 <style scoped>
+.overviewShell {
+  min-height: 100dvh;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
 .overviewPage {
   width: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: var(--space-4);
+  max-width: 1180px;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  background:
+    radial-gradient(circle at top left, rgba(245, 202, 46, 0.22), transparent 28%),
+    radial-gradient(circle at 85% 18%, rgba(42, 63, 106, 0.14), transparent 30%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 239, 226, 0.97));
+  border: var(--border-width-thin) solid rgba(255, 255, 255, 0.68);
+  border-radius: var(--radius-4);
+  box-shadow:
+    0 24px 60px rgba(27, 42, 74, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .overviewHeader {
@@ -120,10 +138,36 @@ const handleLogout = async () => {
   justify-content: space-between;
   gap: var(--space-4);
   margin-bottom: var(--space-4);
+  padding: var(--space-5);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-3);
+  background:
+    linear-gradient(135deg, rgba(42, 63, 106, 0.06), rgba(232, 182, 0, 0.08)),
+    var(--color-bg-surface);
+  box-shadow: var(--shadow-1);
 }
 
 .overviewHeader__content {
   min-width: 0;
+}
+
+@media (max-width: 720px) {
+  .overviewShell {
+    place-items: stretch;
+  }
+
+  .overviewPage {
+    border-radius: var(--radius-4);
+  }
+
+  .overviewHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .logoutButton {
+    align-self: flex-start;
+  }
 }
 
 .eyebrow {

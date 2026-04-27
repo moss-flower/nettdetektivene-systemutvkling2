@@ -175,7 +175,10 @@ async function handleRegister() {
   align-items: center;
   justify-content: center;
   padding: var(--space-4);
-  background: color-mix(in srgb, var(--color-bg-canvas) 10%, var(--palette-white));
+  color: var(--color-text-primary);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.9)),
+    linear-gradient(180deg, var(--palette-gray-50) 0%, var(--palette-cream-100) 100%);
 }
 
 .registerCard {
@@ -183,7 +186,7 @@ async function handleRegister() {
   max-width: 28rem;
   background: var(--color-bg-surface);
   border: var(--border-width-hairline) solid var(--color-border-default);
-  border-radius: var(--radius-2);
+  border-radius: var(--radius-3);
   box-shadow: var(--shadow-2);
   padding: var(--space-8);
 }
@@ -209,15 +212,17 @@ async function handleRegister() {
 .registerButton {
   margin-top: var(--space-2);
   padding: 0.9rem var(--space-4);
-  border: none;
-  border-radius: var(--radius-2);
+  border: var(--border-width-hairline) solid var(--color-brand-primary);
+  border-radius: var(--radius-pill);
   background: var(--color-brand-primary);
   color: var(--color-text-onDark);
   font-weight: 700;
   cursor: pointer;
+  transition: transform var(--transition-base), background var(--transition-base), border-color var(--transition-base);
 }
 
 .registerButton:hover:not(:disabled) {
+  transform: translateY(-1px);
   background: var(--palette-navy-700);
 }
 
@@ -240,5 +245,15 @@ async function handleRegister() {
 .formError {
   color: var(--color-semantic-error);
   font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .registerCard {
+    padding: var(--space-6);
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
 }
 </style>
