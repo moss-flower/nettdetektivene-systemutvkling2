@@ -2,9 +2,9 @@ import { getBackendAPI } from "~~/server/utils/backendAPI";
 
 export default defineEventHandler(async (event) => {
   const api = getBackendAPI(event);
-  const publicId = getRouterParam(event, "publicId");
+  const uid = getRouterParam(event, "uid");
 
-  return await api(`/v1/exercises/${publicId}`, {
+  return await api(`/v1/exercises/${uid}`, {
     method: "GET",
   });
 });
