@@ -2,6 +2,9 @@
 import leftArrowImage from '~/assets/images/leftArrow.png'
 import { routePaths } from "~/composables/utils/routePaths";
 
+type Variant = "primary" | "reward" | "ghost" | "danger" | "onLight";
+type Size = "sm" | "md" | "lg";
+
 const props = withDefaults(
   defineProps<{
     label?: string;
@@ -10,6 +13,9 @@ const props = withDefaults(
   }>(),
   {
     label: "",
+    variant: "onLight",
+    size: "sm",
+    block: false,
     disabled: false,
     ariaLabel: "Tilbake til elevhjem",
   },

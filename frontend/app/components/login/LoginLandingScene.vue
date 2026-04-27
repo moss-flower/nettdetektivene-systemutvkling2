@@ -23,6 +23,8 @@ const landingPageStyle = {
   '--login-background-image': `url(${loginBackgroundImage})`,
   '--login-plate-image': `url(${loginPlateImage})`,
 };
+
+const titleTarget = computed(() => props.options[0]?.to ?? '/login');
 </script>
 
 <template>
@@ -34,18 +36,9 @@ const landingPageStyle = {
 
       <div class="loginPlate">
         <div class="plateContent">
-          <div class="titleBadge">{{ props.title }}</div>
-
-          <nav class="loginOptions" aria-label="Velg innloggingstype">
-            <NuxtLink
-              v-for="option in props.options"
-              :key="option.label"
-              :to="option.to"
-              :class="['loginOption', option.variant]"
-            >
-              {{ option.label }}
-            </NuxtLink>
-          </nav>
+          <NuxtLink :to="titleTarget" class="titleBadge">
+            {{ props.title }}
+          </NuxtLink>
         </div>
       </div>
     </div>
@@ -127,6 +120,9 @@ const landingPageStyle = {
 .titleBadge {
   width: min(100%, 27rem);
   border-radius: var(--radius-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 1.35rem 1.75rem;
   border: var(--border-width-heavy) solid var(--palette-gold-400);
   background: linear-gradient(180deg, var(--palette-orange-500) 0%, var(--palette-orange-600) 100%);
@@ -138,6 +134,7 @@ const landingPageStyle = {
   font-size: clamp(var(--font-size-28), 2.1vw, 2.5rem);
   line-height: 1.1;
   text-align: center;
+  text-decoration: none;
   text-shadow: 0 2px 3px rgba(94, 26, 0, 0.25);
 }
 
@@ -169,10 +166,12 @@ const landingPageStyle = {
     filter 160ms ease;
 }
 
-.loginOption:hover,
-.loginOption:focus-visible {
+.titleBadge:hover,
+.titleBadge:focus-visible {
   transform: translateY(-2px);
-  box-shadow: 0 12px 22px rgba(27, 22, 18, 0.24);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.22),
+    0 14px 24px rgba(104, 49, 0, 0.34);
   filter: brightness(1.04);
 }
 
@@ -232,4 +231,39 @@ const landingPageStyle = {
   }
 }
 
+@media (max-width: 640px) {
+  .landingPage {
+    padding: 1rem;
+    background-position: 54% center;
+  }
+
+  .loginStage {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .gameLogo {
+    width: min(100%, 22rem);
+    margin-bottom: -0.35rem;
+  }
+
+  .loginPlate {
+    width: 100%;
+    max-width: 26.5rem;
+  }
+
+  .plateContent {
+    inset: 16% 12% 14%;
+    gap: 0.75rem;
+    transform: translateY(-0.8rem);
+  }
+
+  .titleBadge {
+    width: min(100%, 17rem);
+    border-width: 3px;
+    border-radius: 0.8rem;
+    padding: 0.9rem 0.7rem;
+    font-size: clamp(1.2rem, 5vw, 1.55rem);
+  }
+}
 </style>

@@ -2,7 +2,7 @@
 import { computed, useSlots } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 
-type Variant = 'primary' | 'reward' | 'ghost' | 'danger'
+type Variant = 'primary' | 'reward' | 'ghost' | 'danger' | 'onLight'
 type Size = 'sm' | 'md' | 'lg'
 
 const props = withDefaults(
@@ -212,6 +212,22 @@ if (import.meta.dev) {
   background: var(--color-bg-surface-hover);
 }
 .uiBtnGhost:active:not([aria-disabled='true']) {
+  box-shadow: var(--shadow-pressed);
+}
+
+/* onLight; cream/white pills on dark surface */
+.ui-btn--onLight {
+  background: var(--color-bg-onLight);
+  color: var(--color-text-onLight);
+  border: var(--border-width-hairline) solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+}
+
+.ui-btn--onLight:hover:not([aria-disabled='true']) {
+  background: var(--color-bg-onLight-hover);
+}
+
+.ui-btn--onLight:active:not([aria-disabled='true']) {
   box-shadow: var(--shadow-pressed);
 }
 

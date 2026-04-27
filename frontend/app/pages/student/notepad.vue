@@ -3,6 +3,7 @@ import NewNote from "~/components/notepad/NewNote.vue";
 import NotepadFilters from "~/components/notepad/NotepadFilters.vue";
 import NotepadFrame from "~/components/notepad/NotepadFrame.vue";
 import type { NotepadEntry } from "~/composables/types/NotepadTypes.ts";
+import UiStudentHomeBackButton from "~/components/ui/UiStudentHomeBackButton.vue";
 
 //Holds selected filter as string
 const selectedFilter = ref<string | null>(null);
@@ -129,12 +130,6 @@ function handleNewNoteClick() {
   --notepad-text-onDesk: var(--palette-cream-100);
   --notepad-text-onDesk-muted: var(--palette-cream-300);
 
-  /* arrow pager (physical desk button) */
-  --notepad-arrow-bg: var(--palette-cream-100);
-  --notepad-arrow-border: var(--palette-cork-900);
-  --notepad-arrow-shadow: var(--palette-overlay-dark-deep);
-  --notepad-arrow-hover-ring: var(--palette-gold-500);
-
   display: grid;
   grid-template-columns: minmax(0, 0.22fr) minmax(0, 1fr) minmax(0, 0.22fr);
   gap: var(--space-4);
@@ -190,25 +185,8 @@ function handleNewNoteClick() {
   justify-content: space-around;
 }
 
-@media (max-width: 1100px) {
-  .notepadPage {
-    grid-template-columns: 1fr;
-    grid-auto-rows: auto;
-    overflow-y: auto;
-  }
-
-  .leftColumn,
-  .rightColumn,
-  .notepadWrapper {
-    height: auto;
-  }
-
-  .leftColumn {
-    justify-content: flex-start;
-  }
-
-  .rightColumn {
-    justify-content: flex-start;
-  }
+.arrowButton {
+  width: 70%;
+  margin: 0 auto 15%;
 }
 </style>
