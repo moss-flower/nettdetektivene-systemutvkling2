@@ -7,8 +7,9 @@ import { useAvatar } from '~/composables/useAvatar'
 const { getMyAvatar } = useAvatar()
 const { getMyProfile} = useStudentProfile()
 
+
 const avatar = ref(await getMyAvatar());
-const username = ref((await getMyProfile()).studentName)
+const userStats = ref(await getMyProfile());
 
 const resolvedAvatar = computed(() => avatar.value ?? DEFAULT_AVATAR_CONFIG)
 </script>
@@ -18,11 +19,13 @@ const resolvedAvatar = computed(() => avatar.value ?? DEFAULT_AVATAR_CONFIG)
     <div class="avatarPrint">
       <div class="avatarPhotoWindow">
         <div class="avatarPhotoInner">
-          <AvatarImage :avatar="resolvedAvatar" :alt="username" />
+          <AvatarImage :avatar="resolvedAvatar" :alt="userStats.studentName" />
         </div>
       </div>
 
-      <p class="avatarUsername">{{ username }}</p>
+      <p class="avatarUsername">{{ userStats.studentName }}</p>
+      <p class="level">Level {{ userStats.totalXp / 300 }} </p>
+      
     </div>
   </div>
 </template>
@@ -83,5 +86,14 @@ const resolvedAvatar = computed(() => avatar.value ?? DEFAULT_AVATAR_CONFIG)
   letter-spacing: var(--font-tracking-wide);
   text-align: center;
   text-wrap: balance;
+}
+
+.level {
+  margin: 0;
+  color: var(--palette-gray-500);
+  font-size: var(--font-size-14);
+  line-height: var(--font-leading-14);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
 }
 </style>
