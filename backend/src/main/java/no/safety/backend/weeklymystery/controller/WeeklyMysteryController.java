@@ -13,10 +13,10 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.auth.model.UserPrincipal;
-import no.safety.backend.weeklymystery.dto.WeeklyMysterPromptResponse;
+import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptResponse;
+import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptRequest;
 import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptCreateRequest;
 import no.safety.backend.weeklymystery.dto.WeeklyMysterySubmissionCreateRequest;
-import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
 import no.safety.backend.weeklymystery.service.WeeklyMysteryService;
 
 @RestController
@@ -40,9 +40,16 @@ public class WeeklyMysteryController {
         return ResponseEntity.ok(null);
     }
 
-    @RequestMapping(value = "/{classroomUuid}")
-    public ResponseEntity<?> getPrompt(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        
+    /**
+     * Allows a user to retrieve the WeeklyMystery for a given classroom.
+     * @param request a Prompt Request containing the public UUID of the classroom in question.
+     * @param userPrincipal 
+     * @return
+     */
+    @RequestMapping(value = "/")
+    public ResponseEntity<WeeklyMysteryPromptResponse> getPrompt(@Valid WeeklyMysteryPromptRequest request,
+        @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(weeklyMysteryService.getWeeklyMysteryPrompt(request.classroomUid()));
     }
 
     /**
@@ -53,7 +60,7 @@ public class WeeklyMysteryController {
      */
     @PreAuthorize("hasRole('TEACHER')")
     @PostMapping(value = "/prompts")
-    public ResponseEntity<WeeklyMysterPromptResponse> submitPrompt(
+    public ResponseEntity<WeeklyMysteryPromptResponse> submitPrompt(
             @Valid @RequestBody WeeklyMysteryPromptCreateRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(weeklyMysteryService.savePrompt(request, principal.getUserInternalId()));
@@ -67,7 +74,7 @@ public class WeeklyMysteryController {
      */
     @PreAuthorize("hasRole('TEACHER')")
     @RequestMapping(value = "/prompts")
-    public ResponseEntity<HashSet<WeeklyMysterPromptResponse>> fetchPrompts(
+    public ResponseEntity<HashSet<WeeklyMysteryPromptResponse>> fetchPrompts(
         @AuthenticationPrincipal UserPrincipal principal
     ) {
         return ResponseEntity.ok(weeklyMysteryService.fetchUsersPrompts(principal.getUserInternalId()));

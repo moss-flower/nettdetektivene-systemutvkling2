@@ -1,14 +1,10 @@
 package no.safety.backend.weeklymystery.service;
 
-import java.nio.file.FileSystemException;
-import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -16,16 +12,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.classroom.service.ClassroomService;
+import no.safety.backend.exception.NotFoundException;
 import no.safety.backend.exception.domain.FilePersistenceException;
 import no.safety.backend.notification.dto.NotificationEvent;
-import no.safety.backend.role.model.Role;
-import no.safety.backend.role.model.RoleType;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.model.TeacherUser;
-import no.safety.backend.user.model.User;
 import no.safety.backend.user.service.UserService;
 import no.safety.backend.utility.service.FileService;
-import no.safety.backend.weeklymystery.dto.WeeklyMysterPromptResponse;
+import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptResponse;
 import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptCreateRequest;
 import no.safety.backend.weeklymystery.dto.WeeklyMysterySubmissionCreateRequest;
 import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
@@ -45,10 +39,16 @@ public class WeeklyMysteryService {
     private final ClassroomService classroomService;
     private final ApplicationEventPublisher eventPublisher;
 
-    public WeeklyMysteryPrompt getWeeklyMysteryPrompt(UUID classroomUuid) {
+    public WeeklyMysteryPromptResponse getWeeklyMysteryPrompt(UUID classroomUuid) {
         log.debug("Get Weekly Mystery Prompt for " + classroomUuid);
 
-        
+        //Note, currently no validation whatsover that the user should actually have access to that classroom.
+        //Need to refactor the classroom service.
+        Classroom classroom = classroomService.getFullClassroom(classroomUuid);
+        if(classroom.getWeeklyMysteryPrompt() == null) {
+            throw new NotFoundException("No weekly prompt found");
+        }
+        return WeeklyMysteryPromptResponse.fromEntity(classroom.getWeeklyMysteryPrompt());
     }
     
 
@@ -85,7 +85,7 @@ public class WeeklyMysteryService {
         } 
     } 
 
-    public WeeklyMysterPromptResponse savePrompt(WeeklyMysteryPromptCreateRequest request, Long senderId) {
+    public WeeklyMysteryPromptResponse savePrompt(WeeklyMysteryPromptCreateRequest request, Long senderId) {
         TeacherUser sender = (TeacherUser) userService.findByInternalId(senderId);
 
 
@@ -103,16 +103,16 @@ public class WeeklyMysteryService {
             .build();
         promptRepository.save(prompt);
 
-        return WeeklyMysterPromptResponse.fromEntity(prompt);
+        return WeeklyMysteryPromptResponse.fromEntity(prompt);
     }
 
-    public HashSet<WeeklyMysterPromptResponse> fetchUsersPrompts(Long internalUserId) {
+    public HashSet<WeeklyMysteryPromptResponse> fetchUsersPrompts(Long internalUserId) {
         HashSet<WeeklyMysteryPrompt> prompts = promptRepository.findAllByTeacher_id(internalUserId);
 
-        HashSet<WeeklyMysterPromptResponse> responses = new HashSet<>();
+        HashSet<WeeklyMysteryPromptResponse> responses = new HashSet<>();
 
         for (WeeklyMysteryPrompt prompt : prompts) {
-            responses.add(WeeklyMysterPromptResponse.fromEntity(prompt));
+            responses.add(WeeklyMysteryPromptResponse.fromEntity(prompt));
         }
         return responses; 
     }
