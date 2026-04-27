@@ -188,6 +188,7 @@
   --color-bg-canvas: var(--palette-gray-900);
   --color-bg-surface: var(--palette-white);
   --color-bg-surface-hover: var(--palette-game-surface-hover);
+  --color-bg-sidebar: var(--palette-navy-900);
 
   --color-text-primary: var(--palette-navy-900);
   --color-text-secondary: var(--palette-gray-500);
@@ -204,6 +205,10 @@
 
   --color-disabled-bg: var(--palette-gray-200);
   --color-disabled-text: var(--palette-gray-400);
+
+  --color-text-onLight: var(--palette-navy-900);
+  --color-bg-onLight: var(--palette-cream-100);
+  --color-bg-onLight-hover: var(--palette-game-surface-hover);
 
   /* Game specific */
   --color-tile-locked-bg: var(--palette-gray-200);
@@ -237,6 +242,10 @@
 
   --color-disabled-bg: var(--palette-gray-200);
   --color-disabled-text: var(--palette-gray-400);
+
+  --color-text-onLight: var(--palette-navy-900);
+  --color-bg-onLight: var(--palette-cream-100);
+  --color-bg-onLight-hover: var(--palette-teacher-surface-hover);
 
   /* Teacher table zebra */
   --color-table-row-alt: var(--palette-gray-50);
