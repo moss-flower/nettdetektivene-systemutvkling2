@@ -2,7 +2,8 @@ package no.safety.backend.leaderboard.service;
 
 import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.exception.NotFoundException;
-import no.safety.backend.leaderboard.dto.LeaderboardResponse;
+import no.safety.backend.leaderboard.dto.UserLeaderboardResponse;
+import no.safety.backend.leaderboard.dto.ClassroomLeaderboardResponse;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.repository.StudentUserRepository;
 import org.junit.jupiter.api.Test;
@@ -49,12 +50,12 @@ class LeaderboardServiceTest {
         given(studentUserRepository.findAllByClassroomUid(classroomPublicUuid, pageable))
                 .willReturn(studentPage);
 
-        Page<LeaderboardResponse> result = leaderboardService.getClassroomRankings(pageable, classroomPublicUuid);
+        Page<ClassroomLeaderboardResponse> result = leaderboardService.getClassroomRankings(pageable);
 
         assertThat(result.getContent()).hasSize(2);
         
         assertThat(result.getContent().get(0).rank()).isEqualTo(1L);
-        assertThat(result.getContent().get(0).username()).isEqualTo("Student 1");
+        assertThat(result.getContent().get(0).className()).isEqualTo("Class 1");
 
         assertThat(result.getContent().get(1).rank()).isEqualTo(2L);
     }
@@ -78,7 +79,7 @@ class LeaderboardServiceTest {
         given(studentUserRepository.findRankByClassroomInternalIdAndScore(classroomInternalId, score))
                 .willReturn(Optional.of(expectedRank));
 
-        LeaderboardResponse response = leaderboardService.getUserStats(stundentUserInternalId);
+        UserLeaderboardResponse response = leaderboardService.getUserStats(stundentUserInternalId);
 
         assertThat(response.username()).isEqualTo("Student 1");
         assertThat(response.score()).isEqualTo(score);

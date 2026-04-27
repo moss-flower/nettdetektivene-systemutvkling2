@@ -19,7 +19,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.auth.model.UserPrincipal;
 import no.safety.backend.classroom.model.Classroom;
-import no.safety.backend.leaderboard.dto.LeaderboardResponse;
+import no.safety.backend.leaderboard.dto.UserLeaderboardResponse;
+import no.safety.backend.leaderboard.dto.ClassroomLeaderboardResponse;
 import no.safety.backend.leaderboard.service.LeaderboardService;
 import no.safety.backend.user.model.StudentUser;
 
@@ -35,19 +36,18 @@ public class LeaderboardController {
     private final LeaderboardService leaderboardService;
 
     /**
-     * Gets the rankings of all {@link StudentUser}s in the specified {@link Classroom} based on pagination.
+     * Gets the sorted leaderboard of all {@link Classroom}s based on pagination.
      * @param pageable
-     * @param classroomPublicUuid
      * @return
      */
-    @GetMapping("/classroom/{classroomPublicUuid}")
-    @Operation(summary = "Get top rankings", description = "Returns a paginated list of top scores")
-    public ResponseEntity<Page<LeaderboardResponse>> getTopRankings(
-            @PageableDefault(size = 20, sort = "xp", direction = Sort.Direction.DESC) Pageable pageable,
-            @PathVariable UUID classroomPublicUuid
+    @GetMapping("/classroom")
+    @PreAuthorize("hasAnyRole('STUDENT','TEACHER')")
+    @Operation(summary = "Get rankings of classrooms", description = "Returns a paginated list of the total scores for all classrooms")
+    public ResponseEntity<Page<ClassroomLeaderboardResponse>> getTopRankings(
+            @PageableDefault(size = 20, sort = "totalScore", direction = Sort.Direction.DESC) Pageable pageable
         ) {
 
-        Page<LeaderboardResponse> rankings = leaderboardService.getClassroomRankings(pageable, classroomPublicUuid);
+        Page<ClassroomLeaderboardResponse> rankings = leaderboardService.getClassroomRankings(pageable);
         return ResponseEntity.ok(rankings);
     }
 
@@ -57,9 +57,9 @@ public class LeaderboardController {
      * @return
      */
     @GetMapping("/user")
-    @PreAuthorize("hasAnyRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     @Operation(summary = "Get rank of the calling user.", description = "Returns the leaderboard stats for the user.")
-    public ResponseEntity<LeaderboardResponse> getCallerUserRanking(
+    public ResponseEntity<UserLeaderboardResponse> getCallerUserRanking(
             @AuthenticationPrincipal UserPrincipal userPrincipal
         ) {
 

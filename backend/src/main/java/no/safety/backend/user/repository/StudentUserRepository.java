@@ -15,7 +15,7 @@ import no.safety.backend.user.model.StudentUser;
  */
 @Repository
 public interface StudentUserRepository extends BaseUserRepository<StudentUser, Long> {
-    Page<StudentUser> findAllByClassroomUid(UUID classroomUid, Pageable pageable);
+    Page<StudentUser> findAllByClassroomUid(UUID classroomPublicUuid, Pageable pageable);
 
     @Query("SELECT COUNT(s) + 1 FROM StudentUser s " + 
         "WHERE s.classroom.internalId = :classroomInternalId AND s.score > :userScore")
