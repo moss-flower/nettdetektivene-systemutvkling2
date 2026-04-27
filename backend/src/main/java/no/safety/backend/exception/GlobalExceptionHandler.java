@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -146,8 +145,8 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
-    @ExceptionHandler({AccessDeniedException.class, AuthorizationDeniedException.class})
-    public ProblemDetail handleAccessDenied(Exception ex) {
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ProblemDetail handleAuthorizationDenied(AuthorizationDeniedException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Access denied");
         problem.setTitle("Forbidden");
         problem.setProperty("timestamp", Instant.now());
@@ -175,7 +174,7 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles {@link AccessDeniedException} exceptions.
+     * Handles custom {@link no.safety.backend.exception.AccessDeniedException} exceptions.
      * @return Returns a {@link ProblemDetail} with HTTP status code: 403 Forbidden.
      */
     @ExceptionHandler(AccessDeniedException.class)
@@ -199,13 +198,13 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles {@link org.springframework.security.access.AccessDeniedException} exceptions.
+     * Handles Spring Security {@link org.springframework.security.access.AccessDeniedException} exceptions.
      * @return Returns a {@link ProblemDetail} with HTTP status code: 403 Forbidden.
      */
     @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
-    public ProblemDetail handleStudentNotInClass(org.springframework.security.access.AccessDeniedException ex) {
+    public ProblemDetail handleSpringAccessDenied(org.springframework.security.access.AccessDeniedException ex) {
 
-        log.error("AccessDeniedException: {}",ex.getMessage());
+        log.error("AccessDeniedException: {}", ex.getMessage());
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Access Denied");
         problem.setTitle("Forbidden");
