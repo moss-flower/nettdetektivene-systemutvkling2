@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,12 +44,15 @@ public class WeeklyMysteryController {
     /**
      * Allows a user to retrieve the WeeklyMystery for a given classroom.
      * @param request a Prompt Request containing the public UUID of the classroom in question.
-     * @param userPrincipal 
-     * @return
+     * @param userPrincipal user information provided by spring
+     * @return a DTO containing weekly mystery information.
      */
+    @Operation(
+        summary = "Retrieve the current Weekly Mystery Prompt",
+        description = "Endpoint retrieves the current weekly mystery response from a given classroom, if that classroom has one."
+    )
     @RequestMapping(value = "/")
-    public ResponseEntity<WeeklyMysteryPromptResponse> getPrompt(@Valid WeeklyMysteryPromptRequest request,
-        @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    public ResponseEntity<WeeklyMysteryPromptResponse> getPrompt(@Valid WeeklyMysteryPromptRequest request) {
         return ResponseEntity.ok(weeklyMysteryService.getWeeklyMysteryPrompt(request.classroomUid()));
     }
 
@@ -58,6 +62,10 @@ public class WeeklyMysteryController {
      * @param principal user information (Automatically provided by spring, Ignore)
      * @return a response entity containing the submitted prompt information plus public UUID for prompt on success.
      */
+    @Operation(
+        summary = "Create Prompt",
+        description = "Endpoint allows teachers to create a new Weekly Mystery Prompt"
+    )
     @PreAuthorize("hasRole('TEACHER')")
     @PostMapping(value = "/prompts")
     public ResponseEntity<WeeklyMysteryPromptResponse> submitPrompt(
@@ -72,6 +80,10 @@ public class WeeklyMysteryController {
      * @param principal user information (Automatically provided by spring)
      * @return a response entity a set of Prompt Responses
      */
+    @Operation(
+        summary = "Retrieve prompts",
+        description = "Endpoint allows teachers to retrieve a list of all prompts connected to their account."
+    )
     @PreAuthorize("hasRole('TEACHER')")
     @RequestMapping(value = "/prompts")
     public ResponseEntity<HashSet<WeeklyMysteryPromptResponse>> fetchPrompts(
