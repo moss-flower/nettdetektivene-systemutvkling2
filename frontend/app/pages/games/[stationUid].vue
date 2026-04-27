@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import BossCharacter from '~/components/gameplay/shared/BossCharacter.vue'
+import BossVictoryDialog from '~/components/gameplay/shared/BossVictoryDialog.vue'
 import EmailHotspotsTemplate from '~/components/gameplay/templates/EmailHotspotsTemplate.vue'
 import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDialog.vue'
 import PasswordStrengthTemplate from '~/components/gameplay/templates/PasswordStrengthTemplate.vue'
@@ -87,7 +89,59 @@ const answerState = ref<{ correct: boolean, choice: string, missingStartingPassw
 
 const isExerciseComplete = computed(() => tasks.length > 0 && correctCount.value === tasks.length)
 
+const isBossStation = station.isBoss
+const bossMaxHp = 100
+const bossHp = computed(() => {
+  if (tasks.length === 0) return bossMaxHp
+  if (correctCount.value >= tasks.length) return 0
+  return Math.max(0, bossMaxHp - Math.floor((correctCount.value * bossMaxHp) / tasks.length))
+})
+const bossDamaged = ref(false)
+let bossDamageTimeout: ReturnType<typeof setTimeout> | null = null
+
+const triggerBossDamage = () => {
+  if (bossDamageTimeout) {
+    clearTimeout(bossDamageTimeout)
+  }
+  bossDamaged.value = false
+  requestAnimationFrame(() => {
+    bossDamaged.value = true
+    bossDamageTimeout = setTimeout(() => {
+      bossDamaged.value = false
+    }, 400)
+  })
+}
+
 const currentTask = computed(() => tasks[currentIndex.value] ?? null)
+
+const bossTaskImages = computed(() => {
+  const task = currentTask.value
+  if (!task) return []
+
+  if (task.templateKind === 'multiple-choice' && task.prompt?.imageUrl) {
+    return [{
+      src: task.prompt.imageUrl,
+      alt: task.prompt.imageAlt ?? '',
+    }]
+  }
+
+  if (task.templateKind === 'x-or-y') {
+    return [
+      {
+        src: task.options.x.imageUrl,
+        alt: task.options.x.imageAlt,
+        label: task.options.x.eyebrow ?? task.options.x.title,
+      },
+      {
+        src: task.options.y.imageUrl,
+        alt: task.options.y.imageAlt,
+        label: task.options.y.eyebrow ?? task.options.y.title,
+      },
+    ]
+  }
+
+  return []
+})
 const currentOptions = computed(() => {
   if (!currentTask.value || currentTask.value.templateKind !== 'x-or-y') {
     return null
@@ -128,6 +182,14 @@ const exerciseSelectRoute = computed(() => ({
   path: routePaths.studentExerciseDifficultySelect,
   query: { uid: station.uid },
 }))
+
+const bossVictoryRoute = computed(() => ({
+  path: routePaths.studentLevels,
+}))
+
+const showBossVictoryDialog = computed(() =>
+  isBossStation && showExerciseResultDialog.value && isExerciseComplete.value
+)
 
 const feedbackTitle = computed(() => {
   if (!currentTask.value) {
@@ -253,6 +315,12 @@ const autoSolveCurrentTask = () => {
   })
 }
 
+watch(correctCount, (next, prev) => {
+  if (isBossStation && next > prev) {
+    triggerBossDamage()
+  }
+})
+
 const onAnswered = (result: XOrYResult) => {
   answerState.value = {
     correct: result.correct,
@@ -357,7 +425,14 @@ const next = async () => {
   <section class="station-page">
     <header class="station-page__hero">
       <div class="station-page__header">
-        <div class="station-page__meta">
+        <BossCharacter
+          v-if="isBossStation"
+          :hp="bossHp"
+          :max-hp="bossMaxHp"
+          :damaged="bossDamaged"
+          :images="bossTaskImages"
+        />
+        <div v-else class="station-page__meta">
           <p class="station-page__eyebrow">{{ station.title }}</p>
           <p class="station-page__progress-pill">{{ progressLabel }}</p>
         </div>
@@ -373,6 +448,7 @@ const next = async () => {
         :correct-choice="currentTask.correctChoice"
         :disabled="Boolean(answerState)"
         :selected-choice="selectedChoice"
+        :hide-images="isBossStation"
         @answered="onAnswered"
       />
       <MultipleChoiceTemplate
@@ -383,6 +459,7 @@ const next = async () => {
         :correct-choice="currentTask.correctChoice"
         :disabled="Boolean(answerState)"
         :selected-choice="selectedMultipleChoiceOption"
+        :hide-images="isBossStation"
         @answered="onAnsweredMultipleChoice"
       />
       <EmailHotspotsTemplate
@@ -434,8 +511,13 @@ const next = async () => {
       @next="next"
     />
 
+    <BossVictoryDialog
+      v-if="showBossVictoryDialog"
+      :to="bossVictoryRoute"
+    />
+
     <ExerciseResultDialog
-      v-if="showExerciseResultDialog"
+      v-else-if="showExerciseResultDialog"
       :correct-count="correctCount"
       :total="tasks.length"
       msg-completed="Øvelse fullført!"
