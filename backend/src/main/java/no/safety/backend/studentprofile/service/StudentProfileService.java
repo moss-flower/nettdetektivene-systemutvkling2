@@ -31,6 +31,7 @@ public class StudentProfileService {
     return new StudentProfileResponse(
         studentUid,
         student.getUsername(),
+        student.getScore(),
         totalXp,
         completedExercises,
         unlockedAchievements
