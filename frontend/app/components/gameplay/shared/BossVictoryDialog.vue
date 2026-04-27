@@ -41,7 +41,7 @@ const emit = defineEmits<{
           :type="to ? undefined : 'button'"
           @click="to ? undefined : emit('next')"
       >
-        Tilbake til stasjonskartet
+        Gå tilbake
       </component>
     </template>
   </DialogTemplate>
