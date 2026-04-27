@@ -2,14 +2,19 @@ package no.safety.backend.weeklymystery.service;
 
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.classroom.model.Classroom;
+import no.safety.backend.classroom.model.ClassroomWeeklyMystery;
 import no.safety.backend.classroom.repository.ClassroomRepository;
+import no.safety.backend.classroom.repository.ClassroomWeeklyMysteryRepository;
 import no.safety.backend.classroom.service.ClassroomService;
 import no.safety.backend.exception.AccessDeniedException;
 import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.service.UserService;
+import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptResponse;
 import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -24,6 +29,7 @@ public class WeeklyMysteryClassroomOrchestrator {
     private final ClassroomService classroomService;
     private final ClassroomRepository classroomRepository;
     private final UserService userService;
+    private final ClassroomWeeklyMysteryRepository classroomWeeklyMysteryRepository;
 
     public void updateWeeklyMysteryForClassroom(UUID classroomPublicId,
                                                 UUID weeklyMysteryPublicId,
@@ -49,6 +55,16 @@ public class WeeklyMysteryClassroomOrchestrator {
         classroom.setWeeklyMysteryPrompt(prompt);
         classroomService.updateWeeklyMystery(classroom, prompt);
         weeklyMysteryService.updateWeeklyMystery(classroom, prompt);
+    }
 
+    public List<WeeklyMysteryPromptResponse> getWeeklyMysteryHistory(UUID classroomPublicId) {
+        Long classroomId = classroomService.getFullClassroom(classroomPublicId).getInternalId();
+        List<ClassroomWeeklyMystery> mysteries =
+                classroomWeeklyMysteryRepository.findByClassroom_InternalIdOrderByAssignedDateDesc(classroomId);
+        List<WeeklyMysteryPromptResponse> responses = new ArrayList<>();
+        for (ClassroomWeeklyMystery mystery : mysteries) {
+            responses.add(WeeklyMysteryPromptResponse.fromEntity(mystery.getWeeklyMysteryPrompt()));
+        }
+        return responses;
     }
 }

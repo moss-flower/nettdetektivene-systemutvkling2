@@ -140,6 +140,8 @@ public class WeeklyMysteryService {
     public List<WeeklyMysteryPromptResponse> findPreviousWeeklyMysteryPrompts(UUID classroomUid) {
         Long classroomId = classroomService.getFullClassroom(classroomUid).getInternalId();
         List<WeeklyMysteryPromptResponse> responses = new ArrayList<>();
+
+        //Refactor this. You don't need the classroom, you can pull it from the joint repository. Get rid of the classroom service.
         for (ClassroomWeeklyMystery prompt : classroomWeeklyMysteryRepository.findByClassroom_InternalIdOrderByAssignedDateDesc(classroomId)) {
             responses.add(WeeklyMysteryPromptResponse.fromEntity(prompt.getWeeklyMysteryPrompt()));
         }
