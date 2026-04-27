@@ -121,4 +121,8 @@ public class WeeklyMysteryService {
         return "/" + userId.toString() + "/" + promptId.toString() + "/" + fileName;
     }
 
+    public void remove(UUID promptId) {
+        
+    }
+
 }
