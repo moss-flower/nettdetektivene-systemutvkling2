@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -21,6 +22,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.model.User;
+import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
 
 @Entity
 @Table(name = "classrooms")
@@ -56,6 +58,10 @@ public class Classroom {
       inverseJoinColumns = @JoinColumn(name = "user_id")
   )
   private Set<User> owners = new HashSet<>();
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "current_weekly_mystery_internal_id")
+  private WeeklyMysteryPrompt weeklyMysteryPrompt;
 
   @OneToMany(mappedBy = "classroom")
   private Set<StudentUser> members = new HashSet<>();
