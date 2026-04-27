@@ -12,7 +12,7 @@ export function getLevel(totalXp: number): StudentProgressView {
   const safeTotalXp = Math.max(0, totalXp);
   const level = Math.max(1, Math.floor(safeTotalXp / XP_PER_LEVEL) + 1);
   const currentXp = safeTotalXp % XP_PER_LEVEL;
-  const progressPercent = Math.min(100, Math.round((currentXp / XP_PER_LEVEL) * 100));
+  const progressPercent = Math.min(100, (currentXp / XP_PER_LEVEL) * 100);
 
   return {
     level,

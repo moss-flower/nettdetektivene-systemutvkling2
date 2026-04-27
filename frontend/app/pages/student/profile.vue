@@ -12,6 +12,7 @@ const isLoading = ref(true)
 const profileError = ref('')
 
 const progress = computed(() => getLevel(score.value))
+const progressWidth = computed(() => `${progress.value.progressPercent}%`)
 
 onMounted(async () => {
   isLoading.value = true
@@ -60,10 +61,10 @@ onMounted(async () => {
       <div class="progressSection">
         <div class="progressHeader">
           <span>{{ progress.currentXp }} / {{ progress.nextLevelXp }} XP</span>
-          <span>{{ progress.xpToNextLevel }} XP til neste level</span>
+          <span>{{ progress.xpToNextLevel }} XP til level {{ progress.level + 1 }}</span>
         </div>
         <div class="progressBar" role="progressbar" :aria-valuenow="progress.progressPercent" aria-valuemin="0" aria-valuemax="100">
-          <div class="progressFill" :style="{ width: `${progress.progressPercent}%` }"></div>
+          <div class="progressFill" :class="{ hasProgress: progress.progressPercent > 0 }" :style="{ width: progressWidth }"></div>
         </div>
       </div>
 
@@ -183,6 +184,10 @@ h1 {
 .progressFill {
   height: 100%;
   background: linear-gradient(90deg, var(--primary), #8afcc6);
+}
+
+.progressFill.hasProgress {
+  min-width: 0.35rem;
 }
 
 .actions {
