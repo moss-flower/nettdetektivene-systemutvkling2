@@ -1,10 +1,15 @@
 package no.safety.backend.weeklymystery.service;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import jakarta.transaction.Transactional;
+import no.safety.backend.role.model.Role;
+import no.safety.backend.role.model.RoleType;
+import no.safety.backend.user.model.User;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -121,8 +126,12 @@ public class WeeklyMysteryService {
         return "/" + userId.toString() + "/" + promptId.toString() + "/" + fileName;
     }
 
-    public void remove(UUID promptId) {
-        
+    @Transactional
+    public void delete(UUID promptId, Long teacherId) {
+        Set<WeeklyMysteryPrompt> teacherPrompts = promptRepository.findAllByTeacher_id(teacherId);
+
+        teacherPrompts.stream().filter(p -> p.getPublicUuid() == promptId).findFirst()
+                .ifPresent(promptRepository::delete);
     }
 
 }
