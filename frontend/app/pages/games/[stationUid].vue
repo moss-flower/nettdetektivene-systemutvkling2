@@ -333,11 +333,12 @@ const next = async () => {
     if (
       isExerciseComplete.value
       && activeExercise
-      && !completedExerciseUids.includes(activeExercise.uid)
     ) {
       try {
         await markExerciseCompleted(activeExercise.uid)
-        completedExerciseUids.push(activeExercise.uid)
+        if (!completedExerciseUids.includes(activeExercise.uid)) {
+          completedExerciseUids.push(activeExercise.uid)
+        }
       } catch (error: any) {
         completionError.value =
           error?.data?.detail
