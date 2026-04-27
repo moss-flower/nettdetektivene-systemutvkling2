@@ -3,6 +3,7 @@ import NewNote from "~/components/notepad/NewNote.vue";
 import NotepadFilters from "~/components/notepad/NotepadFilters.vue";
 import NotepadFrame from "~/components/notepad/NotepadFrame.vue";
 import type { NotepadEntry } from "~/composables/types/NotepadTypes.ts";
+import UiStudentHomeBackButton from "~/components/ui/UiStudentHomeBackButton.vue";
 
 //Holds selected filter as string
 const selectedFilter = ref<string | null>(null);
@@ -130,12 +131,6 @@ function handleNewNoteClick() {
   --notepad-text-onDesk: var(--palette-cream-100);
   --notepad-text-onDesk-muted: var(--palette-cream-300);
 
-  /* arrow pager (physical desk button) */
-  --notepad-arrow-bg: var(--palette-cream-100);
-  --notepad-arrow-border: var(--palette-cork-900);
-  --notepad-arrow-shadow: var(--palette-overlay-dark-deep);
-  --notepad-arrow-hover-ring: var(--palette-gold-500);
-
   display: grid;
   grid-template-columns: 0.2fr 1fr 0.2fr;
   gap: var(--space-4);
@@ -194,26 +189,5 @@ function handleNewNoteClick() {
 .arrowButton {
   width: 70%;
   margin: 0 auto 15%;
-  padding: var(--space-1);
-  border: var(--border-width-hairline) solid var(--notepad-arrow-border);
-  border-radius: var(--radius-pill);
-  background: var(--notepad-arrow-bg);
-  box-shadow: 0 var(--space-1) var(--space-3) var(--notepad-arrow-shadow);
-  cursor: pointer;
-  transition:
-    box-shadow var(--transition-fast),
-    transform var(--transition-fast);
-}
-
-.arrowButton:hover {
-  transform: translateY(-1px);
-  box-shadow:
-    0 0 0 var(--border-width-thin) var(--notepad-arrow-hover-ring),
-    0 var(--space-1) var(--space-4) var(--notepad-arrow-shadow);
-}
-
-.arrowButton img {
-  display: block;
-  max-width: 100%;
 }
 </style>
