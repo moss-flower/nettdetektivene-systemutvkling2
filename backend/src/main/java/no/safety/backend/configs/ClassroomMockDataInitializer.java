@@ -8,6 +8,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.classroom.repository.ClassroomRepository;
+import no.safety.backend.completedexercise.model.CompletedExercise;
+import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
 import no.safety.backend.role.model.Role;
 import no.safety.backend.role.model.RoleType;
 import no.safety.backend.role.repository.RoleRepository;
@@ -53,6 +55,7 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
   private final StudentUserRepository studentRepository;
   private final ClassroomRepository classroomRepository;
   private final RoleRepository roleRepository;
+  private final CompletedExerciseRepository completedExerciseRepository;
   private final PasswordEncoder passwordEncoder;
 
   @Override
@@ -111,9 +114,40 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
         Set.of(lisaLaerer, perLaerer)
     );
 
-    assignMembers(klasse5b, List.of(adaElev, eliasElev, saraElev));
+    assignMembers(klasse5b, List.of(adaElev, eliasElev, saraElev, lukasElev));
     assignMembers(klasse6a, List.of(noahElev, ingridElev));
     assignMembers(nettdetektivene, List.of(emilElev));
+
+    markAllExercisesCompleted(lukasElev);
+  }
+
+  private void markAllExercisesCompleted(StudentUser student) {
+    List<UUID> allExerciseUids = List.of(
+        GameplayMockDataInitializer.NEWSSTAND_EXERCISE_1_UID,
+        GameplayMockDataInitializer.NEWSSTAND_EXERCISE_2_UID,
+        GameplayMockDataInitializer.PHOTOGRAPH_EXERCISE_1_UID,
+        GameplayMockDataInitializer.PHOTOGRAPH_EXERCISE_2_UID,
+        GameplayMockDataInitializer.POSTOFFICE_EXERCISE_1_UID,
+        GameplayMockDataInitializer.POSTOFFICE_EXERCISE_2_UID,
+        GameplayMockDataInitializer.PASSWORDBANK_EXERCISE_1_UID,
+        GameplayMockDataInitializer.PASSWORDBANK_EXERCISE_2_UID,
+        GameplayMockDataInitializer.MARKETPLACE_EXERCISE_1_UID,
+        GameplayMockDataInitializer.MARKETPLACE_EXERCISE_2_UID,
+        GameplayMockDataInitializer.SOCIALMEDIA_EXERCISE_1_UID,
+        GameplayMockDataInitializer.SOCIALMEDIA_EXERCISE_2_UID,
+        GameplayMockDataInitializer.DATACENTER_EXERCISE_UID
+    );
+
+    for (UUID exerciseUid : allExerciseUids) {
+      if (completedExerciseRepository.existsByStudentUidAndExerciseUid(
+          student.getPublicUuid(), exerciseUid)) {
+        continue;
+      }
+      CompletedExercise completion = new CompletedExercise();
+      completion.setStudentUid(student.getPublicUuid());
+      completion.setExerciseUid(exerciseUid);
+      completedExerciseRepository.save(completion);
+    }
   }
 
   private Role getOrCreateRole(RoleType roleType) {

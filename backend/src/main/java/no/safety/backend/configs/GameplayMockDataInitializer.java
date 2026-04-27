@@ -1008,7 +1008,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
 
     upsertStation(DATACENTER_STATION_UID, "Datasenteret",
         "Finalebanen der du bruker det du har laert for a bekjempe datatyven.",
-        PLACEHOLDER_IMAGE, "#bfdbfe",
+        PLACEHOLDER_IMAGE, "#8A2A2A",
         List.of(DATACENTER_EXERCISE_UID), true);
   }
 

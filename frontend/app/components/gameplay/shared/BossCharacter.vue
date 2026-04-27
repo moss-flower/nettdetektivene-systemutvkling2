@@ -3,11 +3,20 @@ import datatyvenSprite from '~/assets/images/datatyven.png'
 import {useSound} from '@vueuse/sound'
 import damageSound from '~/assets/sound/ow.wav'
 
+type BossTaskImage = {
+  src: string
+  alt: string
+  label?: string
+}
+
 const props = defineProps<{
   hp: number
   maxHp: number
   damaged: boolean
+  images?: BossTaskImage[]
 }>()
+
+const taskImages = computed<BossTaskImage[]>(() => props.images ?? [])
 
 const hpPercent = computed(() => {
   if (props.maxHp <= 0) return 0
@@ -17,7 +26,7 @@ const hpPercent = computed(() => {
 const defeated = computed(() => props.hp <= 0)
 
 const showBubble = ref(false)
-const { play } =   useSound(damageSound, {volume: 1})
+const {play} = useSound(damageSound, {volume: 1})
 let bubbleTimeout: ReturnType<typeof setTimeout> | null = null
 
 watch(() => props.damaged, (next) => {
@@ -45,20 +54,42 @@ onBeforeUnmount(() => {
       <span class="boss__hp-text">{{ Math.max(0, hp) }} / {{ maxHp }} HP</span>
     </div>
 
-    <div class="boss__stage">
-      <Transition name="bubble">
-        <div v-if="showBubble" class="boss__bubble">Au!</div>
-      </Transition>
-
-      <img
-          :src="datatyvenSprite"
-          alt="Datatyven"
-          class="boss__sprite"
-          :class="{
-          'boss__sprite--damaged': damaged,
-          'boss__sprite--defeated': defeated,
-        }"
+    <div
+        class="boss__stage"
+        :class="{ 'boss__stage--with-images': taskImages.length > 0 }"
+    >
+      <div
+          v-if="taskImages.length > 0"
+          class="boss__task-images"
+          :class="{ 'boss__task-images--multi': taskImages.length > 1 }"
       >
+        <figure
+            v-for="(image, index) in taskImages"
+            :key="`${image.src}-${index}`"
+            class="boss__task-image"
+        >
+          <img :src="image.src" :alt="image.alt" class="boss__task-image-img">
+          <figcaption v-if="image.label" class="boss__task-image-label">
+            {{ image.label }}
+          </figcaption>
+        </figure>
+      </div>
+
+      <div class="boss__sprite-wrapper">
+        <Transition name="bubble">
+          <div v-if="showBubble" class="boss__bubble">Au!</div>
+        </Transition>
+
+        <img
+            :src="datatyvenSprite"
+            alt="Datatyven"
+            class="boss__sprite"
+            :class="{
+            'boss__sprite--damaged': damaged,
+            'boss__sprite--defeated': defeated,
+          }"
+        >
+      </div>
     </div>
   </div>
 </template>
@@ -111,16 +142,75 @@ onBeforeUnmount(() => {
   position: relative;
   display: grid;
   place-items: center;
-  min-height: 11rem;
+  min-height: 20rem;
   padding-top: 2.5rem;
+  width: 100%;
+}
+
+.boss__stage--with-images {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  justify-items: center;
+  gap: clamp(1rem, 2.5vw, 2rem);
+}
+
+.boss__task-images {
+  display: grid;
+  gap: 0.9rem;
+  width: 100%;
+  max-width: 28rem;
+  justify-self: end;
+}
+
+.boss__task-images--multi {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 36rem;
+}
+
+.boss__task-image {
+  margin: 0;
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.55rem;
+  background: #fffdfa;
+  border: 2px solid #d6d3ce;
+  border-radius: 1rem;
+  box-shadow: 0 10px 20px rgba(47, 39, 28, 0.1);
+}
+
+.boss__task-image-img {
+  width: 100%;
+  aspect-ratio: 1.4 / 1;
+  object-fit: cover;
+  border-radius: 0.7rem;
+  display: block;
+}
+
+.boss__task-image-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b7280;
+  text-align: center;
+}
+
+.boss__sprite-wrapper {
+  position: relative;
+  display: grid;
+  place-items: center;
 }
 
 .boss__sprite {
-  width: clamp(7rem, 18vw, 10rem);
+  width: clamp(21rem, 48vw, 30rem);
   height: auto;
   display: block;
   animation: boss-bob 2.2s ease-in-out infinite;
   transform-origin: center bottom;
+}
+
+.boss__stage--with-images .boss__sprite {
+  width: clamp(14rem, 28vw, 22rem);
 }
 
 .boss__sprite--damaged {
@@ -188,6 +278,21 @@ onBeforeUnmount(() => {
   }
   50% {
     transform: translateY(-10px);
+  }
+}
+
+@media (max-width: 760px) {
+  .boss__stage--with-images {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .boss__task-images {
+    justify-self: center;
+  }
+
+  .boss__stage--with-images .boss__sprite {
+    width: clamp(12rem, 50vw, 18rem);
   }
 }
 

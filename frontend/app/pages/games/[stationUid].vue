@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BossCharacter from '~/components/gameplay/shared/BossCharacter.vue'
+import BossVictoryDialog from '~/components/gameplay/shared/BossVictoryDialog.vue'
 import EmailHotspotsTemplate from '~/components/gameplay/templates/EmailHotspotsTemplate.vue'
 import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDialog.vue'
 import PasswordStrengthTemplate from '~/components/gameplay/templates/PasswordStrengthTemplate.vue'
@@ -112,6 +113,35 @@ const triggerBossDamage = () => {
 }
 
 const currentTask = computed(() => tasks[currentIndex.value] ?? null)
+
+const bossTaskImages = computed(() => {
+  const task = currentTask.value
+  if (!task) return []
+
+  if (task.templateKind === 'multiple-choice' && task.prompt?.imageUrl) {
+    return [{
+      src: task.prompt.imageUrl,
+      alt: task.prompt.imageAlt ?? '',
+    }]
+  }
+
+  if (task.templateKind === 'x-or-y') {
+    return [
+      {
+        src: task.options.x.imageUrl,
+        alt: task.options.x.imageAlt,
+        label: task.options.x.eyebrow ?? task.options.x.title,
+      },
+      {
+        src: task.options.y.imageUrl,
+        alt: task.options.y.imageAlt,
+        label: task.options.y.eyebrow ?? task.options.y.title,
+      },
+    ]
+  }
+
+  return []
+})
 const currentOptions = computed(() => {
   if (!currentTask.value || currentTask.value.templateKind !== 'x-or-y') {
     return null
@@ -152,6 +182,14 @@ const exerciseSelectRoute = computed(() => ({
   path: routePaths.studentExerciseDifficultySelect,
   query: { uid: station.uid },
 }))
+
+const bossVictoryRoute = computed(() => ({
+  path: routePaths.studentLevels,
+}))
+
+const showBossVictoryDialog = computed(() =>
+  isBossStation && showExerciseResultDialog.value && isExerciseComplete.value
+)
 
 const feedbackTitle = computed(() => {
   if (!currentTask.value) {
@@ -391,6 +429,7 @@ const next = async () => {
           :hp="bossHp"
           :max-hp="bossMaxHp"
           :damaged="bossDamaged"
+          :images="bossTaskImages"
         />
         <div v-else class="station-page__meta">
           <p class="station-page__eyebrow">{{ station.title }}</p>
@@ -471,8 +510,13 @@ const next = async () => {
       @next="next"
     />
 
+    <BossVictoryDialog
+      v-if="showBossVictoryDialog"
+      :to="bossVictoryRoute"
+    />
+
     <ExerciseResultDialog
-      v-if="showExerciseResultDialog"
+      v-else-if="showExerciseResultDialog"
       :correct-count="correctCount"
       :total="tasks.length"
       msg-completed="Øvelse fullført!"
