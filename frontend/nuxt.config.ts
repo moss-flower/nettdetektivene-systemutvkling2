@@ -10,5 +10,9 @@ export default defineNuxtConfig({
         { name: "viewport", content: "width=device-width, initial-scale=1" }
       ]
     }
-  }
+  },
+
+  runtimeConfig: {
+    apiBase: import.meta.env.NUXT_API_BASE || 'http://localhost:8080/api/v1',
+  },
 })
