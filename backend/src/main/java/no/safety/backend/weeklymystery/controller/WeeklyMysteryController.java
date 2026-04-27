@@ -16,6 +16,7 @@ import no.safety.backend.auth.model.UserPrincipal;
 import no.safety.backend.weeklymystery.dto.WeeklyMysterPromptResponse;
 import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptCreateRequest;
 import no.safety.backend.weeklymystery.dto.WeeklyMysterySubmissionCreateRequest;
+import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
 import no.safety.backend.weeklymystery.service.WeeklyMysteryService;
 
 @RestController
@@ -37,6 +38,11 @@ public class WeeklyMysteryController {
             @AuthenticationPrincipal UserPrincipal principal) {
         weeklyMysteryService.saveStudentSubmission(request, principal.getUserInternalId());
         return ResponseEntity.ok(null);
+    }
+
+    @RequestMapping(value = "/{classroomUuid}")
+    public ResponseEntity<?> getPrompt(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+        
     }
 
     /**

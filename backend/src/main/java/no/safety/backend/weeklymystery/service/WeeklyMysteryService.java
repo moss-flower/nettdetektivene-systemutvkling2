@@ -13,11 +13,16 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.safety.backend.classroom.model.Classroom;
+import no.safety.backend.classroom.service.ClassroomService;
 import no.safety.backend.exception.domain.FilePersistenceException;
 import no.safety.backend.notification.dto.NotificationEvent;
+import no.safety.backend.role.model.Role;
+import no.safety.backend.role.model.RoleType;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.model.TeacherUser;
+import no.safety.backend.user.model.User;
 import no.safety.backend.user.service.UserService;
 import no.safety.backend.utility.service.FileService;
 import no.safety.backend.weeklymystery.dto.WeeklyMysterPromptResponse;
@@ -28,6 +33,7 @@ import no.safety.backend.weeklymystery.model.WeeklyMysterySubmission;
 import no.safety.backend.weeklymystery.repository.WeeklyMysteryPromptRepository;
 import no.safety.backend.weeklymystery.repository.WeeklyMysterySubmissionRepository;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WeeklyMysteryService {
@@ -36,13 +42,18 @@ public class WeeklyMysteryService {
     private final WeeklyMysterySubmissionRepository submissionRepository;
     private final FileService fileService;
     private final UserService userService;
+    private final ClassroomService classroomService;
     private final ApplicationEventPublisher eventPublisher;
 
-    private final Logger logger = LoggerFactory.getLogger(WeeklyMysteryService.class);
+    public WeeklyMysteryPrompt getWeeklyMysteryPrompt(UUID classroomUuid) {
+        log.debug("Get Weekly Mystery Prompt for " + classroomUuid);
+
+        
+    }
     
 
     public void saveStudentSubmission(WeeklyMysterySubmissionCreateRequest request, Long studentId) {
-        logger.debug("Save student submisison called with request " + request);
+        log.debug("Save student submisison called with request " + request);
         //resolve items from storage
         WeeklyMysteryPrompt prompt = promptRepository.findByPublicUuid(request.weeklyMysterPromptUuid());
         StudentUser sender = (StudentUser) userService.findByInternalId(studentId);
@@ -68,7 +79,7 @@ public class WeeklyMysteryService {
             NotificationEvent event = new NotificationEvent(studentId, "Elev " + sender.getUsername() + "har lastet opp et nytt inlegg på Ukens Mysterium", 0);
             eventPublisher.publishEvent(event);
         } catch (Exception e) {
-            logger.error("Error storing submission " + submission);
+            log.error("Error storing submission " + submission);
             fileService.delete(storageKey);
             throw new FilePersistenceException("Error persisting file, please try again.");
         } 
