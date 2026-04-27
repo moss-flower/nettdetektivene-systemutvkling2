@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import EmailHotspotsTemplate from '~/components/gameplay/templates/EmailHotspotsTemplate.vue'
 import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDialog.vue'
+import LevelupPopup from '~/components/gameplay/shared/LevelupPopup.vue'
 import PasswordStrengthTemplate from '~/components/gameplay/templates/PasswordStrengthTemplate.vue'
 import SortIntoBucketsTemplate from '~/components/gameplay/templates/SortIntoBucketsTemplate.vue'
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
@@ -10,6 +11,8 @@ import { markExerciseCompleted, useCompletedExerciseUids } from '~/composables/u
 import { routePaths } from '~/composables/utils/routePaths'
 import { Exercise } from '~/composables/types/ExerciseType'
 import { Station } from '~/composables/types/StationType'
+import { useStudentProfile } from '~/composables/useStudentProfile'
+import { getLevel } from '~/composables/utils/studentProgress'
 
 import type {
   EmailHotspotResult,
@@ -44,6 +47,7 @@ if (!station) {
 }
 
 const { celebrateCorrectAnswer, stop } = useGameConfetti()
+const { getMyProfile } = useStudentProfile()
 const completedExerciseUids = await useCompletedExerciseUids()
 const completionError = ref('')
 
@@ -82,6 +86,8 @@ const tasks = activeExercise
   : []
 const currentIndex = ref(0)
 const showExerciseResultDialog = ref(false)
+const showLevelupPopup = ref(false)
+const leveledUpTo = ref(1)
 const correctCount = ref(0)
 const answerState = ref<{ correct: boolean, choice: string, missingStartingPassword?: boolean } | null>(null)
 
@@ -314,6 +320,17 @@ const onAnsweredPasswordStrength = (result: PasswordStrengthResult) => {
   }
 }
 
+const fetchCurrentLevel = async () => {
+  const profile = await getMyProfile()
+
+  return getLevel(profile.score).level
+}
+
+const closeLevelupPopup = () => {
+  showLevelupPopup.value = false
+  showExerciseResultDialog.value = true
+}
+
 const next = async () => {
   stop()
 
@@ -333,11 +350,34 @@ const next = async () => {
     if (
       isExerciseComplete.value
       && activeExercise
-      && !completedExerciseUids.includes(activeExercise.uid)
     ) {
+      let levelBeforeCompletion: number | null = null
+
       try {
+        try {
+          levelBeforeCompletion = await fetchCurrentLevel()
+        } catch (error) {
+          console.error('Error fetching student level before completion:', error)
+        }
+
         await markExerciseCompleted(activeExercise.uid)
-        completedExerciseUids.push(activeExercise.uid)
+
+        if (levelBeforeCompletion !== null) {
+          try {
+            const levelAfterCompletion = await fetchCurrentLevel()
+
+            if (levelAfterCompletion > levelBeforeCompletion) {
+              leveledUpTo.value = levelAfterCompletion
+              showLevelupPopup.value = true
+            }
+          } catch (error) {
+            console.error('Error fetching student level after completion:', error)
+          }
+        }
+
+        if (!completedExerciseUids.includes(activeExercise.uid)) {
+          completedExerciseUids.push(activeExercise.uid)
+        }
       } catch (error: any) {
         completionError.value =
           error?.data?.detail
@@ -347,7 +387,9 @@ const next = async () => {
       }
     }
 
-    showExerciseResultDialog.value = true
+    if (!showLevelupPopup.value) {
+      showExerciseResultDialog.value = true
+    }
   }
 }
 </script>
@@ -440,6 +482,12 @@ const next = async () => {
       msg-completed="Øvelse fullført!"
       msg-failed="Øvelse ikke fullført"
       :to="exerciseSelectRoute"
+    />
+
+    <LevelupPopup
+      v-if="showLevelupPopup"
+      :level="leveledUpTo"
+      @close="closeLevelupPopup"
     />
 
     <p v-if="completionError" class="station-page__completion-error">{{ completionError }}</p>

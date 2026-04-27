@@ -25,6 +25,10 @@ const lockedWorldUid = computed(() => {
   return typeof uid === "string" ? uid.trim() : "";
 });
 
+const lockedWorld = computed(() => {
+  return (availableWorlds.value ?? []).find((world) => world.uid === lockedWorldUid.value) ?? null;
+});
+
 const showWorldSelector = computed(() => lockedWorldUid.value.length === 0);
 
 const effectiveWorldUid = computed(() => {
@@ -133,7 +137,7 @@ const createClassroom = async () => {
                   :key="world.uid"
                   :value="world.uid"
                 >
-                  {{ world.uid }}
+                  {{ world.title }}
                 </option>
               </select>
             </label>
@@ -141,7 +145,7 @@ const createClassroom = async () => {
 
           <div v-else class="lockedWorldCard">
             <p class="cardEyebrow">Verden</p>
-            <h3>{{ lockedWorldUid }}</h3>
+            <h3>{{ lockedWorld?.title || lockedWorldUid }}</h3>
             <p>Denne verdenen er satt på forhånd og kan ikke endres her.</p>
           </div>
         </section>

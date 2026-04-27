@@ -14,6 +14,7 @@ export interface OwnerSummary {
 export interface MemberSummary {
   publicUuid: string;
   username: string;
+  score: number;
 }
 
 export interface ClassroomResponse {
