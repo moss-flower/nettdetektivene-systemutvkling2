@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { routePaths } from '~/composables/utils/routePaths'
 import { useStudentProfile } from '~/composables/useStudentProfile'
-import { getStudentProgress } from '~/composables/utils/studentProgress'
+import { getLevel } from '~/composables/utils/studentProgress'
 
 const { getMyProfile } = useStudentProfile()
 
 const studentName = ref('Laster...')
-const totalXp = ref(0)
+const score = ref(0)
 
 const isLoading = ref(true)
 const profileError = ref('')
 
-const progress = computed(() => getStudentProgress(totalXp.value))
+const progress = computed(() => getLevel(score.value))
 
 onMounted(async () => {
   isLoading.value = true
@@ -20,7 +20,7 @@ onMounted(async () => {
   try {
     const profile = await getMyProfile()
     studentName.value = profile.studentName
-    totalXp.value = profile.totalXp
+    score.value = profile.score
   } catch {
     profileError.value = 'Kunne ikke laste profildata akkurat nå.'
   } finally {
@@ -39,7 +39,7 @@ onMounted(async () => {
 
     <div class="profileCard">
         <p class="eyebrow">Min profil</p>
-      <p class="subtitle">Oversikt over navn, level og progresjon.</p>
+      <p class="subtitle">Oversikt over navn og poengsum.</p>
       
 
       <div class="infoBlock">
@@ -48,19 +48,19 @@ onMounted(async () => {
       </div>
 
       <div class="infoBlock">
+        <p class="label">Score</p>
+        <p class="value">{{ score }}</p>
+      </div>
+
+      <div class="infoBlock">
         <p class="label">Level</p>
         <p class="value">{{ progress.level }}</p>
       </div>
 
-      <div class="infoBlock">
-        <p class="label">XP</p>
-        <p class="value">{{ progress.currentXp }} / {{ progress.nextLevelXp }}</p>
-      </div>
-
       <div class="progressSection">
         <div class="progressHeader">
-          <span>Fremdrift til neste level</span>
-          <span>{{ progress.progressPercent }}%</span>
+          <span>{{ progress.currentXp }} / {{ progress.nextLevelXp }} XP</span>
+          <span>{{ progress.xpToNextLevel }} XP til neste level</span>
         </div>
         <div class="progressBar" role="progressbar" :aria-valuenow="progress.progressPercent" aria-valuemin="0" aria-valuemax="100">
           <div class="progressFill" :style="{ width: `${progress.progressPercent}%` }"></div>

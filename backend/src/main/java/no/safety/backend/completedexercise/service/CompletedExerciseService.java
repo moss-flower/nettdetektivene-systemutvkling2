@@ -7,9 +7,9 @@ import no.safety.backend.completedexercise.dto.CompletedExerciseRequest;
 import no.safety.backend.completedexercise.dto.CompletedExerciseResponse;
 import no.safety.backend.completedexercise.model.CompletedExercise;
 import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
-import no.safety.backend.exception.ConflictException;
 import no.safety.backend.exception.ForbiddenException;
 import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.repository.StudentUserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +19,7 @@ public class CompletedExerciseService {
 
   private final CompletedExerciseRepository completedExerciseRepository;
   private final ProgressValidationService progressValidationService;
+  private final StudentUserRepository studentUserRepository;
 
   @Transactional
   public CompletedExerciseResponse create(CompletedExerciseRequest request, StudentUser student) {
@@ -29,8 +30,13 @@ public class CompletedExerciseService {
       throw new ForbiddenException("Oppgaven er låst. Fullfør forrige oppgave eller stasjon først.");
     }
 
-    if (completedExerciseRepository.existsByStudentUidAndExerciseUid(studentUid, exerciseUid)) {
-      throw new ConflictException("Exercise is already marked as completed for this student");
+    boolean hasCompletedExerciseFromBefore = completedExerciseRepository.existsByStudentUidAndExerciseUid(studentUid, exerciseUid);
+    student.addScore(hasCompletedExerciseFromBefore ? 10 : 100);
+    studentUserRepository.save(student);
+
+    if (hasCompletedExerciseFromBefore) {
+      return CompletedExerciseResponse.from(completedExerciseRepository.findByStudentUidAndExerciseUid(studentUid, exerciseUid)
+          .orElseThrow());
     }
 
     CompletedExercise completedExercise = new CompletedExercise();

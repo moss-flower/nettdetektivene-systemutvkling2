@@ -2,6 +2,7 @@ package no.safety.backend.completedexercise.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import no.safety.backend.completedexercise.model.CompletedExercise;
 import no.safety.backend.completedexercise.model.CompletedExerciseId;
@@ -13,6 +14,8 @@ public interface CompletedExerciseRepository
     extends JpaRepository<CompletedExercise, CompletedExerciseId> {
 
   boolean existsByStudentUidAndExerciseUid(UUID studentUid, UUID exerciseUid);
+
+  Optional<CompletedExercise> findByStudentUidAndExerciseUid(UUID studentUid, UUID exerciseUid);
 
   List<CompletedExercise> findAllByStudentUidOrderByExerciseUidAsc(UUID studentUid);
 
