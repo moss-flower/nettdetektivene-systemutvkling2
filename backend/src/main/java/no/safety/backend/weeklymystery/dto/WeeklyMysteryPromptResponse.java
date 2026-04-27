@@ -4,15 +4,15 @@ import java.util.UUID;
 
 import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
 
-public record WeeklyMysterPromptResponse(
+public record WeeklyMysteryPromptResponse(
     UUID publicId,
     String weekLabel,
     String title,
     String prompt,
     String clue
 ) {
-    public static WeeklyMysterPromptResponse fromEntity(WeeklyMysteryPrompt prompt){
-        return new WeeklyMysterPromptResponse(
+    public static WeeklyMysteryPromptResponse fromEntity(WeeklyMysteryPrompt prompt){
+        return new WeeklyMysteryPromptResponse(
             prompt.getPublicUuid(),
             prompt.getWeekLabel(),
             prompt.getTitle(),
