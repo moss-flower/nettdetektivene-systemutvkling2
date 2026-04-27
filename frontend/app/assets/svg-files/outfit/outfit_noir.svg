@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="100%" height="100%" viewBox="0 0 278 210" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
-    <g transform="matrix(1,0,0,1,-18,-2023)">
+<svg width="100%" height="100%" viewBox="0 0 330 460" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <g transform="matrix(1,0,0,1,0,-1782)">
         <g transform="matrix(0.916667,0,0,1,394.167,-20.7069)">
             <g id="outfit_noir" transform="matrix(1.09091,0,0,1,-582.727,1283.22)">
                 <g transform="matrix(1,0,0,1,0,-542.707)">
@@ -20,8 +20,8 @@
                     <path d="M207.142,1422.71L234.671,1382.71L220,1362.71L197.142,1342.71C197.142,1342.71 162.024,1394.74 156.242,1412.71C148.196,1437.71 147.142,1510.21 147.142,1510.21L187.142,1510.21C187.142,1510.21 185.681,1464.37 191.871,1447.7C195.338,1438.37 207.142,1422.71 207.142,1422.71Z" style="fill:rgb(29,29,29);stroke:rgb(29,29,29);stroke-width:4px;"/>
                 </g>
                 <g transform="matrix(1,0,0,1,0,-542.707)">
-                    <g transform="matrix(1,-0,-0,1,158,1303.2)">
-                        <use xlink:href="#_Image1" x="49.093" y="31.602" width="186px" height="81px"/>
+                    <g transform="matrix(1,-0,-0,1,140,1062.2)">
+                        <use xlink:href="#_Image1" x="67.093" y="272.602" width="186px" height="81px"/>
                     </g>
                 </g>
                 <g transform="matrix(1,0,0,1,0,-542.707)">
