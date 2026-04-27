@@ -4,12 +4,17 @@ import no.safety.backend.exception.domain.NotClassroomOwnerException;
 import no.safety.backend.exception.domain.RoleNotFoundException;
 import no.safety.backend.exception.domain.StudentNotInClassException;
 import no.safety.backend.exception.domain.UserAlreadyExistsException;
+import no.safety.backend.exception.domain.UserNotFoundException;
+import no.safety.backend.notepad.exception.NotepadEntryNotFoundException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +50,18 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleUserAlreadyExists(UserAlreadyExistsException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problem.setTitle("Account Conflict: User already exists.");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    /**
+     * Handles {@link UserNotFoundException} exceptions.
+     * @return Returns a {@link ProblemDetail} with HTTP status code: 404 Conflict.
+     */
+    @ExceptionHandler(UserNotFoundException.class)
+    public ProblemDetail handleUserNotFound(UserNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("User not found.");
         problem.setProperty("timestamp", Instant.now());
         return problem;
     }
@@ -93,6 +110,18 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles {@link NotepadEntryNotFoundException} exceptions.
+     * @return Returns a {@link ProblemDetail} with HTTP status code: 404 Not Found.
+     */
+    @ExceptionHandler(NotepadEntryNotFoundException.class)
+    public ProblemDetail handleNotepadEntryNotFoundException(NotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Not Found");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    /**
      * Handles {@link ConflictException} exceptions.
      * @return Returns a {@link ProblemDetail} with HTTP status code: 409 Conflict.
      */
@@ -116,6 +145,22 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ProblemDetail handleAuthorizationDenied(AuthorizationDeniedException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Access denied");
+        problem.setTitle("Forbidden");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ProblemDetail handleNoResourceFound(NoResourceFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Resource not found");
+        problem.setTitle("Not Found");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
     /**
      * Handles {@link NotClassroomOwnerException} exceptions.
      * @return Returns a {@link ProblemDetail} with HTTP status code: 403 Forbidden.
@@ -124,6 +169,18 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleNotClassroomOwner(NotClassroomOwnerException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
         problem.setTitle("Forbidden");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    /**
+     * Handles custom {@link no.safety.backend.exception.AccessDeniedException} exceptions.
+     * @return Returns a {@link ProblemDetail} with HTTP status code: 403 Forbidden.
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ProblemDetail handleAccessDeniedException(AccessDeniedException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+        problem.setTitle("Access Denied");
         problem.setProperty("timestamp", Instant.now());
         return problem;
     }
@@ -141,6 +198,22 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles Spring Security {@link org.springframework.security.access.AccessDeniedException} exceptions.
+     * @return Returns a {@link ProblemDetail} with HTTP status code: 403 Forbidden.
+     */
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ProblemDetail handleSpringAccessDenied(org.springframework.security.access.AccessDeniedException ex) {
+
+        log.error("AccessDeniedException: {}", ex.getMessage());
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Access Denied");
+        problem.setTitle("Forbidden");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+
+    /**
      * Handles all {@link Exception} that are not specifically defined in this handler.
      * Catches unhandled exceptions to protect against data leaks.
      * @return Returns a {@link ProblemDetail} with HTTP status code: 500 INTERNAL_SERVER_ERROR.
@@ -150,7 +223,7 @@ public class GlobalExceptionHandler {
         log.error("Exception: ", ex);
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
             HttpStatus.INTERNAL_SERVER_ERROR, 
-            "An unexpected error occurred. Please contact support."
+            "An unexpected error occurred."
         );
         problem.setTitle("Server Error");
         return problem;

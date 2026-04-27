@@ -38,49 +38,100 @@ const titlePrefix = computed(() => {
 
 <style scoped>
 .notepadEntry {
+  --entry-surface-top: var(--palette-cream-100);
+  --entry-surface-bottom: var(--palette-cream-200);
+  --entry-text: var(--palette-cork-900);
+  --entry-text-muted: var(--palette-cork-700);
+  --entry-divider: var(--palette-overlay-cork-shadow);
+  --entry-lift: var(--palette-overlay-cork-shadow);
+
+  /* classification color, overridden by .tip .info .observation below
+     rule paints left edge & the title label */
+  --entry-rule: var(--palette-cork-900);
+  --entry-wash: transparent;
+  --entry-title-ink: var(--entry-text);
+
+  position: relative;
   width: 100%;
-  border-radius: 1.75rem;
-  padding: 1.25rem 1.5rem 1.25rem 1.5rem;
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-left: var(--border-width-heavy) solid var(--entry-rule);
+  border-radius: var(--radius-1);
+  background:
+    linear-gradient(var(--entry-wash), var(--entry-wash)),
+    linear-gradient(
+      180deg,
+      var(--entry-surface-top) 0%,
+      var(--entry-surface-bottom) 100%
+    );
+  color: var(--entry-text);
   box-sizing: border-box;
-  color: black;
+  box-shadow: 0 var(--space-1) var(--space-3) var(--entry-lift);
 }
 
 .meta {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
+  gap: var(--space-3);
   width: 100%;
-  margin-bottom: 1rem;
+  padding-bottom: var(--space-2);
+  border-bottom: var(--border-width-hairline) solid var(--entry-divider);
 }
 
-.date,
+.date {
+  margin: 0;
+  color: var(--entry-text-muted);
+  font-family: var(--font-family-body), sans-serif;
+  font-size: var(--font-size-14);
+  line-height: var(--font-leading-14);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--font-tracking-wider);
+  text-transform: uppercase;
+}
+
 .source {
   margin: 0;
-  font-size: 2rem;
+  color: var(--entry-text);
+  font-family: var(--font-family-serif), sans-serif;
+  font-size: var(--font-size-22);
+  line-height: var(--font-leading-22);
+  font-weight: var(--font-weight-semibold);
+  text-align: right;
 }
 
 .title {
-  font-size: 1rem;
-  font-weight: 700;
+  margin: 0;
+  color: var(--entry-title-ink);
+  font-family: var(--font-family-body), sans-serif;
+  font-size: var(--font-size-16);
+  line-height: var(--font-leading-16);
+  font-weight: var(--font-weight-bold);
 }
 
 .content {
   margin: 0;
-  font-size: 1rem;
+  color: var(--entry-text-muted);
+  font-family: var(--font-family-body), sans-serif;
+  font-size: var(--font-size-16);
+  line-height: var(--font-leading-16);
 }
 
 .tip {
-  border: 3px limegreen solid;
-  background-color: rgb(169, 228, 153, 0.3);
+  --entry-rule: var(--palette-gold-600);
+  --entry-wash: var(--palette-overlay-warm-glow);
 }
 
 .info {
-  border: 3px crimson solid;
-  background-color: rgba(228, 153, 153, 0.3);
+  --entry-rule: var(--palette-red-700);
+  --entry-wash: var(--palette-overlay-red-soft);
+  --entry-title-ink: var(--palette-red-700);
 }
 
 .observation {
-  border: 3px gray solid;
-  background-color: rgba(218, 218, 218, 0.3);
+  --entry-rule: var(--palette-green-700);
+  --entry-wash: var(--palette-overlay-green-soft);
+  --entry-title-ink: var(--palette-green-900);
 }
 </style>
