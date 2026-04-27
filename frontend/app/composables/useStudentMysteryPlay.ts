@@ -31,7 +31,7 @@ const mysteryPlaySession: WeeklyMysteryPlaySession = {
       prompt: {
         title: 'Hva er det første varselsignalet?',
         text: 'Se på overskriften og velg det som gjør den mest mistenkelig.',
-        imageUrl: 'https://placehold.co/1200x720?text=SJOKK%3A+Dette+ma+foreldre+vite+na',
+        imageUrl: '/images/placeholders/mystery-shock.svg',
         imageAlt: 'Skjermbilde av en dramatisk overskrift som prøver å skape frykt',
       },
       options: [
@@ -53,14 +53,14 @@ const mysteryPlaySession: WeeklyMysteryPlaySession = {
       },
       options: {
         x: {
-          imageUrl: 'https://placehold.co/1200x720?text=DU+VIL+IKKE+TRO+DETTE',
+          imageUrl: '/images/placeholders/mystery-vague.svg',
           imageAlt: 'Skjermbilde av en dramatisk og vag overskrift',
           eyebrow: 'Sak X',
           title: 'Du vil ikke tro hva som skjedde i skolegaarden',
           text: 'Overskriften er dramatisk, men sier lite om hvem som står bak eller hva som faktisk skjedde.',
         },
         y: {
-          imageUrl: 'https://placehold.co/1200x720?text=Skolen+forklarer+ny+regel',
+          imageUrl: '/images/placeholders/mystery-calm.svg',
           imageAlt: 'Skjermbilde av en rolig overskrift med tydelig avsender',
           eyebrow: 'Sak Y',
           title: 'Skolen forklarer ny regel for mobilbruk',
@@ -78,7 +78,7 @@ const mysteryPlaySession: WeeklyMysteryPlaySession = {
       prompt: {
         title: 'Hva bør du gjøre nå?',
         text: 'Du blir usikker på om saken stemmer. Velg det beste neste steget.',
-        imageUrl: 'https://placehold.co/1200x720?text=Sjekk+kilden+forst',
+        imageUrl: '/images/placeholders/mystery-check.svg',
         imageAlt: 'Skjermbilde av en nyhetssak som bør sjekkes nærmere',
       },
       options: [

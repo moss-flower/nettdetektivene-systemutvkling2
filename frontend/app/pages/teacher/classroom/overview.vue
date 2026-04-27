@@ -34,22 +34,22 @@ const { data: world } = await useAsyncData(
     <div v-if="classroom" class="actionGrid">
       <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomNotifications, `?classroomId=${classroom.uid}`)" class="actionCard">
         <span class="actionCard__title">Varslingssenter</span>
-        <img src="https://placehold.co/128x128?text=VS" alt="Varslingssenter" class="actionCard__image">
+        <img src="/images/placeholders/action-card.svg" alt="Varslingssenter" class="actionCard__image">
       </NuxtLink>
 
       <NuxtLink :to="routePathsWithUid(routePaths.teacherFactoryWorld, classroom.worldUid)" class="actionCard">
         <span class="actionCard__title">Verden</span>
-        <img src="https://placehold.co/128x128?text=VE" alt="Verden" class="actionCard__image">
+        <img src="/images/placeholders/action-card.svg" alt="Verden" class="actionCard__image">
       </NuxtLink>
 
       <NuxtLink :to="routePaths.studentHome" class="actionCard">
         <span class="actionCard__title">Test spillet</span>
-        <img src="https://placehold.co/128x128?text=TS" alt="Test spillet" class="actionCard__image">
+        <img src="/images/placeholders/action-card.svg" alt="Test spillet" class="actionCard__image">
       </NuxtLink>
 
       <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomMystery, `?classroomId=${classroom.uid}`)" class="actionCard">
         <span class="actionCard__title">Ukens mysterium</span>
-        <img src="https://placehold.co/128x128?text=UM" alt="Ukens mysterium" class="actionCard__image">
+        <img src="/images/placeholders/action-card.svg" alt="Ukens mysterium" class="actionCard__image">
       </NuxtLink>
     </div>
 

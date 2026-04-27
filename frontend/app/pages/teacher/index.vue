@@ -71,12 +71,12 @@ const handleLogout = async () => {
 
 		<div class="topActionRow">
 		  <NuxtLink class="panel settingsButton" :to="routePaths.teacherSettings">
-			<img src="https://placehold.co/64x64" alt="Innstillinger ikon" class="settingsIcon">
+			<img src="/images/placeholders/settings.svg" alt="Innstillinger ikon" class="settingsIcon">
 			<span class="settingsButton__label">Innstillinger</span>
 		  </NuxtLink>
 
 		  <NuxtLink class="panel settingsButton settingsButton--notifications" :to="routePaths.teacherNotifications">
-			<img src="https://placehold.co/64x64" alt="Varslinger ikon" class="settingsIcon">
+			<img src="/images/placeholders/notifications.svg" alt="Varslinger ikon" class="settingsIcon">
 			<span class="settingsButton__label">Varslinger</span>
 			<span class="notificationBadge">1</span>
 		  </NuxtLink>

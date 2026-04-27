@@ -64,7 +64,7 @@ export const emailHotspotTargetIds = {
 } as const;
 
 const storageKey = "teacher.exerciseFactory.payloads";
-const placeholderImage = "https://placehold.co/1200x720?text=Oppgavebilde";
+const placeholderImage = "/images/placeholders/task.svg";
 
 export const createDraftId = (prefix: string) => {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {

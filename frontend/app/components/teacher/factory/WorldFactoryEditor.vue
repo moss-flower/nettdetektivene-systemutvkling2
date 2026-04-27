@@ -318,16 +318,16 @@ watch(payloadPreviewText, () => {
 						<p class="cardEyebrow">Stasjon {{ station.order }}</p>
 						<div class="stationNode__actions">
 							<button type="button" class="ghostButton stationNode__moveLeft" :disabled="index === 0" @click="moveStation(index, -1)">
-								<img src="https://placehold.co/80x80/1f2937/e5f3ef?text=%3C" alt="Flytt til venstre" class="stationNode__actionIcon" >
+								<img src="/images/placeholders/action-left.svg" alt="Flytt til venstre" class="stationNode__actionIcon" >
 							</button>
 							<button type="button" class="ghostButton" :disabled="!station.isKnown" @click="editStation(station.uid)">
-								<img src="https://placehold.co/80x80/0f766e/ecfeff?text=E" alt="Rediger stasjon" class="stationNode__actionIcon" >
+								<img src="/images/placeholders/action-edit.svg" alt="Rediger stasjon" class="stationNode__actionIcon" >
 							</button>
 							<button type="button" class="deleteButton" @click="removeStationUid(station.uid)">
-								<img src="https://placehold.co/80x80/991b1b/fee2e2?text=X" alt="Slett stasjon" class="stationNode__actionIcon" >
+								<img src="/images/placeholders/action-delete.svg" alt="Slett stasjon" class="stationNode__actionIcon" >
 							</button>
 							<button type="button" class="ghostButton stationNode__moveRight" :disabled="index === selectedStations.length - 1" @click="moveStation(index, 1)">
-								<img src="https://placehold.co/80x80/1f2937/e5f3ef?text=%3E" alt="Flytt til hoyre" class="stationNode__actionIcon" >
+								<img src="/images/placeholders/action-right.svg" alt="Flytt til hoyre" class="stationNode__actionIcon" >
 							</button>
 						</div>
 					</article>

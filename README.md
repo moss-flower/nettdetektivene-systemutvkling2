@@ -10,24 +10,117 @@ Oppmøtetid: 09:00 - 15:00
 - **Casper Kolsrud**
 - **William Holtsdalen**
 
-## Run Project
+## Developer Setup
 
-The project is set up to be easily run using Docker Compose. 
+### Requirements
 
-#### Follow these steps:
-1. Fill out a .env placed at project root. Make sure it follows the specifications in .env.example
-2. Make sure the Docker application is running
-3. Navigate your terminal to the project root
-4. Run: 
-``` 
-docker compose up
+- Docker Desktop if you want to run the full stack with Docker
+- Node.js or Bun if you want to run the frontend locally
+- Java 21 if you want to run the backend locally
+
+### Create `.env`
+
+Create a `.env` file in the project root based on `.env.example`.
+
+Example:
+
+```env
+DB_USERNAME=your_db_username
+DB_PASSWORD=your_db_password
+JWT_SECRET_KEY=your_jwt_secret_key
+NUXT_SESSION_PASSWORD=your_nuxt_session_password
+MINIO_ROOT_USER=minioadmin
+MINIO_ROOT_PASSWORD=minioadmin123
+MINIO_PUBLIC_BUCKET=nettdetektivene-public
 ```
 
-If you eventually implement changes:
-``` 
-docker compose down
+### Run Everything With Docker Compose
+
+This starts MySQL, backend, frontend, MinIO, and the MinIO seed job together.
+
+```bash
 docker compose up --build
 ```
+
+Services:
+
+- Frontend: `http://localhost:3000`
+- Backend: `http://localhost:8080`
+- MySQL: `localhost:3306`
+- MinIO API: `http://localhost:9000`
+- MinIO Console: `http://localhost:9001`
+
+Stop containers:
+
+```bash
+docker compose down
+```
+
+If the database or MinIO volume needs to be removed as well, run:
+
+```bash
+docker compose down -v
+```
+
+If `down` is not enough, use `down` first and then `down -v`.
+
+`docker compose down -v` removes both the MySQL database and the MinIO object store. Seeded media is loaded again the next time you start the stack.
+
+After code changes, rebuild with:
+
+```bash
+docker compose up --build
+```
+
+### Run Frontend Locally
+
+With `npm`:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+With `bun`:
+
+```bash
+cd frontend
+bun install
+bun run dev
+```
+
+Frontend local URL:
+
+- `http://localhost:3000`
+
+### Run Backend Locally
+
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+
+The backend expects the database and other values from the root `.env`.
+
+### Media Storage
+
+Seeded gameplay images are served from MinIO instead of `placehold.co`.
+
+- Shared seed files live in `media/seed/`
+- `minio-seed` creates the bucket and uploads the seed files on startup
+- Public media URLs are served from `http://localhost:9000/<bucket>/...`
+
+The backend also exposes a public image upload endpoint for authenticated users:
+
+```text
+POST /api/v1/media/uploads/public
+```
+
+Use `multipart/form-data` with:
+
+- `file`: image file
+- `folder`: optional object key prefix such as `uploads/mysteries`
 
 ## Test Data
 
