@@ -1,5 +1,6 @@
 package no.safety.backend.user.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -23,6 +24,10 @@ import no.safety.backend.classroom.model.Classroom;
 @NoArgsConstructor
 @SuperBuilder
 public class StudentUser extends User {
+
+  /* The XP points of the user */
+  @Column(nullable = false, unique = false)
+  private Long xp;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "classroom_uid", referencedColumnName = "uid")
