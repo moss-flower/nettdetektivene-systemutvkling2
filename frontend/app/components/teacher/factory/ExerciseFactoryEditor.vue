@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import draggable from "vuedraggable";
 import EmailHotspotsEditor from "~/components/teacher/factory/EmailHotspotsEditor.vue";
 import MultipleChoiceEditor from "~/components/teacher/factory/MultipleChoiceEditor.vue";
 import PasswordStrengthEditor from "~/components/teacher/factory/PasswordStrengthEditor.vue";
@@ -43,6 +44,7 @@ const draft = reactive<ExerciseFactoryPayload>(createExerciseDraft());
 const loadedSnapshot = ref<ExerciseFactoryPayload>(createExerciseDraft());
 const copyState = ref<"idle" | "copied" | "failed">("idle");
 const expandedTaskIds = ref<string[]>([]);
+const removedTasks = ref<ExerciseTask[]>([]);
 const loadedLocalId = ref("");
 const parsedSelection = computed(() => parseExerciseFactorySelectionKey(props.selectionKey));
 
@@ -165,35 +167,20 @@ const addTask = (kind: ExerciseTemplateKind) => {
 	expandedTaskIds.value = [...expandedTaskIds.value, nextTask.id];
 };
 
-const removeTask = (taskIndex: number) => {
-	if (draft.tasks.length === 1) {
+const handleRemovedTaskChange = (event: { added?: { element?: ExerciseTask } }) => {
+	const removedTask = event.added?.element;
+	removedTasks.value = [];
+
+	if (!removedTask) {
 		return;
 	}
 
-	const removedTaskId = draft.tasks[taskIndex]?.id;
-	draft.tasks.splice(taskIndex, 1);
-
-	if (removedTaskId) {
-		expandedTaskIds.value = expandedTaskIds.value.filter((id) => id !== removedTaskId);
-	}
-};
-
-const moveTask = (taskIndex: number, direction: -1 | 1) => {
-	const targetIndex = taskIndex + direction;
-
-	if (targetIndex < 0 || targetIndex >= draft.tasks.length) {
+	if (draft.tasks.length === 0) {
+		draft.tasks.push(removedTask);
 		return;
 	}
 
-	const nextTasks = [...draft.tasks];
-	const [movedTask] = nextTasks.splice(taskIndex, 1);
-
-	if (!movedTask) {
-		return;
-	}
-
-	nextTasks.splice(targetIndex, 0, movedTask);
-	draft.tasks.splice(0, draft.tasks.length, ...nextTasks);
+	expandedTaskIds.value = expandedTaskIds.value.filter((id) => id !== removedTask.id);
 };
 
 const addOption = (taskIndex: number) => {
@@ -349,52 +336,35 @@ watch(payloadPreviewText, () => {
 					Ingen oppgaver lagt til ennå. Start med å velge en oppgavetype.
 				</p>
 
-				<article v-for="(task, taskIndex) in draft.tasks" :key="task.id" class="taskCard">
-					<div class="taskCardHeader">
-						<div>
-							<p class="taskEyebrow">{{ taskLabel(task, taskIndex) }}</p>
-							<h3>{{ task.id }}</h3>
-						</div>
+				<draggable
+					v-model="draft.tasks"
+					class="taskList"
+					item-key="id"
+					:group="'exercise-tasks'"
+					handle=".dragHandle"
+				>
+					<template #item="{ element: task, index: taskIndex }">
+						<article class="taskCard">
+							<div class="taskCardHeader">
+								<div class="taskCardTitle">
+									<span class="dragHandle" aria-hidden="true">Grip</span>
+									<div>
+										<p class="taskEyebrow">{{ taskLabel(task, taskIndex) }}</p>
+										<h3>{{ task.id }}</h3>
+									</div>
+								</div>
 
-						<div class="taskCardActions">
-							<button
-								v-if="!isTaskExpanded(task.id)"
-								type="button"
-								class="ghostButton"
-								@click="toggleTaskExpanded(task.id)"
-							>
-								Rediger igjen
-							</button>
-							<button
-								type="button"
-								class="ghostButton"
-								aria-label="Flytt oppgave opp"
-								title="Flytt oppgave opp"
-								:disabled="taskIndex === 0"
-								@click="moveTask(taskIndex, -1)"
-							>
-								&uarr;
-							</button>
-							<button
-								type="button"
-								class="ghostButton"
-								aria-label="Flytt oppgave ned"
-								title="Flytt oppgave ned"
-								:disabled="taskIndex === draft.tasks.length - 1"
-								@click="moveTask(taskIndex, 1)"
-							>
-								&darr;
-							</button>
-							<button
-								type="button"
-								class="deleteButton"
-								:disabled="draft.tasks.length === 1"
-								@click="removeTask(taskIndex)"
-							>
-								Fjern
-							</button>
-						</div>
-					</div>
+								<div class="taskCardActions">
+									<button
+										v-if="!isTaskExpanded(task.id)"
+										type="button"
+										class="ghostButton"
+										@click="toggleTaskExpanded(task.id)"
+									>
+										Rediger igjen
+									</button>
+								</div>
+							</div>
 
 					<template v-if="isTaskExpanded(task.id)">
 						<div class="fieldGrid">
@@ -448,7 +418,26 @@ watch(payloadPreviewText, () => {
 								</button>
 							</div>
 						</template>
-				</article>
+						</article>
+					</template>
+				</draggable>
+
+				<draggable
+					v-if="draft.tasks.length > 1"
+					v-model="removedTasks"
+					class="removeDropZone"
+					item-key="id"
+					:group="'exercise-tasks'"
+					@change="handleRemovedTaskChange"
+				>
+					<template #item="{ element }">
+						<div class="removeDropZone__item">{{ element.id }}</div>
+					</template>
+
+					<template #footer>
+						<p>Dra en oppgave hit for å fjerne den fra oppgavesettet.</p>
+					</template>
+				</draggable>
 			</section>
 
 			<div class="actionRow actionRow--reset">
@@ -664,7 +653,12 @@ watch(payloadPreviewText, () => {
 	padding: 1rem;
 }
 
-.taskCard + .taskCard {
+.taskList {
+	display: grid;
+	gap: 1rem;
+}
+
+.taskList + .removeDropZone {
 	margin-top: 1rem;
 }
 
@@ -674,6 +668,52 @@ watch(payloadPreviewText, () => {
 	justify-content: space-between;
 	gap: 0.75rem;
 	margin-bottom: 1rem;
+}
+
+.taskCardTitle {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.75rem;
+}
+
+.dragHandle {
+	display: inline-grid;
+	place-items: center;
+	min-width: 3.2rem;
+	padding: 0.45rem 0.6rem;
+	border: 1px dashed var(--border);
+	border-radius: 999px;
+	color: var(--primary);
+	font-size: 0.75rem;
+	font-weight: 800;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	cursor: grab;
+	user-select: none;
+}
+
+.dragHandle:active {
+	cursor: grabbing;
+}
+
+.removeDropZone {
+	display: grid;
+	place-items: center;
+	min-height: 4.5rem;
+	padding: 1rem;
+	border: 1px dashed rgba(252, 165, 165, 0.65);
+	border-radius: 1rem;
+	background: rgba(127, 29, 29, 0.12);
+	color: #fca5a5;
+	text-align: center;
+}
+
+.removeDropZone p {
+	margin: 0;
+}
+
+.removeDropZone__item {
+	display: none;
 }
 
 .taskEyebrow,
