@@ -1,12 +1,12 @@
 package no.safety.backend.weeklymystery.service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import jakarta.transaction.Transactional;
+import no.safety.backend.classroom.model.ClassroomWeeklyMystery;
+import no.safety.backend.classroom.repository.ClassroomWeeklyMysteryRepository;
 import no.safety.backend.role.model.Role;
 import no.safety.backend.role.model.RoleType;
 import no.safety.backend.user.model.User;
@@ -43,6 +43,7 @@ public class WeeklyMysteryService {
     private final UserService userService;
     private final ClassroomService classroomService;
     private final ApplicationEventPublisher eventPublisher;
+    private final ClassroomWeeklyMysteryRepository classroomWeeklyMysteryRepository;
 
     public WeeklyMysteryPromptResponse getWeeklyMysteryPrompt(UUID classroomUuid) {
         log.debug("Get Weekly Mystery Prompt for " + classroomUuid);
@@ -139,9 +140,22 @@ public class WeeklyMysteryService {
         return promptRepository.findByPublicUuid(promptId);
     }
 
-    @Transactional
-    public void updateWeeklyMystery(Long classroomId, UUID weeklyMysteryPromptUuid) {
+    public List<WeeklyMysteryPromptResponse> findPreviousWeeklyMysteryPrompts(Long classroomId) {
+        List<WeeklyMysteryPromptResponse> responses = new ArrayList<>();
+        for (ClassroomWeeklyMystery prompt : classroomWeeklyMysteryRepository.findByClassroom_InternalIdOrderByAssignedDateDesc(classroomId)) {
+            responses.add(WeeklyMysteryPromptResponse.fromEntity(prompt.getWeeklyMysteryPrompt()));
+        }
+        return responses;
+    }
 
+    @Transactional
+    public void updateWeeklyMystery(Classroom classroom, UUID weeklyMysteryPromptUuid) {
+        WeeklyMysteryPrompt prompt = promptRepository.findByPublicUuid(weeklyMysteryPromptUuid);
+        ClassroomWeeklyMystery mystery = new ClassroomWeeklyMystery();
+        mystery.setWeeklyMysteryPrompt(prompt);
+        mystery.setClassroom(classroom);
+        mystery.setAssignedDate(LocalDate.now());
+        classroomWeeklyMysteryRepository.save(mystery);
     }
 
 }

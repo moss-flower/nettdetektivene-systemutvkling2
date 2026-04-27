@@ -1,4 +1,4 @@
-package no.safety.backend.weeklymystery.model;
+package no.safety.backend.classroom.model;
 
 import java.time.LocalDate;
 
@@ -12,8 +12,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import no.safety.backend.classroom.model.Classroom;
+import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
 
+/**
+ * Represents a Many-to-Many database connection between a Classroom
+ * and a previous Weekly Mystery.
+ */
 @Entity
 @Getter
 @Setter

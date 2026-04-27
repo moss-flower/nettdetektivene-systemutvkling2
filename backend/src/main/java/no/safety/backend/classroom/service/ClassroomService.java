@@ -129,7 +129,7 @@ public class ClassroomService {
   @Transactional
   public void updateWeeklyMystery(UUID classroomUid, UUID callerUuid, UUID weeklyMysteryPromptUuid) {
     Classroom c = requireOwned(classroomUid, callerUuid);
-    weeklyMysteryService.updateWeeklyMystery(c.getInternalId(), weeklyMysteryPromptUuid);
+    weeklyMysteryService.updateWeeklyMystery(c, weeklyMysteryPromptUuid);
     c.setWeeklyMysteryPrompt(weeklyMysteryService.fetch(weeklyMysteryPromptUuid));
     classroomRepo.save(c);
   }
