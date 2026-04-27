@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import type { AvatarConfig } from '~/composables/types/AvatarTypes'
+import { DEFAULT_AVATAR_CONFIG } from '~/composables/types/AvatarTypes'
 import AvatarImage from '~/components/avatar/avatarImage.vue'
+import { useAvatar } from '~/composables/useAvatar'
 
-const props = withDefaults(defineProps<{
-  avatar?: AvatarConfig
-  username?: string
-}>(), {
-  username: 'Detektiv Navn',
-})
+const { getMyAvatar } = useAvatar()
+const { getMyProfile} = useStudentProfile()
+
+const avatar = ref(await getMyAvatar());
+const username = ref((await getMyProfile()).studentName)
+
+const resolvedAvatar = computed(() => avatar.value ?? DEFAULT_AVATAR_CONFIG)
 </script>
 
 <template>
@@ -15,11 +18,11 @@ const props = withDefaults(defineProps<{
     <div class="avatarPrint">
       <div class="avatarPhotoWindow">
         <div class="avatarPhotoInner">
-          <AvatarImage :avatar="props.avatar" :alt="props.username" />
+          <AvatarImage :avatar="resolvedAvatar" :alt="username" />
         </div>
       </div>
 
-      <p class="avatarUsername">{{ props.username }}</p>
+      <p class="avatarUsername">{{ username }}</p>
     </div>
   </div>
 </template>

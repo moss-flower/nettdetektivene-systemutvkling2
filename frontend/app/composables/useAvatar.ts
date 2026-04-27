@@ -4,7 +4,7 @@ export function useAvatar() {
   const { $api } = useNuxtApp();
 
   const getMyAvatar = async (): Promise<AvatarConfig> => {
-    return await $api("/avatar", {
+    return await $api<AvatarConfig>("/avatar", {
       method: "GET",
     });
   };
