@@ -178,12 +178,13 @@ h1 {
   height: 0.9rem;
   border-radius: 999px;
   overflow: hidden;
-  background: #dbe4ee;
+  background: #e8edf4;
+  border: 1px solid #c7d2e1;
 }
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary), #8afcc6);
+  background: linear-gradient(90deg, #2563eb, #22c55e);
 }
 
 .progressFill.hasProgress {
