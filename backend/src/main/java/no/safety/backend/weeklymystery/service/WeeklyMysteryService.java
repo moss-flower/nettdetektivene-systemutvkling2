@@ -7,9 +7,6 @@ import java.util.stream.Collectors;
 import jakarta.transaction.Transactional;
 import no.safety.backend.classroom.model.ClassroomWeeklyMystery;
 import no.safety.backend.classroom.repository.ClassroomWeeklyMysteryRepository;
-import no.safety.backend.role.model.Role;
-import no.safety.backend.role.model.RoleType;
-import no.safety.backend.user.model.User;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -140,7 +137,8 @@ public class WeeklyMysteryService {
         return promptRepository.findByPublicUuid(promptId);
     }
 
-    public List<WeeklyMysteryPromptResponse> findPreviousWeeklyMysteryPrompts(Long classroomId) {
+    public List<WeeklyMysteryPromptResponse> findPreviousWeeklyMysteryPrompts(UUID classroomUid) {
+        Long classroomId = classroomService.getFullClassroom(classroomUid).getInternalId();
         List<WeeklyMysteryPromptResponse> responses = new ArrayList<>();
         for (ClassroomWeeklyMystery prompt : classroomWeeklyMysteryRepository.findByClassroom_InternalIdOrderByAssignedDateDesc(classroomId)) {
             responses.add(WeeklyMysteryPromptResponse.fromEntity(prompt.getWeeklyMysteryPrompt()));
@@ -149,8 +147,7 @@ public class WeeklyMysteryService {
     }
 
     @Transactional
-    public void updateWeeklyMystery(Classroom classroom, UUID weeklyMysteryPromptUuid) {
-        WeeklyMysteryPrompt prompt = promptRepository.findByPublicUuid(weeklyMysteryPromptUuid);
+    public void updateWeeklyMystery(Classroom classroom, WeeklyMysteryPrompt prompt) {
         ClassroomWeeklyMystery mystery = new ClassroomWeeklyMystery();
         mystery.setWeeklyMysteryPrompt(prompt);
         mystery.setClassroom(classroom);

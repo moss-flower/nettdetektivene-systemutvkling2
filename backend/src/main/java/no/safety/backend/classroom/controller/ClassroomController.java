@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import no.safety.backend.classroom.dto.ClassroomRequest;
 import no.safety.backend.classroom.dto.ClassroomResponse;
 import no.safety.backend.classroom.service.ClassroomService;
+import no.safety.backend.weeklymystery.service.WeeklyMysteryClassroomOrchestrator;
 import no.safety.backend.weeklymystery.service.WeeklyMysteryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 public class ClassroomController {
 
   private final ClassroomService classroomService;
+  private final WeeklyMysteryClassroomOrchestrator weeklyMysteryClassroomOrchestrator;
 
   /**
    * Creates a new classroom owned by the caller. Join code is automatically generated.
@@ -228,11 +230,11 @@ public class ClassroomController {
    * @return an empty response object on success, error on failure.
    */
   @PreAuthorize("hasRole('TEACHER')")
-  @PatchMapping("/{classroomId}/ukens-mysterium")
+  @PatchMapping("/{classroomUid}/ukens-mysterium")
   public ResponseEntity<?> updateClassroom(@PathVariable UUID classroomUid,
                                            @AuthenticationPrincipal UserPrincipal principal,
                                            @RequestBody UUID weeklyMysterUuid) {
-    classroomService.updateWeeklyMystery(classroomUid, principal.getUserPublicUuid(), weeklyMysterUuid);
+    weeklyMysteryClassroomOrchestrator.updateWeeklyMysteryForClassroom(classroomUid, weeklyMysterUuid, principal.getUserInternalId());
     return ResponseEntity.ok(null);
   }
 

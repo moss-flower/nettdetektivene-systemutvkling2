@@ -12,13 +12,12 @@ import no.safety.backend.exception.ConflictException;
 import no.safety.backend.exception.NotFoundException;
 import no.safety.backend.exception.domain.NotClassroomOwnerException;
 import no.safety.backend.exception.domain.StudentNotInClassException;
-import no.safety.backend.notification.dto.NotificationEvent;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.repository.StudentUserRepository;
 import no.safety.backend.user.repository.TeacherUserRepository;
 
-import no.safety.backend.weeklymystery.service.WeeklyMysteryService;
+import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +30,6 @@ public class ClassroomService {
   private final TeacherUserRepository teacherRepo;
   private final StudentUserRepository studentRepo;
   private final ClassroomCodeGenerator codegen;
-  private final WeeklyMysteryService weeklyMysteryService;
   private final ApplicationEventPublisher eventPublisher; // use this for publishing notifications for the teacher
 
   @Transactional
@@ -127,11 +125,9 @@ public class ClassroomService {
   }
 
   @Transactional
-  public void updateWeeklyMystery(UUID classroomUid, UUID callerUuid, UUID weeklyMysteryPromptUuid) {
-    Classroom c = requireOwned(classroomUid, callerUuid);
-    weeklyMysteryService.updateWeeklyMystery(c, weeklyMysteryPromptUuid);
-    c.setWeeklyMysteryPrompt(weeklyMysteryService.fetch(weeklyMysteryPromptUuid));
-    classroomRepo.save(c);
+  public void updateWeeklyMystery(Classroom classroom, WeeklyMysteryPrompt prompt) {
+    classroom.setWeeklyMysteryPrompt(prompt);
+    classroomRepo.save(classroom);
   }
 
   @Transactional
