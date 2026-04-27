@@ -65,6 +65,7 @@ public class NotificationServiceTest {
             "desc",
             UUID.randomUUID(),
             targets,
+            null,
             Set.of()
         );
         sender = StudentUser.builder()
