@@ -1,5 +1,6 @@
 package no.safety.backend.classroom.service;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -167,6 +168,15 @@ public class ClassroomService {
   public ClassroomResponse getClassroom(UUID classroomUid, UUID callerUuid) {
     Classroom c = requireOwned(classroomUid, callerUuid);
     return ClassroomResponse.from(c);
+  }
+
+  @Transactional(readOnly = true)
+  public Classroom getFullClassroom(UUID classroomUid) {
+    Optional<Classroom> classroom = classroomRepo.findByUid(classroomUid);
+    if(classroom.isEmpty()){
+      throw new NotFoundException("Classroom with uuid " + classroomUid + " not found");
+    }
+    return classroom.get();
   }
 
   @Transactional(readOnly = true)
