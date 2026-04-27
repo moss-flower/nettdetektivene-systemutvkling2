@@ -20,7 +20,7 @@ const emit = defineEmits<{
   flex-direction: column;
   align-items: center;
   font-size: 2rem;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .newNoteImage {

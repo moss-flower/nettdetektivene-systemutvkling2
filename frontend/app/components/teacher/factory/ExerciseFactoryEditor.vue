@@ -299,7 +299,7 @@ watch(payloadPreviewText, () => {
 						<input v-model="draft.difficultyName" type="text" placeholder="For eksempel: Lett" >
 					</label>
 
-					<label class="field field--full">
+					<label class="field fieldFull">
 						<span>Beskrivelse</span>
 						<textarea v-model="draft.description" rows="3" placeholder="Kort beskrivelse av hva eleven skal øve på." />
 					</label>
@@ -307,7 +307,7 @@ watch(payloadPreviewText, () => {
 			</section>
 
 			<section class="panelSection">
-				<div class="sectionHeading sectionHeading--inline">
+				<div class="sectionHeading sectionHeadingInline">
 					<div>
 						<h2>Oppgaver</h2>
 						<p>Hver oppgave blir ett element i tasks-arrayet.</p>
@@ -368,7 +368,7 @@ watch(payloadPreviewText, () => {
 
 					<template v-if="isTaskExpanded(task.id)">
 						<div class="fieldGrid">
-							<label class="field field--full">
+							<label class="field fieldFull">
 								<span>Introtekst</span>
 								<textarea v-model="task.introText" rows="2"></textarea>
 							</label>
@@ -440,7 +440,7 @@ watch(payloadPreviewText, () => {
 				</draggable>
 			</section>
 
-			<div class="actionRow actionRow--reset">
+			<div class="actionRow actionRowReset">
 				<button type="button" class="ghostButton" :disabled="!hasChanges" @click="resetDraft">
 					Tilbakestill endringer
 				</button>
@@ -469,7 +469,7 @@ watch(payloadPreviewText, () => {
 				</div>
 			</section>
 
-			<div class="actionRow actionRow--save">
+			<div class="actionRow actionRowSave">
 				<button
 					v-if="parsedSelection.kind !== 'new'"
 					type="button"
@@ -495,7 +495,7 @@ watch(payloadPreviewText, () => {
 				<details>
 					<summary class="debugSummary">Debug: payload</summary>
 					<div class="debugContent">
-						<div class="sectionHeading sectionHeading--inline">
+						<div class="sectionHeading sectionHeadingInline">
 							<div>
 								<h2>Payload</h2>
 								<p>Dette er objektet du senere kan sende med POST til backend.</p>
@@ -525,31 +525,31 @@ watch(payloadPreviewText, () => {
 .editorPanel,
 .previewPanel {
 	padding: 1.25rem;
-	border: 1px solid var(--border);
+	border: var(--border-width-hairline) solid var(--color-border-default);
 	border-radius: 1.2rem;
 	background:
 		linear-gradient(180deg, rgba(101, 240, 175, 0.08), rgba(101, 240, 175, 0)) top/100% 5rem no-repeat,
-		var(--surface);
-	box-shadow: var(--shadow);
+		var(--color-bg-surface);
+	box-shadow: var(--shadow-1);
 }
 
 .panelSection + .panelSection {
-	margin-top: 1.5rem;
-	padding-top: 1.5rem;
-	border-top: 1px solid var(--border);
+	margin-top: var(--space-6);
+	padding-top: var(--space-6);
+	border-top: var(--border-width-hairline) solid var(--color-border-default);
 }
 
 .sectionHeading {
 	display: grid;
 	gap: 0.35rem;
-	margin-bottom: 1rem;
+	margin-bottom: var(--space-4);
 }
 
-.sectionHeading--inline {
+.sectionHeadingInline {
 	display: flex;
 	align-items: flex-start;
 	justify-content: space-between;
-	gap: 1rem;
+	gap: var(--space-4);
 }
 
 .sectionHeading h2,
@@ -561,13 +561,13 @@ watch(payloadPreviewText, () => {
 .sectionHeading p,
 .summaryCard p {
 	margin: 0;
-	color: var(--muted);
+	color: var(--color-text-secondary);
 	line-height: 1.5;
 }
 
 .statusStack {
 	display: grid;
-	gap: 0.75rem;
+	gap: var(--space-3);
 }
 
 .fieldGrid {
@@ -582,7 +582,7 @@ watch(payloadPreviewText, () => {
 	gap: 0.45rem;
 }
 
-.field--full {
+.fieldFull {
 	grid-column: 1 / -1;
 }
 
@@ -595,11 +595,11 @@ watch(payloadPreviewText, () => {
 .field select,
 .field textarea {
 	width: 100%;
-	padding: 0.85rem 1rem;
-	border: 1px solid var(--border);
+	padding: 0.85rem var(--space-4);
+	border: var(--border-width-hairline) solid var(--color-border-default);
 	border-radius: 0.9rem;
 	background: rgba(0, 0, 0, 0.16);
-	color: var(--text);
+	color: var(--color-text-primary);
 	font: inherit;
 }
 
@@ -611,33 +611,33 @@ watch(payloadPreviewText, () => {
 .field select:focus,
 .field textarea:focus {
 	outline: none;
-	border-color: var(--primary);
+	border-color: var(--color-brand-primary);
 }
 
 .taskAddRow,
 .actionRow {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 0.75rem;
+	gap: var(--space-3);
 }
 
 .taskCardActions {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: flex-end;
-	gap: 0.75rem;
+	gap: var(--space-3);
 }
 
 .taskFooterActions {
 	display: flex;
 	justify-content: flex-end;
-	margin-top: 1rem;
+	margin-top: var(--space-4);
 }
 
 .summaryCard,
 .taskCard {
-	border: 1px solid var(--border);
-	border-radius: 1rem;
+	border: var(--border-width-hairline) solid var(--color-border-default);
+	border-radius: var(--radius-2);
 	background: rgba(255, 255, 255, 0.02);
 }
 
@@ -645,12 +645,12 @@ watch(payloadPreviewText, () => {
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-start;
-	gap: 0.75rem;
-	padding: 1rem;
+	gap: var(--space-3);
+	padding: var(--space-4);
 }
 
 .taskCard {
-	padding: 1rem;
+	padding: var(--space-4);
 }
 
 .taskList {
@@ -659,7 +659,7 @@ watch(payloadPreviewText, () => {
 }
 
 .taskList + .removeDropZone {
-	margin-top: 1rem;
+	margin-top: var(--space-4);
 }
 
 .taskCardHeader {
@@ -716,10 +716,56 @@ watch(payloadPreviewText, () => {
 	display: none;
 }
 
+.taskCardTitle {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.75rem;
+}
+
+.dragHandle {
+	display: inline-grid;
+	place-items: center;
+	min-width: 3.2rem;
+	padding: 0.45rem 0.6rem;
+	border: 1px dashed var(--border);
+	border-radius: 999px;
+	color: var(--primary);
+	font-size: 0.75rem;
+	font-weight: 800;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	cursor: grab;
+	user-select: none;
+}
+
+.dragHandle:active {
+	cursor: grabbing;
+}
+
+.removeDropZone {
+	display: grid;
+	place-items: center;
+	min-height: 4.5rem;
+	padding: 1rem;
+	border: 1px dashed rgba(252, 165, 165, 0.65);
+	border-radius: 1rem;
+	background: rgba(127, 29, 29, 0.12);
+	color: #fca5a5;
+	text-align: center;
+}
+
+.removeDropZone p {
+	margin: 0;
+}
+
+.removeDropZone__item {
+	display: none;
+}
+
 .taskEyebrow,
 .cardEyebrow {
 	margin-bottom: 0.45rem;
-	color: var(--primary);
+	color: var(--color-brand-primary);
 	font-size: 0.82rem;
 	font-weight: 700;
 	letter-spacing: 0.08em;
@@ -728,9 +774,9 @@ watch(payloadPreviewText, () => {
 
 .payloadPreview {
 	overflow-x: auto;
-	padding: 1rem;
-	border: 1px solid var(--border);
-	border-radius: 1rem;
+	padding: var(--space-4);
+	border: var(--border-width-hairline) solid var(--color-border-default);
+	border-radius: var(--radius-2);
 	background: #111827;
 	color: #d1fae5;
 	font-size: 0.88rem;
@@ -744,7 +790,7 @@ watch(payloadPreviewText, () => {
 .debugSummary {
 	cursor: pointer;
 	font-weight: 700;
-	color: var(--muted);
+	color: var(--color-text-secondary);
 	list-style: none;
 }
 
@@ -753,28 +799,28 @@ watch(payloadPreviewText, () => {
 }
 
 .debugContent {
-	margin-top: 1rem;
+	margin-top: var(--space-4);
 }
 
 .ghostButton,
 .primaryButton,
 .deleteButton {
-	border: 1px solid var(--border);
-	border-radius: 999px;
-	padding: 0.7rem 1rem;
+	border: var(--border-width-hairline) solid var(--color-border-default);
+	border-radius: var(--radius-pill);
+	padding: 0.7rem var(--space-4);
 	font-weight: 700;
-	transition: transform var(--transition), border-color var(--transition), background var(--transition);
+	transition: transform var(--transition-base), border-color var(--transition-base), background var(--transition-base);
 }
 
 .ghostButton {
 	background: transparent;
-	color: var(--text);
+	color: var(--color-text-primary);
 }
 
 .primaryButton {
-	border-color: var(--primary);
-	background: var(--primary);
-	color: var(--bg);
+	border-color: var(--color-brand-primary);
+	background: var(--color-brand-primary);
+	color: var(--color-text-onDark);
 }
 
 .deleteButton {
@@ -796,20 +842,20 @@ watch(payloadPreviewText, () => {
 	transform: none;
 }
 
-.actionRow--reset {
+.actionRowReset {
 	justify-content: flex-start;
 }
 
-.actionRow--save {
-	margin-top: 1.5rem;
+.actionRowSave {
+	margin-top: var(--space-6);
 	justify-content: flex-end;
 }
 
 .emptyTaskState {
-	padding: 1rem;
-	border: 1px dashed var(--border);
-	border-radius: 1rem;
-	color: var(--muted);
+	padding: var(--space-4);
+	border: var(--border-width-hairline) dashed var(--color-border-default);
+	border-radius: var(--radius-2);
+	color: var(--color-text-secondary);
 	line-height: 1.5;
 }
 
@@ -818,7 +864,7 @@ watch(payloadPreviewText, () => {
 		grid-template-columns: 1fr;
 	}
 
-	.sectionHeading--inline,
+	.sectionHeadingInline,
 		.taskCardHeader,
 		.taskCardActions,
 		.actionRow,
