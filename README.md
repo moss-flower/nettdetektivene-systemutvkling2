@@ -9,6 +9,11 @@ Oppmøtetid: 09:00 - 15:00
 - **Ole-Kristian Wigum**
 - **Casper Kolsrud**
 - **William Holtsdalen**
+- **Hector Mendana Morales**
+- **Alexander Tawan Atjanthuek Johnsen**
+- **Amadeus Syvertsen Berg**
+- **Wayan Satria Krabseth**
+- **Sasha Unruh**
 
 ## Developer Setup
 
