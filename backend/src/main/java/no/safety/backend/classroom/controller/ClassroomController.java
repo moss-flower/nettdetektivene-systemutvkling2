@@ -234,7 +234,7 @@ public class ClassroomController {
                                            @RequestBody UUID weeklyMysterUuid) {
     classroomService.updateWeeklyMystery(classroomUid, principal.getUserPublicUuid(), weeklyMysterUuid);
     return ResponseEntity.ok(null);
-  })
+  }
 
   /**
    * Gets a students classroom.
