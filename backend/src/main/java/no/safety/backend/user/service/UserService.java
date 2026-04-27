@@ -2,6 +2,9 @@ package no.safety.backend.user.service;
 
 import java.util.UUID;
 
+import no.safety.backend.role.model.Role;
+import no.safety.backend.role.model.RoleType;
+import no.safety.backend.user.model.StudentUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -76,6 +79,24 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with UUID: " + publicUuid));
         
         userRepository.delete(user);
+    }
+
+    public boolean isStudent(User user) {
+        for(Role role : user.getRoles()) {
+            if(role.getType() == RoleType.ROLE_TEACHER || role.getType() == RoleType.ROLE_ADMIN) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean isTeacher(User user) {
+        for(Role role : user.getRoles()) {
+            if(role.getType() == RoleType.ROLE_TEACHER) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public User findByInternalId(Long id) {
