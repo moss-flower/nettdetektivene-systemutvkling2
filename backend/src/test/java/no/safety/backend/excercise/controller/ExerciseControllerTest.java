@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.UUID;
+import no.safety.backend.auth.service.JwtService;
 import no.safety.backend.exception.NotFoundException;
 import no.safety.backend.excercise.dto.ExerciseReadRequest;
 import no.safety.backend.excercise.dto.ExerciseRequest;
@@ -31,11 +32,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
 @WebMvcTest(ExerciseController.class)
 @AutoConfigureRestTestClient
+@EnableMethodSecurity
 class ExerciseControllerTest {
 
   @Autowired
@@ -43,6 +47,12 @@ class ExerciseControllerTest {
 
   @MockitoBean
   private ExerciseService mockService;
+
+  @MockitoBean
+  private JwtService jwtService;
+
+  @MockitoBean
+  private UserDetailsService userDetailsService;
 
   private ExerciseRequest validRequest;
   private ExerciseResponse savedResponse;

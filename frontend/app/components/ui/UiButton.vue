@@ -2,7 +2,7 @@
 import { computed, useSlots } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 
-type Variant = 'primary' | 'reward' | 'ghost' | 'danger'
+type Variant = 'primary' | 'reward' | 'ghost' | 'danger' | 'onLight'
 type Size = 'sm' | 'md' | 'lg'
 
 const props = withDefaults(
@@ -160,12 +160,14 @@ if (import.meta.dev) {
   font-size: var(--font-size-14);
   border-radius: var(--radius-1);
 }
+
 .ui-btn--md {
   height: var(--size-control-md);
   padding-inline: var(--space-5);
   font-size: var(--font-size-16);
   border-radius: var(--radius-2);
 }
+
 .ui-btn--lg {
   height: var(--size-control-lg);
   padding-inline: var(--space-6);
@@ -179,6 +181,7 @@ if (import.meta.dev) {
   background: var(--color-brand-primary);
   color: var(--color-text-onDark);
 }
+
 .ui-btn--primary:hover:not([aria-disabled='true']) {
   background: color-mix(in srgb, var(--color-brand-primary) 92%, white);
 }
@@ -192,9 +195,11 @@ if (import.meta.dev) {
   background: var(--color-accent-reward);
   color: var(--color-text-primary);
 }
+
 .ui-btn--reward:hover:not([aria-disabled='true']) {
   background: var(--color-accent-reward-hover);
 }
+
 .ui-btn--reward:active:not([aria-disabled='true']) {
   background: var(--color-accent-reward-pressed);
   box-shadow: var(--shadow-pressed);
@@ -208,10 +213,28 @@ if (import.meta.dev) {
   color: var(--color-text-primary);
   box-shadow: none;
 }
+
 .ui-btn--ghost:hover:not([aria-disabled='true']) {
   background: var(--color-bg-surface-hover);
 }
+
 .ui-btn--ghost:active:not([aria-disabled='true']) {
+  box-shadow: var(--shadow-pressed);
+}
+
+/* onLight; cream/white pills on dark surface */
+.ui-btn--onLight {
+  background: var(--color-bg-onLight);
+  color: var(--color-text-onLight);
+  border: var(--border-width-hairline) solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+}
+
+.ui-btn--onLight:hover:not([aria-disabled='true']) {
+  background: var(--color-bg-onLight-hover);
+}
+
+.ui-btn--onLight:active:not([aria-disabled='true']) {
   box-shadow: var(--shadow-pressed);
 }
 
@@ -220,9 +243,11 @@ if (import.meta.dev) {
   background: var(--color-semantic-error);
   color: var(--color-text-onDark);
 }
+
 .ui-btn--danger:hover:not([aria-disabled='true']) {
   background: var(--color-semantic-error-hover);
 }
+
 .ui-btn--danger:active:not([aria-disabled='true']) {
   box-shadow: var(--shadow-pressed);
 }
@@ -250,6 +275,7 @@ if (import.meta.dev) {
   height: var(--size-icon-sm);
   flex: 0 0 auto;
 }
+
 .ui-btn--lg .ui-btn__icon {
   width: var(--size-icon-md);
   height: var(--size-icon-md);

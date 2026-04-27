@@ -1,16 +1,46 @@
 <script setup lang="ts">
-const { getTeacherClassroomSummaries } = useTeacherDashboard();
 import { routePaths, routePathsWithString } from '~/composables/utils/routePaths';
+import { useAuth } from '~/composables/useAuth';
+import { toClassroomSummaries } from '~/composables/useTeacherDashboard';
 
-const classroomSummaries = computed(() => getTeacherClassroomSummaries());
+const { teacher } = useClassrooms();
+
+const { data: ownedClassrooms, pending: classroomsPending } = await useAsyncData(
+  'teacher-owned-classrooms',
+  () => teacher.getOwnedClassrooms().catch(() => []),
+);
+
+const classroomSummaries = computed(() => toClassroomSummaries(ownedClassrooms.value ?? []));
+const { logout } = useAuth();
+const isLoggingOut = ref(false);
+
+const handleLogout = async () => {
+  if (isLoggingOut.value) {
+    return;
+  }
+
+  isLoggingOut.value = true;
+
+  try {
+    await logout();
+    await navigateTo(routePaths.home);
+  } finally {
+    isLoggingOut.value = false;
+  }
+};
 </script>
 
 <template>
   <section class="overviewPage">
     <header class="overviewHeader">
-      <p class="eyebrow">Læreroversikt</p>
-      <h1>Hjemskjerm</h1>
-      <p class="subtitle">Administrer klasserom og følg aktivitet.</p>
+      <div class="overviewHeader__content">
+        <p class="eyebrow">Læreroversikt</p>
+        <h1>Hjemskjerm</h1>
+        <p class="subtitle">Administrer klasserom og følg aktivitet.</p>
+      </div>
+      <button class="logoutButton" type="button" :disabled="isLoggingOut" @click="handleLogout">
+        {{ isLoggingOut ? 'Logger ut...' : 'Logg ut' }}
+      </button>
     </header>
 
 	<div class="dashboardGrid">
@@ -24,6 +54,8 @@ const classroomSummaries = computed(() => getTeacherClassroomSummaries());
         </NuxtLink>
 
         <div class="classroomCards">
+          <p v-if="classroomsPending" class="panelMessage">Laster klasserom...</p>
+          <p v-else-if="classroomSummaries.length === 0" class="panelMessage">Du har ingen klasserom ennå.</p>
           <NuxtLink
             v-for="(classroom, index) in classroomSummaries"
             :key="classroom.id"
@@ -32,7 +64,7 @@ const classroomSummaries = computed(() => getTeacherClassroomSummaries());
             :to="routePathsWithString(routePaths.teacherClassroomOverview, `?classroomId=${classroom.id}`)"
           >
             <span class="classroomName">{{ classroom.name }}</span>
-            <span class="classScore">{{ classroom.totalScore }} poeng</span>
+            <span class="classScore">{{ classroom.studentCount }} elever</span>
           </NuxtLink>
 		  </div>
 		</aside>
@@ -83,7 +115,15 @@ const classroomSummaries = computed(() => getTeacherClassroomSummaries());
 }
 
 .overviewHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
   margin-bottom: var(--space-4);
+}
+
+.overviewHeader__content {
+  min-width: 0;
 }
 
 .eyebrow {
@@ -102,6 +142,30 @@ h1 {
 .subtitle {
   margin: 0;
   color: var(--muted);
+}
+
+.logoutButton {
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.logoutButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.logoutButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .dashboardGrid {
@@ -179,6 +243,11 @@ h2 {
 .classroomCards {
   display: grid;
   gap: 0.75rem;
+}
+
+.panelMessage {
+  margin: 0;
+  color: var(--muted);
 }
 
 .classroomCard {
@@ -301,6 +370,14 @@ h2 {
 }
 
 @media (max-width: 640px) {
+  .overviewHeader {
+    display: grid;
+  }
+
+  .logoutButton {
+    justify-self: flex-start;
+  }
+
   .topActionRow,
   .factoryActions--grid {
     grid-template-columns: 1fr;

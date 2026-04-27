@@ -1,5 +1,6 @@
 export type WorldData = {
   uid: string;
+  title: string;
   description: string;
   image: string;
   stationUids?: string[];
@@ -7,12 +8,14 @@ export type WorldData = {
 
 export class World {
   uid: string;
+  title: string;
   description: string;
   image: string;
   stationUids: string[];
 
   constructor(data: WorldData) {
     this.uid = data.uid;
+    this.title = data.title;
     this.description = data.description;
     this.image = data.image;
     this.stationUids = data.stationUids ?? [];

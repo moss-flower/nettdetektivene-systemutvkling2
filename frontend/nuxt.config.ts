@@ -11,10 +11,8 @@ export default defineNuxtConfig({
       ]
     }
   },
-  
+
   runtimeConfig: {
-    public: {
-      apiBase: 'http://backend:8080/api/v1',
-    },
+    apiBase: import.meta.env.NUXT_API_BASE || 'http://localhost:8080/api/v1',
   },
 })

@@ -1,3 +1,7 @@
+<script setup lang="ts">
+useHead({ htmlAttrs: { 'data-theme': 'game' } as any })
+</script>
+
 <template>
   <div class="app-shell">
     <aside class="sidebar">
@@ -25,8 +29,8 @@
 }
 
 .sidebar {
-  background: var(--color-bg-surface);
-  border-right: var(--border-width-hairline) solid var(--color-border-default);
+  background: var(--color-bg-sidebar);
+  border-right: var(--border-width-hairline) solid var(--color-brand-primary);
   padding: var(--space-5) var(--space-3);
   display: flex;
   flex-direction: column;

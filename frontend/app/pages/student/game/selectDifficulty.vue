@@ -32,6 +32,10 @@ const { data: station } = await useAsyncData(
   { watch: [stationUid] },
 );
 
+const hydratedStation = computed(() =>
+  station.value ? Station.fromBackend(station.value) : null,
+);
+
 const { data: completedExerciseUids } = await useAsyncData(
   "completed-exercises",
   () => useCompletedExerciseUids(),
@@ -56,7 +60,12 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
     return [];
   }
 
-  const currentStation = station.value;
+  const currentStation = hydratedStation.value;
+
+  if (!currentStation) {
+    return [];
+  }
+
   const currentExercises = stationExercises.value ?? [];
 
   return currentExercises.map((exercise, index) => ({
@@ -80,11 +89,11 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
       Tilbake til stasjoner
     </NuxtLink>
 
-    <template v-if="station">
+    <template v-if="hydratedStation">
       <header class="difficultyHero">
         <p class="difficultyEyebrow">Velg oppgave</p>
-        <h1 class="difficultyTitle">{{ station.name }}</h1>
-        <p class="difficultySummary">{{ station.description }}</p>
+        <h1 class="difficultyTitle">{{ hydratedStation.title }}</h1>
+        <p class="difficultySummary">{{ hydratedStation.description }}</p>
       </header>
 
       <div v-if="exerciseOptions.length > 0" class="difficultyGrid">

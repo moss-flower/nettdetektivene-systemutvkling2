@@ -46,6 +46,7 @@ services:
       - backend
     environment:
       NUXT_SESSION_PASSWORD: ${NUXT_SESSION_PASSWORD}
+      NUXT_API_BASE: http://backend:8080/api/v1
     ports:
       - "3000:3000"
 

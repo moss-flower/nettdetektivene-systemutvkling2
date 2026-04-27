@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { routePaths } from "~/composables/utils/routePaths";
 
-type Variant = "primary" | "reward" | "ghost" | "danger";
+type Variant = "primary" | "reward" | "ghost" | "danger" | "onLight";
 type Size = "sm" | "md" | "lg";
 
 const props = withDefaults(
@@ -17,7 +17,7 @@ const props = withDefaults(
   }>(),
   {
     label: "Tilbake til hjem",
-    variant: "ghost",
+    variant: "onLight",
     size: "sm",
     block: false,
     disabled: false,

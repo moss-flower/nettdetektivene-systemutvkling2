@@ -1,21 +1,17 @@
 <script setup lang="ts">
 import { routePaths } from "~/composables/utils/routePaths";
 import {
-	clearStationFactoryOverride,
 	createStationDraft,
-	makeStationFactoryDraftSelectionKey,
-	makeStationFactoryExistingSelectionKey,
+	deleteStationFactorySelection,
+	loadStationFactoryPayload,
 	normalizeStationExerciseUids,
 	parseStationFactorySelectionKey,
-	readStationFactoryStore,
-	removeStationFactoryDraft,
-	saveStationFactoryDraft,
-	saveStationFactoryOverride,
+	saveStationFactoryPayload,
+	saveStationFactoryPayloadAsNew,
 	stationFactoryDefaultImage,
 	type StationFactoryPayload,
 } from "~/composables/useStationFactory";
 import { Exercise } from "~/composables/types/ExerciseType";
-import { Station } from "~/composables/types/StationType";
 
 const props = defineProps<{
 	selectionKey: string;
@@ -31,8 +27,8 @@ const draft = reactive<StationFactoryPayload>(createStationDraft());
 const loadedSnapshot = ref<StationFactoryPayload>(createStationDraft());
 const copyState = ref<"idle" | "copied" | "failed">("idle");
 const loadedLocalId = ref("");
+const availableExercises = ref<Exercise[]>([]);
 
-const availableExercises = computed(() => Exercise.backendFetchAllExercises());
 const knownExerciseMap = computed(() => new Map(availableExercises.value.map((exercise) => [exercise.uid, exercise])));
 const parsedSelection = computed(() => parseStationFactorySelectionKey(props.selectionKey));
 
@@ -106,39 +102,12 @@ const updateLoadedSnapshot = (payload: StationFactoryPayload) => {
 	};
 };
 
-const loadSelection = (selectionKey: string) => {
-	const selection = parseStationFactorySelectionKey(selectionKey);
-	const store = readStationFactoryStore();
+const loadSelection = async (selectionKey: string) => {
+	const loaded = await loadStationFactoryPayload(selectionKey);
 
-	loadedLocalId.value = "";
-
-	if (selection.kind === "existing") {
-		const backendStation = Station.backendFetchStationByUid(selection.uid);
-		const override = store.overrides[selection.uid] ?? null;
-		const nextPayload = override?.payload
-			?? createStationDraft({
-				title: backendStation?.title ?? "",
-				description: backendStation?.description ?? "",
-				image: backendStation?.image ?? stationFactoryDefaultImage,
-				exerciseUids: backendStation?.exerciseUids ?? [],
-			});
-
-		applyDraft(nextPayload);
-		updateLoadedSnapshot(nextPayload);
-	} else if (selection.kind === "draft") {
-		const storedDraft = store.drafts.find((draftEntry) => draftEntry.localId === selection.localId) ?? null;
-		const nextPayload = storedDraft?.payload ?? createStationDraft();
-
-		loadedLocalId.value = storedDraft?.localId ?? "";
-		applyDraft(nextPayload);
-		updateLoadedSnapshot(nextPayload);
-	} else {
-		const nextPayload = createStationDraft();
-
-		applyDraft(nextPayload);
-		updateLoadedSnapshot(nextPayload);
-	}
-
+	loadedLocalId.value = loaded.localId;
+	applyDraft(loaded.payload);
+	updateLoadedSnapshot(loaded.payload);
 	copyState.value = "idle";
 };
 
@@ -189,49 +158,33 @@ const finishSave = (selectionKey: string) => {
 	emit("saved");
 };
 
-const savePayload = () => {
+const savePayload = async () => {
 	if (!canSave.value) {
 		return;
 	}
 
-	if (parsedSelection.value.kind === "existing") {
-		saveStationFactoryOverride(parsedSelection.value.uid, payloadPreview.value);
+	const saved = await saveStationFactoryPayload(props.selectionKey, payloadPreview.value);
 
-		updateLoadedSnapshot(payloadPreview.value);
-		finishSave(makeStationFactoryExistingSelectionKey(parsedSelection.value.uid));
-		return;
-	}
-
-	const record = saveStationFactoryDraft(payloadPreview.value, loadedLocalId.value || undefined);
-
-	loadedLocalId.value = record.localId;
-	updateLoadedSnapshot(payloadPreview.value);
-	finishSave(makeStationFactoryDraftSelectionKey(record.localId));
+	loadedLocalId.value = "";
+	updateLoadedSnapshot(saved.payload);
+	finishSave(saved.selectionKey);
 };
 
-const saveAsNew = () => {
+const saveAsNew = async () => {
 	if (!canSave.value) {
 		return;
 	}
 
-	const record = saveStationFactoryDraft(payloadPreview.value);
+	const saved = await saveStationFactoryPayloadAsNew(payloadPreview.value);
 
-	loadedLocalId.value = record.localId;
-	updateLoadedSnapshot(payloadPreview.value);
-	finishSave(makeStationFactoryDraftSelectionKey(record.localId));
+	loadedLocalId.value = "";
+	updateLoadedSnapshot(saved.payload);
+	finishSave(saved.selectionKey);
 };
 
-const deleteSelection = () => {
-	if (parsedSelection.value.kind === "existing") {
-		clearStationFactoryOverride(parsedSelection.value.uid);
-		emit("deleted");
-		return;
-	}
-
-	if (parsedSelection.value.kind === "draft" && loadedLocalId.value) {
-		removeStationFactoryDraft(loadedLocalId.value);
-		emit("deleted");
-	}
+const deleteSelection = async () => {
+	await deleteStationFactorySelection(props.selectionKey);
+	emit("deleted");
 };
 
 const copyPayload = async () => {
@@ -245,11 +198,15 @@ const copyPayload = async () => {
 
 watch(
 	() => props.selectionKey,
-	(selectionKey) => {
-		loadSelection(selectionKey);
+	async (selectionKey) => {
+		await loadSelection(selectionKey);
 	},
 	{ immediate: true },
 );
+
+onMounted(async () => {
+	availableExercises.value = await Exercise.backendFetchAllExercises();
+});
 
 watch(payloadPreviewText, () => {
 	if (copyState.value !== "idle") {

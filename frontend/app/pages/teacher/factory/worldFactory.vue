@@ -3,7 +3,9 @@ import WorldFactoryEditor from "~/components/teacher/factory/WorldFactoryEditor.
 import PopupFactorySaved from "~/components/teacher/factory/PopupFactorySaved.vue";
 import { routePaths } from "~/composables/utils/routePaths";
 import {
+	fetchAllWorldFactoryWorlds,
 	getWorldFactorySelectionOptions,
+	getWorldFactorySelectionOptionsFromWorlds,
 	makeWorldFactoryExistingSelectionKey,
 	type WorldFactorySelectableOption,
 	worldFactoryNewSelectionKey,
@@ -30,24 +32,32 @@ const goBack = () => {
 	void navigateTo(routePaths.teacherOverview);
 };
 
-const refreshSelectableOptions = () => {
-	selectableOptions.value = getWorldFactorySelectionOptions();
+const refreshSelectableOptions = async () => {
+	try {
+		const worlds = await fetchAllWorldFactoryWorlds();
+
+		selectableOptions.value = getWorldFactorySelectionOptionsFromWorlds(worlds);
+	} catch {
+		selectableOptions.value = getWorldFactorySelectionOptions();
+	}
 };
-const handleSelectionUpdated = (selectionKey: string) => {
-	refreshSelectableOptions();
+const handleSelectionUpdated = async (selectionKey: string) => {
+	await refreshSelectableOptions();
 	selectedWorldKey.value = selectionKey;
 };
 
-const handleSaved = () => {
-	refreshSelectableOptions();
-	selectedWorldKey.value = lockedWorldUid.value
-		? makeWorldFactoryExistingSelectionKey(lockedWorldUid.value)
-		: "";
+const handleSaved = async () => {
+	await refreshSelectableOptions();
+
+	if (lockedWorldUid.value) {
+		selectedWorldKey.value = makeWorldFactoryExistingSelectionKey(lockedWorldUid.value);
+	}
+
 	showSavedPopup.value = true;
 };
 
-const handleDeleted = () => {
-	refreshSelectableOptions();
+const handleDeleted = async () => {
+	await refreshSelectableOptions();
 	selectedWorldKey.value = lockedWorldUid.value
 		? makeWorldFactoryExistingSelectionKey(lockedWorldUid.value)
 		: "";
@@ -57,8 +67,8 @@ const closeSavedPopup = () => {
 	showSavedPopup.value = false;
 };
 
-onMounted(() => {
-	refreshSelectableOptions();
+onMounted(async () => {
+	await refreshSelectableOptions();
 });
 
 watch(

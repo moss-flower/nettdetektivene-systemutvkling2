@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { routePaths } from "~/composables/utils/routePaths";
 import { useAuth } from "~/composables/useAuth";
+import { useClassrooms } from "~/composables/useClassrooms";
 
 type ProviderId = "microsoft" | "idporten";
 
@@ -10,6 +11,7 @@ definePageMeta({
 
 const route = useRoute();
 const { login } = useAuth();
+const { student } = useClassrooms();
 
 const email = ref("");
 const password = ref("");
@@ -37,24 +39,21 @@ const providerOptions: Array<{
   },
 ];
 
-const selectedRole = computed<"elev" | "lærer">(() => {
-  const role = String(route.query.role ?? "").toLowerCase();
-  return role === "lærer" ? "lærer" : "elev";
+const redirectRoute = computed(() => {
+  const redirect = route.query.redirect;
+
+  return typeof redirect === "string" && redirect.startsWith("/") ? redirect : "";
 });
 
-const targetRoute = computed(() =>
-  selectedRole.value === "lærer"
-    ? routePaths.teacherOverview
-    : routePaths.join,
-);
+const studentRegisterTarget = {
+  path: routePaths.register,
+  query: { role: "elev" },
+};
 
-const targetLabel = computed(() =>
-  selectedRole.value === "lærer" ? "lærerflaten" : "klasseromssiden",
-);
-
-const affiliationName = computed(() =>
-  selectedRole.value === "lærer" ? "NTNU ansatte" : "NTNU",
-);
+const teacherRegisterTarget = {
+  path: routePaths.register,
+  query: { role: "lærer" },
+};
 
 function selectProvider(providerId: ProviderId) {
   selectedProvider.value = providerId;
@@ -72,9 +71,24 @@ async function handleLogin() {
   loading.value = true;
 
   try {
-    await login(email.value.trim(), password.value);
+    const response = await login(email.value.trim(), password.value);
 
-    await navigateTo(targetRoute.value);
+    if (response.roles.includes("ROLE_TEACHER")) {
+      await navigateTo(redirectRoute.value || routePaths.teacherOverview);
+      return;
+    }
+
+    if (response.roles.includes("ROLE_STUDENT")) {
+      try {
+        await student.getMyClassroom();
+        await navigateTo(routePaths.studentHome);
+      } catch {
+        await navigateTo(routePaths.join);
+      }
+      return;
+    }
+
+    await navigateTo(routePaths.home);
 
   } catch (error: any) {
     formError.value =
@@ -115,7 +129,7 @@ async function handleLogin() {
             <div class="panelMark orgMark">N</div>
             <div class="panelBody">
               <p class="panelLabel">Din tilknytning</p>
-              <p class="panelValue">{{ affiliationName }}</p>
+              <p class="panelValue">Din skole</p>
               <button type="button" class="inlineLink">Bytt tilknytning</button>
             </div>
           </div>
@@ -170,11 +184,6 @@ async function handleLogin() {
               />
             </div>
 
-            <p class="mockHint">
-              Dette er en prototype av Feide-innloggingen deres. Innloggingen bruker
-              backend-endepunktet og sender deg videre til {{ targetLabel }} ved vellykket innlogging.
-            </p>
-
             <button type="submit" class="submitButton" :disabled="loading">
               {{ loading ? "Logger inn..." : "Fortsett med innlogging" }}
             </button>
@@ -183,17 +192,24 @@ async function handleLogin() {
           </form>
         </section>
 
+        <section class="registerPanel" aria-label="Registrering">
+          <p class="registerTitle">Har du ikke bruker?</p>
+          <div class="registerLinks">
+            <NuxtLink :to="studentRegisterTarget" class="registerLink">
+              Registrer elev
+            </NuxtLink>
+            <NuxtLink :to="teacherRegisterTarget" class="registerLink">
+              Registrer lærer
+            </NuxtLink>
+          </div>
+        </section>
+
         <details class="helpPanel">
           <summary>Trenger du hjelp?</summary>
           <div class="helpContent">
             <p>Dette er en prototype av Feide-innloggingen deres.</p>
             <p>
-              Logg inn med en backend-bruker for å gå videre til {{ targetLabel }}.
-            </p>
-            <p>
-              <NuxtLink :to="targetRoute" class="inlineTextLink">
-                Hopp over innlogging
-              </NuxtLink>
+              Logg inn med en backend-bruker. Rollen fra backend bestemmer om du sendes til elev- eller lærerflaten.
             </p>
           </div>
         </details>
@@ -333,8 +349,7 @@ h1 {
   font-weight: 700;
 }
 
-.inlineLink,
-.inlineTextLink {
+.inlineLink {
   margin-top: 0.2rem;
   border: 0;
   padding: 0;
@@ -461,16 +476,48 @@ h1 {
   outline-offset: 0;
 }
 
-.mockHint {
-  margin: 0;
-  color: #2d384c;
-  line-height: 1.45;
-}
-
 .formError {
   margin: 0;
   color: #b00020;
   font-weight: 700;
+}
+
+.registerPanel {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  background: #eef3f9;
+}
+
+.registerTitle {
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+}
+
+.registerLinks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.registerLink {
+  min-height: 3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.75rem;
+  background: #ffffff;
+  border: 2px solid #606ca5;
+  color: #283678;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+
+.registerLink:hover,
+.registerLink:focus-visible {
+  background: #283678;
+  color: #ffffff;
+  outline: none;
 }
 
 .helpPanel {
@@ -548,6 +595,10 @@ h1 {
   .submitButton,
   .fieldInput {
     min-height: 3.75rem;
+  }
+
+  .registerLinks {
+    grid-template-columns: 1fr;
   }
 }
 </style>
