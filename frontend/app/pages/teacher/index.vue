@@ -1,16 +1,39 @@
 <script setup lang="ts">
 const { getTeacherClassroomSummaries } = useTeacherDashboard();
 import { routePaths, routePathsWithString } from '~/composables/utils/routePaths';
+import { useAuth } from '~/composables/useAuth';
 
 const classroomSummaries = computed(() => getTeacherClassroomSummaries());
+const { logout } = useAuth();
+const isLoggingOut = ref(false);
+
+const handleLogout = async () => {
+  if (isLoggingOut.value) {
+    return;
+  }
+
+  isLoggingOut.value = true;
+
+  try {
+    await logout();
+    await navigateTo(routePaths.home);
+  } finally {
+    isLoggingOut.value = false;
+  }
+};
 </script>
 
 <template>
   <section class="overviewPage">
     <header class="overviewHeader">
-      <p class="eyebrow">Læreroversikt</p>
-      <h1>Hjemskjerm</h1>
-      <p class="subtitle">Administrer klasserom og følg aktivitet.</p>
+      <div class="overviewHeader__content">
+        <p class="eyebrow">Læreroversikt</p>
+        <h1>Hjemskjerm</h1>
+        <p class="subtitle">Administrer klasserom og følg aktivitet.</p>
+      </div>
+      <button class="logoutButton" type="button" :disabled="isLoggingOut" @click="handleLogout">
+        {{ isLoggingOut ? 'Logger ut...' : 'Logg ut' }}
+      </button>
     </header>
 
 	<div class="dashboardGrid">
@@ -83,7 +106,15 @@ const classroomSummaries = computed(() => getTeacherClassroomSummaries());
 }
 
 .overviewHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
   margin-bottom: var(--space-4);
+}
+
+.overviewHeader__content {
+  min-width: 0;
 }
 
 .eyebrow {
@@ -102,6 +133,30 @@ h1 {
 .subtitle {
   margin: 0;
   color: var(--muted);
+}
+
+.logoutButton {
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.logoutButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.logoutButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .dashboardGrid {
@@ -301,6 +356,14 @@ h2 {
 }
 
 @media (max-width: 640px) {
+  .overviewHeader {
+    display: grid;
+  }
+
+  .logoutButton {
+    justify-self: flex-start;
+  }
+
   .topActionRow,
   .factoryActions--grid {
     grid-template-columns: 1fr;

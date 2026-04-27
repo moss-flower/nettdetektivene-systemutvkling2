@@ -50,6 +50,12 @@ const targetRoute = computed(() =>
     : routePaths.join,
 );
 
+const redirectRoute = computed(() => {
+  const redirect = route.query.redirect;
+
+  return typeof redirect === "string" && redirect.startsWith("/") ? redirect : "";
+});
+
 const targetLabel = computed(() =>
   selectedRole.value === "lærer" ? "lærerflaten" : "klasseromssiden",
 );
@@ -77,7 +83,7 @@ async function handleLogin() {
     const response = await login(email.value.trim(), password.value);
 
     if (response.roles.includes("ROLE_TEACHER")) {
-      await navigateTo(routePaths.teacherOverview);
+      await navigateTo(redirectRoute.value || routePaths.teacherOverview);
       return;
     }
 

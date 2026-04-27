@@ -374,6 +374,7 @@ export const loadWorldFactoryPayload = async (selectionKey: string): Promise<{
 
 	if (selection.kind === "existing") {
 		const override = store.overrides[selection.uid] ?? null;
+		const backendUid = World.resolveBackendUid(selection.uid);
 
 		if (override) {
 			return {
@@ -386,8 +387,8 @@ export const loadWorldFactoryPayload = async (selectionKey: string): Promise<{
 
 		return {
 			payload: createWorldDraft({
-				title: backendWorld?.title ?? backendWorld?.uid ?? selection.uid,
-				uid: backendWorld?.uid ?? selection.uid,
+				title: backendWorld?.title ?? backendWorld?.uid ?? backendUid,
+				uid: backendWorld?.uid ?? backendUid,
 				description: backendWorld?.description ?? "",
 				image: backendWorld?.image ?? defaultImage,
 				stationUids: backendWorld?.stationUids ?? [],
@@ -435,17 +436,19 @@ export const saveWorldFactoryPayload = async (
 	const { $api } = useNuxtApp();
 
 	if (selection.kind === "existing") {
-		await $api<World>(`/worlds/${selection.uid}`, {
+		const backendUid = World.resolveBackendUid(selection.uid);
+
+		await $api<World>(`/worlds/${backendUid}`, {
 			method: "PUT",
 			body: requestBody,
 		});
 
 		clearWorldFactoryOverride(selection.uid);
-		const world = await World.backendFetchWorldByUid(selection.uid);
+		const world = await World.backendFetchWorldByUid(backendUid);
 
 		return {
 			selectionKey: makeWorldFactoryExistingSelectionKey(selection.uid),
-			payload: world ? toWorldFactoryPayload(world) : createWorldDraft({ ...payload, uid: selection.uid }),
+			payload: world ? toWorldFactoryPayload(world) : createWorldDraft({ ...payload, uid: backendUid }),
 		};
 	}
 
@@ -485,7 +488,7 @@ export const deleteWorldFactorySelection = async (selectionKey: string) => {
 	if (selection.kind === "existing") {
 		const { $api } = useNuxtApp();
 
-		await $api(`/worlds/${selection.uid}`, {
+		await $api(`/worlds/${World.resolveBackendUid(selection.uid)}`, {
 			method: "DELETE",
 		});
 

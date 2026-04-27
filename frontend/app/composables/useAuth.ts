@@ -8,6 +8,12 @@ export const useAuth = () => {
     });
   };
 
+  const logout = async () => {
+    await $api("/auth/logout", {
+      method: "POST",
+    });
+  };
+
   const registerStudent = async (
     username: string,
     email: string,
@@ -32,6 +38,7 @@ export const useAuth = () => {
 
   return {
     login,
+    logout,
     registerStudent,
     registerTeacher,
   };
