@@ -134,4 +134,14 @@ public class WeeklyMysteryService {
                 .ifPresent(promptRepository::delete);
     }
 
+
+    public WeeklyMysteryPrompt fetch(UUID promptId) {
+        return promptRepository.findByPublicUuid(promptId);
+    }
+
+    @Transactional
+    public void updateWeeklyMystery(Long classroomId, UUID weeklyMysteryPromptUuid) {
+
+    }
+
 }

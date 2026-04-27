@@ -18,6 +18,7 @@ import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.repository.StudentUserRepository;
 import no.safety.backend.user.repository.TeacherUserRepository;
 
+import no.safety.backend.weeklymystery.service.WeeklyMysteryService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,7 @@ public class ClassroomService {
   private final TeacherUserRepository teacherRepo;
   private final StudentUserRepository studentRepo;
   private final ClassroomCodeGenerator codegen;
+  private final WeeklyMysteryService weeklyMysteryService;
   private final ApplicationEventPublisher eventPublisher; // use this for publishing notifications for the teacher
 
   @Transactional
@@ -122,6 +124,14 @@ public class ClassroomService {
     member.setClassroom(c);
     c.getMembers().add(member);
     return ClassroomResponse.from(c);
+  }
+
+  @Transactional
+  public void updateWeeklyMystery(UUID classroomUid, UUID callerUuid, UUID weeklyMysteryPromptUuid) {
+    Classroom c = requireOwned(classroomUid, callerUuid);
+    weeklyMysteryService.updateWeeklyMystery(c.getInternalId(), weeklyMysteryPromptUuid);
+    c.setWeeklyMysteryPrompt(weeklyMysteryService.fetch(weeklyMysteryPromptUuid));
+    classroomRepo.save(c);
   }
 
   @Transactional

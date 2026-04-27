@@ -10,19 +10,12 @@ import lombok.RequiredArgsConstructor;
 import no.safety.backend.classroom.dto.ClassroomRequest;
 import no.safety.backend.classroom.dto.ClassroomResponse;
 import no.safety.backend.classroom.service.ClassroomService;
+import no.safety.backend.weeklymystery.service.WeeklyMysteryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Classroom controller that defines API endpoints for managing classrooms. All endpoints require an
@@ -225,6 +218,23 @@ public class ClassroomController {
       @AuthenticationPrincipal UserPrincipal principal) {
     return classroomService.getClassroom(classroomId, getCallerUuid(principal));
   }
+
+  /**
+   * Change the weekly mystery for a classroom.
+   *
+   * @param classroomUid the Public Id of the classroom, used to resolve a classroom object from database.
+   * @param principal user info provided by spring.
+   * @param weeklyMysterUuid the public id of the selected Weekly Mystery, for database resolution.
+   * @return an empty response object on success, error on failure.
+   */
+  @PreAuthorize("hasRole('TEACHER')")
+  @PatchMapping("/{classroomId}/ukens-mysterium")
+  public ResponseEntity<?> updateClassroom(@PathVariable UUID classroomUid,
+                                           @AuthenticationPrincipal UserPrincipal principal,
+                                           @RequestBody UUID weeklyMysterUuid) {
+    classroomService.updateWeeklyMystery(classroomUid, principal.getUserPublicUuid(), weeklyMysterUuid);
+    return ResponseEntity.ok(null);
+  })
 
   /**
    * Gets a students classroom.
