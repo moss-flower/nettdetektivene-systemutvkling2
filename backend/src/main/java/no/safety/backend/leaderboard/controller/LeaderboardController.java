@@ -29,7 +29,7 @@ import no.safety.backend.user.model.StudentUser;
 @RestController
 @RequestMapping("/api/v1/leaderboard")
 @RequiredArgsConstructor
-@Tag(name = "Leaderboard", description = "Leaderboard for students.")
+@Tag(name = "Leaderboard")
 public class LeaderboardController {
 
     private final LeaderboardService leaderboardService;
@@ -43,7 +43,7 @@ public class LeaderboardController {
     @GetMapping("/classroom/{classroomPublicUuid}")
     @Operation(summary = "Get top rankings", description = "Returns a paginated list of top scores")
     public ResponseEntity<Page<LeaderboardResponse>> getTopRankings(
-            @PageableDefault(size = 20, sort = "score", direction = Sort.Direction.DESC) Pageable pageable,
+            @PageableDefault(size = 20, sort = "xp", direction = Sort.Direction.DESC) Pageable pageable,
             @PathVariable UUID classroomPublicUuid
         ) {
 
