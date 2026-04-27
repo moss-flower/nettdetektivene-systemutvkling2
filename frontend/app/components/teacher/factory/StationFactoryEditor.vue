@@ -405,8 +405,8 @@ watch(payloadPreviewText, () => {
 	border-radius: 1.2rem;
 	background:
 		linear-gradient(180deg, rgba(101, 240, 175, 0.08), rgba(101, 240, 175, 0)) top/100% 5rem no-repeat,
-		var(--surface);
-	box-shadow: var(--shadow);
+		var(--color-bg-surface);
+	box-shadow: var(--shadow-1);
 }
 
 .panelSection + .panelSection {
@@ -577,7 +577,7 @@ watch(payloadPreviewText, () => {
 	border-radius: 999px;
 	padding: 0.75rem 1rem;
 	font-weight: 700;
-	transition: transform var(--transition), border-color var(--transition), background var(--transition);
+	transition: transform var(--transition-base), border-color var(--transition-base), background var(--transition-base);
 }
 
 .ghostButton,
@@ -589,7 +589,7 @@ watch(payloadPreviewText, () => {
 .primaryButton {
 	border-color: var(--primary);
 	background: var(--primary);
-	color: var(--bg);
+	color: var(--color-text-onDark);
 }
 
 .deleteButton {
