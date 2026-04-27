@@ -7,19 +7,19 @@ withDefaults(defineProps<{
 </script>
 
 <template>
-  <div class="dialog-template">
-    <div class="dialog-template__backdrop" />
+  <div class="dialogTemplate">
+    <div class="dialogTemplateBackdrop" />
     <div
-      class="dialog-template__panel"
+      class="dialogTemplatePanel"
       role="dialog"
       aria-modal="true"
       :aria-label="ariaLabel"
     >
       <slot name="badge" />
-      <div class="dialog-template__content">
+      <div class="dialogTemplateContent">
         <slot />
       </div>
-      <div v-if="$slots.actions" class="dialog-template__actions">
+      <div v-if="$slots.actions" class="dialogTemplateActions">
         <slot name="actions" />
       </div>
     </div>
@@ -27,54 +27,41 @@ withDefaults(defineProps<{
 </template>
 
 <style scoped>
-.dialog-template {
+.dialogTemplate {
   position: fixed;
   inset: 0;
   z-index: 40;
   display: grid;
   place-items: center;
-  padding: 1.5rem;
+  padding: var(--space-6);
 }
 
-.dialog-template__backdrop {
+.dialogTemplateBackdrop {
   position: absolute;
   inset: 0;
   background: rgba(17, 24, 39, 0.34);
   backdrop-filter: blur(3px);
 }
 
-.dialog-template__panel {
+.dialogTemplatePanel {
   position: relative;
   width: min(100%, 32rem);
   display: grid;
   gap: 0.9rem;
   padding: 1.4rem;
   border-radius: 1.2rem;
-  background: #fffdf9;
+  background: var(--color-bg-surface);
   box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
 }
 
-.dialog-template__content {
+.dialogTemplateContent {
   display: grid;
   gap: 0.9rem;
 }
 
-.dialog-template__actions {
+.dialogTemplateActions {
   display: flex;
   justify-content: flex-end;
 }
 
-@media (max-width: 640px) {
-  .dialog-template {
-    padding: 1rem;
-  }
-
-  .dialog-template__panel {
-    padding: 1.2rem;
-  }
-
-  .dialog-template__actions {
-    justify-content: stretch;
-  }
-}
 </style>

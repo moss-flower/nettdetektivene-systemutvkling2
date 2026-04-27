@@ -44,11 +44,11 @@ public class ExerciseController {
 
   @Operation(
       summary = "Get an exercise",
-      description = "Gets an exercise by its public UUID."
+      description = "Gets an exercise by its UUID."
   )
-  @GetMapping("/{publicId}")
-  public ExerciseResponse get(@PathVariable UUID publicId) {
-    return exerciseService.get(publicId);
+  @GetMapping("/{uid}")
+  public ExerciseResponse get(@PathVariable UUID uid) {
+    return exerciseService.get(uid);
   }
 
   @Operation(
@@ -67,11 +67,11 @@ public class ExerciseController {
       description = "Replaces an exercise's fields and tasks. Existing tasks are removed and replaced with the submitted set."
   )
   @PreAuthorize("hasRole('TEACHER')")
-  @PutMapping("/{publicId}")
+  @PutMapping("/{uid}")
   public ExerciseResponse update(
-      @PathVariable UUID publicId,
+      @PathVariable UUID uid,
       @Valid @RequestBody ExerciseRequest request) {
-    return exerciseService.update(publicId, request);
+    return exerciseService.update(uid, request);
   }
 
   @Operation(
@@ -79,9 +79,9 @@ public class ExerciseController {
       description = "Deletes an exercise and its tasks."
   )
   @PreAuthorize("hasRole('TEACHER')")
-  @DeleteMapping("/{publicId}")
-  public ResponseEntity<Void> delete(@PathVariable UUID publicId) {
-    exerciseService.delete(publicId);
+  @DeleteMapping("/{uid}")
+  public ResponseEntity<Void> delete(@PathVariable UUID uid) {
+    exerciseService.delete(uid);
     return ResponseEntity.noContent().build();
   }
 }

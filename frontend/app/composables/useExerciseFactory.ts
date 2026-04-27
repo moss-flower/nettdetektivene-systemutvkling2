@@ -24,7 +24,7 @@ export type BackendExerciseRequestPayload = {
 };
 
 type BackendExerciseResponsePayload = {
-  publicId: string;
+  uid: string;
   title: string;
   difficultyName: string;
   description?: string;
@@ -679,7 +679,7 @@ export const saveExerciseFactoryPayload = async (
     clearExerciseFactoryOverride(selection.uid);
 
     return {
-      selectionKey: makeExerciseFactoryExistingSelectionKey(response.publicId),
+      selectionKey: makeExerciseFactoryExistingSelectionKey(response.uid),
       payload: {
         title: response.title,
         difficultyName: response.difficultyName,
@@ -699,7 +699,7 @@ export const saveExerciseFactoryPayload = async (
   }
 
   return {
-    selectionKey: makeExerciseFactoryExistingSelectionKey(response.publicId),
+    selectionKey: makeExerciseFactoryExistingSelectionKey(response.uid),
     payload: {
       title: response.title,
       difficultyName: response.difficultyName,
@@ -719,7 +719,7 @@ export const saveExerciseFactoryPayloadAsNew = async (
   });
 
   return {
-    selectionKey: makeExerciseFactoryExistingSelectionKey(response.publicId),
+    selectionKey: makeExerciseFactoryExistingSelectionKey(response.uid),
     payload: {
       title: response.title,
       difficultyName: response.difficultyName,

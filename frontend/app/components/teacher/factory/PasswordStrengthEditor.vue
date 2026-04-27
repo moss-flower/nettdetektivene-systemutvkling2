@@ -33,12 +33,12 @@ const commonPatternsText = computed({
 				</select>
 			</label>
 
-			<label class="field field--full">
+			<label class="field fieldFull">
 				<span>Prompt-tekst</span>
 				<textarea v-model="props.task.prompt!.text" rows="2"></textarea>
 			</label>
 
-			<label class="field field--full">
+			<label class="field fieldFull">
 				<span>Hjelpetekst</span>
 				<textarea v-model="props.task.prompt!.helperText" rows="2"></textarea>
 			</label>
@@ -53,12 +53,12 @@ const commonPatternsText = computed({
 				<input v-model.number="props.task.minLength" type="number" min="1" >
 			</label>
 
-			<label class="field field--full">
+			<label class="field fieldFull">
 				<span>Startpassord</span>
 				<input v-model="props.task.startingPassword" type="text" placeholder="La sta tomt hvis oppgaven ikke trenger startpassord" >
 			</label>
 
-			<label class="field field--full">
+			<label class="field fieldFull">
 				<span>Vanlige monstre</span>
 				<input v-model="commonPatternsText" type="text" placeholder="123, qwerty, passord" >
 			</label>
@@ -68,9 +68,9 @@ const commonPatternsText = computed({
 
 <style scoped>
 .templateSection {
-	margin-top: 1rem;
-	padding-top: 1rem;
-	border-top: 1px solid var(--border);
+	margin-top: var(--space-4);
+	padding-top: var(--space-4);
+	border-top: var(--border-width-hairline) solid var(--color-border-default);
 }
 
 .templateSection h4 {
@@ -89,7 +89,7 @@ const commonPatternsText = computed({
 	gap: 0.45rem;
 }
 
-.field--full {
+.fieldFull {
 	grid-column: 1 / -1;
 }
 
@@ -101,11 +101,11 @@ const commonPatternsText = computed({
 .field select,
 .field textarea {
 	width: 100%;
-	padding: 0.85rem 1rem;
-	border: 1px solid var(--border);
+	padding: 0.85rem var(--space-4);
+	border: var(--border-width-hairline) solid var(--color-border-default);
 	border-radius: 0.9rem;
 	background: rgba(0, 0, 0, 0.16);
-	color: var(--text);
+	color: var(--color-text-primary);
 	font: inherit;
 }
 
@@ -117,7 +117,7 @@ const commonPatternsText = computed({
 .field select:focus,
 .field textarea:focus {
 	outline: none;
-	border-color: var(--primary);
+	border-color: var(--color-brand-primary);
 }
 
 @media (max-width: 800px) {
