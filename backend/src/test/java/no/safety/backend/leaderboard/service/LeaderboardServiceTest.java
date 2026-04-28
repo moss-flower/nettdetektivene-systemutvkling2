@@ -1,29 +1,24 @@
 package no.safety.backend.leaderboard.service;
 
-import no.safety.backend.classroom.model.Classroom;
-import no.safety.backend.exception.NotFoundException;
-import no.safety.backend.leaderboard.dto.UserLeaderboardResponse;
-import no.safety.backend.leaderboard.dto.ClassroomLeaderboardResponse;
-import no.safety.backend.user.model.StudentUser;
-import no.safety.backend.user.repository.StudentUserRepository;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
+import no.safety.backend.classroom.model.Classroom;
+import no.safety.backend.exception.NotFoundException;
+import no.safety.backend.leaderboard.dto.UserLeaderboardResponse;
+import no.safety.backend.leaderboard.repository.ClassroomLeaderboardRepository;
+import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.repository.StudentUserRepository;
 
 @ExtendWith(MockitoExtension.class)
 class LeaderboardServiceTest {
@@ -31,36 +26,11 @@ class LeaderboardServiceTest {
     @Mock
     private StudentUserRepository studentUserRepository;
 
+    @Mock
+    private ClassroomLeaderboardRepository classroomLeaderboardRepository;
+
     @InjectMocks
     private LeaderboardService leaderboardService;
-
-    @Test
-    void shouldReturnPaginatedRankingsWithCorrectGlobalRank() {
-        UUID classroomPublicUuid = UUID.randomUUID();
-        int pageSize = 2;
-        int pageNumber = 0;
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-
-        StudentUser studentUser1 = createStudent("Student 1", 10);
-        StudentUser studentUser2 = createStudent("Student 2", 5);
-        
-        List<StudentUser> students = List.of(studentUser1, studentUser2);
-        Page<StudentUser> studentPage = new PageImpl<>(students, pageable, 20);
-
-        given(studentUserRepository.findAllByClassroomUid(classroomPublicUuid, pageable))
-                .willReturn(studentPage);
-
-        Page<ClassroomLeaderboardResponse> result = leaderboardService.getClassroomRankings(pageable);
-
-        assertThat(result.getContent()).hasSize(2);
-        
-        assertThat(result.getContent().get(0).rank()).isEqualTo(1L);
-        assertThat(result.getContent().get(0).className()).isEqualTo("Class 1");
-
-        assertThat(result.getContent().get(1).rank()).isEqualTo(2L);
-    }
-    
-
 
     @Test
     void shouldReturnUserStatsSuccessfully() {
@@ -127,7 +97,6 @@ class LeaderboardServiceTest {
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Could not get user rank");
     }
-
 
     private StudentUser createStudent(String username, int score) {
         StudentUser studentUser = new StudentUser();

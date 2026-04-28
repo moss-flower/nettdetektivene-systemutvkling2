@@ -44,7 +44,7 @@ public class LeaderboardController {
     @PreAuthorize("hasAnyRole('STUDENT','TEACHER')")
     @Operation(summary = "Get rankings of classrooms", description = "Returns a paginated list of the total scores for all classrooms")
     public ResponseEntity<Page<ClassroomLeaderboardResponse>> getTopRankings(
-            @PageableDefault(size = 20, sort = "totalScore", direction = Sort.Direction.DESC) Pageable pageable
+            @PageableDefault(size = 20, direction = Sort.Direction.DESC) Pageable pageable
         ) {
 
         Page<ClassroomLeaderboardResponse> rankings = leaderboardService.getClassroomRankings(pageable);

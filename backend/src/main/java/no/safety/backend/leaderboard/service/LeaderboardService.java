@@ -4,7 +4,7 @@ import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.exception.NotFoundException;
 import no.safety.backend.leaderboard.dto.ClassroomLeaderboardResponse;
 import no.safety.backend.leaderboard.dto.UserLeaderboardResponse;
-import no.safety.backend.leaderboard.repository.ClassroomLeaderboardViewRepository;
+import no.safety.backend.leaderboard.repository.ClassroomLeaderboardRepository;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.repository.StudentUserRepository;
 
@@ -12,6 +12,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,7 +26,7 @@ public class LeaderboardService {
 
     private final StudentUserRepository studentUserRepository;
 
-    private final ClassroomLeaderboardViewRepository classroomLeaderboardViewRepository;
+    private final ClassroomLeaderboardRepository classroomLeaderboardRepository;
 
     /**
      * Gets the leaderboard of all {@link Classroom}s based on pagination.
@@ -34,12 +35,14 @@ public class LeaderboardService {
      * @return
      */
     @NonNull
+    @Transactional(readOnly = true)
     public Page<ClassroomLeaderboardResponse> getClassroomRankings(@NonNull Pageable pageable) {
-        return classroomLeaderboardViewRepository.findAll(pageable)
-                .map(view -> new ClassroomLeaderboardResponse(
-                        view.getClassName(),
-                        view.getTotalScore(),
-                        view.getRankPosition()));
+        return classroomLeaderboardRepository.findAllClassroomsTotalScores(pageable)
+                .map(result -> new ClassroomLeaderboardResponse(
+                        result.classroomPublicUuid(),
+                        result.className(),
+                        result.score(),
+                        result.rank()));
     }
 
     /**
@@ -50,6 +53,7 @@ public class LeaderboardService {
      * @return
      */
     @NonNull
+    @Transactional(readOnly = true)
     public UserLeaderboardResponse getUserStats(@NonNull Long userInternalId) {
         StudentUser studentUser = studentUserRepository.findById(userInternalId)
                 .orElseThrow(() -> new NotFoundException("User not found."));

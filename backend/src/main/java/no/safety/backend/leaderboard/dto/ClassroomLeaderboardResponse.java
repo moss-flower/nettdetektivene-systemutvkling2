@@ -1,15 +1,17 @@
 package no.safety.backend.leaderboard.dto;
 
+import java.util.UUID;
+
 public record ClassroomLeaderboardResponse(
-    String className,
-    int score,
-    Long rank
-) {
-    public static ClassroomLeaderboardResponse from(String className, int totalScore, Long rank) {
+        UUID classroomPublicUuid,
+        String className,
+        Long score,
+        Long rank) {
+    public static ClassroomLeaderboardResponse from(UUID classroomPublicUuid, String className, Long totalScore, Long rank) {
         return new ClassroomLeaderboardResponse(
-            className,
-            totalScore,
-            rank
-        );
+                classroomPublicUuid,
+                className,
+                totalScore,
+                rank);
     }
 }
