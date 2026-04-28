@@ -34,9 +34,6 @@ public class Achievement {
   @Column(length = 1000)
   private String source;
 
-  @Column(nullable = false)
-  private String imageUrl;
-
   @Column
   private String reward;
 }
