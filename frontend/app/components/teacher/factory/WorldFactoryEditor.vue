@@ -185,13 +185,13 @@ const resetDraft = () => {
 const goToStationFactory = () => {
 	factorySessionCache.setDraft("world", props.selectionKey, payloadPreview.value);
 	factorySessionCache.pushReturnTarget(route.fullPath);
-	void navigateTo(routePaths.teacherFactoryStation);
+	void navigateTo(`${routePaths.teacherFactoryStation}?returnTo=${encodeURIComponent(route.fullPath)}`);
 };
 
 const editStation = (uid: string) => {
 	factorySessionCache.setDraft("world", props.selectionKey, payloadPreview.value);
 	factorySessionCache.pushReturnTarget(route.fullPath);
-	void navigateTo(`${routePaths.teacherFactoryStation}?uid=${uid}`);
+	void navigateTo(`${routePaths.teacherFactoryStation}?uid=${uid}&returnTo=${encodeURIComponent(route.fullPath)}`);
 };
 
 const openStationPicker = () => {
@@ -218,7 +218,11 @@ const savePayload = async () => {
 	loadedLocalId.value = "";
 	factorySessionCache.moveDraft("world", props.selectionKey, saved.selectionKey);
 	updateLoadedSnapshot(saved.payload);
-	const returnTarget = factorySessionCache.popReturnTarget();
+	const returnTo = typeof route.query.returnTo === "string" ? route.query.returnTo : "";
+	if (returnTo) {
+		factorySessionCache.popReturnTarget();
+	}
+	const returnTarget = returnTo ? { fullPath: returnTo } : factorySessionCache.popReturnTarget();
 
 	if (returnTarget) {
 		await navigateTo(returnTarget.fullPath);

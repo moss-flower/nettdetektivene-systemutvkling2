@@ -162,18 +162,13 @@ const resetDraft = () => {
 const goToExerciseFactory = () => {
 	factorySessionCache.setDraft("station", props.selectionKey, payloadPreview.value);
 	factorySessionCache.pushReturnTarget(route.fullPath);
-	void navigateTo(routePaths.teacherFactoryExercise);
+	void navigateTo(`${routePaths.teacherFactoryExercise}?returnTo=${encodeURIComponent(route.fullPath)}`);
 };
 
 const editExercise = (uid: string) => {
 	factorySessionCache.setDraft("station", props.selectionKey, payloadPreview.value);
 	factorySessionCache.pushReturnTarget(route.fullPath);
-	void navigateTo(`${routePaths.teacherFactoryExercise}?uid=${uid}`);
-};
-
-const removeExerciseUid = (uidToRemove: string) => {
-	const nextExerciseUids = draft.exerciseUids.filter((uid) => uid !== uidToRemove);
-	draft.exerciseUids.splice(0, draft.exerciseUids.length, ...nextExerciseUids);
+	void navigateTo(`${routePaths.teacherFactoryExercise}?uid=${uid}&returnTo=${encodeURIComponent(route.fullPath)}`);
 };
 
 const finishSave = (selectionKey: string) => {
@@ -191,7 +186,11 @@ const savePayload = async () => {
 	loadedLocalId.value = "";
 	factorySessionCache.moveDraft("station", props.selectionKey, saved.selectionKey);
 	updateLoadedSnapshot(saved.payload);
-	const returnTarget = factorySessionCache.popReturnTarget();
+	const returnTo = typeof route.query.returnTo === "string" ? route.query.returnTo : "";
+	if (returnTo) {
+		factorySessionCache.popReturnTarget();
+	}
+	const returnTarget = returnTo ? { fullPath: returnTo } : factorySessionCache.popReturnTarget();
 
 	if (returnTarget) {
 		await navigateTo(returnTarget.fullPath);
@@ -304,9 +303,6 @@ watch(payloadPreviewText, () => {
 										<button type="button" class="iconButton" :disabled="!exercise.isKnown" @click="editExercise(exercise.uid)">
 											<img src="https://placehold.co/80x80?text=E&color=6b7280" alt="Rediger oppgavesett" class="selectedCardActionIcon" >
 										</button>
-										<button type="button" class="iconButton iconButton--delete" @click="removeExerciseUid(exercise.uid)">
-											<img src="https://placehold.co/80x80?text=X&color=dc2626" alt="Fjern oppgavesett" class="selectedCardActionIcon" >
-										</button>
 									</div>
 								</article>
 							</template>
@@ -338,9 +334,14 @@ watch(payloadPreviewText, () => {
 							<template #item="{ element: exercise }">
 								<article class="knownExerciseCard">
 									<span class="dragHandle" aria-hidden="true">Grip</span>
-									<div>
+									<div class="selectedCardContent">
 										<p class="cardEyebrow">{{ exercise.entryName }}</p>
 										<h3>{{ exercise.title }}</h3>
+									</div>
+									<div class="selectedCardActions">
+										<button type="button" class="iconButton" :disabled="!exercise.isKnown" @click="editExercise(exercise.uid)">
+											<img src="https://placehold.co/80x80?text=E&color=6b7280" alt="Rediger oppgavesett" class="selectedCardActionIcon" >
+										</button>
 									</div>
 								</article>
 							</template>

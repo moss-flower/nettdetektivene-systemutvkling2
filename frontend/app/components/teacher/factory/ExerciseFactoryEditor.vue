@@ -41,6 +41,7 @@ const cloneExercisePayload = (payload: ExerciseFactoryPayload): ExerciseFactoryP
 };
 
 const draft = reactive<ExerciseFactoryPayload>(createExerciseDraft());
+const route = useRoute();
 const factorySessionCache = useFactorySessionCache();
 const loadedSnapshot = ref<ExerciseFactoryPayload>(createExerciseDraft());
 const copyState = ref<"idle" | "copied" | "failed">("idle");
@@ -238,7 +239,11 @@ const savePayload = async () => {
 	loadedLocalId.value = "";
 	factorySessionCache.moveDraft("exercise", props.selectionKey, saved.selectionKey);
 	updateLoadedSnapshot(saved.payload);
-	const returnTarget = factorySessionCache.popReturnTarget();
+	const returnTo = typeof route.query.returnTo === "string" ? route.query.returnTo : "";
+	if (returnTo) {
+		factorySessionCache.popReturnTarget();
+	}
+	const returnTarget = returnTo ? { fullPath: returnTo } : factorySessionCache.popReturnTarget();
 
 	if (returnTarget) {
 		await navigateTo(returnTarget.fullPath);
