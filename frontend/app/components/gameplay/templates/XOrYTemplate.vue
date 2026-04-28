@@ -10,6 +10,7 @@ const props = defineProps<{
   correctChoice: XOrYChoice
   disabled?: boolean
   selectedChoice?: XOrYChoice | null
+  hideImages?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -57,6 +58,7 @@ const choose = (choice: XOrYChoice) => {
       >
         <div class="yTemplateCard">
           <img
+            v-if="!props.hideImages"
             :src="props.options.x.imageUrl"
             :alt="props.options.x.imageAlt"
             class="yTemplateImage"
@@ -87,6 +89,7 @@ const choose = (choice: XOrYChoice) => {
       >
         <div class="yTemplateCard">
           <img
+            v-if="!props.hideImages"
             :src="props.options.y.imageUrl"
             :alt="props.options.y.imageAlt"
             class="yTemplateImage"

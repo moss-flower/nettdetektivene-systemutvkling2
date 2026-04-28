@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.classroom.repository.ClassroomRepository;
+import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
 import no.safety.backend.configs.ClassroomMockDataInitializer;
 import no.safety.backend.configs.GameplayMockDataInitializer;
 import no.safety.backend.role.model.Role;
@@ -43,6 +44,9 @@ class ClassroomMockDataInitializerTest {
 
   @Mock
   private RoleRepository roleRepository;
+
+  @Mock
+  private CompletedExerciseRepository completedExerciseRepository;
 
   @Mock
   private PasswordEncoder passwordEncoder;

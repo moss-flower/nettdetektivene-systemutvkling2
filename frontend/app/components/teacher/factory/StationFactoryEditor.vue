@@ -47,6 +47,7 @@ const payloadPreview = computed<StationFactoryPayload>(() => ({
 	description: draft.description.trim(),
 	image: draft.image.trim() || stationFactoryDefaultImage,
 	exerciseUids: normalizeStationExerciseUids(draft.exerciseUids),
+  isBoss : draft.isBoss,
 }));
 
 const payloadPreviewText = computed(() => JSON.stringify(payloadPreview.value, null, 2));
@@ -126,6 +127,7 @@ const applyDraft = (payload: StationFactoryPayload) => {
 	draft.description = payload.description;
 	draft.image = payload.image;
 	draft.exerciseUids.splice(0, draft.exerciseUids.length, ...payload.exerciseUids);
+  draft.isBoss = Boolean(payload.isBoss);
 };
 
 const updateLoadedSnapshot = (payload: StationFactoryPayload) => {
@@ -134,6 +136,7 @@ const updateLoadedSnapshot = (payload: StationFactoryPayload) => {
 		description: payload.description,
 		image: payload.image,
 		exerciseUids: [...payload.exerciseUids],
+    isBoss: Boolean(payload.isBoss),
 	};
 };
 
@@ -243,6 +246,11 @@ watch(payloadPreviewText, () => {
 						<span>Beskrivelse</span>
 						<textarea v-model="draft.description" rows="3" placeholder="Kort beskrivelse av hva eleven skal øve på i denne stasjonen." />
 					</label>
+
+          <label class="field field--checkbox">
+            <input v-model="draft.isBoss" type="checkbox" >
+            <span>Boss-stasjon</span>
+          </label>
 				</div>
 
 				<div class="imagePreviewCard">
@@ -714,5 +722,21 @@ watch(payloadPreviewText, () => {
 	.actionRow {
 		justify-content: stretch;
 	}
+}
+
+.field--checkbox {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.65rem;
+  display: flex;
+}
+
+.field--checkbox input {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--primary);
+  cursor: pointer;
+  flex-shrink: 0;
 }
 </style>

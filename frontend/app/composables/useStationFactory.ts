@@ -8,6 +8,7 @@ export type StationFactoryPayload = {
 	description: string;
 	image: string;
 	exerciseUids: Exercise["uid"][];
+	isBoss: boolean;
 };
 
 type BackendStationRequestPayload = StationRequest;
@@ -30,7 +31,7 @@ export type StationFactorySelectableOption = {
 	label: string;
 	description: string;
 	kind: "existing" | "draft";
-	badge: string;
+	badge: string
 };
 
 export const stationFactoryNewSelectionKey = "__new_station__";
@@ -46,6 +47,7 @@ export const createStationDraft = (source?: Partial<StationFactoryPayload>): Sta
 	description: source?.description ?? "",
 	image: source?.image?.trim() ? source.image : defaultImage,
 	exerciseUids: source?.exerciseUids ?? [],
+	isBoss: source?.isBoss ?? false,
 });
 
 const canUseStorage = () => typeof window !== "undefined" && typeof window.localStorage !== "undefined";
@@ -74,6 +76,7 @@ const normalizeStationPayload = (payload: Record<string, unknown>): StationFacto
 	const exerciseUids = Array.isArray(payload.exerciseUids)
 		? normalizeStationExerciseUids(payload.exerciseUids.filter((uid): uid is string => typeof uid === "string"))
 		: [];
+	const isBoss:boolean = typeof payload.isBoss == "boolean" ? payload.isBoss : false;
 
 	if (!title && !description && exerciseUids.length === 0) {
 		return null;
@@ -84,6 +87,7 @@ const normalizeStationPayload = (payload: Record<string, unknown>): StationFacto
 		description,
 		image,
 		exerciseUids,
+		isBoss,
 	};
 };
 
@@ -317,6 +321,7 @@ export const getStationFactorySelectionOptions = (): StationFactorySelectableOpt
 		description: record.sourceUid ?? record.localId,
 		kind: "existing" as const,
 		badge: "Eksisterende stasjon · lokal override",
+		type: record.payload.isBoss,
 	}));
 	const draftOptions = [...store.drafts]
 		.sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
@@ -386,6 +391,7 @@ export const loadStationFactoryPayload = async (selectionKey: string): Promise<{
 				description: backendStation?.description ?? "",
 				image: backendStation?.image ?? defaultImage,
 				exerciseUids: backendStation?.exerciseUids ?? [],
+				isBoss: backendStation?.isBoss ?? false,
 			}),
 			localId: "",
 		};
@@ -412,6 +418,7 @@ const mapStationToBackendRequest = (payload: StationFactoryPayload): BackendStat
 	image: payload.image.trim() || defaultImage,
 	backgroundColor: null,
 	exerciseUids: normalizeStationExerciseUids(payload.exerciseUids),
+	isBoss: payload.isBoss,
 });
 
 const toStationFactoryPayload = (station: Station): StationFactoryPayload => createStationDraft({
@@ -419,6 +426,7 @@ const toStationFactoryPayload = (station: Station): StationFactoryPayload => cre
 	description: station.description,
 	image: station.image,
 	exerciseUids: station.exerciseUids,
+	isBoss: station.isBoss,
 });
 
 export const saveStationFactoryPayload = async (
