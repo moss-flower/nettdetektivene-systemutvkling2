@@ -115,35 +115,35 @@ async function handleJoinClassroom() {
   align-items: center;
   justify-content: center;
   padding: var(--space-4);
-  background: var(--bg);
+  background: color-mix(in srgb, var(--color-bg-canvas) 10%, var(--palette-white));
 }
 
 .joinCard {
   width: 100%;
   max-width: 28rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 1rem;
-  box-shadow: var(--shadow);
-  padding: 2rem;
+  background: var(--color-bg-surface);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-2);
+  box-shadow: var(--shadow-2);
+  padding: var(--space-8);
 }
 
 .title {
   font-size: 2rem;
   font-weight: 800;
-  margin-bottom: 0.25rem;
-  color: var(--text);
+  margin-bottom: var(--space-1);
+  color: var(--color-text-primary);
 }
 
 .subtitle {
-  color: var(--muted);
-  margin-bottom: 1.5rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-6);
 }
 
 .joinForm {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .codeFieldset {
@@ -153,26 +153,26 @@ async function handleJoinClassroom() {
 }
 
 .codeLegend {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
   font-weight: 700;
-  color: var(--text);
+  color: var(--color-text-primary);
 }
 
 .codeInputs {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
-  gap: 0.5rem;
+  gap: var(--space-2);
   align-items: center;
 }
 
 .codeInput {
   width: 100%;
   min-width: 0;
-  padding: 0.85rem 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  color: var(--text);
+  padding: 0.85rem var(--space-3);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-2);
+  background: color-mix(in srgb, var(--color-bg-surface) 96%, var(--color-semantic-info) 4%);
+  color: var(--color-text-primary);
   font: inherit;
   font-weight: 700;
   text-align: center;
@@ -181,29 +181,29 @@ async function handleJoinClassroom() {
 
 .codeInput:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: var(--color-brand-primary);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 .codeSeparator {
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--muted);
+  color: var(--color-text-secondary);
 }
 
 .joinButton {
-  margin-top: 0.5rem;
-  padding: 0.9rem 1rem;
+  margin-top: var(--space-2);
+  padding: 0.9rem var(--space-4);
   border: none;
-  border-radius: var(--radius);
-  background: var(--primary);
-  color: white;
+  border-radius: var(--radius-2);
+  background: var(--color-brand-primary);
+  color: var(--color-text-onDark);
   font-weight: 700;
   cursor: pointer;
 }
 
 .joinButton:hover:not(:disabled) {
-  background: var(--primary-hover);
+  background: var(--palette-navy-700);
 }
 
 .joinButton:disabled {
@@ -212,7 +212,7 @@ async function handleJoinClassroom() {
 }
 
 .formError {
-  color: var(--danger);
+  color: var(--color-semantic-error);
   font-size: 0.9rem;
 }
 
@@ -222,17 +222,8 @@ async function handleJoinClassroom() {
 }
 
 .backLink {
-  color: var(--primary);
+  color: var(--color-brand-primary);
   font-weight: 700;
 }
 
-@media (max-width: 640px) {
-  .codeInputs {
-    grid-template-columns: 1fr;
-  }
-
-  .codeSeparator {
-    display: none;
-  }
-}
 </style>

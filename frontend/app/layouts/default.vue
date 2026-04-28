@@ -3,13 +3,13 @@ useHead({ htmlAttrs: { 'data-theme': 'game' } as any })
 </script>
 
 <template>
-  <div class="app-shell">
+  <div class="appShell">
     <aside class="sidebar">
       <div class="profile">
         <!-- avatar +(?) detektiv navn -->
       </div>
 
-      <button class="nav-home" type="button" aria-label="Tilbake til hovedmeny">
+      <button class="navHome" type="button" aria-label="Tilbake til hovedmeny">
         <!-- map-pin icon -->
       </button>
     </aside>
@@ -21,11 +21,12 @@ useHead({ htmlAttrs: { 'data-theme': 'game' } as any })
 </template>
 
 <style scoped>
-.app-shell {
+.appShell {
   min-height: 100dvh;
   width: 100%;
   display: grid;
   grid-template-columns: var(--layout-sidebar-width) 1fr;
+  background: var(--color-bg-canvas);
 }
 
 .sidebar {
@@ -46,7 +47,7 @@ useHead({ htmlAttrs: { 'data-theme': 'game' } as any })
   text-align: center;
 }
 
-.nav-home {
+.navHome {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -58,12 +59,13 @@ useHead({ htmlAttrs: { 'data-theme': 'game' } as any })
   transition: transform var(--transition-fast);
 }
 
-.nav-home:hover {
+.navHome:hover {
   transform: translateY(-2px);
 }
 
 .content {
   min-width: 0;
   min-height: 0;
+  background: var(--color-bg-canvas);
 }
 </style>

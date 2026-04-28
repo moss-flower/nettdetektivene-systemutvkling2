@@ -55,6 +55,9 @@ public class Station {
   @OrderColumn(name = "sort_order")
   private List<UUID> exerciseUids = new ArrayList<>();
 
+  @Column(nullable = false)
+  private boolean isBoss;
+
   @PrePersist
   private void onCreate() {
     if (uid == null) {

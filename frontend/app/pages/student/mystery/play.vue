@@ -6,16 +6,16 @@ import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import { useStudentMysteryPlay } from '~/composables/useStudentMysteryPlay'
 import { routePaths } from '~/composables/utils/routePaths'
 
+definePageMeta({
+  layout: 'game',
+})
+
 import type {
   MultipleChoiceOptionKey,
   MultipleChoiceResult,
   XOrYChoice,
   XOrYResult,
 } from '~/composables/types/TaskTypes'
-
-definePageMeta({
-  layout: 'game',
-})
 
 const { mysteryPlaySession } = useStudentMysteryPlay()
 const { celebrateCorrectAnswer, stop } = useGameConfetti()
@@ -123,22 +123,22 @@ function next() {
 </script>
 
 <template>
-  <section class="mystery-play-page">
-    <header class="mystery-play-page__hero">
-      <NuxtLink class="mystery-play-page__back" :to="routePaths.studentMystery">
+  <section class="mysteryPlayPage">
+    <header class="playPageHero">
+      <NuxtLink class="playPageBack" :to="routePaths.studentMystery">
         Tilbake til mysteriet
       </NuxtLink>
 
-      <div class="mystery-play-page__meta">
-        <p class="mystery-play-page__eyebrow">{{ mysteryPlaySession.weekLabel }}</p>
-        <p class="mystery-play-page__progress">{{ progressLabel }}</p>
+      <div class="playPageMeta">
+        <p class="playPageEyebrow">{{ mysteryPlaySession.weekLabel }}</p>
+        <p class="playPageProgress">{{ progressLabel }}</p>
       </div>
 
       <h1>{{ mysteryPlaySession.title }}</h1>
-      <p class="mystery-play-page__summary">{{ mysteryPlaySession.summary }}</p>
+      <p class="playPageSummary">{{ mysteryPlaySession.summary }}</p>
     </header>
 
-    <div class="mystery-play-page__board">
+    <div class="playPageBoard">
       <XOrYTemplate
         v-if="currentTask?.templateKind === 'x-or-y' && currentOptions"
         :key="`${currentTask.id}-xory`"
@@ -183,36 +183,36 @@ function next() {
 </template>
 
 <style scoped>
-.mystery-play-page {
+.mysteryPlayPage {
   max-width: 72rem;
   margin: 0 auto;
   display: grid;
-  gap: 1rem;
+  gap: var(--space-4);
   color: #111827;
 }
 
-.mystery-play-page__hero {
+.playPageHero {
   display: grid;
   gap: 0.85rem;
 }
 
-.mystery-play-page__back {
+.playPageBack {
   width: fit-content;
   color: var(--color-brand-primary);
   font-weight: var(--font-weight-semibold);
   text-decoration: none;
 }
 
-.mystery-play-page__meta {
+.playPageMeta {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--space-4);
   flex-wrap: wrap;
 }
 
-.mystery-play-page__eyebrow,
-.mystery-play-page__progress {
+.playPageEyebrow,
+.playPageProgress {
   margin: 0;
   font-size: 0.9rem;
   font-weight: 700;
@@ -220,22 +220,22 @@ function next() {
   text-transform: uppercase;
 }
 
-.mystery-play-page__eyebrow {
+.playPageEyebrow {
   color: #6f4c2f;
 }
 
-.mystery-play-page__progress {
+.playPageProgress {
   color: var(--color-brand-primary);
 }
 
-.mystery-play-page h1 {
+.mysteryPlayPage h1 {
   margin: 0;
   font-size: clamp(1.9rem, 4vw, 3rem);
   line-height: 0.98;
   color: #1b2b4f;
 }
 
-.mystery-play-page__summary {
+.playPageSummary {
   margin: 0;
   max-width: 54ch;
   color: #52607a;
@@ -243,17 +243,8 @@ function next() {
   line-height: 1.45;
 }
 
-.mystery-play-page__board {
+.playPageBoard {
   display: grid;
 }
 
-@media (max-width: 640px) {
-  .mystery-play-page {
-    gap: 0.85rem;
-  }
-
-  .mystery-play-page__summary {
-    font-size: 1rem;
-  }
-}
 </style>
