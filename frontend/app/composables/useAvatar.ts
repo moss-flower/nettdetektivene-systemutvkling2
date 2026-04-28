@@ -9,7 +9,15 @@ export function useAvatar() {
     });
   };
 
+  const updateMyAvatar = async (payload: AvatarConfig): Promise<void> => {
+    await $api("/avatar", {
+      method: "POST",
+      body: payload,
+    });
+  };
+
   return {
     getMyAvatar,
+    updateMyAvatar,
   };
 }
