@@ -73,11 +73,5 @@ public class WeeklyMysteryClassroomOrchestrator {
         return responses;
     }
 
-    public WeeklyMysteryPromptResponse getClassroomWeeklyMystery(UUID classroomPublicId) {
-        Classroom classroom = classroomService.getFullClassroom(classroomPublicId);
-        if(classroom.getWeeklyMysteryPrompt() == null) {
-            throw new NotFoundException("No weekly prompt found");
-        }
-        return WeeklyMysteryPromptResponse.fromEntity(classroom.getWeeklyMysteryPrompt());
-    }
+    
 }
