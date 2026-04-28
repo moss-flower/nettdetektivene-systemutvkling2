@@ -43,8 +43,8 @@ export const useAudioSettings = () => {
                   effectsVolume: clamp(effects),
                 }),
             )
-          } catch {
-            // we dont use localStorage, ignore this.
+          } catch(error) {
+            console.warn('Failed to save audio settings: ', error);
           }
         },
         {flush: 'post'},
