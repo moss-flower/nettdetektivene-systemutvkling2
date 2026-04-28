@@ -15,10 +15,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.auth.model.UserPrincipal;
 import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptResponse;
-import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptRequest;
 import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptCreateRequest;
 import no.safety.backend.weeklymystery.dto.WeeklyMysterySubmissionCreateRequest;
-import no.safety.backend.weeklymystery.service.WeeklyMysteryClassroomOrchestrator;
 import no.safety.backend.weeklymystery.service.WeeklyMysteryService;
 
 @RestController
@@ -27,7 +25,6 @@ import no.safety.backend.weeklymystery.service.WeeklyMysteryService;
 public class WeeklyMysteryController {
 
     private final WeeklyMysteryService weeklyMysteryService;
-    private final WeeklyMysteryClassroomOrchestrator weeklyMysteryClassroomOrchestrator;
 
     /**
      * Allows students to submit files related to a given Weekly Mystery prompt
@@ -36,7 +33,7 @@ public class WeeklyMysteryController {
      * @return an empty response entity indicating success or failure.
      */
     @PreAuthorize("hasRole('STUDENT')")
-    @PostMapping(value = "/submission")
+    @PostMapping(value = "/")
     public ResponseEntity<?> submitResponse(@Valid @RequestBody WeeklyMysterySubmissionCreateRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
         weeklyMysteryService.saveStudentSubmission(request, principal.getUserInternalId());
@@ -78,5 +75,4 @@ public class WeeklyMysteryController {
     ) {
         return ResponseEntity.ok(weeklyMysteryService.fetchUsersPrompts(principal.getUserInternalId()));
     }
-
 }
