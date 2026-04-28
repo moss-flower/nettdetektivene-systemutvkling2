@@ -469,7 +469,7 @@ const next = async () => {
       class="station-page__back-button"
       :to="exerciseSelectRoute"
       aria-label="Tilbake til oppgavevalg"
-      label="Tilbake til oppgavevalg"
+      label=""
     />
 
     <header class="station-page__hero">
