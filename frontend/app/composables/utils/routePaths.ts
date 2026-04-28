@@ -18,6 +18,7 @@ export enum routePaths {
     teacherFactoryStation = '/teacher/factory/stationFactory',
     teacherFactoryWorld = '/teacher/factory/worldFactory',
     studentHome = '/student',
+    studentEditAvatar = '/student/editAvatar',
     studentProfile = '/student/profile',
     studentAchievements = '/student/achievements',
     studentExerciseDifficultySelect = '/student/game/selectDifficulty',
