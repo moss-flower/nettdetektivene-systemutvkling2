@@ -1,7 +1,5 @@
 package no.safety.backend.weeklymystery.model;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -10,8 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -21,7 +17,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import no.safety.backend.user.model.TeacherUser;
-import no.safety.backend.classroom.model.Classroom;
 
 @Entity
 @Table(name = "WeeklyMysteryPrompt")
@@ -55,15 +50,6 @@ public class WeeklyMysteryPrompt {
     @ManyToOne
     @JoinColumn(name = "teacher_id")
     private TeacherUser teacherUser;
-
-    @ManyToMany
-    @Builder.Default
-    @JoinTable(
-        name = "weekly_mystery_assigned_classrooms",
-        joinColumns = @JoinColumn(name = "mystery_internal_id", referencedColumnName = "internalId"),
-        inverseJoinColumns = @JoinColumn(name = "classroom_internal_id")
-    )
-    private Set<Classroom> classrooms = new HashSet<>();
 
 
     /**

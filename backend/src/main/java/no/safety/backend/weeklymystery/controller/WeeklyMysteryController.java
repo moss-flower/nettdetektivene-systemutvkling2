@@ -18,6 +18,7 @@ import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptResponse;
 import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptRequest;
 import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptCreateRequest;
 import no.safety.backend.weeklymystery.dto.WeeklyMysterySubmissionCreateRequest;
+import no.safety.backend.weeklymystery.service.WeeklyMysteryClassroomOrchestrator;
 import no.safety.backend.weeklymystery.service.WeeklyMysteryService;
 
 @RestController
@@ -26,6 +27,7 @@ import no.safety.backend.weeklymystery.service.WeeklyMysteryService;
 public class WeeklyMysteryController {
 
     private final WeeklyMysteryService weeklyMysteryService;
+    private final WeeklyMysteryClassroomOrchestrator weeklyMysteryClassroomOrchestrator;
 
     /**
      * Allows students to submit files related to a given Weekly Mystery prompt
@@ -39,21 +41,6 @@ public class WeeklyMysteryController {
             @AuthenticationPrincipal UserPrincipal principal) {
         weeklyMysteryService.saveStudentSubmission(request, principal.getUserInternalId());
         return ResponseEntity.ok(null);
-    }
-
-    /**
-     * Allows a user to retrieve the WeeklyMystery for a given classroom.
-     * @param request a Prompt Request containing the public UUID of the classroom in question.
-     * @param userPrincipal user information provided by spring
-     * @return a DTO containing weekly mystery information.
-     */
-    @Operation(
-        summary = "Retrieve the current Weekly Mystery Prompt",
-        description = "Endpoint retrieves the current weekly mystery response from a given classroom, if that classroom has one."
-    )
-    @RequestMapping(value = "/")
-    public ResponseEntity<WeeklyMysteryPromptResponse> getPrompt(@Valid WeeklyMysteryPromptRequest request) {
-        return ResponseEntity.ok(weeklyMysteryService.getWeeklyMysteryPrompt(request.classroomUid()));
     }
 
     /**

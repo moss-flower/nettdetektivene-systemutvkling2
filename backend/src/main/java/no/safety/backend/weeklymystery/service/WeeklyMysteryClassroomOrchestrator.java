@@ -1,12 +1,14 @@
 package no.safety.backend.weeklymystery.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.classroom.model.ClassroomWeeklyMystery;
 import no.safety.backend.classroom.repository.ClassroomRepository;
 import no.safety.backend.classroom.repository.ClassroomWeeklyMysteryRepository;
 import no.safety.backend.classroom.service.ClassroomService;
 import no.safety.backend.exception.AccessDeniedException;
+import no.safety.backend.exception.NotFoundException;
 import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.service.UserService;
 import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptResponse;
@@ -22,6 +24,7 @@ import java.util.UUID;
  * Provides an orchestration layer to help coordinate tasks, in place of an event system.
  */
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class WeeklyMysteryClassroomOrchestrator {
 
@@ -34,6 +37,7 @@ public class WeeklyMysteryClassroomOrchestrator {
     public void updateWeeklyMysteryForClassroom(UUID classroomPublicId,
                                                 UUID weeklyMysteryPublicId,
                                                 Long callerId) {
+        log.debug("WeeklyMysteryClassroom Orchestrator: Update called with caller id " + callerId);
         /*
         Step 1. Retrieve object(s)
         step 2. verify that the specific caller *can* modify those objects
@@ -49,6 +53,7 @@ public class WeeklyMysteryClassroomOrchestrator {
 
         Set<Classroom> teacherClassrooms = classroomRepository.findAllByOwners_PublicUuid(teacher.getPublicUuid());
         if(!teacherClassrooms.contains(classroom)) {
+            log.error("WeeklyMysteryClassroomOrchestrator: Access Denied Error");
             throw new AccessDeniedException("Access denied: Cannot set Weekly Mystery for a classroom you don't own.");
         }
 
@@ -66,5 +71,13 @@ public class WeeklyMysteryClassroomOrchestrator {
             responses.add(WeeklyMysteryPromptResponse.fromEntity(mystery.getWeeklyMysteryPrompt()));
         }
         return responses;
+    }
+
+    public WeeklyMysteryPromptResponse getClassroomWeeklyMystery(UUID classroomPublicId) {
+        Classroom classroom = classroomService.getFullClassroom(classroomPublicId);
+        if(classroom.getWeeklyMysteryPrompt() == null) {
+            throw new NotFoundException("No weekly prompt found");
+        }
+        return WeeklyMysteryPromptResponse.fromEntity(classroom.getWeeklyMysteryPrompt());
     }
 }

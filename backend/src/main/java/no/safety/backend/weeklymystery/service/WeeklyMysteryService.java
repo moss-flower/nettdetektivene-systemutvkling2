@@ -17,6 +17,7 @@ import no.safety.backend.classroom.service.ClassroomService;
 import no.safety.backend.exception.NotFoundException;
 import no.safety.backend.exception.domain.FilePersistenceException;
 import no.safety.backend.notification.dto.NotificationEvent;
+import no.safety.backend.notification.dto.WeeklyMysterySubmissionEvent;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.service.UserService;
@@ -38,21 +39,8 @@ public class WeeklyMysteryService {
     private final WeeklyMysterySubmissionRepository submissionRepository;
     private final FileService fileService;
     private final UserService userService;
-    private final ClassroomService classroomService;
     private final ApplicationEventPublisher eventPublisher;
     private final ClassroomWeeklyMysteryRepository classroomWeeklyMysteryRepository;
-
-    public WeeklyMysteryPromptResponse getWeeklyMysteryPrompt(UUID classroomUuid) {
-        log.debug("Get Weekly Mystery Prompt for " + classroomUuid);
-
-        //Note, currently no validation whatsover that the user should actually have access to that classroom.
-        //Need to refactor the classroom service.
-        Classroom classroom = classroomService.getFullClassroom(classroomUuid);
-        if(classroom.getWeeklyMysteryPrompt() == null) {
-            throw new NotFoundException("No weekly prompt found");
-        }
-        return WeeklyMysteryPromptResponse.fromEntity(classroom.getWeeklyMysteryPrompt());
-    }
     
 
     public void saveStudentSubmission(WeeklyMysterySubmissionCreateRequest request, Long studentId) {
@@ -79,7 +67,7 @@ public class WeeklyMysteryService {
 
         try {
             submissionRepository.save(submission);
-            NotificationEvent event = new NotificationEvent(studentId, "Elev " + sender.getUsername() + "har lastet opp et nytt inlegg på Ukens Mysterium", 0);
+            NotificationEvent event = new WeeklyMysterySubmissionEvent(studentId, "Elev " + sender.getUsername() + "har lastet opp et nytt inlegg på Ukens Mysterium");
             eventPublisher.publishEvent(event);
         } catch (Exception e) {
             log.error("Error storing submission " + submission);
@@ -91,18 +79,12 @@ public class WeeklyMysteryService {
     public WeeklyMysteryPromptResponse savePrompt(WeeklyMysteryPromptCreateRequest request, Long senderId) {
         TeacherUser sender = (TeacherUser) userService.findByInternalId(senderId);
 
-
-        Set<Classroom> classrooms = sender.getClassrooms().stream().filter(
-            e -> request.publicClassroomIds().contains(e.getUid()))
-                .collect(Collectors.toSet());
-
         WeeklyMysteryPrompt prompt = WeeklyMysteryPrompt.builder()
             .weekLabel("")
             .title(request.title())
             .prompt(request.prompt())
             .clue(request.clue())
             .teacherUser(sender)
-            .classrooms(classrooms)
             .build();
         promptRepository.save(prompt);
 
@@ -132,20 +114,8 @@ public class WeeklyMysteryService {
                 .ifPresent(promptRepository::delete);
     }
 
-
     public WeeklyMysteryPrompt fetch(UUID promptId) {
         return promptRepository.findByPublicUuid(promptId);
-    }
-
-    public List<WeeklyMysteryPromptResponse> findPreviousWeeklyMysteryPrompts(UUID classroomUid) {
-        Long classroomId = classroomService.getFullClassroom(classroomUid).getInternalId();
-        List<WeeklyMysteryPromptResponse> responses = new ArrayList<>();
-
-        //Refactor this. You don't need the classroom, you can pull it from the joint repository. Get rid of the classroom service.
-        for (ClassroomWeeklyMystery prompt : classroomWeeklyMysteryRepository.findByClassroom_InternalIdOrderByAssignedDateDesc(classroomId)) {
-            responses.add(WeeklyMysteryPromptResponse.fromEntity(prompt.getWeeklyMysteryPrompt()));
-        }
-        return responses;
     }
 
     @Transactional
