@@ -67,6 +67,7 @@ public class ExerciseService {
     e.setTitle(req.title());
     e.setDifficultyName(req.difficultyName());
     e.setDescription(req.description());
+    e.setHint(req.hint());
   }
 
   private Task newTask(Exercise e, TaskRequest tr) {
