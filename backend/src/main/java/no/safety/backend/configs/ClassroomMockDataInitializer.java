@@ -43,13 +43,19 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
   public static final UUID MIA_ELEV_UID = stableUuid("54550c30-f4ac-44f0-96e6-fcfe4d9d9bd5");
   public static final UUID LUKAS_ELEV_UID = stableUuid("ae7780a8-f017-4956-9468-d72d3617baa0");
 
-  public static final UUID KLASSE_5B_UID = stableUuid("729b159a-97a1-4917-a71b-901420a2749d");
-  public static final UUID KLASSE_6A_UID = stableUuid("d217f63d-1252-419f-8106-998728797235");
-  public static final UUID NETTDETEKTIVENE_UID = stableUuid("43369b40-64f0-4692-83b4-8736581364a6");
+  public static final UUID KLASSE_3A_UID = stableUuid("729b159a-97a1-4917-a71b-901420a2749d");
+  public static final UUID KLASSE_3B_UID = stableUuid("d217f63d-1252-419f-8106-998728797235");
+  public static final UUID KLASSE_3C_UID = stableUuid("43369b40-64f0-4692-83b4-8736581364a6");
+  public static final UUID KLASSE_7A_UID = stableUuid("classroom:7-trinn-a");
+  public static final UUID KLASSE_7B_UID = stableUuid("classroom:7-trinn-b");
+  public static final UUID KLASSE_7C_UID = stableUuid("classroom:7-trinn-c");
 
-  public static final String KLASSE_5B_CODE = "SUPER-SKOG-KOPP";
-  public static final String KLASSE_6A_CODE = "MODIG-TAVLE-BRUS";
-  public static final String NETTDETEKTIVENE_CODE = "KONGE-LAVA-TRE";
+  public static final String KLASSE_3A_CODE = "SUPER-SKOG-KOPP";
+  public static final String KLASSE_3B_CODE = "MODIG-TAVLE-BRUS";
+  public static final String KLASSE_3C_CODE = "KONGE-LAVA-TRE";
+  public static final String KLASSE_7A_CODE = "TRYGG-REV-SOL";
+  public static final String KLASSE_7B_CODE = "KLAR-FJELL-BOK";
+  public static final String KLASSE_7C_CODE = "RASK-ELG-LYS";
 
   private final TeacherUserRepository teacherRepository;
   private final StudentUserRepository studentRepository;
@@ -89,65 +95,60 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     clearSeededMemberships(List.of(adaElev, eliasElev, saraElev, noahElev, ingridElev, emilElev, miaElev,
         lukasElev));
 
-    Classroom klasse5b = upsertClassroom(
-        KLASSE_5B_UID,
-        KLASSE_5B_CODE,
-        "Klasse 5B",
-        "En nysgjerrig klasse som trener på å kjenne igjen falske nyheter og rare lenker.",
+    Classroom klasse3a = upsertClassroom(
+        KLASSE_3A_UID,
+        KLASSE_3A_CODE,
+        "3-trinn A",
+        "En nysgjerrig klasse som trener på å kjenne igjen falske nyheter og rare bilder.",
         GameplayMockDataInitializer.SCHOOLYARD_WORLD_UID,
         Set.of(lisaLaerer)
     );
-    Classroom klasse6a = upsertClassroom(
-        KLASSE_6A_UID,
-        KLASSE_6A_CODE,
-        "Klasse 6A",
-        "En klasse som jobber raskt gjennom korte oppdrag og øver på gode sikkerhetsvaner.",
+    Classroom klasse3b = upsertClassroom(
+        KLASSE_3B_UID,
+        KLASSE_3B_CODE,
+        "3-trinn B",
+        "En klasse som øver på å stoppe opp og sjekke før de tror på en sak.",
+        GameplayMockDataInitializer.SCHOOLYARD_WORLD_UID,
+        Set.of(perLaerer)
+    );
+    Classroom klasse3c = upsertClassroom(
+        KLASSE_3C_UID,
+        KLASSE_3C_CODE,
+        "3-trinn C",
+        "En liten gruppe som løser bildeoppdrag og kildekritikk sammen.",
+        GameplayMockDataInitializer.SCHOOLYARD_WORLD_UID,
+        Set.of(lisaLaerer, perLaerer)
+    );
+    Classroom klasse7a = upsertClassroom(
+        KLASSE_7A_UID,
+        KLASSE_7A_CODE,
+        "7-trinn A",
+        "En klasse som jobber med hele nettdetektiv-løypa og mer avanserte valg på nett.",
+        GameplayMockDataInitializer.QUICKSTART_WORLD_UID,
+        Set.of(lisaLaerer)
+    );
+    Classroom klasse7b = upsertClassroom(
+        KLASSE_7B_UID,
+        KLASSE_7B_CODE,
+        "7-trinn B",
+        "En klasse som øver på e-post, passord, nettbutikker og deling i sosiale medier.",
         GameplayMockDataInitializer.QUICKSTART_WORLD_UID,
         Set.of(perLaerer)
     );
-    Classroom nettdetektivene = upsertClassroom(
-        NETTDETEKTIVENE_UID,
-        NETTDETEKTIVENE_CODE,
-        "Nettdetektivene",
-        "En liten gruppe som tester bildeanalyse, kildekritikk og nye mysterier sammen.",
-        GameplayMockDataInitializer.CREATIVE_LAB_WORLD_UID,
+    Classroom klasse7c = upsertClassroom(
+        KLASSE_7C_UID,
+        KLASSE_7C_CODE,
+        "7-trinn C",
+        "En samarbeidsklasse for elever som tester hele sikkerhetsløypa.",
+        GameplayMockDataInitializer.QUICKSTART_WORLD_UID,
         Set.of(lisaLaerer, perLaerer)
     );
-
-    assignMembers(klasse5b, List.of(adaElev, eliasElev, saraElev, lukasElev));
-    assignMembers(klasse6a, List.of(noahElev, ingridElev));
-    assignMembers(nettdetektivene, List.of(emilElev));
-
-    markAllExercisesCompleted(lukasElev);
-  }
-
-  private void markAllExercisesCompleted(StudentUser student) {
-    List<UUID> allExerciseUids = List.of(
-        GameplayMockDataInitializer.NEWSSTAND_EXERCISE_1_UID,
-        GameplayMockDataInitializer.NEWSSTAND_EXERCISE_2_UID,
-        GameplayMockDataInitializer.PHOTOGRAPH_EXERCISE_1_UID,
-        GameplayMockDataInitializer.PHOTOGRAPH_EXERCISE_2_UID,
-        GameplayMockDataInitializer.POSTOFFICE_EXERCISE_1_UID,
-        GameplayMockDataInitializer.POSTOFFICE_EXERCISE_2_UID,
-        GameplayMockDataInitializer.PASSWORDBANK_EXERCISE_1_UID,
-        GameplayMockDataInitializer.PASSWORDBANK_EXERCISE_2_UID,
-        GameplayMockDataInitializer.MARKETPLACE_EXERCISE_1_UID,
-        GameplayMockDataInitializer.MARKETPLACE_EXERCISE_2_UID,
-        GameplayMockDataInitializer.SOCIALMEDIA_EXERCISE_1_UID,
-        GameplayMockDataInitializer.SOCIALMEDIA_EXERCISE_2_UID,
-        GameplayMockDataInitializer.DATACENTER_EXERCISE_UID
-    );
-
-    for (UUID exerciseUid : allExerciseUids) {
-      if (completedExerciseRepository.existsByStudentUidAndExerciseUid(
-          student.getPublicUuid(), exerciseUid)) {
-        continue;
-      }
-      CompletedExercise completion = new CompletedExercise();
-      completion.setStudentUid(student.getPublicUuid());
-      completion.setExerciseUid(exerciseUid);
-      completedExerciseRepository.save(completion);
-    }
+    assignMembers(klasse3a, List.of(adaElev, eliasElev));
+    assignMembers(klasse3b, List.of(saraElev));
+    assignMembers(klasse3c, List.of(noahElev));
+    assignMembers(klasse7a, List.of(ingridElev, emilElev));
+    assignMembers(klasse7b, List.of(miaElev));
+    assignMembers(klasse7c, List.of(lukasElev));
   }
 
   private Role getOrCreateRole(RoleType roleType) {

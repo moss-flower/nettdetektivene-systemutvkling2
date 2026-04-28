@@ -506,7 +506,7 @@ const next = async () => {
       </div>
     </header>
 
-    <div class="station-page__board">
+    <div class="stationPageBoard">
       <XOrYTemplate
         v-if="currentTask?.templateKind === 'x-or-y' && currentOptions"
         :key="`${currentTask.id}-xory`"
@@ -603,36 +603,36 @@ const next = async () => {
 </template>
 
 <style scoped>
-.station-page {
+.stationPage {
   max-width: 72rem;
   margin: 0 auto;
   display: grid;
-  gap: 1rem;
+  gap: var(--space-4);
   color: #111827;
 }
 
-.station-page__hero {
+.stationPageHero {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: var(--space-6);
   width: 100%;
 }
 
-.station-page__header {
+.stationPageHeader {
   display: grid;
   gap: 0.6rem;
   width: 100%;
 }
 
-.station-page__meta {
+.stationPageMeta {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
-.station-page__eyebrow {
+.stationPageEyebrow {
   color: #1d4f91;
   font-size: 1.15rem;
   font-weight: 700;
@@ -640,30 +640,30 @@ const next = async () => {
   text-transform: uppercase;
 }
 
-.station-page__progress-pill {
+.pageProgressPill {
   flex-shrink: 0;
   padding: 0.45rem 0.85rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: #dbeafe;
   color: #1e3a5f;
   font-size: 0.95rem;
   font-weight: 700;
 }
 
-.station-page__description {
+.stationPageDescription {
   max-width: 46rem;
   font-size: 0.9rem;
   line-height: 1.5;
-  color: #374151;
+  color: var(--palette-gray-700);
 }
 
-.station-page__exercise-title {
+.pageExerciseTitle {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--palette-gray-900);
 }
 
-.station-page__board {
+.stationPageBoard {
   padding: clamp(0.8rem, 1.4vw, 1.1rem);
   border-radius: 1.6rem;
   background: #f5f5f4;

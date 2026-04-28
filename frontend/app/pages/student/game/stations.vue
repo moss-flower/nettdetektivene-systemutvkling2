@@ -67,8 +67,6 @@ const hasStations = computed(() => stationCards.value.length > 0);
 
 <template>
   <section class="stationsPage">
-    <UiStudentHomeBackButton class="goBack" label="Tilbake" />
-
     <header class="pageIntro">
       <p class="pageEyebrow">Stasjonskart</p>
       <h1 class="pageTitle">{{ pageTitle }}</h1>
@@ -103,22 +101,10 @@ const hasStations = computed(() => stationCards.value.length > 0);
   --stations-eyebrow: var(--palette-cork-580);
   --stations-title: var(--palette-cream-200);
   --stations-summary: var(--palette-gray-300);
-  --stations-back-bg: var(--palette-white);
-  --stations-back-border: var(--palette-gray-200);
-  --stations-back-text: var(--palette-navy-900);
 
   display: grid;
   gap: var(--space-5);
   padding: var(--layout-page-padding);
-}
-
-.goBack {
-  width: fit-content;
-  padding: var(--space-3) var(--space-4);
-  border: var(--border-width-hairline) solid var(--stations-back-border);
-  border-radius: var(--radius-pill);
-  background: var(--stations-back-bg);
-  color: var(--stations-back-text);
 }
 
 .pageIntro {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="100%" height="100%" viewBox="0 0 237 119" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
-    <g transform="matrix(1,0,0,1,-67,-1813)">
+<svg width="100%" height="100%" viewBox="0 0 330 460" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,0,-1782)">
         <g transform="matrix(0.916667,0,0,1,394.167,-20.7069)">
             <g id="hat_noir_front" transform="matrix(1.09091,0,0,1,-582.727,1283.22)">
                 <g transform="matrix(1,0,0,1,0,-542.707)">
@@ -9,8 +9,8 @@
                     <path d="M214.566,1197.03C213.82,1180.48 216.621,1154.99 224.369,1135.83C229.937,1122.07 238.21,1111.64 248.993,1108.84C265.758,1104.47 322.226,1094.16 357.245,1093.35C368.323,1093.09 377.354,1093.85 382.621,1095.84C385.871,1097.06 387.968,1098.85 389.023,1100.83C393.682,1109.59 403.297,1151.38 403.587,1184.52C403.601,1186.11 402.668,1187.56 401.211,1188.2C400.043,1188.72 396.519,1189.15 391.321,1189.17C373.992,1189.23 334.599,1186.71 311.612,1187.89C293.903,1188.8 219.196,1200.8 219.196,1200.8C218.07,1200.98 216.921,1200.67 216.037,1199.95C215.153,1199.23 214.618,1198.17 214.566,1197.03ZM395.52,1180.95C394.642,1149.94 386.242,1112.64 381.959,1104.58C381.81,1104.3 381.484,1104.14 381.122,1103.93C380.272,1103.44 379.177,1103.06 377.885,1102.73C373.056,1101.5 365.909,1101.15 357.431,1101.35C323.003,1102.15 267.49,1112.29 251.007,1116.58C242.329,1118.84 236.266,1127.76 231.786,1138.83C225.133,1155.28 222.369,1176.68 222.449,1192.18C238.979,1189.57 295.973,1180.68 311.203,1179.9C331.445,1178.86 364.331,1180.66 383.92,1181.09C388.338,1181.18 392.806,1181.06 395.52,1180.95Z" style="fill:rgb(29,29,29);"/>
                 </g>
                 <g transform="matrix(1,0,0,1,0,-542.707)">
-                    <g transform="matrix(1,-0,-0,1,207,1093.2)">
-                        <use xlink:href="#_Image1" x="81.741" y="1.854" width="104px" height="45px"/>
+                    <g transform="matrix(1,-0,-0,1,140,1062.2)">
+                        <use xlink:href="#_Image1" x="148.741" y="32.854" width="104px" height="45px"/>
                     </g>
                 </g>
                 <g transform="matrix(1.09418,0,0,1.266,-24.9904,-857.389)">
