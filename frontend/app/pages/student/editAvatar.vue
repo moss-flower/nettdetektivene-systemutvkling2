@@ -268,6 +268,15 @@ h1,
 }
 
 .avatarEditorCard {
+  --mirror-frame-outer: var(--palette-gold-700);
+  --mirror-frame-inner: var(--palette-gold-400);
+  --mirror-frame-shadow: var(--palette-overlay-dark-deep);
+  --mirror-glass-top: rgba(170, 220, 255, 0.95);
+  --mirror-glass-bottom: rgba(149, 187, 214, 0.9);
+  --mirror-reflection: rgba(255, 255, 255, 0.34);
+  --mirror-reflection-soft: rgba(255, 255, 255, 0.14);
+  --mirror-back-panel: var(--palette-navy-900);
+
   display: grid;
   gap: var(--space-5);
   padding: clamp(1.25rem, 2vw, 2rem);
@@ -284,17 +293,65 @@ h1,
 }
 
 .avatarWindow {
+  position: relative;
   width: min(100%, 24rem);
   justify-self: center;
   aspect-ratio: 330 / 460;
   overflow: hidden;
-  border: var(--border-width-thin) solid var(--palette-gray-300);
-  border-radius: var(--radius-3);
-  background: linear-gradient(180deg, var(--palette-white) 0%, var(--palette-cream-100) 100%);
+  padding: clamp(0.8rem, 1.8vw, 1.15rem);
+  box-sizing: border-box;
+  border: clamp(0.28rem, 0.6vw, 0.45rem) solid var(--mirror-frame-outer);
+  border-radius: calc(var(--radius-3) + 0.35rem);
+  background:
+    linear-gradient(135deg, var(--mirror-frame-inner), var(--mirror-frame-outer));
+  box-shadow:
+    0 var(--space-5) var(--space-6) var(--mirror-frame-shadow),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 var(--space-2) var(--space-3) rgba(255, 255, 255, 0.18);
+}
+
+.avatarWindow::before {
+  content: "";
+  position: absolute;
+  inset: 0.55rem;
+  border-radius: calc(var(--radius-3) - 0.1rem);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  pointer-events: none;
+}
+
+.avatarWindow::after {
+  content: "";
+  position: absolute;
+  inset: calc(0.8rem + 1px);
+  border-radius: calc(var(--radius-3) - 0.2rem);
+  background:
+    linear-gradient(
+      112deg,
+      rgba(255, 255, 255, 0.42) 0%,
+      rgba(255, 255, 255, 0.08) 18%,
+      transparent 34%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      var(--mirror-reflection-soft) 0%,
+      transparent 26%,
+      transparent 72%,
+      rgba(20, 33, 51, 0.08) 100%
+    );
+  mix-blend-mode: screen;
+  pointer-events: none;
 }
 
 .avatarWindow :deep(.avatarImage) {
   height: 100%;
+}
+
+.avatarWindow :deep(.avatarSvg) {
+  border-radius: calc(var(--radius-3) - 0.35rem);
+  background:
+    radial-gradient(circle at 50% 22%, var(--mirror-reflection) 0%, transparent 34%),
+    linear-gradient(180deg, var(--mirror-glass-top) 0%, var(--mirror-glass-bottom) 100%);
 }
 
 .arrowButton {
@@ -303,10 +360,17 @@ h1,
   justify-content: center;
   width: 3.5rem;
   height: 3.5rem;
-  border: var(--border-width-thin) solid var(--palette-cork-700);
+  border: var(--border-width-thin) solid var(--mirror-frame-outer);
   border-radius: var(--radius-pill);
-  background: var(--palette-white);
+  background: linear-gradient(180deg, var(--palette-cream-100) 0%, var(--palette-gold-400) 100%);
+  box-shadow:
+    0 var(--space-2) var(--space-3) rgba(17, 24, 39, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
   cursor: pointer;
+}
+
+.arrowButton:hover {
+  transform: translateY(-1px);
 }
 
 .arrowButton img {
