@@ -69,7 +69,7 @@ class ExerciseControllerTest {
         "Alle vet at C er best! Bra jobba!", "Tenk deg godt om.", tc1);
 
     validRequest = new ExerciseRequest("Bokstavenes rangering", "67% Vanskelig",
-        "Hvordan rangerer du bokstavene i alfabetet?", List.of(tr1));
+        "Hvordan rangerer du bokstavene i alfabetet?", "Se etter hvilket alternativ som passer best.", List.of(tr1));
 
     publicId = UUID.randomUUID();
     TaskResponse taskResp = new TaskResponse(
@@ -84,6 +84,7 @@ class ExerciseControllerTest {
         validRequest.title(),
         validRequest.difficultyName(),
         validRequest.description(),
+        validRequest.hint(),
         List.of(taskResp));
   }
 
@@ -107,7 +108,7 @@ class ExerciseControllerTest {
   @Test
   @WithMockUser(roles = "TEACHER")
   void create_withInvalidRequest_returns400BadRequest() {
-    ExerciseRequest invalidRequest = new ExerciseRequest("", "", "", null);
+    ExerciseRequest invalidRequest = new ExerciseRequest("", "", "", "", null);
     client.post().uri("/api/v1/exercises")
         .contentType(MediaType.APPLICATION_JSON)
         .body(invalidRequest)
@@ -196,7 +197,7 @@ class ExerciseControllerTest {
   @Test
   @WithMockUser(roles = "TEACHER")
   void update_withInvalidRequest_returns400BadRequest() {
-    ExerciseRequest invalidRequest = new ExerciseRequest("", "", "", null);
+    ExerciseRequest invalidRequest = new ExerciseRequest("", "", "", "", null);
 
     client.put().uri("/api/v1/exercises/{publicId}", publicId)
         .contentType(MediaType.APPLICATION_JSON)

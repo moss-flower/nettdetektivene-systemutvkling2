@@ -10,6 +10,7 @@ public record ExerciseResponse(
     String title,
     String difficultyName,
     String description,
+    String hint,
     List<TaskResponse> tasks
 ) {
 
@@ -23,6 +24,7 @@ public record ExerciseResponse(
         e.getTitle(),
         e.getDifficultyName(),
         e.getDescription(),
+        e.getHint(),
         tasks
     );
   }
