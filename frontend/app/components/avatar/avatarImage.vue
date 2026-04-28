@@ -42,7 +42,7 @@ const hatBackImageMap: Record<Outfit, string> = {
 
 const hairBackComponentMap: Partial<Record<HairStyle, Component>> = {
   LONG: hairStraightBack,
-  CURLY: hairCurlyBack
+  CURLY: hairCurlyBack,
 };
 
 
