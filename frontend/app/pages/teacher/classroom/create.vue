@@ -52,7 +52,7 @@ const createClassroom = async () => {
   formError.value = "";
 
   if (!canCreate.value) {
-    formError.value = "Klasserommet må ha navn, og verden må være satt.";
+    formError.value = "Klasserommet må ha navn, og stasjonskart må være satt.";
     return;
   }
 
@@ -85,7 +85,7 @@ const createClassroom = async () => {
       <button class="backButton" type="button" @click="goBack">Tilbake</button>
       <h1>Lag klasserom</h1>
       <p class="subtitle">
-        Gi klasserommet et navn og velg hvilken verden klasserommet skal bruke.
+        Gi klasserommet et navn og velg hvilket stasjonskart klasserommet skal bruke.
       </p>
     </header>
 
@@ -121,16 +121,16 @@ const createClassroom = async () => {
 
         <section class="panelSection">
           <div class="sectionHeading">
-            <h2>Verden</h2>
-            <p v-if="showWorldSelector">Velg verdenen som skal brukes i klasserommet.</p>
-            <p v-else>Denne verdenen er satt på forhånd og kan ikke endres her.</p>
+            <h2>Stasjonskart</h2>
+            <p v-if="showWorldSelector">Velg stasjonskartet som skal brukes i klasserommet.</p>
+            <p v-else>Dette stasjonskartet er satt på forhånd og kan ikke endres her.</p>
           </div>
 
           <div v-if="showWorldSelector" class="fieldGrid">
             <label class="field fieldFull">
-              <span>Velg verden</span>
+              <span>Velg stasjonskart</span>
               <select v-model="draft.worldUid">
-                <option value="">Velg verden</option>
+                <option value="">Velg stasjonskart</option>
                 <option
                   v-for="world in availableWorlds ?? []"
 
@@ -144,9 +144,9 @@ const createClassroom = async () => {
           </div>
 
           <div v-else class="lockedWorldCard">
-            <p class="cardEyebrow">Verden</p>
+            <p class="cardEyebrow">Stasjonskart</p>
             <h3>{{ lockedWorld?.title || lockedWorldUid }}</h3>
-            <p>Denne verdenen er satt på forhånd og kan ikke endres her.</p>
+            <p>Dette stasjonskartet er satt på forhånd og kan ikke endres her.</p>
           </div>
         </section>
 

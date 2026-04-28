@@ -2,6 +2,7 @@
 const props = withDefaults(
   defineProps<{
     imagePath?: string;
+    imagePaths?: string[];
     alt?: string;
     tooltipText?: string;
     tooltipPlacement?: "top" | "bottom";
@@ -10,6 +11,7 @@ const props = withDefaults(
   }>(),
   {
     imagePath: "",
+    imagePaths: () => [],
     alt: "",
     tooltipText: "",
     tooltipPlacement: "top",
@@ -26,12 +28,26 @@ function handleClick(event: MouseEvent) {
 
 <template>
   <button type="button" class="menuItem" @click="handleClick">
-    <img
-      :src="props.imagePath"
-      :alt="props.alt"
-      class="menuItemImage"
-      :style="{ transform: `rotate(${props.rotation}deg)` }"
-    >
+    <div class="menuItemVisual" :style="{ transform: `rotate(${props.rotation}deg)` }">
+      <div v-if="props.imagePaths.length > 0" class="menuItemImageStack">
+        <img
+          v-for="(imagePath, index) in props.imagePaths"
+          :key="`${imagePath}-${index}`"
+          :src="imagePath"
+          :alt="index === 0 ? props.alt : ''"
+          class="menuItemImage menuItemImageStackItem"
+          :class="{ menuItemImageStackHeader: index === 0, menuItemImageStackPlate: index > 0 }"
+        >
+      </div>
+
+      <img
+        v-else
+        :src="props.imagePath"
+        :alt="props.alt"
+        class="menuItemImage"
+      >
+    </div>
+
     <span
       v-if="props.tooltipText"
       :class="[
@@ -70,14 +86,38 @@ function handleClick(event: MouseEvent) {
   width: 100%;
   height: auto;
   display: block;
+}
+
+.menuItemVisual {
+  width: 100%;
   filter: drop-shadow(0 0.9rem 0.8rem rgb(48 24 9 / 0.22));
   transition: filter var(--transition);
 }
 
-.menuItem:hover .menuItemImage,
-.menuItem:focus-visible .menuItemImage {
+.menuItem:hover .menuItemVisual,
+.menuItem:focus-visible .menuItemVisual {
   filter:
     drop-shadow(0 0 0.5rem var(--primary-hover));
+}
+
+.menuItemImageStack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+}
+
+.menuItemImageStackHeader {
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+.menuItemImageStackPlate {
+  width: 78%;
+  margin-top: -2%;
+  flex: 0 0 auto;
 }
 
 .menuItemTooltip {

@@ -53,4 +53,12 @@ public class CompletedExerciseService {
         .map(CompletedExerciseResponse::from)
         .toList();
   }
+
+  @Transactional(readOnly = true)
+  public List<CompletedExerciseResponse> getCompletedExercisesForStudent(UUID studentUid) {
+    return completedExerciseRepository.findAllByStudentUidOrderByExerciseUidAsc(studentUid)
+        .stream()
+        .map(CompletedExerciseResponse::from)
+        .toList();
+  }
 }

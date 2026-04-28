@@ -144,26 +144,26 @@ const availableStationCards = computed<WorldStationCard[]>({
 
 const editorTitle = computed(() => {
 	if (parsedSelection.value.kind === "existing") {
-		return `Rediger verden: ${payloadPreview.value.title || payloadPreview.value.uid || "Uten tittel"}`;
+		return `Rediger stasjonskart: ${payloadPreview.value.title || payloadPreview.value.uid || "Uten tittel"}`;
 	}
 
 	if (parsedSelection.value.kind === "draft") {
-		return payloadPreview.value.title ? `Lokal verden: ${payloadPreview.value.title}` : "Ny lokal verden";
+		return payloadPreview.value.title ? `Lokalt stasjonskart: ${payloadPreview.value.title}` : "Nytt lokalt stasjonskart";
 	}
 
-	return "Ny verden";
+	return "Nytt stasjonskart";
 });
 
 const editorDescription = computed(() => {
 	if (parsedSelection.value.kind === "existing") {
-		return "Du redigerer en eksisterende verden. Lokal lagring fungerer som en override over mock-dataen til backend finnes.";
+		return "Du redigerer et eksisterende stasjonskart. Lokal lagring fungerer som en override over mock-dataen til backend finnes.";
 	}
 
 	if (parsedSelection.value.kind === "draft") {
-		return "Dette er en lokal verden uten backend-kobling. Den kan senere velges når klasserom-oppretting får valg av verden.";
+		return "Dette er et lokalt stasjonskart uten backend-kobling. Det kan senere velges når klasserom-oppretting får valg av stasjonskart.";
 	}
 
-	return "Opprett en ny verden lokalt. Den kan lagres uten stasjoner, så lenge den har en unik id.";
+	return "Opprett et nytt stasjonskart lokalt. Det kan lagres uten stasjoner, så lenge det har en unik id.";
 });
 
 const applyDraft = (payload: WorldFactoryPayload) => {
@@ -317,7 +317,7 @@ watch(payloadPreviewText, () => {
 
 					<label class="field field--full">
 						<span>Beskrivelse</span>
-						<textarea v-model="draft.description" rows="3" placeholder="Kort beskrivelse av verdenen." />
+						<textarea v-model="draft.description" rows="3" placeholder="Kort beskrivelse av stasjonskartet." />
 					</label>
 
 				</div>
@@ -428,7 +428,7 @@ watch(payloadPreviewText, () => {
 			<section class="panelSection">
 				<div class="sectionHeading">
 					<h2>Innhold</h2>
-					<p>Her ser du det viktigste i verdenen akkurat nå.</p>
+					<p>Her ser du det viktigste i stasjonskartet akkurat nå.</p>
 				</div>
 
 				<div class="statusStack">
@@ -441,7 +441,7 @@ watch(payloadPreviewText, () => {
 					<article class="summaryCard">
 						<p class="cardEyebrow">Tittel</p>
 						<h3>{{ payloadPreview.title || 'Ingen tittel ennå' }}</h3>
-						<p>{{ payloadPreview.description || 'Legg til en beskrivelse for verdenen.' }}</p>
+						<p>{{ payloadPreview.description || 'Legg til en beskrivelse for stasjonskartet.' }}</p>
 					</article>
 				</div>
 			</section>

@@ -60,7 +60,6 @@ const closeSavedPopup = () => {
 		<header class="factoryHero">
 			<button class="backButton" type="button" @click="goBack">Tilbake</button>
 		</header>
-
 		<WorldFactoryEditor
 			:selection-key="selectedWorldKey"
 			@selection-updated="handleSelectionUpdated"
