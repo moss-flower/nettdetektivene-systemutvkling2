@@ -38,8 +38,8 @@ const { data: world } = await useAsyncData(
       </NuxtLink>
 
       <NuxtLink :to="routePathsWithUid(routePaths.teacherFactoryWorld, classroom.worldUid)" class="actionCard">
-        <span class="actionCardTitle">Verden</span>
-        <img src="https://placehold.co/128x128?text=VE" alt="Verden" class="actionCardImage">
+        <span class="actionCardTitle">Stasjonskart</span>
+        <img src="https://placehold.co/128x128?text=SK" alt="Stasjonskart" class="actionCardImage">
       </NuxtLink>
 
       <NuxtLink :to="routePaths.studentHome" class="actionCard">
@@ -72,8 +72,8 @@ const { data: world } = await useAsyncData(
 
     <section v-if="classroom" class="pendingCard">
       <div class="pendingCardHeader">
-        <h2>Verden</h2>
-        <p>Klasserommet bruker verdenen som er koblet til i backend.</p>
+        <h2>Stasjonskart</h2>
+        <p>Klasserommet bruker stasjonskartet som er koblet til i backend.</p>
       </div>
 
       <p class="pendingEmpty">{{ world?.title ?? classroom.worldUid }}</p>
