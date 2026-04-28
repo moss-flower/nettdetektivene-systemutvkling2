@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import levelUpSound from '~/assets/sound/level-up.mp3'
+import { useEffectSound } from '~/composables/useEffectSound'
+
 defineProps<{
   level: number
 }>()
@@ -6,6 +9,12 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'close'): void
 }>()
+
+const playLevelUpSound = useEffectSound(levelUpSound)
+
+onMounted(() => {
+  playLevelUpSound()
+})
 </script>
 
 <template>
