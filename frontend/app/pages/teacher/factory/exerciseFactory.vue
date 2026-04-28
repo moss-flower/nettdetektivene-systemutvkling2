@@ -4,24 +4,21 @@ import PopupFactorySaved from "~/components/teacher/factory/PopupFactorySaved.vu
 import { routePaths } from "~/composables/utils/routePaths";
 import {
 	exerciseFactoryNewSelectionKey,
-	fetchAllExerciseFactoryExercises,
-	getExerciseFactorySelectionOptions,
-	getExerciseFactorySelectionOptionsFromExercises,
 	makeExerciseFactoryExistingSelectionKey,
-	type ExerciseFactorySelectableOption,
+	parseExerciseFactorySelectionKey,
 } from "~/composables/useExerciseFactory";
 
 const route = useRoute();
 const router = useRouter();
-const selectedExerciseKey = ref<string>("");
-const selectableOptions = ref<ExerciseFactorySelectableOption[]>([]);
 const showSavedPopup = ref(false);
 const lockedExerciseUid = computed(() => {
 	const uid = route.query.uid;
 
 	return typeof uid === "string" && uid.trim().length > 0 ? uid.trim() : "";
 });
-const showExerciseSelector = computed(() => lockedExerciseUid.value.length === 0);
+const selectedExerciseKey = computed(() => lockedExerciseUid.value
+	? makeExerciseFactoryExistingSelectionKey(lockedExerciseUid.value)
+	: exerciseFactoryNewSelectionKey);
 
 const goBack = () => {
 	if (import.meta.client && window.history.length > 1) {
@@ -32,78 +29,35 @@ const goBack = () => {
 	void navigateTo(routePaths.teacherOverview);
 };
 
-const refreshSelectableOptions = async () => {
-	try {
-		const exercises = await fetchAllExerciseFactoryExercises();
-
-		selectableOptions.value = getExerciseFactorySelectionOptionsFromExercises(exercises);
-	} catch {
-		selectableOptions.value = getExerciseFactorySelectionOptions();
-	}
-};
-
 const handleSelectionUpdated = async (selectionKey: string) => {
-	await refreshSelectableOptions();
-	selectedExerciseKey.value = selectionKey;
+	const selection = parseExerciseFactorySelectionKey(selectionKey);
+
+	if (selection.kind === "existing" && selection.uid !== lockedExerciseUid.value) {
+		await navigateTo(`${routePaths.teacherFactoryExercise}?uid=${selection.uid}`, { replace: true });
+	}
 };
 
-const handleSaved = async () => {
-	await refreshSelectableOptions();
-
-	if (lockedExerciseUid.value) {
-		selectedExerciseKey.value = makeExerciseFactoryExistingSelectionKey(lockedExerciseUid.value);
-	}
-
+const handleSaved = () => {
 	showSavedPopup.value = true;
 };
 
 const handleDeleted = async () => {
-	await refreshSelectableOptions();
-	selectedExerciseKey.value = lockedExerciseUid.value
-		? makeExerciseFactoryExistingSelectionKey(lockedExerciseUid.value)
-		: "";
+	await navigateTo(routePaths.teacherFactoryExercise, { replace: true });
 };
 
 const closeSavedPopup = () => {
 	showSavedPopup.value = false;
 };
 
-onMounted(async () => {
-	await refreshSelectableOptions();
-});
-
-watch(
-	lockedExerciseUid,
-	(uid) => {
-		selectedExerciseKey.value = uid ? makeExerciseFactoryExistingSelectionKey(uid) : "";
-	},
-	{ immediate: true },
-);
 </script>
 
 <template>
 	<section class="factoryPage">
 		<header class="factoryHero">
 			<button class="backButton" type="button" @click="goBack">Tilbake</button>
-			<h1 v-if="showExerciseSelector">Oppgavesett</h1>
 		</header>
 
-		<section v-if="showExerciseSelector" class="selectorPanel">
-			<div class="selectorControls">
-				<label class="field fieldGrow">
-					<select v-model="selectedExerciseKey">
-						<option value="">Velg oppgavesett</option>
-						<option :value="exerciseFactoryNewSelectionKey">Nytt oppgavesett</option>
-						<option v-for="option in selectableOptions" :key="option.selectionKey" :value="option.selectionKey">
-							{{ option.label }}
-						</option>
-					</select>
-				</label>
-			</div>
-		</section>
-
 		<ExerciseFactoryEditor
-			v-if="selectedExerciseKey"
 			:selection-key="selectedExerciseKey"
 			@selection-updated="handleSelectionUpdated"
 			@saved="handleSaved"

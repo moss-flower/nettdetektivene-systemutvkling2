@@ -13,7 +13,6 @@ import {
 	mapExerciseToBackendRequest,
 	parseExerciseFactorySelectionKey,
 	saveExerciseFactoryPayload,
-	saveExerciseFactoryPayloadAsNew,
 	type ExerciseFactoryPayload,
 } from "~/composables/useExerciseFactory";
 import type {
@@ -232,19 +231,6 @@ const savePayload = async () => {
 
 	const nextPayload = cloneExercisePayload(payloadPreview.value);
 	const saved = await saveExerciseFactoryPayload(props.selectionKey, nextPayload);
-
-	loadedLocalId.value = "";
-	updateLoadedSnapshot(saved.payload);
-	finishSave(saved.selectionKey);
-};
-
-const saveAsNew = async () => {
-	if (!canSave.value) {
-		return;
-	}
-
-	const nextPayload = cloneExercisePayload(payloadPreview.value);
-	const saved = await saveExerciseFactoryPayloadAsNew(nextPayload);
 
 	loadedLocalId.value = "";
 	updateLoadedSnapshot(saved.payload);
@@ -471,21 +457,17 @@ watch(payloadPreviewText, () => {
 
 			<div class="actionRow actionRowSave">
 				<button
-					v-if="parsedSelection.kind !== 'new'"
+					v-if="parsedSelection.kind === 'existing'"
 					type="button"
 					class="deleteButton"
 					@click="deleteSelection"
 				>
 					Slett
 				</button>
-				<button type="button" class="ghostButton" :disabled="!canSave" @click="saveAsNew">
-					Lagre som ny
-				</button>
 				<button
-					v-if="parsedSelection.kind !== 'new'"
 					type="submit"
 					class="primaryButton"
-					:disabled="!canSave || !hasChanges"
+					:disabled="!canSave || (parsedSelection.kind !== 'new' && !hasChanges)"
 				>
 					Lagre
 				</button>

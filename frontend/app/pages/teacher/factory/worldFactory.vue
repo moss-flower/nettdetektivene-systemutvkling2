@@ -3,25 +3,22 @@ import WorldFactoryEditor from "~/components/teacher/factory/WorldFactoryEditor.
 import PopupFactorySaved from "~/components/teacher/factory/PopupFactorySaved.vue";
 import { routePaths } from "~/composables/utils/routePaths";
 import {
-	fetchAllWorldFactoryWorlds,
-	getWorldFactorySelectionOptions,
-	getWorldFactorySelectionOptionsFromWorlds,
 	makeWorldFactoryExistingSelectionKey,
-	type WorldFactorySelectableOption,
 	worldFactoryNewSelectionKey,
+	parseWorldFactorySelectionKey,
 } from "~/composables/useWorldFactory";
 
 const route = useRoute();
 const router = useRouter();
-const selectedWorldKey = ref<string>("");
-const selectableOptions = ref<WorldFactorySelectableOption[]>([]);
 const showSavedPopup = ref(false);
 const lockedWorldUid = computed(() => {
 	const uid = route.query.uid;
 
 	return typeof uid === "string" && uid.trim().length > 0 ? uid.trim() : "";
 });
-const showWorldSelector = computed(() => lockedWorldUid.value.length === 0);
+const selectedWorldKey = computed(() => lockedWorldUid.value
+	? makeWorldFactoryExistingSelectionKey(lockedWorldUid.value)
+	: worldFactoryNewSelectionKey);
 
 const goBack = () => {
 	if (import.meta.client && window.history.length > 1) {
@@ -32,77 +29,35 @@ const goBack = () => {
 	void navigateTo(routePaths.teacherOverview);
 };
 
-const refreshSelectableOptions = async () => {
-	try {
-		const worlds = await fetchAllWorldFactoryWorlds();
-
-		selectableOptions.value = getWorldFactorySelectionOptionsFromWorlds(worlds);
-	} catch {
-		selectableOptions.value = getWorldFactorySelectionOptions();
-	}
-};
 const handleSelectionUpdated = async (selectionKey: string) => {
-	await refreshSelectableOptions();
-	selectedWorldKey.value = selectionKey;
+	const selection = parseWorldFactorySelectionKey(selectionKey);
+
+	if (selection.kind === "existing" && selection.uid !== lockedWorldUid.value) {
+		await navigateTo(`${routePaths.teacherFactoryWorld}?uid=${selection.uid}`, { replace: true });
+	}
 };
 
-const handleSaved = async () => {
-	await refreshSelectableOptions();
-
-	if (lockedWorldUid.value) {
-		selectedWorldKey.value = makeWorldFactoryExistingSelectionKey(lockedWorldUid.value);
-	}
-
+const handleSaved = () => {
 	showSavedPopup.value = true;
 };
 
 const handleDeleted = async () => {
-	await refreshSelectableOptions();
-	selectedWorldKey.value = lockedWorldUid.value
-		? makeWorldFactoryExistingSelectionKey(lockedWorldUid.value)
-		: "";
+	await navigateTo(routePaths.teacherFactoryWorld, { replace: true });
 };
 
 const closeSavedPopup = () => {
 	showSavedPopup.value = false;
 };
 
-onMounted(async () => {
-	await refreshSelectableOptions();
-});
-
-watch(
-	lockedWorldUid,
-	(uid) => {
-		selectedWorldKey.value = uid ? makeWorldFactoryExistingSelectionKey(uid) : "";
-	},
-	{ immediate: true },
-);
 </script>
 
 <template>
 	<section class="factoryPage">
 		<header class="factoryHero">
 			<button class="backButton" type="button" @click="goBack">Tilbake</button>
-			<h1 v-if="showWorldSelector">Verdener</h1>
 		</header>
 
-		<section v-if="showWorldSelector" class="selectorPanel">
-			<div class="selectorControls">
-				<label class="field fieldGrow">
-					<select v-model="selectedWorldKey">
-						<option value="">Velg verden</option>
-						<option :value="worldFactoryNewSelectionKey">Ny verden</option>
-						<option v-for="option in selectableOptions" :key="option.selectionKey" :value="option.selectionKey">
-							{{ option.label }}
-						</option>
-					</select>
-				</label>
-			</div>
-		</section>
-
 		<WorldFactoryEditor
-			v-if="selectedWorldKey"
 			:selection-key="selectedWorldKey"
 			@selection-updated="handleSelectionUpdated"
 			@saved="handleSaved"

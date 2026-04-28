@@ -9,7 +9,6 @@ import {
 	parseWorldFactorySelectionKey,
 	readWorldFactoryStore,
 	saveWorldFactoryPayload,
-	saveWorldFactoryPayloadAsNew,
 	worldFactoryDefaultImage,
 	type WorldFactoryPayload,
 	type WorldFactoryStoredRecord,
@@ -213,19 +212,6 @@ const savePayload = async () => {
 	finishSave(saved.selectionKey);
 };
 
-const saveAsNew = async () => {
-	if (!canSave.value) {
-		return;
-	}
-
-	const saved = await saveWorldFactoryPayloadAsNew(payloadPreview.value);
-
-	storedDrafts.value = readWorldFactoryStore().drafts;
-	loadedLocalId.value = "";
-	updateLoadedSnapshot(saved.payload);
-	finishSave(saved.selectionKey);
-};
-
 const deleteSelection = async () => {
 	await deleteWorldFactorySelection(props.selectionKey);
 	emit("deleted");
@@ -321,10 +307,10 @@ watch(payloadPreviewText, () => {
 								<img src="https://placehold.co/80x80/1f2937/e5f3ef?text=%3C" alt="Flytt til venstre" class="stationNode__actionIcon" >
 							</button>
 							<button type="button" class="ghostButton" :disabled="!station.isKnown" @click="editStation(station.uid)">
-								<img src="https://placehold.co/80x80/0f766e/ecfeff?text=E" alt="Rediger stasjon" class="stationNode__actionIcon" >
+								<img src="https://placehold.co/80x80?text=E&color=6b7280" alt="Rediger stasjon" class="stationNode__actionIcon" >
 							</button>
 							<button type="button" class="deleteButton" @click="removeStationUid(station.uid)">
-								<img src="https://placehold.co/80x80/991b1b/fee2e2?text=X" alt="Slett stasjon" class="stationNode__actionIcon" >
+								<img src="https://placehold.co/80x80?text=X&color=dc2626" alt="Slett stasjon" class="stationNode__actionIcon" >
 							</button>
 							<button type="button" class="ghostButton stationNode__moveRight" :disabled="index === selectedStations.length - 1" @click="moveStation(index, 1)">
 								<img src="https://placehold.co/80x80/1f2937/e5f3ef?text=%3E" alt="Flytt til hoyre" class="stationNode__actionIcon" >
@@ -418,21 +404,17 @@ watch(payloadPreviewText, () => {
 
 			<div class="actionRow actionRow--save">
 				<button
-					v-if="parsedSelection.kind !== 'new'"
+					v-if="parsedSelection.kind === 'existing'"
 					type="button"
 					class="deleteButton"
 					@click="deleteSelection"
 				>
 					Slett
 				</button>
-				<button type="button" class="ghostButton" :disabled="!canSave" @click="saveAsNew">
-					Lagre som ny
-				</button>
 				<button
-					v-if="parsedSelection.kind !== 'new'"
 					type="submit"
 					class="primaryButton"
-					:disabled="!canSave || !hasChanges"
+					:disabled="!canSave || (parsedSelection.kind !== 'new' && !hasChanges)"
 				>
 					Lagre
 				</button>

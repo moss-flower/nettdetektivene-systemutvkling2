@@ -3,25 +3,22 @@ import StationFactoryEditor from "~/components/teacher/factory/StationFactoryEdi
 import PopupFactorySaved from "~/components/teacher/factory/PopupFactorySaved.vue";
 import { routePaths } from "~/composables/utils/routePaths";
 import {
-	fetchAllStationFactoryStations,
-	getStationFactorySelectionOptions,
-	getStationFactorySelectionOptionsFromStations,
 	makeStationFactoryExistingSelectionKey,
+	parseStationFactorySelectionKey,
 	stationFactoryNewSelectionKey,
-	type StationFactorySelectableOption,
 } from "~/composables/useStationFactory";
 
 const route = useRoute();
 const router = useRouter();
-const selectedStationKey = ref<string>("");
-const selectableOptions = ref<StationFactorySelectableOption[]>([]);
 const showSavedPopup = ref(false);
 const lockedStationUid = computed(() => {
 	const uid = route.query.uid;
 
 	return typeof uid === "string" && uid.trim().length > 0 ? uid.trim() : "";
 });
-const showStationSelector = computed(() => lockedStationUid.value.length === 0);
+const selectedStationKey = computed(() => lockedStationUid.value
+	? makeStationFactoryExistingSelectionKey(lockedStationUid.value)
+	: stationFactoryNewSelectionKey);
 
 const goBack = () => {
 	if (import.meta.client && window.history.length > 1) {
@@ -32,77 +29,35 @@ const goBack = () => {
 	void navigateTo(routePaths.teacherOverview);
 };
 
-const refreshSelectableOptions = async () => {
-	try {
-		const stations = await fetchAllStationFactoryStations();
-
-		selectableOptions.value = getStationFactorySelectionOptionsFromStations(stations);
-	} catch {
-		selectableOptions.value = getStationFactorySelectionOptions();
-	}
-};
 const handleSelectionUpdated = async (selectionKey: string) => {
-	await refreshSelectableOptions();
-	selectedStationKey.value = selectionKey;
+	const selection = parseStationFactorySelectionKey(selectionKey);
+
+	if (selection.kind === "existing" && selection.uid !== lockedStationUid.value) {
+		await navigateTo(`${routePaths.teacherFactoryStation}?uid=${selection.uid}`, { replace: true });
+	}
 };
 
-const handleSaved = async () => {
-	await refreshSelectableOptions();
-
-	if (lockedStationUid.value) {
-		selectedStationKey.value = makeStationFactoryExistingSelectionKey(lockedStationUid.value);
-	}
-
+const handleSaved = () => {
 	showSavedPopup.value = true;
 };
 
 const handleDeleted = async () => {
-	await refreshSelectableOptions();
-	selectedStationKey.value = lockedStationUid.value
-		? makeStationFactoryExistingSelectionKey(lockedStationUid.value)
-		: "";
+	await navigateTo(routePaths.teacherFactoryStation, { replace: true });
 };
 
 const closeSavedPopup = () => {
 	showSavedPopup.value = false;
 };
 
-onMounted(async () => {
-	await refreshSelectableOptions();
-});
-
-watch(
-	lockedStationUid,
-	(uid) => {
-		selectedStationKey.value = uid ? makeStationFactoryExistingSelectionKey(uid) : "";
-	},
-	{ immediate: true },
-);
 </script>
 
 <template>
 	<section class="factoryPage">
 		<header class="factoryHero">
 			<button class="backButton" type="button" @click="goBack">Tilbake</button>
-			<h1 v-if="showStationSelector">Stasjoner</h1>
 		</header>
 
-		<section v-if="showStationSelector" class="selectorPanel">
-			<div class="selectorControls">
-				<label class="field field--grow">
-					<select v-model="selectedStationKey">
-						<option value="">Velg stasjon</option>
-						<option :value="stationFactoryNewSelectionKey">Ny stasjon</option>
-						<option v-for="option in selectableOptions" :key="option.selectionKey" :value="option.selectionKey">
-							{{ option.label }}
-						</option>
-					</select>
-				</label>
-			</div>
-		</section>
-
 		<StationFactoryEditor
-			v-if="selectedStationKey"
 			:selection-key="selectedStationKey"
 			@selection-updated="handleSelectionUpdated"
 			@saved="handleSaved"

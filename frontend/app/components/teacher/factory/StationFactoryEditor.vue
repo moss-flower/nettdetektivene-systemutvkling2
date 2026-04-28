@@ -8,7 +8,6 @@ import {
 	normalizeStationExerciseUids,
 	parseStationFactorySelectionKey,
 	saveStationFactoryPayload,
-	saveStationFactoryPayloadAsNew,
 	stationFactoryDefaultImage,
 	type StationFactoryPayload,
 } from "~/composables/useStationFactory";
@@ -160,6 +159,15 @@ const goToExerciseFactory = () => {
 	void navigateTo(routePaths.teacherFactoryExercise);
 };
 
+const editExercise = (uid: string) => {
+	void navigateTo(`${routePaths.teacherFactoryExercise}?uid=${uid}`);
+};
+
+const removeExerciseUid = (uidToRemove: string) => {
+	const nextExerciseUids = draft.exerciseUids.filter((uid) => uid !== uidToRemove);
+	draft.exerciseUids.splice(0, draft.exerciseUids.length, ...nextExerciseUids);
+};
+
 const finishSave = (selectionKey: string) => {
 	emit("selection-updated", selectionKey);
 	emit("saved");
@@ -171,18 +179,6 @@ const savePayload = async () => {
 	}
 
 	const saved = await saveStationFactoryPayload(props.selectionKey, payloadPreview.value);
-
-	loadedLocalId.value = "";
-	updateLoadedSnapshot(saved.payload);
-	finishSave(saved.selectionKey);
-};
-
-const saveAsNew = async () => {
-	if (!canSave.value) {
-		return;
-	}
-
-	const saved = await saveStationFactoryPayloadAsNew(payloadPreview.value);
 
 	loadedLocalId.value = "";
 	updateLoadedSnapshot(saved.payload);
@@ -279,12 +275,20 @@ watch(payloadPreviewText, () => {
 							<template #item="{ element: exercise }">
 								<article class="selectedCard">
 									<span class="dragHandle" aria-hidden="true">Grip</span>
-									<div>
+									<div class="selectedCardContent">
 										<p class="cardEyebrow">Plass {{ exercise.order }}</p>
 										<h3>{{ exercise.title }}</h3>
 										<span :class="['statusPill', { 'statusPill--manual': !exercise.isKnown }]">
 											{{ exercise.isKnown ? exercise.entryName : 'Ikke tilgjengelig' }}
 										</span>
+									</div>
+									<div class="selectedCardActions">
+										<button type="button" class="iconButton" :disabled="!exercise.isKnown" @click="editExercise(exercise.uid)">
+											<img src="https://placehold.co/80x80?text=E&color=6b7280" alt="Rediger oppgavesett" class="selectedCardActionIcon" >
+										</button>
+										<button type="button" class="iconButton iconButton--delete" @click="removeExerciseUid(exercise.uid)">
+											<img src="https://placehold.co/80x80?text=X&color=dc2626" alt="Fjern oppgavesett" class="selectedCardActionIcon" >
+										</button>
 									</div>
 								</article>
 							</template>
@@ -364,21 +368,17 @@ watch(payloadPreviewText, () => {
 
 			<div class="actionRow actionRow--save">
 				<button
-					v-if="parsedSelection.kind !== 'new'"
+					v-if="parsedSelection.kind === 'existing'"
 					type="button"
 					class="deleteButton"
 					@click="deleteSelection"
 				>
 					Slett
 				</button>
-				<button type="button" class="ghostButton" :disabled="!canSave" @click="saveAsNew">
-					Lagre som ny
-				</button>
 				<button
-					v-if="parsedSelection.kind !== 'new'"
 					type="submit"
 					class="primaryButton"
-					:disabled="!canSave || !hasChanges"
+					:disabled="!canSave || (parsedSelection.kind !== 'new' && !hasChanges)"
 				>
 					Lagre
 				</button>
@@ -561,6 +561,35 @@ watch(payloadPreviewText, () => {
 	flex-wrap: wrap;
 }
 
+.selectedCardContent {
+	flex: 1;
+}
+
+.selectedCardActions {
+	display: flex;
+	gap: 0.5rem;
+	margin-left: auto;
+}
+
+.iconButton {
+	padding: 0;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+}
+
+.iconButton:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.selectedCardActionIcon {
+	display: block;
+	width: 3rem;
+	height: 3rem;
+	border-radius: 0.45rem;
+}
+
 .knownExercises,
 .selectedList {
 	margin-top: 1rem;
@@ -711,6 +740,7 @@ watch(payloadPreviewText, () => {
 	.summaryCard,
 	.knownExerciseCard,
 	.selectedCard,
+	.selectedCardActions,
 	.actionRow {
 		display: grid;
 	}
