@@ -1,4 +1,3 @@
-import type { InjectionKey } from 'vue'
 import type { VueConfettiOptions } from 'vue-confetti'
 
 export interface GameConfettiController {
@@ -7,15 +6,15 @@ export interface GameConfettiController {
   stop: () => void
 }
 
-const gameConfettiKey: InjectionKey<GameConfettiController> = Symbol('game-confetti')
 const GAME_CONFETTI_COLORS = [
-  '#ff4d6d',
-  '#ff8a00',
-  '#ffd60a',
-  '#00c2ff',
-  '#7b61ff',
-  '#2dd4bf',
+  '#4c7bb0',
+  '#f2c94c',
+  '#9ed8db',
+  '#f2994a',
+  '#d96c75',
 ]
+
+let confettiTimeout: ReturnType<typeof setTimeout> | null = null
 
 const createNoopController = (): GameConfettiController => ({
   celebrateCorrectAnswer: () => {},
@@ -23,9 +22,8 @@ const createNoopController = (): GameConfettiController => ({
   stop: () => {},
 })
 
-export const provideGameConfetti = () => {
+const createController = (): GameConfettiController => {
   const { $confetti } = useNuxtApp()
-  let confettiTimeout: ReturnType<typeof setTimeout> | null = null
 
   const stop = () => {
     if (confettiTimeout) {
@@ -39,13 +37,14 @@ export const provideGameConfetti = () => {
   const startBurst = (options: VueConfettiOptions, durationMs: number) => {
     stop()
     $confetti.start(options)
+
     confettiTimeout = setTimeout(() => {
       $confetti.stop()
       confettiTimeout = null
     }, durationMs)
   }
 
-  const controller: GameConfettiController = {
+  return {
     celebrateCorrectAnswer: (options = {}) => {
       startBurst({
         particlesPerFrame: 4,
@@ -66,11 +65,18 @@ export const provideGameConfetti = () => {
     },
     stop,
   }
+}
 
-  provide(gameConfettiKey, controller)
+export const provideGameConfetti = () => {
+  if (import.meta.server) {
+    return createNoopController()
+  }
+
+  const { $confetti } = useNuxtApp()
+  const controller = createController()
 
   onBeforeUnmount(() => {
-    stop()
+    controller.stop()
     $confetti.remove()
   })
 
@@ -78,5 +84,9 @@ export const provideGameConfetti = () => {
 }
 
 export const useGameConfetti = () => {
-  return inject(gameConfettiKey, createNoopController())
+  if (import.meta.server) {
+    return createNoopController()
+  }
+
+  return createController()
 }

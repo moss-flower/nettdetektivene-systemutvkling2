@@ -90,9 +90,9 @@ import UiStudentHomeBackButton from "~/components/ui/UiStudentHomeBackButton.vue
   --tier-bronze-ink: var(--palette-cork-700);
 
   /* Roster */
-  --roster-header-ink: var(--palette-cork-500);
+  --roster-header-ink: var(--palette-cork-580);
   --roster-row-ink: var(--palette-cork-900);
-  --roster-rank-ink: var(--palette-cork-500);
+  --roster-rank-ink: var(--palette-cork-580);
   --roster-divider: var(--palette-overlay-cork-shadow);
   --roster-row-hover: var(--palette-overlay-cork-soft);
 
@@ -104,6 +104,7 @@ import UiStudentHomeBackButton from "~/components/ui/UiStudentHomeBackButton.vue
   justify-items: center;
   align-content: start;
   padding: var(--layout-page-padding);
+  border-radius: var(--radius-2);
   color: var(--leaderboard-title);
   background:
       radial-gradient(ellipse 70% 50% at 50% 15%, var(--leaderboard-wall-glow), transparent 70%),
@@ -255,7 +256,7 @@ h1 {
 
 .scoreUnit {
   margin: 0;
-  color: var(--palette-cork-500);
+  color: var(--palette-cork-580);
   font-family: var(--font-family-body), sans-serif;
   font-size: var(--font-size-14);
   line-height: var(--font-leading-14);
