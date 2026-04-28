@@ -3,26 +3,21 @@ package no.safety.backend.classroom.repository;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-
 import no.safety.backend.classroom.model.Classroom;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
 
-    boolean existsByCode(String code);
+  boolean existsByCode(String code);
 
-    Optional<Classroom> findByUid(UUID uid);
+  Optional<Classroom> findByUid(UUID uid);
 
-    boolean existsByUidAndOwners_PublicUuid(UUID uid, UUID ownerUuid);
+  boolean existsByUidAndOwners_PublicUuid(UUID uid, UUID ownerUuid);
 
-    Optional<Classroom> findByUidAndOwners_PublicUuid(UUID uid, UUID ownerUuid);
+  Optional<Classroom> findByUidAndOwners_PublicUuid(UUID uid, UUID ownerUuid);
 
-    Set<Classroom> findAllByOwners_PublicUuid(UUID ownerUuid);
+  Set<Classroom> findAllByOwners_PublicUuid(UUID ownerUuid);
 
-    Optional<Classroom> findByCode(String code);
+  Optional<Classroom> findByCode(String code);
 
 }
