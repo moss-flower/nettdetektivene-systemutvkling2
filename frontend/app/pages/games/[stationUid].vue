@@ -14,7 +14,7 @@ import { routePaths } from '~/composables/utils/routePaths'
 import { Exercise } from '~/composables/types/ExerciseType'
 import { Station } from '~/composables/types/StationType'
 import { useAudioSettings } from '~/composables/useAudioSettings'
-import { useSound } from '@vueuse/sound'
+import { useEffectSound } from '~/composables/useEffectSound'
 import celebrationSfx from '~/assets/sound/celebration-sfx.mp3'
 import { useStudentProfile } from '~/composables/useStudentProfile'
 import { getLevel } from '~/composables/utils/studentProgress'
@@ -99,13 +99,8 @@ const answerState = ref<{ correct: boolean, choice: string, missingStartingPassw
 const isExerciseComplete = computed(() => tasks.length > 0 && correctCount.value === tasks.length)
 
 const isBossStation = station.isBoss
-const { bossfightActive, effectsGain } = useAudioSettings()
-const { play: playCelebration, sound: celebrationSound } = useSound(celebrationSfx, {
-  volume: effectsGain.value,
-})
-watch(effectsGain, (gain) => {
-  celebrationSound.value?.volume(gain)
-})
+const { bossfightActive } = useAudioSettings()
+const playCelebration = useEffectSound(celebrationSfx)
 
 if (isBossStation) {
   bossfightActive.value = true
@@ -475,7 +470,6 @@ const next = async () => {
     
     if (isExerciseComplete.value) {
       bossfightActive.value = false
-      celebrationSound.value?.volume(effectsGain.value)
       playCelebration()
     }
 
