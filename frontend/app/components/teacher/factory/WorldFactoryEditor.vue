@@ -14,6 +14,7 @@ import {
 	type WorldFactoryStoredRecord,
 } from "~/composables/useWorldFactory";
 import { Station } from "~/composables/types/StationType";
+import { useFactorySessionCache } from "~/composables/useFactorySessionCache";
 
 const props = defineProps<{
 	selectionKey: string;
@@ -26,6 +27,8 @@ const emit = defineEmits<{
 }>();
 
 const draft = reactive<WorldFactoryPayload>(createWorldDraft());
+const route = useRoute();
+const factorySessionCache = useFactorySessionCache();
 const loadedSnapshot = ref<WorldFactoryPayload>(createWorldDraft());
 const storedDrafts = ref<WorldFactoryStoredRecord[]>([]);
 const copyState = ref<"idle" | "copied" | "failed">("idle");
@@ -130,11 +133,12 @@ const updateLoadedSnapshot = (payload: WorldFactoryPayload) => {
 const loadSelection = async (selectionKey: string) => {
 	const loaded = await loadWorldFactoryPayload(selectionKey);
 	const store = readWorldFactoryStore();
+	const cachedPayload = factorySessionCache.getDraft("world", selectionKey);
 
 	storedDrafts.value = store.drafts;
 	loadedLocalId.value = loaded.localId;
-	applyDraft(loaded.payload);
 	updateLoadedSnapshot(loaded.payload);
+	applyDraft(cachedPayload ?? loaded.payload);
 	copyState.value = "idle";
 };
 
@@ -179,10 +183,14 @@ const resetDraft = () => {
 };
 
 const goToStationFactory = () => {
+	factorySessionCache.setDraft("world", props.selectionKey, payloadPreview.value);
+	factorySessionCache.pushReturnTarget(route.fullPath);
 	void navigateTo(routePaths.teacherFactoryStation);
 };
 
 const editStation = (uid: string) => {
+	factorySessionCache.setDraft("world", props.selectionKey, payloadPreview.value);
+	factorySessionCache.pushReturnTarget(route.fullPath);
 	void navigateTo(`${routePaths.teacherFactoryStation}?uid=${uid}`);
 };
 
@@ -208,7 +216,15 @@ const savePayload = async () => {
 
 	storedDrafts.value = readWorldFactoryStore().drafts;
 	loadedLocalId.value = "";
+	factorySessionCache.moveDraft("world", props.selectionKey, saved.selectionKey);
 	updateLoadedSnapshot(saved.payload);
+	const returnTarget = factorySessionCache.popReturnTarget();
+
+	if (returnTarget) {
+		await navigateTo(returnTarget.fullPath);
+		return;
+	}
+
 	finishSave(saved.selectionKey);
 };
 
@@ -254,6 +270,8 @@ watch(payloadPreviewText, () => {
 	if (copyState.value !== "idle") {
 		copyState.value = "idle";
 	}
+
+	factorySessionCache.setDraft("world", props.selectionKey, payloadPreview.value);
 });
 </script>
 

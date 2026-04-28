@@ -24,6 +24,7 @@ import type {
 	SortIntoBucketsTaskData,
 	XOrYTaskData,
 } from "~/composables/types/TaskTypes";
+import { useFactorySessionCache } from "~/composables/useFactorySessionCache";
 
 const props = defineProps<{
 	selectionKey: string;
@@ -40,6 +41,7 @@ const cloneExercisePayload = (payload: ExerciseFactoryPayload): ExerciseFactoryP
 };
 
 const draft = reactive<ExerciseFactoryPayload>(createExerciseDraft());
+const factorySessionCache = useFactorySessionCache();
 const loadedSnapshot = ref<ExerciseFactoryPayload>(createExerciseDraft());
 const copyState = ref<"idle" | "copied" | "failed">("idle");
 const expandedTaskIds = ref<string[]>([]);
@@ -147,10 +149,11 @@ const updateLoadedSnapshot = (payload: ExerciseFactoryPayload) => {
 
 const loadSelection = async (selectionKey: string) => {
 	const loaded = await loadExerciseFactoryPayload(selectionKey);
+	const cachedPayload = factorySessionCache.getDraft("exercise", selectionKey);
 
 	loadedLocalId.value = loaded.localId;
-	applyDraft(loaded.payload);
 	updateLoadedSnapshot(loaded.payload);
+	applyDraft(cachedPayload ?? loaded.payload);
 	copyState.value = "idle";
 };
 
@@ -233,7 +236,15 @@ const savePayload = async () => {
 	const saved = await saveExerciseFactoryPayload(props.selectionKey, nextPayload);
 
 	loadedLocalId.value = "";
+	factorySessionCache.moveDraft("exercise", props.selectionKey, saved.selectionKey);
 	updateLoadedSnapshot(saved.payload);
+	const returnTarget = factorySessionCache.popReturnTarget();
+
+	if (returnTarget) {
+		await navigateTo(returnTarget.fullPath);
+		return;
+	}
+
 	finishSave(saved.selectionKey);
 };
 
@@ -262,6 +273,8 @@ watch(payloadPreviewText, () => {
 	if (copyState.value !== "idle") {
 		copyState.value = "idle";
 	}
+
+	factorySessionCache.setDraft("exercise", props.selectionKey, payloadPreview.value);
 });
 </script>
 

@@ -12,6 +12,7 @@ import {
 	type StationFactoryPayload,
 } from "~/composables/useStationFactory";
 import { Exercise } from "~/composables/types/ExerciseType";
+import { useFactorySessionCache } from "~/composables/useFactorySessionCache";
 
 const props = defineProps<{
 	selectionKey: string;
@@ -24,6 +25,8 @@ const emit = defineEmits<{
 }>();
 
 const draft = reactive<StationFactoryPayload>(createStationDraft());
+const route = useRoute();
+const factorySessionCache = useFactorySessionCache();
 const loadedSnapshot = ref<StationFactoryPayload>(createStationDraft());
 const copyState = ref<"idle" | "copied" | "failed">("idle");
 const loadedLocalId = ref("");
@@ -141,10 +144,11 @@ const updateLoadedSnapshot = (payload: StationFactoryPayload) => {
 
 const loadSelection = async (selectionKey: string) => {
 	const loaded = await loadStationFactoryPayload(selectionKey);
+	const cachedPayload = factorySessionCache.getDraft("station", selectionKey);
 
 	loadedLocalId.value = loaded.localId;
-	applyDraft(loaded.payload);
 	updateLoadedSnapshot(loaded.payload);
+	applyDraft(cachedPayload ?? loaded.payload);
 	copyState.value = "idle";
 };
 
@@ -156,10 +160,14 @@ const resetDraft = () => {
 };
 
 const goToExerciseFactory = () => {
+	factorySessionCache.setDraft("station", props.selectionKey, payloadPreview.value);
+	factorySessionCache.pushReturnTarget(route.fullPath);
 	void navigateTo(routePaths.teacherFactoryExercise);
 };
 
 const editExercise = (uid: string) => {
+	factorySessionCache.setDraft("station", props.selectionKey, payloadPreview.value);
+	factorySessionCache.pushReturnTarget(route.fullPath);
 	void navigateTo(`${routePaths.teacherFactoryExercise}?uid=${uid}`);
 };
 
@@ -181,7 +189,15 @@ const savePayload = async () => {
 	const saved = await saveStationFactoryPayload(props.selectionKey, payloadPreview.value);
 
 	loadedLocalId.value = "";
+	factorySessionCache.moveDraft("station", props.selectionKey, saved.selectionKey);
 	updateLoadedSnapshot(saved.payload);
+	const returnTarget = factorySessionCache.popReturnTarget();
+
+	if (returnTarget) {
+		await navigateTo(returnTarget.fullPath);
+		return;
+	}
+
 	finishSave(saved.selectionKey);
 };
 
@@ -215,6 +231,8 @@ watch(payloadPreviewText, () => {
 	if (copyState.value !== "idle") {
 		copyState.value = "idle";
 	}
+
+	factorySessionCache.setDraft("station", props.selectionKey, payloadPreview.value);
 });
 </script>
 
