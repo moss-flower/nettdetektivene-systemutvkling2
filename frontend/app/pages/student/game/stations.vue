@@ -252,7 +252,7 @@ watch(stationCards, () => {
 
     <section v-else class="emptyState">
       <h2>Ingen stasjoner tilgjengelig</h2>
-      <p>Denne verdenen har ingen stasjoner ennå, eller du er ikke koblet til et klasserom.</p>
+      <p>Dette stasjonskartet har ingen stasjoner ennå, eller du er ikke koblet til et klasserom.</p>
     </section>
   </section>
 </template>

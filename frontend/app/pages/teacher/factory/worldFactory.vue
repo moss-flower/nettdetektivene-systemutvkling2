@@ -84,15 +84,15 @@ watch(
 	<section class="factoryPage">
 		<header class="factoryHero">
 			<button class="backButton" type="button" @click="goBack">Tilbake</button>
-			<h1 v-if="showWorldSelector">Verdener</h1>
+			<h1 v-if="showWorldSelector">Stasjonskart</h1>
 		</header>
 
 		<section v-if="showWorldSelector" class="selectorPanel">
 			<div class="selectorControls">
 				<label class="field fieldGrow">
 					<select v-model="selectedWorldKey">
-						<option value="">Velg verden</option>
-						<option :value="worldFactoryNewSelectionKey">Ny verden</option>
+						<option value="">Velg stasjonskart</option>
+						<option :value="worldFactoryNewSelectionKey">Nytt stasjonskart</option>
 						<option v-for="option in selectableOptions" :key="option.selectionKey" :value="option.selectionKey">
 							{{ option.label }}
 						</option>
