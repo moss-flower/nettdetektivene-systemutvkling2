@@ -16,6 +16,14 @@ export type AvatarConfig = {
   skinColor: SkinColor;
 };
 
+export type AvatarOptions = {
+  hairStyle: HairStyle[];
+  hairColor: HairColor[];
+  outfit: Outfit[];
+  eyeColor: EyeColor[];
+  skinColor: SkinColor[];
+};
+
 export const DEFAULT_AVATAR_CONFIG: AvatarConfig = {
   hairStyle: 'SHORT',
   hairColor: 'BROWN',

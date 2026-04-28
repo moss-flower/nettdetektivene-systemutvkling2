@@ -1,4 +1,4 @@
-import type { AvatarConfig } from "~/composables/types/AvatarTypes";
+import type { AvatarConfig, AvatarOptions } from "~/composables/types/AvatarTypes";
 
 export function useAvatar() {
   const { $api } = useNuxtApp();
@@ -16,8 +16,15 @@ export function useAvatar() {
     });
   };
 
+  const getAvatarOptions = async (): Promise<AvatarOptions> => {
+    return await $api<AvatarOptions>("/avatar/options", {
+      method: "GET",
+    });
+  };
+
   return {
     getMyAvatar,
     updateMyAvatar,
+    getAvatarOptions,
   };
 }
