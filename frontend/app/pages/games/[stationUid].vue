@@ -497,8 +497,6 @@ const next = async () => {
 <template>
   <section class="stationPage">
     <div class="stationPageCard">
-    
-      <section class="station-page">
     <UiStudentHomeBackButton
       class="station-page__back-button"
       :to="exerciseSelectRoute"
