@@ -8,6 +8,7 @@ import PasswordStrengthTemplate from '~/components/gameplay/templates/PasswordSt
 import SortIntoBucketsTemplate from '~/components/gameplay/templates/SortIntoBucketsTemplate.vue'
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoiceTemplate.vue'
+import UiStudentHomeBackButton from '~/components/ui/UiStudentHomeBackButton.vue'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
 import { markExerciseCompleted, useCompletedExerciseUids } from '~/composables/utils/gameProgress'
 import { routePaths } from '~/composables/utils/routePaths'
@@ -487,6 +488,13 @@ const next = async () => {
 
 <template>
   <section class="station-page">
+    <UiStudentHomeBackButton
+      class="station-page__back-button"
+      :to="exerciseSelectRoute"
+      aria-label="Tilbake til oppgavevalg"
+      label=""
+    />
+
     <header class="station-page__hero">
       <div class="station-page__header">
         <BossCharacter
@@ -600,6 +608,19 @@ const next = async () => {
 </template>
 
 <style scoped>
+.station-page {
+  position: relative;
+  min-height: 100%;
+  padding-bottom: 6rem;
+}
+
+.station-page__back-button {
+  position: fixed;
+  bottom: var(--space-5);
+  left: var(--space-5);
+  z-index: 10;
+}
+
 .stationPage {
   max-width: 72rem;
   margin: 0 auto;
@@ -692,6 +713,11 @@ const next = async () => {
 }
 
 @media (max-width: 780px) {
+  .station-page__back-button {
+    bottom: var(--space-4);
+    left: var(--space-4);
+  }
+
   .station-page__hero {
     flex-direction: column;
     align-items: stretch;
