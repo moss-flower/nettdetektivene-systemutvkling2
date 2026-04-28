@@ -11,15 +11,14 @@ import no.safety.backend.leaderboard.dto.ClassroomLeaderboardResponse;
 
 public interface ClassroomLeaderboardRepository extends JpaRepository<Classroom, Long> {
     @Query(value = """
-            SELECT new no.safety.backend.leaderboard.dto.ClassroomLeaderboardResponse(
-                c.uid,
-                c.name,
-                COALESCE(SUM(m.score), 0L),
-                DENSE_RANK() OVER (ORDER BY SUM(m.score) DESC)
-            )
+            SELECT
+                c.uid AS classroomPublicUuid,
+                c.name AS className,
+                COALESCE(SUM(m.score), 0) AS score,
+                DENSE_RANK() OVER (ORDER BY SUM(m.score) DESC) AS rank
             FROM Classroom c
             LEFT JOIN c.members m
             GROUP BY c.internalId, c.uid, c.name
-            """, countQuery = "SELECT COUNT(c) FROM Classroom c")
+            """, nativeQuery = true)
     Page<ClassroomLeaderboardResponse> findAllClassroomsTotalScores(@NonNull Pageable pageable);
 }
