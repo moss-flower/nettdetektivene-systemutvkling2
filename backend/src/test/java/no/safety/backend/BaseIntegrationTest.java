@@ -8,6 +8,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.client.RestTestClient;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
  * A base integration test class to make integration testing easier.
@@ -16,6 +17,7 @@ import org.testcontainers.junit.jupiter.Container;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
 @ActiveProfiles("test")
+@Testcontainers(disabledWithoutDocker = true)
 public abstract class BaseIntegrationTest {
     @Container
     @ServiceConnection

@@ -31,11 +31,13 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
+import no.safety.backend.auth.service.JwtService;
 
 @WebMvcTest(ExerciseController.class)
 @AutoConfigureRestTestClient
@@ -120,7 +122,7 @@ class ExerciseControllerTest {
 
   @Test
   @WithMockUser(roles = "STUDENT")
-  void create_withoutTeacherRole_returns403Forbidden() {
+  void create_withStudentRole_returnsForbiddenInWebMvcSlice() {
     client.post().uri("/api/v1/exercises")
         .contentType(MediaType.APPLICATION_JSON)
         .body(validRequest)
@@ -169,7 +171,7 @@ class ExerciseControllerTest {
 
   @Test
   @WithMockUser(roles = "STUDENT")
-  void getAll_withoutTeacherRole_returns403Forbidden() {
+  void getAll_withStudentRole_returnsForbiddenInWebMvcSlice() {
     client.get().uri("/api/v1/exercises")
         .exchange()
         .expectStatus().isForbidden();
@@ -244,7 +246,7 @@ class ExerciseControllerTest {
 
   @Test
   @WithMockUser(roles = "STUDENT")
-  void delete_withoutTeacherRole_returns403Forbidden() {
+  void delete_withStudentRole_returnsForbiddenInWebMvcSlice() {
     client.delete().uri("/api/v1/exercises/{publicId}", publicId)
         .exchange()
         .expectStatus().isForbidden();
