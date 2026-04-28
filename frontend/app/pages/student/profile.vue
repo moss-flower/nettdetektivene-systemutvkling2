@@ -34,18 +34,19 @@ onMounted(async () => {
 <template>
   <section class="profilePage">
     <header class="pageHeader">
+      <UiStudentHomeBackButton class="backLink" label="Tilbake" />
       <p v-if="isLoading" class="statusText">Laster profil...</p>
       <p v-if="profileError" class="errorText">{{ profileError }}</p>
     </header>
 
     <article class="idCard">
-      <div class="idCard_left">
+      <div class="idCard__left">
         <div class="idCard__avatar">
           <span class="idCard__initial">{{ initial }}</span>
         </div>
       </div>
 
-      <div class="idCard_right">
+      <div class="idCard__right">
         <h2 class="idCard__title">Detektiv</h2>
         <div class="idCard__field">
           <p class="idCard__fieldValue">{{ studentName }}</p>
@@ -148,6 +149,7 @@ onMounted(async () => {
   font-family: var(--font-family-body), sans-serif;
   font-size: var(--font-size-14);
   line-height: var(--font-leading-14);
+}
 
 .errorText {
   margin: 0;
