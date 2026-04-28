@@ -54,6 +54,11 @@ const student = computed(() => getClassroomMemberById(classroom.value, studentId
   max-width: 1000px;
   margin: 0 auto;
   padding: var(--space-4);
+  color: var(--color-text-primary);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.88)),
+    linear-gradient(180deg, var(--palette-gray-50) 0%, var(--palette-cream-100) 100%);
+  border-radius: var(--radius-4);
 }
 
 .pageHeader {
@@ -62,51 +67,52 @@ const student = computed(() => getClassroomMemberById(classroom.value, studentId
 
 .backLink {
   display: inline-block;
-  margin-bottom: 0.75rem;
-  color: var(--primary);
+  margin-bottom: var(--space-3);
+  color: var(--color-brand-primary);
   font-weight: 600;
 }
 
 .eyebrow {
-  color: var(--primary);
+  color: var(--color-brand-primary);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
 }
 
 h1 {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 var(--space-2) 0;
 }
 
 .subtitle {
   margin: 0;
-  color: var(--muted);
+  color: var(--color-text-secondary);
 }
 
 .summaryGrid {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-4);
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
 }
 
 .summaryCard,
 .detailCard {
-  padding: 1rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
+  padding: var(--space-4);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-3);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-1);
 }
 
 .summaryLabel {
   display: block;
-  color: var(--muted);
+  color: var(--color-text-secondary);
   margin-bottom: 0.35rem;
 }
 
 .summaryCard strong {
-  color: var(--primary);
+  color: var(--color-brand-primary);
   font-size: 1.4rem;
 }
 </style>

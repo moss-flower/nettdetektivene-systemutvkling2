@@ -11,8 +11,6 @@ import mysteryImage from "~/assets/images/studentHome/mystery.png";
 import notebookImage from "~/assets/images/studentHome/notebook.png";
 import settingsImage from "~/assets/images/studentHome/settings.png";
 
-definePageMeta( { layout: false })
-
 type StudentHomeItem = {
   id: string;
   title: string;
@@ -150,22 +148,10 @@ async function handleLogout() {
 
 <style scoped>
 .student-home {
-  --board-border: var(--palette-cork-470);
-  --board-gradient-top: var(--palette-cork-450);
-  --board-gradient-bottom: var(--palette-cork-470);
-  --board-inner-frame: var(--palette-overlay-cork-strong);
-  --board-hatch: var(--palette-overlay-cork-soft);
-  --board-highlight: var(--palette-overlay-light-soft);
-  --board-inset-ring: var(--palette-overlay-cork-medium);
-  --board-shadow: var(--palette-overlay-cork-shadow);
-
-  min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  /* fluid sizing (deliberate exception to token system),
-     scales cleanly across devices */
-  gap: clamp(1.5rem, 2vw, 2.25rem);
-  padding: var(--layout-page-padding);
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: clamp(var(--space-4), 2vw, var(--space-6));
   overflow: hidden;
   box-sizing: border-box;
   position: relative;
@@ -200,47 +186,7 @@ async function handleLogout() {
 .student-home__board {
   position: relative;
   width: 100%;
-  /* fluid aspect-constrained max-width (see note on .student-home) */
-  max-width: calc((100dvh - 2 * clamp(1rem, 2vw, 2rem)) * 16 / 9);
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  border: var(--border-width-chunky) solid var(--board-border);
-  border-radius: var(--radius-4);
-  background:
-    linear-gradient(
-      180deg,
-      var(--board-gradient-top) 0%,
-      var(--board-gradient-bottom) 100%
-    );
-  box-shadow:
-    0 var(--space-5) var(--space-8) var(--board-shadow),
-    inset 0 0 0 var(--border-width-thin) var(--board-inset-ring);
-}
-
-.student-home__board::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  /* decorative left-edge gloss + diagonal cork hatch */
-  background:
-    linear-gradient(90deg, var(--board-highlight) 0, transparent 35%),
-    repeating-linear-gradient(
-      135deg,
-      var(--board-hatch) 0,
-      var(--board-hatch) 7px,
-      transparent 7px,
-      transparent 20px
-    );
-  pointer-events: none;
-}
-
-.student-home__board::after {
-  content: "";
-  position: absolute;
-  inset: var(--space-4);
-  border: var(--border-width-thick) solid var(--board-inner-frame);
-  border-radius: var(--radius-3);
-  pointer-events: none;
+  height: 100%;
 }
 
 .student-home__item {
@@ -248,9 +194,9 @@ async function handleLogout() {
   display: block;
 }
 
-.student-home__item:hover {
+.student-home__item:hover,
+.student-home__item:focus-within {
   z-index: 100;
-  transform: scale(1.15);
 }
 
 .student-home__item--leaderboard {
@@ -310,13 +256,15 @@ async function handleLogout() {
 }
 
 @media (max-width: 980px) {
+  .student-home {
+    width: 100%;
+    height: 100%;
+  }
+
   .student-home__board {
-    min-height: auto;
-    aspect-ratio: auto;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-4);
-    padding: var(--space-4);
   }
 
   .student-home__item {
@@ -330,10 +278,4 @@ async function handleLogout() {
   }
 }
 
-@media (max-width: 560px) {
-  .student-home__board {
-    grid-template-columns: 1fr;
-    padding: var(--space-4);
-  }
-}
 </style>

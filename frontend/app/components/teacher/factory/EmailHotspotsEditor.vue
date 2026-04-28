@@ -54,7 +54,7 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 				<input v-model="props.task.prompt!.title" type="text" >
 			</label>
 
-			<label class="field field--full">
+			<label class="field fieldFull">
 				<span>Prompt-tekst</span>
 				<textarea v-model="props.task.prompt!.text" rows="2"></textarea>
 			</label>
@@ -122,7 +122,7 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 				</label>
 			</div>
 
-			<div class="hotspotCard hotspotCard--full">
+			<div class="hotspotCard hotspotCardFull">
 				<div class="hotspotCardHeader">
 					<span class="hotspotCardTitle">Emne-hotspot</span>
 					<div class="hotspotToggleRow">
@@ -137,13 +137,13 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 					</div>
 				</div>
 
-				<label class="field field--full">
+				<label class="field fieldFull">
 					<span>Emne</span>
 					<input v-model="props.task.email.subject" type="text" >
 				</label>
 			</div>
 
-			<div class="hotspotCard hotspotCard--full">
+			<div class="hotspotCard hotspotCardFull">
 				<div class="hotspotCardHeader">
 					<span class="hotspotCardTitle">Hilsen-hotspot</span>
 					<div class="hotspotToggleRow">
@@ -158,13 +158,13 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 					</div>
 				</div>
 
-				<label class="field field--full">
+				<label class="field fieldFull">
 					<span>Hilsen</span>
 					<input v-model="props.task.email.greeting" type="text" >
 				</label>
 			</div>
 
-			<div class="hotspotCard hotspotCard--full">
+			<div class="hotspotCard hotspotCardFull">
 				<div class="hotspotCardHeader">
 					<span class="hotspotCardTitle">Tekst-hotspot</span>
 					<div class="hotspotToggleRow">
@@ -179,13 +179,13 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 					</div>
 				</div>
 
-				<label class="field field--full">
+				<label class="field fieldFull">
 					<span>Brødtekst</span>
 					<textarea v-model="emailTextBlock().text" rows="3"></textarea>
 				</label>
 			</div>
 
-			<div class="hotspotCard hotspotCard--full">
+			<div class="hotspotCard hotspotCardFull">
 				<div class="hotspotCardHeader">
 					<span class="hotspotCardTitle">Lenke-hotspot</span>
 					<div class="hotspotToggleRow">
@@ -213,7 +213,7 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 				</div>
 			</div>
 
-			<div class="hotspotCard hotspotCard--full">
+			<div class="hotspotCard hotspotCardFull">
 				<div class="hotspotCardHeader">
 					<span class="hotspotCardTitle">Knapp-hotspot</span>
 					<div class="hotspotToggleRow">
@@ -241,7 +241,7 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 				</div>
 			</div>
 
-			<div class="hotspotCard hotspotCard--full">
+			<div class="hotspotCard hotspotCardFull">
 				<div class="hotspotCardHeader">
 					<span class="hotspotCardTitle">Vedlegg-hotspot</span>
 					<div class="hotspotToggleRow">
@@ -269,7 +269,7 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 				</div>
 			</div>
 
-			<div class="hotspotCard hotspotCard--full">
+			<div class="hotspotCard hotspotCardFull">
 				<div class="hotspotCardHeader">
 					<span class="hotspotCardTitle">Avslutning-hotspot</span>
 					<div class="hotspotToggleRow">
@@ -284,7 +284,7 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 					</div>
 				</div>
 
-				<label class="field field--full">
+				<label class="field fieldFull">
 					<span>Avslutning</span>
 					<input v-model="props.task.email.closing" type="text" >
 				</label>
@@ -295,9 +295,9 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 
 <style scoped>
 .templateSection {
-	margin-top: 1rem;
-	padding-top: 1rem;
-	border-top: 1px solid var(--border);
+	margin-top: var(--space-4);
+	padding-top: var(--space-4);
+	border-top: var(--border-width-hairline) solid var(--color-border-default);
 }
 
 .templateSection h4 {
@@ -317,8 +317,8 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 	gap: 0.45rem;
 }
 
-.field--full,
-.hotspotCard--full {
+.fieldFull,
+.hotspotCardFull {
 	grid-column: 1 / -1;
 }
 
@@ -329,11 +329,11 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 .field input,
 .field textarea {
 	width: 100%;
-	padding: 0.85rem 1rem;
-	border: 1px solid var(--border);
+	padding: 0.85rem var(--space-4);
+	border: var(--border-width-hairline) solid var(--color-border-default);
 	border-radius: 0.9rem;
 	background: rgba(0, 0, 0, 0.16);
-	color: var(--text);
+	color: var(--color-text-primary);
 	font: inherit;
 }
 
@@ -344,14 +344,14 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 .field input:focus,
 .field textarea:focus {
 	outline: none;
-	border-color: var(--primary);
+	border-color: var(--color-brand-primary);
 }
 
 .hotspotCard {
 	display: grid;
 	gap: 0.85rem;
 	padding: 0.85rem;
-	border: 1px solid var(--border);
+	border: var(--border-width-hairline) solid var(--color-border-default);
 	border-radius: 0.9rem;
 	background: rgba(255, 255, 255, 0.03);
 }
@@ -360,31 +360,31 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: 0.75rem;
+	gap: var(--space-3);
 }
 
 .hotspotToggleRow {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: flex-end;
-	gap: 0.5rem;
+	gap: var(--space-2);
 }
 
 .hotspotCardTitle {
 	font-weight: 700;
-	color: var(--text);
+	color: var(--color-text-primary);
 }
 
 .hotspotToggle {
 	display: inline-flex;
 	align-items: center;
-	gap: 0.5rem;
-	padding: 0.45rem 0.75rem;
-	border: 1px solid var(--border);
-	border-radius: 999px;
+	gap: var(--space-2);
+	padding: 0.45rem var(--space-3);
+	border: var(--border-width-hairline) solid var(--color-border-default);
+	border-radius: var(--radius-pill);
 	background: rgba(255, 255, 255, 0.03);
 	font-weight: 700;
-	color: var(--text);
+	color: var(--color-text-primary);
 }
 
 .hotspotToggle input {

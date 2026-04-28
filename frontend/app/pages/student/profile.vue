@@ -34,7 +34,6 @@ onMounted(async () => {
 <template>
   <section class="profilePage">
     <header class="pageHeader">
-      <UiStudentHomeBackButton class="backLink" label="Tilbake" />
       <p v-if="isLoading" class="statusText">Laster profil...</p>
       <p v-if="profileError" class="errorText">{{ profileError }}</p>
     </header>
@@ -149,7 +148,6 @@ onMounted(async () => {
   font-family: var(--font-family-body), sans-serif;
   font-size: var(--font-size-14);
   line-height: var(--font-leading-14);
-}
 
 .errorText {
   margin: 0;
