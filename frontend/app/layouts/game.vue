@@ -56,15 +56,7 @@ onMounted(async () => {
         class="game-layout__rail-card game-layout__rail-card--avatar game-layout__rail-link"
         aria-label="Gå til elevprofil"
       >
-        <div class="game-layout__avatar-placeholder" aria-hidden="true">
-          <img
-            src="/assets/images/elev_avatar.png"
-            alt="Elev avatar"
-            class="game-layout__avatar-image"
-          />
-        </div>
-        <p class="game-layout__rail-title">{{ profileName }}</p>
-        <p class="game-layout__rail-text">{{ profileLevelText }}</p>
+        <AvatarElement />
       </NuxtLink>
     </aside>
 
