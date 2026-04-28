@@ -3,20 +3,13 @@ package no.safety.backend.weeklymystery.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.safety.backend.classroom.model.Classroom;
-import no.safety.backend.classroom.model.ClassroomWeeklyMystery;
 import no.safety.backend.classroom.repository.ClassroomRepository;
-import no.safety.backend.classroom.repository.ClassroomWeeklyMysteryRepository;
 import no.safety.backend.classroom.service.ClassroomService;
 import no.safety.backend.exception.AccessDeniedException;
-import no.safety.backend.exception.NotFoundException;
 import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.service.UserService;
-import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptResponse;
 import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
