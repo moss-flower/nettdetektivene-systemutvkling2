@@ -89,6 +89,7 @@ onMounted(async () => {
   height: 100%;
   width: 100%;
   padding: var(--space-7) var(--space-6);
+  border-radius: var(--radius-2);
   display: grid;
   grid-template-columns: 1.65fr 1fr;
   background: var(--color-bg-canvas);

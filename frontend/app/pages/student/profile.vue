@@ -117,6 +117,7 @@ onMounted(async () => {
   justify-items: center;
   align-content: center;
   padding: var(--layout-page-padding);
+  border-radius: var(--radius-2);
   color: var(--profile-text-onWall);
   background:
     radial-gradient(ellipse 70% 50% at 50% 25%, var(--profile-wall-glow), transparent 70%),

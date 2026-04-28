@@ -104,6 +104,7 @@ import UiStudentHomeBackButton from "~/components/ui/UiStudentHomeBackButton.vue
   justify-items: center;
   align-content: start;
   padding: var(--layout-page-padding);
+  border-radius: var(--radius-2);
   color: var(--leaderboard-title);
   background:
       radial-gradient(ellipse 70% 50% at 50% 15%, var(--leaderboard-wall-glow), transparent 70%),
