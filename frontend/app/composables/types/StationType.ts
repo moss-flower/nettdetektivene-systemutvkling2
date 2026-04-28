@@ -9,6 +9,7 @@ export type StationData = {
   image: string;
   backgroundColor?: string;
   exerciseUids?: string[];
+  isBoss: boolean;
 };
 
 export class Station {
@@ -18,6 +19,7 @@ export class Station {
   image: string;
   backgroundColor: string;
   exerciseUids: string[];
+  isBoss: boolean;
 
   constructor(data: StationData) {
     this.uid = data.uid;
@@ -26,6 +28,7 @@ export class Station {
     this.image = data.image;
     this.backgroundColor = data.backgroundColor ?? "#cfe9ff";
     this.exerciseUids = data.exerciseUids ?? [];
+    this.isBoss = data.isBoss ?? false;
   }
 
   get name() {

@@ -52,6 +52,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   public static final UUID MARKETPLACE_EXERCISE_2_UID = stableUuid("exercise:marketplace-exercise-2");
   public static final UUID SOCIALMEDIA_EXERCISE_1_UID = stableUuid("exercise:socialmedia-exercise-1");
   public static final UUID SOCIALMEDIA_EXERCISE_2_UID = stableUuid("exercise:socialmedia-exercise-2");
+  public static final UUID DATACENTER_EXERCISE_UID = stableUuid("exercise:datacenter-exercise");
 
   private static final String NEWS_SAFE_IMAGE = "seed/tasks/news-safe.svg";
   private static final String NEWS_WARNING_IMAGE = "seed/tasks/news-warning.svg";
@@ -793,43 +794,236 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
             )
         )
     );
+
+    upsertExercise(DATACENTER_EXERCISE_UID, "Datatyven", "Hoy",
+        "Bruk alt du har laert for a bekjempe datatyven.",
+        List.of(
+            multipleChoiceTask(
+                "Datatyven sender en falsk nyhet. Velg det tydeligste faresignalet.",
+                "Riktig. Mangel pa kilde og sjokkerende sprak er klassiske faresignaler.",
+                "Tenk pa hva som hjelper deg a kontrollere om en sak stemmer.",
+                "Hva avslorer den falske nyheten?",
+                "Datatyven har lagt ut en sak som sprer seg fort. Velg det tydeligste faresignalet.",
+                media(NEWS_WARNING_IMAGE),
+                "Skjermbilde av en sjokkerende nyhetssak fra datatyven",
+                List.of(
+                    new MultipleChoiceContent.Option("a", "Saken har en kjent avsender og tydelige kilder"),
+                    new MultipleChoiceContent.Option("b", "Saken bruker sjokk-overskrift og mangler kilder"),
+                    new MultipleChoiceContent.Option("c", "Saken er kort og lett a lese")
+                ),
+                "b"
+            ),
+            xOrYTask(
+                "Datatyven har sendt to bilder. Velg det som virker ekte.",
+                "Bra. Det ekte bildet har naturlige detaljer og henger sammen.",
+                "Se etter rare hender, skjev tekst eller bakgrunner som ikke passer.",
+                "Hvilket bilde er ekte?",
+                "Studer detaljene og velg bildet datatyven ikke har laget.",
+                media(PHOTO_WARNING_IMAGE),
+                "KI-generert bilde med unaturlige detaljer",
+                "Bilde X",
+                "Mange smaa feil",
+                "Hender og tekst ser unaturlige ut.",
+                media(PHOTO_SAFE_IMAGE),
+                "Ekte bilde med naturlige detaljer",
+                "Bilde Y",
+                "Naturlige detaljer",
+                "Detaljene henger sammen og virker ekte.",
+                XOrYContent.Choice.Y
+            ),
+            emailHotspotsTask(
+                "Datatyven har sendt en e-post. Trykk pa alle faresignalene.",
+                "Bra. Du fant lurene datatyven brukte for a stjele kontoen din.",
+                "Se ekstra pa avsenderadressen, lenken og uventede vedlegg.",
+                "Avslor datatyvens e-post",
+                "Trykk pa alt som virker mistenkelig.",
+                new EmailHotspotsContent.Email(
+                    "Datasenter-support",
+                    "boss-sender-name",
+                    "support@datasenter-secure-login.click",
+                    "boss-sender-address",
+                    "Kontoen din blir stengt om 5 minutter",
+                    "boss-subject",
+                    "DS",
+                    "I dag 10:02",
+                    "boss-received",
+                    "Hei bruker!",
+                    "boss-greeting",
+                    List.of(
+                        new EmailHotspotsContent.TextBlock("boss-body-text", "Klikk lenken under na for at vi ikke skal slette alle filene dine.", "boss-body-text-target"),
+                        new EmailHotspotsContent.LinkBlock("boss-body-link", "Bekreft kontoen", "datasenter-login-verify.click", "Maa gjores umiddelbart", "boss-body-link-target")
+                    ),
+                    new EmailHotspotsContent.ActionButton("Logg inn", "datasenteret.no", "boss-action-button"),
+                    List.of(new EmailHotspotsContent.Attachment("boss-attachment", "konto.exe", "Uventet programfil", "boss-attachment-target")),
+                    "Hilsen datasenteret",
+                    "boss-closing"
+                ),
+                List.of(
+                    new EmailHotspotsContent.Target("boss-sender-name", false),
+                    new EmailHotspotsContent.Target("boss-sender-address", true),
+                    new EmailHotspotsContent.Target("boss-subject", true),
+                    new EmailHotspotsContent.Target("boss-received", false),
+                    new EmailHotspotsContent.Target("boss-greeting", false),
+                    new EmailHotspotsContent.Target("boss-body-text-target", true),
+                    new EmailHotspotsContent.Target("boss-body-link-target", true),
+                    new EmailHotspotsContent.Target("boss-action-button", false),
+                    new EmailHotspotsContent.Target("boss-attachment-target", true),
+                    new EmailHotspotsContent.Target("boss-closing", false)
+                )
+            ),
+            passwordStrengthTask(
+                "Lag et nytt sterkt passord for a stenge datatyven ute.",
+                "Bra jobbet. Passordet ditt er langt nok og vanskelig a gjette.",
+                "Proov igjen med flere tegn og en bedre blanding av bokstaver, tall og symboler.",
+                "Lag et sterkt passord",
+                "Datatyven prover a gjette passord. Lag et som ikke er lett a knekke.",
+                "Bruk minst 12 tegn og bland flere typer tegn.",
+                PasswordStrengthContent.Mode.CREATE,
+                "Skriv passordet her",
+                null,
+                12,
+                4,
+                List.of("123", "qwerty", "passord", "datatyv", "admin")
+            ),
+            xOrYTask(
+                "Datatyven driver to nettbutikker. Velg den trygge.",
+                "Riktig. Den trygge butikken har kjent nettadresse og tydelig kontaktinfo.",
+                "Se etter kjent nettadresse, kontaktinfo og trygg betaling.",
+                "Hvilken butikk er trygg?",
+                "Velg butikken du tor a handle i.",
+                media(SHOP_WARNING_IMAGE),
+                "Tvilsom butikk med rar nettadresse og pressende tilbud",
+                "Butikk X",
+                "Sjokktilbud",
+                "Rar nettadresse, ingen kontaktinfo og pressende nedtelling.",
+                media(SHOP_SAFE_IMAGE),
+                "Ryddig butikk med kontaktinfo og kjent betaling",
+                "Butikk Y",
+                "Kjent og ryddig",
+                "Tydelig kontaktinfo, kjent nettadresse og trygg betalingsmate.",
+                XOrYContent.Choice.Y
+            ),
+            multipleChoiceTask(
+                "Datatyven sprer et innlegg som gjor deg sint. Velg den smarteste reaksjonen.",
+                "Bra. Stoppe opp og sjekke kilden er det smarteste forsvaret mot manipulering.",
+                "Tenk pa hva som hjelper deg a unnga a spre feilinformasjon.",
+                "Hva gjor du i sosiale medier?",
+                "Du ser et innlegg som prover a fa deg til a dele med en gang.",
+                media(SOCIAL_WARNING_IMAGE),
+                "Stressende innlegg fra datatyven i sosiale medier",
+                List.of(
+                    new MultipleChoiceContent.Option("a", "Dele med en gang slik at andre advares"),
+                    new MultipleChoiceContent.Option("b", "Stoppe opp, sjekke kilden og vente med a dele"),
+                    new MultipleChoiceContent.Option("c", "Kommentere mens du er sint")
+                ),
+                "b"
+            ),
+            sortIntoBucketsTask(
+                "Datatyven prover mange triks. Sorter dem som faresignal eller trygt tegn.",
+                "Riktig. Du gjenkjente datatyvens triks pa tvers av nyheter, e-post, butikker og sosiale medier.",
+                "Tenk pa hvilke triks som presser deg, og hvilke tegn som hjelper deg a kontrollere.",
+                "Faresignal eller trygt tegn?",
+                "Legg hvert kort i riktig kategori.",
+                "Triks og tegn fra datatyven",
+                List.of(
+                    new SortIntoBucketsContent.Bucket("boss-safe", "Trygge tegn", "Tegn som styrker tilliten.", "#d9fbe6"),
+                    new SortIntoBucketsContent.Bucket("boss-warn", "Faresignaler", "Triks datatyven bruker for a lure deg.", "#fee2e2")
+                ),
+                List.of(
+                    new SortIntoBucketsContent.Item("boss-1", "Tydelig avsender og kjent kilde", "boss-safe", "Da kan du sjekke hvem som star bak."),
+                    new SortIntoBucketsContent.Item("boss-2", "Lenke med rar nettadresse", "boss-warn", "Rare adresser leder ofte til falske sider."),
+                    new SortIntoBucketsContent.Item("boss-3", "Press om a handle innen fa minutter", "boss-warn", "Stress brukes for a hindre deg i a tenke."),
+                    new SortIntoBucketsContent.Item("boss-4", "Kontaktinfo og kjent betalingsmate", "boss-safe", "Kjent betaling gjor handelen lettere a kontrollere."),
+                    new SortIntoBucketsContent.Item("boss-5", "Bilde med rare hender og skjev tekst", "boss-warn", "Et tegn pa at bildet kan vaere KI-generert."),
+                    new SortIntoBucketsContent.Item("boss-6", "Rolig sprak som forklarer hva saken handler om", "boss-safe", "Rolig informasjon er lettere a kontrollere.")
+                )
+            ),
+            passwordStrengthTask(
+                "Datatyven har sett startpassordet ditt. Forbedre det sa det blir trygt.",
+                "Bra. Du gjorde passordet mye vanskeligere a gjette.",
+                "Bygg videre med flere tegn og bedre variasjon.",
+                "Forbedre passordet",
+                "Gjor startpassordet sterkt nok til a stoppe datatyven.",
+                "Behold litt av startpassordet, men gjor det lengre og sterkere.",
+                PasswordStrengthContent.Mode.IMPROVE,
+                "Skriv det forbedrede passordet her",
+                "skole2026",
+                14,
+                4,
+                List.of("123", "qwerty", "passord", "datatyv")
+            ),
+            multipleChoiceTask(
+                "Datatyven viser deg et bilde og en e-post sammen. Velg det smarteste forste steget.",
+                "Riktig. Sjekk avsenderen og se etter rare detaljer for du gjor noe annet.",
+                "Tenk pa hva som hjelper deg a kontrollere om noe er ekte.",
+                "Hva gjor du forst?",
+                "Datatyven kombinerer flere triks. Velg det smarteste forste steget.",
+                media(DETECTIVE_HUB_IMAGE),
+                "Illustrasjon av en elev som sjekker avsender og bilde",
+                List.of(
+                    new MultipleChoiceContent.Option("a", "Klikke pa lenken for a se hva som skjer"),
+                    new MultipleChoiceContent.Option("b", "Sjekke avsenderen og se etter rare detaljer i bildet"),
+                    new MultipleChoiceContent.Option("c", "Videresende meldingen til vennene dine")
+                ),
+                "b"
+            ),
+            xOrYTask(
+                "Velg den endelige strategien som stopper datatyven.",
+                "Riktig. Smart digital dommekraft er a stoppe opp, sjekke kilder og bruke sterke passord.",
+                "Tenk pa det du har laert i alle stasjonene: nyheter, bilder, e-post, passord, butikker og sosiale medier.",
+                "Hvordan stopper du datatyven?",
+                "Velg den beste strategien.",
+                media(SOCIAL_WARNING_IMAGE),
+                "Risikabel strategi som spiller datatyven i hendene",
+                "Strategi X",
+                "Klikk og del raskt",
+                "Du faller for press og sprer datatyvens innhold videre.",
+                media(DETECTIVE_HUB_IMAGE),
+                "Trygg strategi med sjekk og sterke passord",
+                "Strategi Y",
+                "Stopp, sjekk og bruk sterke passord",
+                "Du tar deg tid til a kontrollere kilder, lenker og bilder, og beskytter kontoene dine.",
+                XOrYContent.Choice.Y
+            )
+        )
+    );
   }
 
   private void seedStations() {
     upsertStation(NEWSSTAND_STATION_UID, "Nyhetskvartalet",
         "Laer a skille mellom ekte nyheter, clickbait og emosjonelt sprak.",
         media("seed/stations/newsstand.svg"), "#cfe9ff",
-        List.of(NEWSSTAND_EXERCISE_1_UID, NEWSSTAND_EXERCISE_2_UID));
+        List.of(NEWSSTAND_EXERCISE_1_UID, NEWSSTAND_EXERCISE_2_UID), false);
 
     upsertStation(PHOTOGRAPH_STATION_UID, "Fotografen",
         "Laer a kjenne igjen ekte, KI-genererte og manipulerte bilder.",
         media("seed/stations/photograph.svg"), "#5F5F5F",
-        List.of(PHOTOGRAPH_EXERCISE_1_UID, PHOTOGRAPH_EXERCISE_2_UID));
+        List.of(PHOTOGRAPH_EXERCISE_1_UID, PHOTOGRAPH_EXERCISE_2_UID), false);
 
     upsertStation(POSTOFFICE_STATION_UID, "Postkontoret",
         "Ov pa a avslore falske e-poster, mistenkelige lenker og rare avsendere.",
         media("seed/stations/postoffice.svg"), "#fde68a",
-        List.of(POSTOFFICE_EXERCISE_1_UID, POSTOFFICE_EXERCISE_2_UID));
+        List.of(POSTOFFICE_EXERCISE_1_UID, POSTOFFICE_EXERCISE_2_UID), false);
 
     upsertStation(PASSWORDBANK_STATION_UID, "Passordbanken",
         "Laer hva som gjor et passord sterkt, trygt og lett a huske.",
         media("seed/stations/passwordbank.svg"), "#1D5232",
-        List.of(PASSWORDBANK_EXERCISE_1_UID, PASSWORDBANK_EXERCISE_2_UID));
+        List.of(PASSWORDBANK_EXERCISE_1_UID, PASSWORDBANK_EXERCISE_2_UID), false);
 
     upsertStation(MARKETPLACE_STATION_UID, "Markedsplassen",
         "Laer a vurdere om nettsider og nettbutikker er trygge eller mistenkelige.",
         media("seed/stations/marketplace.svg"), "#962C2C",
-        List.of(MARKETPLACE_EXERCISE_1_UID, MARKETPLACE_EXERCISE_2_UID));
+        List.of(MARKETPLACE_EXERCISE_1_UID, MARKETPLACE_EXERCISE_2_UID), false);
 
     upsertStation(SOCIALMEDIA_STATION_UID, "Den sosiale moteplassen",
         "Laer a tenke for du deler, og a oppdage manipulering og gruppepress.",
         media("seed/stations/socialmedia.svg"), "#fbcfe8",
-        List.of(SOCIALMEDIA_EXERCISE_1_UID, SOCIALMEDIA_EXERCISE_2_UID));
+        List.of(SOCIALMEDIA_EXERCISE_1_UID, SOCIALMEDIA_EXERCISE_2_UID), false);
 
     upsertStation(DATACENTER_STATION_UID, "Datasenteret",
         "Finalebanen der du bruker det du har laert for a bekjempe datatyven.",
         media("seed/stations/datacenter.svg"), "#bfdbfe",
-        List.of());
+        List.of(DATACENTER_EXERCISE_UID), true);
   }
 
   private void seedWorlds() {
@@ -889,7 +1083,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   }
 
   private void upsertStation(UUID uid, String title, String description, String image,
-      String backgroundColor, List<UUID> exerciseUids) {
+      String backgroundColor, List<UUID> exerciseUids, boolean isBoss) {
     Station station = stationRepository.findByUid(uid).orElseGet(Station::new);
 
     station.setUid(uid);
@@ -898,6 +1092,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     station.setImage(image);
     station.setBackgroundColor(backgroundColor);
     station.setExerciseUids(new ArrayList<>(exerciseUids));
+    station.setBoss(isBoss);
 
     stationRepository.save(station);
   }

@@ -10,7 +10,8 @@ public record StationResponse(
     String description,
     String image,
     String backgroundColor,
-    List<UUID> exerciseUids
+    List<UUID> exerciseUids,
+    boolean isBoss
 ) {
   public static StationResponse from(Station station) {
     return new StationResponse(
@@ -19,7 +20,8 @@ public record StationResponse(
         station.getDescription(),
         station.getImage(),
         station.getBackgroundColor(),
-        station.getExerciseUids()
+        station.getExerciseUids(),
+        station.isBoss()
     );
   }
 }
