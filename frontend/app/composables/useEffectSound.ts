@@ -11,7 +11,16 @@ export const useEffectSound = (src: string) => {
   })
 
   return () => {
-    sound.value?.volume(effectsGain.value)
-    play()
+    if (sound.value) {
+      sound.value.volume(effectsGain.value)
+      play()
+      return
+    }
+    const stop = watch(sound, (next) => {
+      if (!next) return
+      next.volume(effectsGain.value)
+      play()
+      stop()
+    })
   }
 }

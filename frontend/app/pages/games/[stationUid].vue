@@ -470,7 +470,9 @@ const next = async () => {
     
     if (isExerciseComplete.value) {
       bossfightActive.value = false
-      playCelebration()
+      if (!showLevelupPopup.value) {
+        playCelebration()
+      }
     }
 
     showExerciseResultDialog.value = true
