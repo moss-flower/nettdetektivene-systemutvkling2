@@ -8,6 +8,7 @@ export interface GameConfettiController {
 }
 
 const gameConfettiKey: InjectionKey<GameConfettiController> = Symbol('game-confetti')
+const GAME_CONFETTI_CANVAS_ID = 'game-confetti-canvas'
 const GAME_CONFETTI_COLORS = [
   '#ff4d6d',
   '#ff8a00',
@@ -38,7 +39,10 @@ export const provideGameConfetti = () => {
 
   const startBurst = (options: VueConfettiOptions, durationMs: number) => {
     stop()
-    $confetti.start(options)
+    $confetti.start({
+      ...options,
+      canvasId: GAME_CONFETTI_CANVAS_ID,
+    })
     confettiTimeout = setTimeout(() => {
       $confetti.stop()
       confettiTimeout = null

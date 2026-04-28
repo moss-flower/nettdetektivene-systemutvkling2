@@ -48,7 +48,7 @@ if (!station) {
   })
 }
 
-const { celebrateCorrectAnswer, stop } = useGameConfetti()
+const { celebrateCorrectAnswer, celebrateLevelComplete, stop } = useGameConfetti()
 const { getMyProfile } = useStudentProfile()
 const completedExerciseUids = await useCompletedExerciseUids()
 const completionError = ref('')
@@ -446,6 +446,8 @@ const next = async () => {
         if (!completedExerciseUids.includes(activeExercise.uid)) {
           completedExerciseUids.push(activeExercise.uid)
         }
+
+        celebrateLevelComplete()
       } catch (error: any) {
         completionError.value =
           error?.data?.detail
