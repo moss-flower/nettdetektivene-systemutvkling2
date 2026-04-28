@@ -2,11 +2,11 @@
 import arrowLeft from "~/assets/ui-icons/arrow-left.png";
 import AvatarImage from "~/components/avatar/avatarImage.vue";
 import UiStudentHomeBackButton from "~/components/ui/UiStudentHomeBackButton.vue";
+import { DEFAULT_OPTIONS } from "~/composables/types/AvatarTypes";
 import { useAvatar } from "~/composables/useAvatar";
 import {
   DEFAULT_AVATAR_CONFIG,
   type AvatarConfig,
-  type AvatarOptions,
 } from "~/composables/types/AvatarTypes";
 
 type EditableField = keyof AvatarConfig;
@@ -17,20 +17,12 @@ type EditorSection = {
 };
 
 const sections: EditorSection[] = [
-  { key: "hairStyle", label: "Hair style" },
-  { key: "hairColor", label: "Hair color" },
-  { key: "outfit", label: "Outfit" },
-  { key: "eyeColor", label: "Eye color" },
   { key: "skinColor", label: "Skin tone" },
+  { key: "eyeColor", label: "Eye color" },
+  { key: "hairColor", label: "Hair color" },
+  { key: "hairStyle", label: "Hair style" },
+  { key: "outfit", label: "Outfit" },
 ];
-
-const defaultOptions: AvatarOptions = {
-  hairStyle: ["SHORT", "LONG"],
-  hairColor: ["BROWN", "BLACK", "BLONDE", "ORANGE"],
-  outfit: ["SHERLOCK", "NOIR"],
-  eyeColor: ["BROWN", "BLACK", "BLUE", "GREEN"],
-  skinColor: ["COLOR1", "COLOR2", "COLOR3", "COLOR4", "COLOR5", "COLOR6"],
-};
 
 const { getMyAvatar, updateMyAvatar, getAvatarOptions } = useAvatar();
 
@@ -40,7 +32,7 @@ const { data: avatarOptionsData } = await useAsyncData(
     try {
       return await getAvatarOptions();
     } catch {
-      return defaultOptions;
+      return DEFAULT_OPTIONS;
     }
   },
 );
@@ -67,13 +59,7 @@ const activeSection = ref<EditableField>("hairStyle");
 const isSaving = ref(false);
 const saveMessage = ref("");
 
-const optionMap = computed(() => ({
-  hairStyle: avatarOptionsData.value?.hairStyle ?? defaultOptions.hairStyle,
-  hairColor: avatarOptionsData.value?.hairColor ?? defaultOptions.hairColor,
-  outfit: avatarOptionsData.value?.outfit ?? defaultOptions.outfit,
-  eyeColor: avatarOptionsData.value?.eyeColor ?? defaultOptions.eyeColor,
-  skinColor: avatarOptionsData.value?.skinColor ?? defaultOptions.skinColor,
-}));
+const optionMap = computed(() => avatarOptionsData.value ?? DEFAULT_OPTIONS)
 
 const activeSectionLabel = computed(() => {
   return sections.find((section) => section.key === activeSection.value)?.label ?? "Avatar";
@@ -85,14 +71,11 @@ const hasChanges = computed(() => {
 });
 
 function cycleValue(field: EditableField, direction: -1 | 1) {
-  const options = optionMap.value[field];
-  const currentIndex = options.indexOf(avatar.value[field] as never);
-  const nextIndex = (currentIndex + direction + options.length) % options.length;
-
-  avatar.value = {
-    ...avatar.value,
-    [field]: options[nextIndex],
-  };
+  const options = optionMap.value[field] as string[]
+  const current = avatar.value[field] as string
+  const currentIndex = options.indexOf(current)
+  const nextIndex = (currentIndex + direction + options.length) % options.length
+  avatar.value = { ...avatar.value, [field]: options[nextIndex] }
 }
 
 function selectSection(field: EditableField) {
