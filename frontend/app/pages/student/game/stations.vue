@@ -76,17 +76,20 @@ const hasStations = computed(() => stationCards.value.length > 0);
     </header>
 
     <section v-if="hasStations" class="stationPath" aria-label="Stasjonsoversikt">
-      <div
-        v-for="(entry, index) in stationCards"
-        :key="entry.station.uid"
-        :class="['stationPath__node', `stationPath__node--${index % 2 === 0 ? 'left' : 'right'}`]"
-      >
-        <StationCard
-          :station="entry.station"
-          :is-unlocked="entry.isUnlocked"
-          :completed-exercises="entry.completedExercises"
+      <template v-for="(entry, index) in stationCards" :key="entry.station.uid">
+        <div :class="['stationPath__node', `stationPath__node--${index % 2 === 0 ? 'left' : 'right'}`]">
+          <StationCard
+            :station="entry.station"
+            :is-unlocked="entry.isUnlocked"
+            :completed-exercises="entry.completedExercises"
+          />
+        </div>
+        <div
+          v-if="index < stationCards.length - 1"
+          :class="['stationPath__trail', `stationPath__trail--${index % 2 === 0 ? 'right' : 'left'}`]"
+          aria-hidden="true"
         />
-      </div>
+      </template>
     </section>
 
     <section v-else class="emptyState">
@@ -136,11 +139,39 @@ const hasStations = computed(() => stationCards.value.length > 0);
 
 .stationPath {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .stationPath__node {
+  position: relative;
+  z-index: 1;
   width: min(100%, 18rem);
+}
+
+.stationPath__trail {
+  position: relative;
+  width: min(48%, 26rem);
+  height: clamp(3.5rem, 7vw, 5.5rem);
+  margin-block: calc(var(--space-2) * -1);
+  pointer-events: none;
+}
+
+.stationPath__trail::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-bottom: 0.45rem dotted rgba(230, 180, 96, 0.82);
+  filter: drop-shadow(0 0.18rem 0 rgba(44, 28, 18, 0.35));
+}
+
+.stationPath__trail--right {
+  justify-self: center;
+  transform: translateX(8%) rotate(9deg);
+}
+
+.stationPath__trail--left {
+  justify-self: center;
+  transform: translateX(-8%) rotate(-9deg);
 }
 
 .stationPath__node--left {
@@ -175,6 +206,22 @@ const hasStations = computed(() => stationCards.value.length > 0);
     justify-self: stretch;
     margin-left: 0;
     margin-right: 0;
+  }
+
+  .stationPath__trail {
+    justify-self: center;
+    width: 0;
+    height: var(--space-6);
+    margin-block: calc(var(--space-2) * -1);
+    transform: none;
+  }
+
+  .stationPath__trail::before {
+    left: 50%;
+    width: 0;
+    border-bottom: 0;
+    border-left: 0.45rem dotted rgba(230, 180, 96, 0.82);
+    transform: translateX(-50%);
   }
 }
 
