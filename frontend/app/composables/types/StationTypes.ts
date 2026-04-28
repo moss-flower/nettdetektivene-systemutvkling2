@@ -9,6 +9,7 @@ export type Station = {
   image: string;
   backgroundColor: string;
   exerciseUids: string[];
+  isBoss: boolean;
 };
 
 export type StationData = {
@@ -18,6 +19,7 @@ export type StationData = {
   image: string;
   backgroundColor?: string;
   exerciseUids?: string[];
+  isBoss?: boolean;
 };
 
 export type StationRequest = {
@@ -26,6 +28,7 @@ export type StationRequest = {
   image: string;
   backgroundColor: string | null;
   exerciseUids: string[];
+  isBoss: boolean;
 };
 
 export const mapStationFromResponse = (data: StationData): Station => ({
@@ -35,4 +38,5 @@ export const mapStationFromResponse = (data: StationData): Station => ({
   image: data.image,
   backgroundColor: data.backgroundColor ?? "#cfe9ff",
   exerciseUids: data.exerciseUids ?? [],
+  isBoss: data.isBoss ?? false,
 });
