@@ -16,7 +16,7 @@ const classroomId = computed(() => String(route.query.classroomId ?? ''));
 const studentId = computed(() => String(route.query.studentId ?? ''));
 
 const { data: classroom } = await useAsyncData(
-  'teacher-classroom-student-progress',
+  'teacher-classroom-selected-student-classroom',
   () => (classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : null),
   { watch: [classroomId] },
 );
