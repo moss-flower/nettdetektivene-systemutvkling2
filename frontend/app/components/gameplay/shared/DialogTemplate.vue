@@ -45,12 +45,15 @@ withDefaults(defineProps<{
 
 .dialogTemplatePanel {
   position: relative;
+  z-index: 1;
   width: min(100%, 32rem);
   display: grid;
   gap: 0.9rem;
   padding: 1.4rem;
   border-radius: 1.2rem;
-  background: var(--color-bg-surface);
+  overflow: hidden;
+  isolation: isolate;
+  background-color: var(--palette-white);
   box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
 }
 
