@@ -5,6 +5,10 @@ import type { AchievementResponse } from "~/composables/types/AchievementTypes";
 const props = defineProps<{
   medals: AchievementResponse[];
 }>();
+
+const emit = defineEmits<{
+  (e: "select", medal: AchievementResponse): void;
+}>();
 </script>
 
 <template>
@@ -13,6 +17,7 @@ const props = defineProps<{
       v-for="medal in props.medals"
       :key="medal.UUID"
       :medal="medal"
+      @select="emit('select', $event)"
     />
   </section>
 </template> 
