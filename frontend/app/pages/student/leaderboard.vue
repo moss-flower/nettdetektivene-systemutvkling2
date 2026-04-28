@@ -17,6 +17,11 @@ const orderedRankings = computed(() =>
   ),
 );
 const podiumRankings = computed(() => orderedRankings.value.slice(0, 3));
+const podiumDisplayRankings = computed(() => {
+  const [first, second, third] = podiumRankings.value;
+
+  return [second, first, third].filter((entry): entry is ClassroomLeaderboardEntry => Boolean(entry));
+});
 const rosterRankings = computed(() => orderedRankings.value.slice(3));
 const hasRankings = computed(() => orderedRankings.value.length > 0);
 
@@ -83,7 +88,7 @@ await loadRankingsPage(0);
     <!-- Top 3, hung plaques, center raised  -->
     <ol v-else class="podium" aria-label="Topp 3 klasser">
       <li
-        v-for="entry in podiumRankings"
+        v-for="entry in podiumDisplayRankings"
         :key="entry.classroomPublicUuid"
         class="podiumStep"
         :class="podiumClass(entry.rank)"
