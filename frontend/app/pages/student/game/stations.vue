@@ -42,6 +42,18 @@ const { data: stations } = await useAsyncData(
 
 const pageTitle = computed(() => world.value?.title || "Stasjonskart");
 
+type ConnectorPath = {
+  id: string;
+  d: string;
+};
+
+const stationPathElement = ref<HTMLElement | null>(null);
+const stationNodeElements = ref<HTMLElement[]>([]);
+const connectorPaths = ref<ConnectorPath[]>([]);
+const connectorCanvas = ref({ width: 0, height: 0 });
+
+let resizeObserver: ResizeObserver | null = null;
+
 const stationCards = computed(() => {
   const completedUids = completedExerciseUids.value ?? [];
   let previousStationCompleted = true;
@@ -63,6 +75,141 @@ const stationCards = computed(() => {
 
 const hasStations = computed(() => stationCards.value.length > 0);
 
+const registerStationNode = (element: Element | null, index: number) => {
+  if (element instanceof HTMLElement) {
+    stationNodeElements.value[index] = element;
+    return;
+  }
+
+  stationNodeElements.value.splice(index, 1);
+};
+
+const getStationAnchorRect = (node: HTMLElement) => {
+  const cardElement = node.firstElementChild;
+
+  if (cardElement instanceof HTMLElement) {
+    return cardElement.getBoundingClientRect();
+  }
+
+  return node.getBoundingClientRect();
+};
+
+const buildHorizontalConnector = (startRect: DOMRect, endRect: DOMRect, containerRect: DOMRect, index: number) => {
+  const shouldExitRight = endRect.left >= startRect.left;
+  const startX = shouldExitRight
+    ? startRect.right - containerRect.left - 12
+    : startRect.left - containerRect.left + 12;
+  const startY = startRect.top - containerRect.top + startRect.height * 0.68;
+  const endX = shouldExitRight
+    ? endRect.left - containerRect.left + 12
+    : endRect.right - containerRect.left - 12;
+  const endY = endRect.top - containerRect.top + endRect.height * 0.32;
+  const horizontalPull = Math.max(48, Math.abs(endX - startX) * 0.38);
+  const sway = index % 2 === 0 ? 26 : -26;
+  const pullDirection = shouldExitRight ? 1 : -1;
+
+  return `M ${startX} ${startY} C ${startX + horizontalPull * pullDirection} ${startY + sway}, ${endX - horizontalPull * pullDirection} ${endY - sway}, ${endX} ${endY}`;
+};
+
+const buildVerticalConnector = (startRect: DOMRect, endRect: DOMRect, containerRect: DOMRect, index: number) => {
+  const shouldExitBottom = endRect.top >= startRect.top;
+  const startX = startRect.left - containerRect.left + startRect.width * 0.68;
+  const startY = shouldExitBottom
+    ? startRect.bottom - containerRect.top - 8
+    : startRect.top - containerRect.top + 8;
+  const endX = endRect.left - containerRect.left + endRect.width * 0.32;
+  const endY = shouldExitBottom
+    ? endRect.top - containerRect.top + 8
+    : endRect.bottom - containerRect.top - 8;
+  const verticalPull = Math.max(28, Math.abs(endY - startY) * 0.35);
+  const sway = index % 2 === 0 ? 18 : -18;
+  const pullDirection = shouldExitBottom ? 1 : -1;
+
+  return `M ${startX} ${startY} C ${startX + sway} ${startY + verticalPull * pullDirection}, ${endX - sway} ${endY - verticalPull * pullDirection}, ${endX} ${endY}`;
+};
+
+const syncConnectors = () => {
+  const container = stationPathElement.value;
+
+  if (!container) {
+    connectorPaths.value = [];
+    return;
+  }
+
+  const nodes = stationNodeElements.value.filter((node): node is HTMLElement => node instanceof HTMLElement);
+
+  if (nodes.length < 2) {
+    connectorCanvas.value = {
+      width: container.clientWidth,
+      height: container.offsetHeight,
+    };
+    connectorPaths.value = [];
+    return;
+  }
+
+  const containerRect = container.getBoundingClientRect();
+  const isCompactLayout = window.matchMedia("(max-width: 800px)").matches;
+
+  connectorCanvas.value = {
+    width: container.clientWidth,
+    height: container.offsetHeight,
+  };
+
+  connectorPaths.value = nodes.slice(0, -1).map((node, index) => {
+    const nextNode = nodes[index + 1];
+    const nodeRect = getStationAnchorRect(node);
+    const nextNodeRect = getStationAnchorRect(nextNode);
+    const d = isCompactLayout
+      ? buildVerticalConnector(nodeRect, nextNodeRect, containerRect, index)
+      : buildHorizontalConnector(nodeRect, nextNodeRect, containerRect, index);
+
+    return {
+      id: `${stationCards.value[index]?.station.uid ?? index}-${stationCards.value[index + 1]?.station.uid ?? index + 1}`,
+      d,
+    };
+  });
+};
+
+const observeStationLayout = () => {
+  resizeObserver?.disconnect();
+
+  if (!stationPathElement.value || typeof ResizeObserver === "undefined") {
+    return;
+  }
+
+  resizeObserver = new ResizeObserver(() => {
+    syncConnectors();
+  });
+
+  resizeObserver.observe(stationPathElement.value);
+
+  stationNodeElements.value.forEach((node) => {
+    if (node instanceof HTMLElement) {
+      resizeObserver?.observe(node);
+    }
+  });
+};
+
+const refreshConnectors = async () => {
+  await nextTick();
+  syncConnectors();
+  observeStationLayout();
+};
+
+onMounted(() => {
+  refreshConnectors();
+  window.addEventListener("resize", syncConnectors);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", syncConnectors);
+  resizeObserver?.disconnect();
+});
+
+watch(stationCards, () => {
+  refreshConnectors();
+}, { flush: "post" });
+
 </script>
 
 <template>
@@ -75,20 +222,31 @@ const hasStations = computed(() => stationCards.value.length > 0);
       </p>
     </header>
 
-    <section v-if="hasStations" class="stationPath" aria-label="Stasjonsoversikt">
+    <section ref="stationPathElement" v-if="hasStations" class="stationPath" aria-label="Stasjonsoversikt">
+      <svg
+        class="stationPath__connectors"
+        :viewBox="`0 0 ${Math.max(connectorCanvas.width, 1)} ${Math.max(connectorCanvas.height, 1)}`"
+        :width="connectorCanvas.width"
+        :height="connectorCanvas.height"
+        aria-hidden="true"
+        preserveAspectRatio="none"
+      >
+        <g v-for="connector in connectorPaths" :key="connector.id">
+          <path :d="connector.d" class="stationPath__connectorGlow" />
+          <path :d="connector.d" class="stationPath__connectorStroke" />
+        </g>
+      </svg>
       <template v-for="(entry, index) in stationCards" :key="entry.station.uid">
-        <div :class="['stationPath__node', `stationPath__node--${index % 2 === 0 ? 'left' : 'right'}`]">
+        <div
+          :class="['stationPath__node', `stationPath__node--${index % 2 === 0 ? 'left' : 'right'}`]"
+          :ref="(element) => registerStationNode(element, index)"
+        >
           <StationCard
             :station="entry.station"
             :is-unlocked="entry.isUnlocked"
             :completed-exercises="entry.completedExercises"
           />
         </div>
-        <div
-          v-if="index < stationCards.length - 1"
-          :class="['stationPath__trail', `stationPath__trail--${index % 2 === 0 ? 'right' : 'left'}`]"
-          aria-hidden="true"
-        />
       </template>
     </section>
 
@@ -138,40 +296,41 @@ const hasStations = computed(() => stationCards.value.length > 0);
 }
 
 .stationPath {
+  position: relative;
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-5);
+  padding-block: var(--space-2);
+}
+
+.stationPath__connectors {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.stationPath__connectorGlow,
+.stationPath__connectorStroke {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stationPath__connectorGlow {
+  stroke: rgba(44, 28, 18, 0.28);
+  stroke-width: 1rem;
+}
+
+.stationPath__connectorStroke {
+  stroke: rgba(230, 180, 96, 0.9);
+  stroke-width: 0.45rem;
+  stroke-dasharray: 0.1 1rem;
 }
 
 .stationPath__node {
   position: relative;
   z-index: 1;
   width: min(100%, 18rem);
-}
-
-.stationPath__trail {
-  position: relative;
-  width: min(48%, 26rem);
-  height: clamp(3.5rem, 7vw, 5.5rem);
-  margin-block: calc(var(--space-2) * -1);
-  pointer-events: none;
-}
-
-.stationPath__trail::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-bottom: 0.45rem dotted rgba(230, 180, 96, 0.82);
-  filter: drop-shadow(0 0.18rem 0 rgba(44, 28, 18, 0.35));
-}
-
-.stationPath__trail--right {
-  justify-self: center;
-  transform: translateX(8%) rotate(9deg);
-}
-
-.stationPath__trail--left {
-  justify-self: center;
-  transform: translateX(-8%) rotate(-9deg);
 }
 
 .stationPath__node--left {
@@ -206,22 +365,6 @@ const hasStations = computed(() => stationCards.value.length > 0);
     justify-self: stretch;
     margin-left: 0;
     margin-right: 0;
-  }
-
-  .stationPath__trail {
-    justify-self: center;
-    width: 0;
-    height: var(--space-6);
-    margin-block: calc(var(--space-2) * -1);
-    transform: none;
-  }
-
-  .stationPath__trail::before {
-    left: 50%;
-    width: 0;
-    border-bottom: 0;
-    border-left: 0.45rem dotted rgba(230, 180, 96, 0.82);
-    transform: translateX(-50%);
   }
 }
 
