@@ -10,3 +10,10 @@ import BackgroundMusic from '~/components/audio/BackgroundMusic.vue'
     <BackgroundMusic />
   </ClientOnly>
 </template>
+
+<style>
+#confetti-canvas {
+  inset: 0;
+  z-index: 30;
+}
+</style>

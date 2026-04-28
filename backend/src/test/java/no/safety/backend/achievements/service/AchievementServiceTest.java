@@ -51,7 +51,6 @@ class AchievementServiceTest {
     stopAchievement.setDescription("Fullførte Passordbanken.");
     stopAchievement.setCategory(AchievementCategory.STOP);
     stopAchievement.setSource("Passordbanken");
-    stopAchievement.setImageUrl("/images/medals/password-bank.png");
     stopAchievement.setReward(null);
 
     specialAchievement = new Achievement();
@@ -61,7 +60,6 @@ class AchievementServiceTest {
     specialAchievement.setDescription("Beseiret hovedbossen i Datasenteret.");
     specialAchievement.setCategory(AchievementCategory.SPECIAL);
     specialAchievement.setSource("Datasenteret");
-    specialAchievement.setImageUrl("/images/medals/final-boss.png");
     specialAchievement.setReward("Spesialmedalje");
   }
 
@@ -145,7 +143,6 @@ class AchievementServiceTest {
     request.setDescription("Beskrivelse");
     request.setCategory(AchievementCategory.STOP);
     request.setSource("Testverden");
-    request.setImageUrl("/images/test.png");
     request.setReward("Test reward");
 
     Achievement savedAchievement = new Achievement();
@@ -155,7 +152,6 @@ class AchievementServiceTest {
     savedAchievement.setDescription(request.getDescription());
     savedAchievement.setCategory(request.getCategory());
     savedAchievement.setSource(request.getSource());
-    savedAchievement.setImageUrl(request.getImageUrl());
     savedAchievement.setReward(request.getReward());
 
     when(achievementRepository.save(any(Achievement.class))).thenReturn(savedAchievement);
@@ -171,7 +167,6 @@ class AchievementServiceTest {
     assertEquals("Beskrivelse", captured.getDescription());
     assertEquals(AchievementCategory.STOP, captured.getCategory());
     assertEquals("Testverden", captured.getSource());
-    assertEquals("/images/test.png", captured.getImageUrl());
     assertEquals("Test reward", captured.getReward());
 
     assertEquals(savedAchievement.getUUID(), result.getUUID());
@@ -188,7 +183,6 @@ class AchievementServiceTest {
     request.setDescription("Oppdatert beskrivelse");
     request.setCategory(AchievementCategory.SPECIAL);
     request.setSource("Oppdatert kilde");
-    request.setImageUrl("/images/updated.png");
     request.setReward("Ny reward");
 
     when(achievementRepository.findByUUID(uuid)).thenReturn(Optional.of(stopAchievement));
@@ -200,7 +194,6 @@ class AchievementServiceTest {
     assertEquals("Oppdatert beskrivelse", stopAchievement.getDescription());
     assertEquals(AchievementCategory.SPECIAL, stopAchievement.getCategory());
     assertEquals("Oppdatert kilde", stopAchievement.getSource());
-    assertEquals("/images/updated.png", stopAchievement.getImageUrl());
     assertEquals("Ny reward", stopAchievement.getReward());
 
     assertEquals(uuid, result.getUUID());

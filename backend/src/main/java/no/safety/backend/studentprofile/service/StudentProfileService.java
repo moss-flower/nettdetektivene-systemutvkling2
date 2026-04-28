@@ -4,8 +4,10 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.achievements.repository.UserAchievementRepository;
 import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
+import no.safety.backend.exception.NotFoundException;
 import no.safety.backend.studentprofile.dto.StudentProfileResponse;
 import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.repository.StudentUserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ public class StudentProfileService {
 
   private final CompletedExerciseRepository completedExerciseRepository;
   private final UserAchievementRepository userAchievementRepository;
+  private final StudentUserRepository studentUserRepository;
 
   @Transactional(readOnly = true)
   public StudentProfileResponse getProfile(StudentUser student) {
@@ -36,5 +39,13 @@ public class StudentProfileService {
         completedExercises,
         unlockedAchievements
     );
+  }
+
+  @Transactional(readOnly = true)
+  public StudentProfileResponse getProfile(UUID studentUid) {
+    StudentUser student = studentUserRepository.findByPublicUuid(studentUid)
+        .orElseThrow(() -> new NotFoundException("Student not found"));
+
+    return getProfile(student);
   }
 }
