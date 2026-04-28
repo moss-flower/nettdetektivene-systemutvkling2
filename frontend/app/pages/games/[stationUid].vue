@@ -114,7 +114,6 @@ if (isBossStation) {
 onBeforeUnmount(() => {
   bossfightActive.value = false
 })
-
 const bossMaxHp = 100
 const bossHp = computed(() => {
   if (tasks.length === 0) return bossMaxHp
