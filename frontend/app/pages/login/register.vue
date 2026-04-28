@@ -2,6 +2,9 @@
 import TextInput from "~/components/ui/TextInput.vue";
 import { routePaths } from "~/composables/utils/routePaths";
 import { useAuth } from "~/composables/useAuth";
+import { useThemeAttributes } from "~/composables/useThemeAttributes";
+
+useThemeAttributes("teacher");
 
 // Holds current form fields
 const username = ref("");
@@ -172,50 +175,55 @@ async function handleRegister() {
   align-items: center;
   justify-content: center;
   padding: var(--space-4);
-  background: var(--bg);
+  color: var(--color-text-primary);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.9)),
+    linear-gradient(180deg, var(--palette-gray-50) 0%, var(--palette-cream-100) 100%);
 }
 
 .registerCard {
   width: 100%;
   max-width: 28rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 1rem;
-  box-shadow: var(--shadow);
-  padding: 2rem;
+  background: var(--color-bg-surface);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-3);
+  box-shadow: var(--shadow-2);
+  padding: var(--space-8);
 }
 
 .title {
   font-size: 2rem;
   font-weight: 800;
-  margin-bottom: 0.25rem;
-  color: var(--text);
+  margin-bottom: var(--space-1);
+  color: var(--color-text-primary);
 }
 
 .subtitle {
-  color: var(--muted);
-  margin-bottom: 1.5rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-6);
 }
 
 .registerForm {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .registerButton {
-  margin-top: 0.5rem;
-  padding: 0.9rem 1rem;
-  border: none;
-  border-radius: var(--radius);
-  background: var(--primary);
-  color: white;
+  margin-top: var(--space-2);
+  padding: 0.9rem var(--space-4);
+  border: var(--border-width-hairline) solid var(--color-brand-primary);
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-primary);
+  color: var(--color-text-onDark);
   font-weight: 700;
   cursor: pointer;
+  transition: transform var(--transition-base), background var(--transition-base), border-color var(--transition-base);
 }
 
 .registerButton:hover:not(:disabled) {
-  background: var(--primary-hover);
+  transform: translateY(-1px);
+  background: var(--palette-navy-700);
 }
 
 .registerButton:disabled {
@@ -225,17 +233,27 @@ async function handleRegister() {
 
 .registerText {
   margin-top: 1.25rem;
-  color: var(--muted);
+  color: var(--color-text-secondary);
   text-align: center;
 }
 
 .loginLink {
   font-weight: 700;
-  color: var(--primary);
+  color: var(--color-brand-primary);
 }
 
 .formError {
-  color: var(--danger);
+  color: var(--color-semantic-error);
   font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .registerCard {
+    padding: var(--space-6);
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
 }
 </style>

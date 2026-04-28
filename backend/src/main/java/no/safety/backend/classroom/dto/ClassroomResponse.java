@@ -21,7 +21,7 @@ public record ClassroomResponse(
         .collect(Collectors.toList());
 
     List<MemberSummary> members = c.getMembers().stream()
-        .map(u -> new MemberSummary(u.getPublicUuid(), u.getUsername()))
+        .map(u -> new MemberSummary(u.getPublicUuid(), u.getUsername(), u.getScore()))
         .collect(Collectors.toList());
 
     return new ClassroomResponse(c.getUid(), c.getName(), c.getDescription(), c.getWorldUid(), c.getCode(), owners,

@@ -74,7 +74,7 @@ class ClassroomMockDataInitializerTest {
     ArgumentCaptor<StudentUser> studentCaptor = ArgumentCaptor.forClass(StudentUser.class);
     ArgumentCaptor<TeacherUser> teacherCaptor = ArgumentCaptor.forClass(TeacherUser.class);
 
-    verify(classroomRepository, times(3)).save(classroomCaptor.capture());
+    verify(classroomRepository, times(6)).save(classroomCaptor.capture());
     verify(teacherRepository, times(2)).save(teacherCaptor.capture());
     verify(studentRepository, atLeast(6)).save(studentCaptor.capture());
 
@@ -82,12 +82,12 @@ class ClassroomMockDataInitializerTest {
     List<TeacherUser> savedTeachers = teacherCaptor.getAllValues();
     List<StudentUser> savedStudents = studentCaptor.getAllValues();
 
-    Classroom klasse5b = savedClassrooms.stream()
-        .filter(classroom -> classroom.getUid().equals(ClassroomMockDataInitializer.KLASSE_5B_UID))
+    Classroom klasse3a = savedClassrooms.stream()
+        .filter(classroom -> classroom.getUid().equals(ClassroomMockDataInitializer.KLASSE_3A_UID))
         .findFirst()
         .orElseThrow();
-    Classroom nettdetektivene = savedClassrooms.stream()
-        .filter(classroom -> classroom.getUid().equals(ClassroomMockDataInitializer.NETTDETEKTIVENE_UID))
+    Classroom klasse7c = savedClassrooms.stream()
+        .filter(classroom -> classroom.getUid().equals(ClassroomMockDataInitializer.KLASSE_7C_UID))
         .findFirst()
         .orElseThrow();
     TeacherUser lisaLaerer = savedTeachers.stream()
@@ -97,13 +97,14 @@ class ClassroomMockDataInitializerTest {
     StudentUser adaElev = lastSavedStudent(savedStudents, "ada.elev@test.com");
     StudentUser emilElev = lastSavedStudent(savedStudents, "emil.elev@test.com");
 
-    assertThat(klasse5b.getCode()).isEqualTo(ClassroomMockDataInitializer.KLASSE_5B_CODE);
-    assertThat(klasse5b.getName()).isEqualTo("Klasse 5B");
-    assertThat(klasse5b.getWorldUid()).isEqualTo(GameplayMockDataInitializer.SCHOOLYARD_WORLD_UID);
-    assertThat(klasse5b.getOwners()).extracting(user -> user.getUsername()).containsExactly("Lisa Lærer");
+    assertThat(klasse3a.getCode()).isEqualTo(ClassroomMockDataInitializer.KLASSE_3A_CODE);
+    assertThat(klasse3a.getName()).isEqualTo("3-trinn A");
+    assertThat(klasse3a.getWorldUid()).isEqualTo(GameplayMockDataInitializer.SCHOOLYARD_WORLD_UID);
+    assertThat(klasse3a.getOwners()).extracting(user -> user.getUsername()).containsExactly("Lisa Lærer");
 
-    assertThat(nettdetektivene.getCode()).isEqualTo(ClassroomMockDataInitializer.NETTDETEKTIVENE_CODE);
-    assertThat(nettdetektivene.getOwners())
+    assertThat(klasse7c.getCode()).isEqualTo(ClassroomMockDataInitializer.KLASSE_7C_CODE);
+    assertThat(klasse7c.getWorldUid()).isEqualTo(GameplayMockDataInitializer.QUICKSTART_WORLD_UID);
+    assertThat(klasse7c.getOwners())
         .extracting(user -> user.getUsername())
         .containsExactlyInAnyOrder("Lisa Lærer", "Per Lærer");
 
@@ -112,9 +113,9 @@ class ClassroomMockDataInitializerTest {
     assertThat(lisaLaerer.getRoles()).extracting(role -> role.getType()).containsExactly(RoleType.ROLE_TEACHER);
 
     assertThat(adaElev.getClassroom()).isNotNull();
-    assertThat(adaElev.getClassroom().getUid()).isEqualTo(ClassroomMockDataInitializer.KLASSE_5B_UID);
+    assertThat(adaElev.getClassroom().getUid()).isEqualTo(ClassroomMockDataInitializer.KLASSE_3A_UID);
     assertThat(emilElev.getClassroom()).isNotNull();
-    assertThat(emilElev.getClassroom().getUid()).isEqualTo(ClassroomMockDataInitializer.NETTDETEKTIVENE_UID);
+    assertThat(emilElev.getClassroom().getUid()).isEqualTo(ClassroomMockDataInitializer.KLASSE_7A_UID);
     assertThat(emilElev.getRoles()).extracting(role -> role.getType()).containsExactly(RoleType.ROLE_STUDENT);
   }
 

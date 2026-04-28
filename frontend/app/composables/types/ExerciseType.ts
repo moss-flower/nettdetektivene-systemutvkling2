@@ -14,7 +14,7 @@ type BackendExercisePage = {
 };
 
 export type ExerciseData = {
-  publicId: string;
+  uid: string;
   title: string;
   difficultyName: string;
   description?: string;
@@ -49,7 +49,7 @@ export class Exercise {
 
   static fromBackend(data: ExerciseData): Exercise {
     return new Exercise({
-      uid: data.publicId,
+      uid: data.uid,
       title: data.title,
       entryName: data.difficultyName,
       description: data.description,
@@ -59,7 +59,7 @@ export class Exercise {
         return {
           ...taskBase,
           ...(content ?? {}),
-          id: String(task.internalId ?? `${data.publicId}-${index + 1}`),
+          id: String(task.internalId ?? `${data.uid}-${index + 1}`),
         };
       }) as ExerciseTask[],
     });

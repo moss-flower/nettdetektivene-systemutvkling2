@@ -30,76 +30,76 @@ const choose = (choice: XOrYChoice) => {
 </script>
 
 <template>
-  <div class="x-or-y-template">
+  <div class="orYTemplate">
     <header
       v-if="props.prompt?.title || props.prompt?.text"
-      class="x-or-y-template__header"
+      class="yTemplateHeader"
     >
-      <h2 v-if="props.prompt?.title" class="x-or-y-template__prompt-title">
+      <h2 v-if="props.prompt?.title" class="templatePromptTitle">
         {{ props.prompt.title }}
       </h2>
-      <p v-if="props.prompt?.text" class="x-or-y-template__prompt-text">
+      <p v-if="props.prompt?.text" class="templatePromptText">
         {{ props.prompt.text }}
       </p>
     </header>
 
     <article
-      class="x-or-y-template__option"
+      class="yTemplateOption"
       :class="{
-        'x-or-y-template__option--selected': props.selectedChoice === 'x',
-        'x-or-y-template__option--locked': props.disabled && props.selectedChoice !== 'x',
+        'templateOptionSelected': props.selectedChoice === 'x',
+        'templateOptionLocked': props.disabled && props.selectedChoice !== 'x',
       }"
     >
       <button
-        class="x-or-y-template__surface"
+        class="yTemplateSurface"
         type="button"
         :disabled="props.disabled"
         @click="choose('x')"
       >
-        <div class="x-or-y-template__card">
+        <div class="yTemplateCard">
           <img
             v-if="!props.hideImages"
             :src="props.options.x.imageUrl"
             :alt="props.options.x.imageAlt"
-            class="x-or-y-template__image"
+            class="yTemplateImage"
           >
-          <div class="x-or-y-template__content">
-            <p v-if="props.options.x.eyebrow" class="x-or-y-template__eyebrow">
+          <div class="yTemplateContent">
+            <p v-if="props.options.x.eyebrow" class="yTemplateEyebrow">
               {{ props.options.x.eyebrow }}
             </p>
-            <h2 class="x-or-y-template__title">{{ props.options.x.title }}</h2>
-            <p class="x-or-y-template__text">{{ props.options.x.text }}</p>
+            <h2 class="yTemplateTitle">{{ props.options.x.title }}</h2>
+            <p class="yTemplateText">{{ props.options.x.text }}</p>
           </div>
         </div>
       </button>
     </article>
 
     <article
-      class="x-or-y-template__option"
+      class="yTemplateOption"
       :class="{
-        'x-or-y-template__option--selected': props.selectedChoice === 'y',
-        'x-or-y-template__option--locked': props.disabled && props.selectedChoice !== 'y',
+        'templateOptionSelected': props.selectedChoice === 'y',
+        'templateOptionLocked': props.disabled && props.selectedChoice !== 'y',
       }"
     >
       <button
-        class="x-or-y-template__surface"
+        class="yTemplateSurface"
         type="button"
         :disabled="props.disabled"
         @click="choose('y')"
       >
-        <div class="x-or-y-template__card">
+        <div class="yTemplateCard">
           <img
             v-if="!props.hideImages"
             :src="props.options.y.imageUrl"
             :alt="props.options.y.imageAlt"
-            class="x-or-y-template__image"
+            class="yTemplateImage"
           >
-          <div class="x-or-y-template__content">
-            <p v-if="props.options.y.eyebrow" class="x-or-y-template__eyebrow">
+          <div class="yTemplateContent">
+            <p v-if="props.options.y.eyebrow" class="yTemplateEyebrow">
               {{ props.options.y.eyebrow }}
             </p>
-            <h2 class="x-or-y-template__title">{{ props.options.y.title }}</h2>
-            <p class="x-or-y-template__text">{{ props.options.y.text }}</p>
+            <h2 class="yTemplateTitle">{{ props.options.y.title }}</h2>
+            <p class="yTemplateText">{{ props.options.y.text }}</p>
           </div>
         </div>
       </button>
@@ -108,37 +108,37 @@ const choose = (choice: XOrYChoice) => {
 </template>
 
 <style scoped>
-.x-or-y-template {
+.orYTemplate {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(0.9rem, 2vw, 1.5rem);
+  gap: clamp(0.9rem, 2vw, var(--space-6));
   align-items: start;
 }
 
-.x-or-y-template__header {
+.yTemplateHeader {
   grid-column: 1 / -1;
   display: grid;
   gap: 0.35rem;
 }
 
-.x-or-y-template__prompt-title {
+.templatePromptTitle {
   font-size: clamp(1.15rem, 1.8vw, 1.45rem);
   line-height: 1.15;
-  color: #172033;
+  color: var(--color-text-primary);
 }
 
-.x-or-y-template__prompt-text {
+.templatePromptText {
   max-width: 48rem;
   font-size: 0.95rem;
   line-height: 1.45;
-  color: #4b5563;
+  color: var(--color-text-secondary);
 }
 
-.x-or-y-template__option {
+.yTemplateOption {
   display: grid;
 }
 
-.x-or-y-template__surface {
+.yTemplateSurface {
   width: 100%;
   padding: 0;
   border: 0;
@@ -146,86 +146,81 @@ const choose = (choice: XOrYChoice) => {
   text-align: left;
 }
 
-.x-or-y-template__surface:focus-visible {
+.yTemplateSurface:focus-visible {
   outline: none;
 }
 
-.x-or-y-template__card {
+.yTemplateCard {
   min-height: 100%;
   border-radius: 1.6rem;
   padding: 0.7rem;
-  background: #fffdfa;
-  border: 2px solid #d6d3ce;
+  background: var(--color-bg-surface);
+  border: var(--border-width-thin) solid var(--color-border-default);
   box-shadow: 0 14px 26px rgba(47, 39, 28, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: transform var(--transition-base) ease, box-shadow var(--transition-base) ease, border-color var(--transition-base) ease;
 }
 
-.x-or-y-template__surface:hover:not(:disabled) .x-or-y-template__card,
-.x-or-y-template__surface:focus-visible .x-or-y-template__card {
+.yTemplateSurface:hover:not(:disabled) .yTemplateCard,
+.yTemplateSurface:focus-visible .yTemplateCard {
   transform: translateY(-3px);
   border-color: #8ea7c4;
   box-shadow: 0 18px 32px rgba(47, 39, 28, 0.12);
 }
 
-.x-or-y-template__image {
+.yTemplateImage {
   width: 100%;
   aspect-ratio: 1.2 / 0.68;
   max-height: min(25vh, 13rem);
   object-fit: cover;
-  border-radius: 1rem 1rem 0 0;
+  border-radius: var(--radius-2) var(--radius-2) 0 0;
   display: block;
 }
 
-.x-or-y-template__content {
+.yTemplateContent {
   display: grid;
   gap: 0.55rem;
   padding: 0.8rem 0.85rem 0.95rem;
 }
 
-.x-or-y-template__eyebrow {
+.yTemplateEyebrow {
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
-.x-or-y-template__title {
+.yTemplateTitle {
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(1.35rem, 2.2vw, 2.2rem);
   line-height: 1;
-  color: #241713;
+  color: var(--palette-cork-900);
   text-wrap: balance;
 }
 
-.x-or-y-template__text {
+.yTemplateText {
   font-size: 0.94rem;
   line-height: 1.4;
   color: #47372e;
 }
 
-.x-or-y-template__option--selected .x-or-y-template__card {
+.templateOptionSelected .yTemplateCard {
   border-color: #4c7bb0;
   box-shadow: 0 18px 34px rgba(65, 104, 150, 0.18);
 }
 
-.x-or-y-template__option--locked {
+.templateOptionLocked {
   opacity: 0.82;
 }
 
-.x-or-y-template__surface:disabled {
+.yTemplateSurface:disabled {
   cursor: default;
 }
 
 @media (max-width: 900px) {
-  .x-or-y-template__title {
+  .yTemplateTitle {
     font-size: clamp(1.2rem, 4vw, 1.9rem);
   }
 }
 
-@media (max-width: 760px) {
-  .x-or-y-template {
-    grid-template-columns: 1fr;
-  }
-}
 </style>

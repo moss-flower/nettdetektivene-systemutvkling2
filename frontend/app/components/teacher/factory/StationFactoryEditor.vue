@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import draggable from "vuedraggable";
 import { routePaths } from "~/composables/utils/routePaths";
 import {
 	createStationDraft,
@@ -32,6 +33,15 @@ const availableExercises = ref<Exercise[]>([]);
 const knownExerciseMap = computed(() => new Map(availableExercises.value.map((exercise) => [exercise.uid, exercise])));
 const parsedSelection = computed(() => parseStationFactorySelectionKey(props.selectionKey));
 
+type StationExerciseCard = {
+	uid: string;
+	order: number;
+	title: string;
+	entryName: string;
+	description: string;
+	isKnown: boolean;
+};
+
 const payloadPreview = computed<StationFactoryPayload>(() => ({
 	title: draft.title.trim(),
 	description: draft.description.trim(),
@@ -62,6 +72,31 @@ const selectedExercises = computed(() => payloadPreview.value.exerciseUids.map((
 		isKnown: Boolean(exercise),
 	};
 }));
+
+const selectedExerciseCards = computed<StationExerciseCard[]>({
+	get: () => selectedExercises.value,
+	set: (exercises) => {
+		const nextExerciseUids = exercises
+			.map((exercise) => exercise.uid)
+			.filter((uid, index, uids) => uid && uids.indexOf(uid) === index);
+
+		draft.exerciseUids.splice(0, draft.exerciseUids.length, ...nextExerciseUids);
+	},
+});
+
+const availableExerciseCards = computed<StationExerciseCard[]>({
+	get: () => availableExercises.value
+		.filter((exercise) => !draft.exerciseUids.includes(exercise.uid))
+		.map((exercise) => ({
+			uid: exercise.uid,
+			order: 0,
+			title: exercise.title,
+			entryName: exercise.entryName,
+			description: exercise.description,
+			isKnown: true,
+		})),
+	set: () => {},
+});
 
 const editorTitle = computed(() => {
 	if (parsedSelection.value.kind === "existing") {
@@ -114,38 +149,7 @@ const loadSelection = async (selectionKey: string) => {
 	copyState.value = "idle";
 };
 
-const addExerciseUid = (uidValue: string) => {
-	const nextUid = uidValue.trim();
-
-	if (!nextUid || draft.exerciseUids.includes(nextUid)) {
-		return;
-	}
-
-	draft.exerciseUids.push(nextUid);
-};
-
-const removeExerciseUid = (uidToRemove: string) => {
-	const nextExerciseUids = draft.exerciseUids.filter((uid) => uid !== uidToRemove);
-	draft.exerciseUids.splice(0, draft.exerciseUids.length, ...nextExerciseUids);
-};
-
-const moveExercise = (index: number, direction: -1 | 1) => {
-	const targetIndex = index + direction;
-
-	if (targetIndex < 0 || targetIndex >= draft.exerciseUids.length) {
-		return;
-	}
-
-	const nextExerciseUids = [...draft.exerciseUids];
-	const [movedUid] = nextExerciseUids.splice(index, 1);
-
-	if (movedUid === undefined) {
-		return;
-	}
-
-	nextExerciseUids.splice(targetIndex, 0, movedUid);
-	draft.exerciseUids.splice(0, draft.exerciseUids.length, ...nextExerciseUids);
-};
+const cloneExerciseCard = (exercise: StationExerciseCard): StationExerciseCard => ({ ...exercise });
 
 const resetDraft = () => {
 	applyDraft(loadedSnapshot.value);
@@ -266,33 +270,31 @@ watch(payloadPreviewText, () => {
 							<h3>Oppgavesett i stasjonen</h3>
 						</div>
 
-						<div v-if="selectedExercises.length > 0" class="selectedList">
-							<article v-for="(exercise, index) in selectedExercises" :key="exercise.uid" class="selectedCard">
-								<div>
-									<p class="cardEyebrow">Plass {{ exercise.order }}</p>
-									<h3>{{ exercise.title }}</h3>
-									<span :class="['statusPill', { 'statusPill--manual': !exercise.isKnown }]">
-										{{ exercise.isKnown ? exercise.entryName : 'Ikke tilgjengelig' }}
-									</span>
-								</div>
+						<draggable
+							v-model="selectedExerciseCards"
+							class="selectedList"
+							item-key="uid"
+							:group="'station-exercises'"
+						>
+							<template #item="{ element: exercise }">
+								<article class="selectedCard">
+									<span class="dragHandle" aria-hidden="true">Grip</span>
+									<div>
+										<p class="cardEyebrow">Plass {{ exercise.order }}</p>
+										<h3>{{ exercise.title }}</h3>
+										<span :class="['statusPill', { 'statusPill--manual': !exercise.isKnown }]">
+											{{ exercise.isKnown ? exercise.entryName : 'Ikke tilgjengelig' }}
+										</span>
+									</div>
+								</article>
+							</template>
 
-								<div class="selectedActions">
-									<button type="button" class="ghostButton" :disabled="index === 0" @click="moveExercise(index, -1)">
-										&uarr;
-									</button>
-									<button type="button" class="ghostButton" :disabled="index === selectedExercises.length - 1" @click="moveExercise(index, 1)">
-										&darr;
-									</button>
-									<button type="button" class="deleteButton" @click="removeExerciseUid(exercise.uid)">
-										Fjern
-									</button>
-								</div>
-							</article>
-						</div>
-
-						<p v-else class="emptyState">
-							Ingen oppgavesett er lagt til i stasjonen ennå.
-						</p>
+							<template #footer>
+								<p v-if="selectedExercises.length === 0" class="emptyState dropHint">
+									Dra oppgavesett hit for å legge dem til i stasjonen.
+								</p>
+							</template>
+						</draggable>
 					</div>
 
 					<div class="exerciseColumn">
@@ -303,23 +305,30 @@ watch(payloadPreviewText, () => {
 							</button>
 						</div>
 
-						<div class="knownExercises knownExercises--columns">
-							<article v-for="exercise in availableExercises" :key="exercise.uid" class="knownExerciseCard">
-								<div>
-									<p class="cardEyebrow">{{ exercise.entryName }}</p>
-									<h3>{{ exercise.title }}</h3>
-								</div>
+						<draggable
+							v-model="availableExerciseCards"
+							class="knownExercises knownExercises--columns"
+							item-key="uid"
+							:group="{ name: 'station-exercises', pull: 'clone', put: true }"
+							:sort="false"
+							:clone="cloneExerciseCard"
+						>
+							<template #item="{ element: exercise }">
+								<article class="knownExerciseCard">
+									<span class="dragHandle" aria-hidden="true">Grip</span>
+									<div>
+										<p class="cardEyebrow">{{ exercise.entryName }}</p>
+										<h3>{{ exercise.title }}</h3>
+									</div>
+								</article>
+							</template>
 
-								<button
-									type="button"
-									class="ghostButton"
-									:disabled="draft.exerciseUids.includes(exercise.uid)"
-									@click="addExerciseUid(exercise.uid)"
-								>
-									{{ draft.exerciseUids.includes(exercise.uid) ? 'Lagt til' : '+ Bruk' }}
-								</button>
-							</article>
-						</div>
+							<template #footer>
+								<p v-if="availableExerciseCards.length === 0" class="emptyState dropHint">
+									Alle tilgjengelige oppgavesett er lagt til. Dra hit for å fjerne fra stasjonen.
+								</p>
+							</template>
+						</draggable>
 					</div>
 				</div>
 			</section>
@@ -413,8 +422,8 @@ watch(payloadPreviewText, () => {
 	border-radius: 1.2rem;
 	background:
 		linear-gradient(180deg, rgba(101, 240, 175, 0.08), rgba(101, 240, 175, 0)) top/100% 5rem no-repeat,
-		var(--surface);
-	box-shadow: var(--shadow);
+		var(--color-bg-surface);
+	box-shadow: var(--shadow-1);
 }
 
 .panelSection + .panelSection {
@@ -520,7 +529,7 @@ watch(payloadPreviewText, () => {
 .knownExerciseCard,
 .selectedCard {
 	display: flex;
-	justify-content: space-between;
+	justify-content: flex-start;
 	align-items: flex-start;
 	gap: 0.75rem;
 	padding: 1rem;
@@ -555,11 +564,39 @@ watch(payloadPreviewText, () => {
 .knownExercises,
 .selectedList {
 	margin-top: 1rem;
+	min-height: 5rem;
 }
 
 .knownExercises--columns,
 .selectedList {
 	margin-top: 0;
+}
+
+.dropHint {
+	padding: 1rem;
+	border: 1px dashed var(--border);
+	border-radius: 1rem;
+	background: rgba(101, 240, 175, 0.05);
+}
+
+.dragHandle {
+	display: inline-grid;
+	place-items: center;
+	min-width: 3.2rem;
+	padding: 0.45rem 0.6rem;
+	border: 1px dashed var(--border);
+	border-radius: 999px;
+	color: var(--primary);
+	font-size: 0.75rem;
+	font-weight: 800;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	cursor: grab;
+	user-select: none;
+}
+
+.dragHandle:active {
+	cursor: grabbing;
 }
 
 .statusPill {
@@ -585,7 +622,7 @@ watch(payloadPreviewText, () => {
 	border-radius: 999px;
 	padding: 0.75rem 1rem;
 	font-weight: 700;
-	transition: transform var(--transition), border-color var(--transition), background var(--transition);
+	transition: transform var(--transition-base), border-color var(--transition-base), background var(--transition-base);
 }
 
 .ghostButton,
@@ -597,7 +634,7 @@ watch(payloadPreviewText, () => {
 .primaryButton {
 	border-color: var(--primary);
 	background: var(--primary);
-	color: var(--bg);
+	color: var(--color-text-onDark);
 }
 
 .deleteButton {

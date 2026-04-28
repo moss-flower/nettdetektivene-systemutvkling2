@@ -2,7 +2,7 @@
 import { Station } from '~/composables/types/StationType'
 import { useStudentProfile } from '~/composables/useStudentProfile'
 import { useThemeAttributes } from '~/composables/useThemeAttributes'
-import { getStudentProgress } from '~/composables/utils/studentProgress'
+import { getLevel } from '~/composables/utils/studentProgress'
 
 provideGameConfetti()
 useThemeAttributes('game')
@@ -41,7 +41,7 @@ onMounted(async () => {
   try {
     const profile = await getMyProfile()
     profileName.value = profile.studentName
-    profileLevelText.value = `Level ${getStudentProgress(profile.totalXp).level}`
+    profileLevelText.value = `Level ${getLevel(profile.score).level}`
   } catch (error) {
     console.error('Error fetching student profile:', error)
   }
