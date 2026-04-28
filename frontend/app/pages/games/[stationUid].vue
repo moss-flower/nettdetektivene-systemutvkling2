@@ -30,7 +30,7 @@ import type {
   XOrYChoice,
   XOrYResult,
 } from '~/composables/types/TaskTypes'
-import { sampleAndShuffle } from '~/composables/utils/gameUtils'
+import {sampleAndShuffle} from '~/composables/utils/gameUtils'
 
 definePageMeta({
   layout: 'game',
@@ -38,11 +38,11 @@ definePageMeta({
 
 const route = useRoute()
 const requestedStationUid = Array.isArray(route.params.stationUid)
-  ? route.params.stationUid[0] ?? ''
-  : route.params.stationUid ?? ''
+    ? route.params.stationUid[0] ?? ''
+    : route.params.stationUid ?? ''
 const requestedExerciseUid = typeof route.query.exerciseUid === 'string'
-  ? route.query.exerciseUid
-  : ''
+    ? route.query.exerciseUid
+    : ''
 
 const { getStationByUid } = useStations()
 const station = await getStationByUid(requestedStationUid)
@@ -60,8 +60,8 @@ const completedExerciseUids = await useCompletedExerciseUids()
 const completionError = ref('')
 
 const activeExerciseUid = station.exerciseUids.includes(requestedExerciseUid)
-  ? requestedExerciseUid
-  : station.exerciseUids[0] ?? null
+    ? requestedExerciseUid
+    : station.exerciseUids[0] ?? null
 
 if (activeExerciseUid) {
   const activeExerciseIndex = station.exerciseUids.findIndex((exerciseUid) => exerciseUid === activeExerciseUid)
@@ -70,7 +70,7 @@ if (activeExerciseUid) {
   if (previousExerciseUid && !completedExerciseUids.includes(previousExerciseUid)) {
     await navigateTo({
       path: routePaths.studentExerciseDifficultySelect,
-      query: { uid: station.uid },
+      query: {uid: station.uid},
     })
   }
 }
@@ -80,7 +80,7 @@ const activeExercise = activeExerciseUid ? await Exercise.backendFetchExerciseBy
 if (!activeExercise) {
   await navigateTo({
     path: routePaths.studentExerciseDifficultySelect,
-    query: { uid: station.uid },
+    query: {uid: station.uid},
   })
 
   throw createError({
@@ -90,15 +90,19 @@ if (!activeExercise) {
 }
 
 const tasks = activeExercise
-  ? sampleAndShuffle(activeExercise.tasks, activeExercise.tasks.length)
-  : []
+    ? sampleAndShuffle(activeExercise.tasks, activeExercise.tasks.length)
+    : []
 const currentIndex = ref(0)
 const showExerciseResultDialog = ref(false)
 const showLevelupPopup = ref(false)
 const showTipsPopup = ref(false)
 const leveledUpTo = ref(1)
 const correctCount = ref(0)
-const answerState = ref<{ correct: boolean, choice: string, missingStartingPassword?: boolean } | null>(null)
+const answerState = ref<{
+  correct: boolean,
+  choice: string,
+  missingStartingPassword?: boolean
+} | null>(null)
 
 const isExerciseComplete = computed(() => tasks.length > 0 && correctCount.value === tasks.length)
 
@@ -203,7 +207,7 @@ const progressLabel = computed(() => {
 
 const exerciseSelectRoute = computed(() => ({
   path: routePaths.studentExerciseDifficultySelect,
-  query: { uid: station.uid },
+  query: {uid: station.uid},
 }))
 
 const bossVictoryRoute = computed(() => ({
@@ -211,7 +215,7 @@ const bossVictoryRoute = computed(() => ({
 }))
 
 const showBossVictoryDialog = computed(() =>
-  isBossStation && showExerciseResultDialog.value && isExerciseComplete.value
+    isBossStation && showExerciseResultDialog.value && isExerciseComplete.value
 )
 
 const exerciseHint = computed(() => activeExercise?.hint ?? '')
@@ -258,8 +262,8 @@ const feedbackText = computed(() => {
   }
 
   if (
-    currentTask.value.templateKind === 'password-strength'
-    && answerState.value.missingStartingPassword
+      currentTask.value.templateKind === 'password-strength'
+      && answerState.value.missingStartingPassword
   ) {
     return 'Det nye passordet ma inneholde startpassordet som en del av svaret ditt.'
   }
@@ -306,8 +310,8 @@ const autoSolveCurrentTask = () => {
     onAnsweredEmailHotspots({
       correct: true,
       selectedTargetIds: currentTask.value.targets
-        .filter((target) => target.isSuspicious)
-        .map((target) => target.id),
+      .filter((target) => target.isSuspicious)
+      .map((target) => target.id),
     })
     return
   }
@@ -330,8 +334,8 @@ const autoSolveCurrentTask = () => {
   }
 
   const fallbackPassword = currentTask.value.mode === 'improve'
-    ? `${currentTask.value.startingPassword ?? 'TryggStart'}!9X`
-    : 'TryggMaanebase!9X'
+      ? `${currentTask.value.startingPassword ?? 'TryggStart'}!9X`
+      : 'TryggMaanebase!9X'
 
   onAnsweredPasswordStrength({
     correct: true,
@@ -435,8 +439,8 @@ const next = async () => {
     currentIndex.value++
   } else {
     if (
-      isExerciseComplete.value
-      && activeExercise
+        isExerciseComplete.value
+        && activeExercise
     ) {
       let levelBeforeCompletion: number | null = null
 
@@ -469,10 +473,10 @@ const next = async () => {
         celebrateLevelComplete()
       } catch (error: any) {
         completionError.value =
-          error?.data?.detail
-          || error?.data?.message
-          || error?.statusMessage
-          || 'Kunne ikke lagre at oppgaven er fullført.'
+            error?.data?.detail
+            || error?.data?.message
+            || error?.statusMessage
+            || 'Kunne ikke lagre at oppgaven er fullført.'
       }
     }
     
@@ -492,125 +496,122 @@ const next = async () => {
 </script>
 
 <template>
-  <section class="station-page">
+  <section class="stationPage">
+    <div class="stationPageCard">
     <UiStudentHomeBackButton
       class="station-page__back-button"
       :to="exerciseSelectRoute"
       aria-label="Tilbake til oppgavevalg"
       label=""
     />
-
-    <header class="station-page__hero">
-      <div class="station-page__header">
-        <BossCharacter
-          v-if="isBossStation"
-          :hp="bossHp"
-          :max-hp="bossMaxHp"
-          :damaged="bossDamaged"
-          :images="bossTaskImages"
-        />
-        <div v-else class="station-page__meta">
-          <p class="station-page__eyebrow">{{ station.title }}</p>
-          <p class="station-page__progress-pill">{{ progressLabel }}</p>
+    
+      <header class="stationPageHero">
+        <div class="stationPageHeader">
+          <BossCharacter
+              v-if="isBossStation"
+              :hp="bossHp"
+              :max-hp="bossMaxHp"
+              :damaged="bossDamaged"
+              :images="bossTaskImages"
+          />
+          <div v-else class="stationPageMeta">
+            <p class="stationPageEyebrow">{{ station.title }}</p>
+            <p class="pageProgressPill">{{ progressLabel }}</p>
+          </div>
         </div>
+      </header>
+
+      <div class="stationPageBoard">
+        <XOrYTemplate
+            v-if="currentTask?.templateKind === 'x-or-y' && currentOptions"
+            :key="`${currentTask.id}-xory`"
+            :prompt="currentTask.prompt"
+            :options="currentOptions"
+            :correct-choice="currentTask.correctChoice"
+            :disabled="Boolean(answerState)"
+            :selected-choice="selectedChoice"
+            :hide-images="isBossStation"
+            @answered="onAnswered"
+        />
+        <MultipleChoiceTemplate
+            v-else-if="currentTask?.templateKind === 'multiple-choice'"
+            :key="`${currentTask.id}-three-option`"
+            :prompt="currentTask.prompt"
+            :options="currentTask.options"
+            :correct-choice="currentTask.correctChoice"
+            :disabled="Boolean(answerState)"
+            :selected-choice="selectedMultipleChoiceOption"
+            :hide-images="isBossStation"
+            @answered="onAnsweredMultipleChoice"
+        />
+        <EmailHotspotsTemplate
+            v-else-if="currentTask?.templateKind === 'email-hotspots'"
+            :key="`${currentTask.id}-email-hotspots`"
+            :prompt="currentTask.prompt"
+            :email="currentTask.email"
+            :targets="currentTask.targets"
+            :disabled="Boolean(answerState)"
+            @answered="onAnsweredEmailHotspots"
+        />
+        <SortIntoBucketsTemplate
+            v-else-if="currentTask?.templateKind === 'sort-into-buckets'"
+            :key="`${currentTask.id}-sort-into-buckets`"
+            :prompt="currentTask.prompt"
+            :items="currentTask.items"
+            :buckets="currentTask.buckets"
+            :unplaced-label="currentTask.unplacedLabel"
+            :disabled="Boolean(answerState)"
+            @answered="onAnsweredSortIntoBuckets"
+        />
+        <PasswordStrengthTemplate
+            v-else-if="currentTask?.templateKind === 'password-strength'"
+            :key="`${currentTask.id}-password-strength`"
+            :task="currentTask"
+            :disabled="Boolean(answerState)"
+            @answered="onAnsweredPasswordStrength"
+        />
       </div>
-    </header>
-
-    <div class="stationPageBoard">
-      <button class="tipsLetterButton" type="button" @click="showTipsPopup = true">
-        <img src="https://placehold.co/96x72?text=Brev" alt="" aria-hidden="true">
-        <span>Åpne tipsbrev</span>
-      </button>
-
-      <XOrYTemplate
-        v-if="currentTask?.templateKind === 'x-or-y' && currentOptions"
-        :key="`${currentTask.id}-xory`"
-        :prompt="currentTask.prompt"
-        :options="currentOptions"
-        :correct-choice="currentTask.correctChoice"
-        :disabled="Boolean(answerState)"
-        :selected-choice="selectedChoice"
-        :hide-images="isBossStation"
-        @answered="onAnswered"
-      />
-      <MultipleChoiceTemplate
-        v-else-if="currentTask?.templateKind === 'multiple-choice'"
-        :key="`${currentTask.id}-three-option`"
-        :prompt="currentTask.prompt"
-        :options="currentTask.options"
-        :correct-choice="currentTask.correctChoice"
-        :disabled="Boolean(answerState)"
-        :selected-choice="selectedMultipleChoiceOption"
-        :hide-images="isBossStation"
-        @answered="onAnsweredMultipleChoice"
-      />
-      <EmailHotspotsTemplate
-        v-else-if="currentTask?.templateKind === 'email-hotspots'"
-        :key="`${currentTask.id}-email-hotspots`"
-        :prompt="currentTask.prompt"
-        :email="currentTask.email"
-        :targets="currentTask.targets"
-        :disabled="Boolean(answerState)"
-        @answered="onAnsweredEmailHotspots"
-      />
-      <SortIntoBucketsTemplate
-        v-else-if="currentTask?.templateKind === 'sort-into-buckets'"
-        :key="`${currentTask.id}-sort-into-buckets`"
-        :prompt="currentTask.prompt"
-        :items="currentTask.items"
-        :buckets="currentTask.buckets"
-        :unplaced-label="currentTask.unplacedLabel"
-        :disabled="Boolean(answerState)"
-        @answered="onAnsweredSortIntoBuckets"
-      />
-      <PasswordStrengthTemplate
-        v-else-if="currentTask?.templateKind === 'password-strength'"
-        :key="`${currentTask.id}-password-strength`"
-        :task="currentTask"
-        :disabled="Boolean(answerState)"
-        @answered="onAnsweredPasswordStrength"
-      />
     </div>
 
     <div class="station-page__test-tools">
       <button
-        class="station-page__test-button"
-        type="button"
-        :disabled="!canAutoSolve"
-        @click="autoSolveCurrentTask"
+          class="station-page__test-button"
+          type="button"
+          :disabled="!canAutoSolve"
+          @click="autoSolveCurrentTask"
       >
         Autosolve
       </button>
     </div>
 
     <TaskResultDialog
-      v-if="showAnswerDialog && answerState"
-      :title="feedbackTitle"
-      :message="feedbackText"
-      :is-last="currentIndex >= tasks.length - 1"
-      :correct="answerState.correct"
-      :action-label="taskResultActionLabel"
-      @next="next"
+        v-if="showAnswerDialog && answerState"
+        :title="feedbackTitle"
+        :message="feedbackText"
+        :is-last="currentIndex >= tasks.length - 1"
+        :correct="answerState.correct"
+        :action-label="taskResultActionLabel"
+        @next="next"
     />
 
     <BossVictoryDialog
-      v-if="showBossVictoryDialog"
-      :to="bossVictoryRoute"
+        v-if="showBossVictoryDialog"
+        :to="bossVictoryRoute"
     />
 
     <ExerciseResultDialog
-      v-else-if="showExerciseResultDialog"
-      :correct-count="correctCount"
-      :total="tasks.length"
-      msg-completed="Øvelse fullført!"
-      msg-failed="Øvelse ikke fullført"
-      :to="exerciseSelectRoute"
+        v-else-if="showExerciseResultDialog"
+        :correct-count="correctCount"
+        :total="tasks.length"
+        msg-completed="Øvelse fullført!"
+        msg-failed="Øvelse ikke fullført"
+        :to="exerciseSelectRoute"
     />
 
     <LevelupPopup
-      v-if="showLevelupPopup"
-      :level="leveledUpTo"
-      @close="closeLevelupPopup"
+        v-if="showLevelupPopup"
+        :level="leveledUpTo"
+        @close="closeLevelupPopup"
     />
 
     <PopupTips
@@ -643,6 +644,12 @@ const next = async () => {
   display: grid;
   gap: var(--space-4);
   color: #111827;
+}
+
+.stationPageCard {
+  padding: clamp(0.8rem, 1.4vw, 1.1rem);
+  border-radius: 1.6rem;
+  background: #f5f5f4;
 }
 
 .stationPageHero {
@@ -702,7 +709,6 @@ const next = async () => {
   gap: 1rem;
   padding: clamp(0.8rem, 1.4vw, 1.1rem);
   border-radius: 1.6rem;
-  background: #f5f5f4;
 }
 
 .tipsLetterButton {
