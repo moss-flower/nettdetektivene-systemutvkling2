@@ -10,6 +10,7 @@ import {
 
 const route = useRoute();
 const showSavedPopup = ref(false);
+const returnTo = computed(() => typeof route.query.returnTo === "string" ? route.query.returnTo : "");
 const lockedExerciseUid = computed(() => {
 	const uid = route.query.uid;
 
@@ -20,16 +21,20 @@ const selectedExerciseKey = computed(() => lockedExerciseUid.value
 	: exerciseFactoryNewSelectionKey);
 
 const goBack = () => {
-	const returnTo = typeof route.query.returnTo === "string" ? route.query.returnTo : "";
-
-	void navigateTo(returnTo || routePaths.teacherFactoryStation);
+	void navigateTo(returnTo.value || routePaths.teacherFactoryStation);
 };
 
 const handleSelectionUpdated = async (selectionKey: string) => {
 	const selection = parseExerciseFactorySelectionKey(selectionKey);
 
 	if (selection.kind === "existing" && selection.uid !== lockedExerciseUid.value) {
-		await navigateTo(`${routePaths.teacherFactoryExercise}?uid=${selection.uid}`, { replace: true });
+		await navigateTo({
+			path: routePaths.teacherFactoryExercise,
+			query: {
+				uid: selection.uid,
+				...(returnTo.value ? { returnTo: returnTo.value } : {}),
+			},
+		}, { replace: true });
 	}
 };
 
@@ -38,7 +43,10 @@ const handleSaved = () => {
 };
 
 const handleDeleted = async () => {
-	await navigateTo(routePaths.teacherFactoryExercise, { replace: true });
+	await navigateTo({
+		path: routePaths.teacherFactoryExercise,
+		query: returnTo.value ? { returnTo: returnTo.value } : {},
+	}, { replace: true });
 };
 
 const closeSavedPopup = () => {

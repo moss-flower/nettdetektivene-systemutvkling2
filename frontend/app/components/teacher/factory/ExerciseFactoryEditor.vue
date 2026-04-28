@@ -351,6 +351,7 @@ watch(payloadPreviewText, () => {
 						<article class="taskCard">
 							<div class="taskCardHeader">
 								<div class="taskCardTitle">
+									<span class="orderBadge" :aria-label="`Plass ${taskIndex + 1}`">{{ taskIndex + 1 }}</span>
 									<span class="dragHandle" aria-hidden="true">Grip</span>
 									<div>
 										<p class="taskEyebrow">{{ taskLabel(task, taskIndex) }}</p>
@@ -694,6 +695,18 @@ watch(payloadPreviewText, () => {
 
 .dragHandle:active {
 	cursor: grabbing;
+}
+
+.orderBadge {
+	display: inline-grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border: var(--border-width-hairline) solid var(--color-brand-primary);
+	border-radius: var(--radius-pill);
+	background: rgba(101, 240, 175, 0.14);
+	color: var(--color-brand-primary);
+	font-weight: 900;
 }
 
 .removeDropZone {

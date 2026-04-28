@@ -10,6 +10,7 @@ import {
 
 const route = useRoute();
 const showSavedPopup = ref(false);
+const returnTo = computed(() => typeof route.query.returnTo === "string" ? route.query.returnTo : "");
 const lockedWorldUid = computed(() => {
 	const uid = route.query.uid;
 
@@ -20,16 +21,20 @@ const selectedWorldKey = computed(() => lockedWorldUid.value
 	: worldFactoryNewSelectionKey);
 
 const goBack = () => {
-	const returnTo = typeof route.query.returnTo === "string" ? route.query.returnTo : "";
-
-	void navigateTo(returnTo || routePaths.teacherOverview);
+	void navigateTo(returnTo.value || routePaths.teacherOverview);
 };
 
 const handleSelectionUpdated = async (selectionKey: string) => {
 	const selection = parseWorldFactorySelectionKey(selectionKey);
 
 	if (selection.kind === "existing" && selection.uid !== lockedWorldUid.value) {
-		await navigateTo(`${routePaths.teacherFactoryWorld}?uid=${selection.uid}`, { replace: true });
+		await navigateTo({
+			path: routePaths.teacherFactoryWorld,
+			query: {
+				uid: selection.uid,
+				...(returnTo.value ? { returnTo: returnTo.value } : {}),
+			},
+		}, { replace: true });
 	}
 };
 
@@ -38,7 +43,10 @@ const handleSaved = () => {
 };
 
 const handleDeleted = async () => {
-	await navigateTo(routePaths.teacherFactoryWorld, { replace: true });
+	await navigateTo({
+		path: routePaths.teacherFactoryWorld,
+		query: returnTo.value ? { returnTo: returnTo.value } : {},
+	}, { replace: true });
 };
 
 const closeSavedPopup = () => {

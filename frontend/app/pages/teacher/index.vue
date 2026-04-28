@@ -93,13 +93,13 @@ const handleLogout = async () => {
           <h3 class="advancedSubheading">Lag ny</h3>
 
           <div class="factoryActions factoryActionsGrid">
-            <NuxtLink class="buttonLink buttonLinkSecondary" :to="routePaths.teacherFactoryWorld">
+            <NuxtLink class="buttonLink buttonLinkSecondary" :to="{ path: routePaths.teacherFactoryWorld, query: { returnTo: routePaths.teacherOverview } }">
               + Stasjonskart
             </NuxtLink>
-            <NuxtLink class="buttonLink buttonLinkSecondary" :to="routePaths.teacherFactoryStation">
+            <NuxtLink class="buttonLink buttonLinkSecondary" :to="{ path: routePaths.teacherFactoryStation, query: { returnTo: routePaths.teacherOverview } }">
               + Stasjon
             </NuxtLink>
-            <NuxtLink class="buttonLink buttonLinkSecondary" :to="routePaths.teacherFactoryExercise">
+            <NuxtLink class="buttonLink buttonLinkSecondary" :to="{ path: routePaths.teacherFactoryExercise, query: { returnTo: routePaths.teacherOverview } }">
               + Oppgavesett
             </NuxtLink>
           </div>
