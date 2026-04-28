@@ -15,11 +15,12 @@ public interface ClassroomLeaderboardRepository extends JpaRepository<Classroom,
                 c.uid,
                 c.name,
                 COALESCE(SUM(m.score), 0L),
-                DENSE_RANK() OVER (ORDER BY SUM(m.score) DESC)
+                DENSE_RANK() OVER (ORDER BY COALESCE(SUM(m.score), 0L) DESC)
             )
             FROM Classroom c
             LEFT JOIN c.members m
             GROUP BY c.internalId, c.uid, c.name
+            ORDER BY COALESCE(SUM(m.score), 0L) DESC, c.name ASC
             """, countQuery = "SELECT COUNT(c) FROM Classroom c")
     Page<ClassroomLeaderboardResponse> findAllClassroomsTotalScores(@NonNull Pageable pageable);
 }

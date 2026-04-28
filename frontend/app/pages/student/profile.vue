@@ -14,6 +14,7 @@ const profileError = ref('')
 
 const progress = computed(() => getLevel(score.value))
 const progressWidth = computed(() => `${progress.value.progressPercent}%`)
+const progressPercentDisplay = computed(() => Math.floor(progress.value.progressPercent))
 
 onMounted(async () => {
   isLoading.value = true
@@ -57,7 +58,7 @@ onMounted(async () => {
 
         <div class="idCard__xpRow">
           <span class="idCard__xpText">{{ totalXp }} / {{ progress.nextLevelXp }} XP</span>
-          <span class="idCard__xpPercent">{{ progress.progressPercent }}%</span>
+          <span class="idCard__xpPercent">{{ progressPercentDisplay }}%</span>
         </div>
         <div class="idCard__progressBar" role="progressbar"
              :aria-valuenow="progress.progressPercent" aria-valuemin="0" aria-valuemax="100">
