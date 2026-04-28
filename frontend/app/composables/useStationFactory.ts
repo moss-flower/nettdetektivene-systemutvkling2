@@ -1,6 +1,7 @@
 import { createDraftId } from "~/composables/useExerciseFactory";
 import { Exercise } from "~/composables/types/ExerciseType";
-import { Station } from "~/composables/types/StationType";
+import type { Station, StationRequest } from "~/composables/types/StationTypes";
+import { useStations } from "~/composables/useStations";
 
 export type StationFactoryPayload = {
 	title: string;
@@ -9,13 +10,7 @@ export type StationFactoryPayload = {
 	exerciseUids: Exercise["uid"][];
 };
 
-type BackendStationRequestPayload = {
-	title: string;
-	description: string;
-	image: string;
-	backgroundColor: string | null;
-	exerciseUids: Exercise["uid"][];
-};
+type BackendStationRequestPayload = StationRequest;
 
 export type StationFactoryStoredRecord = {
 	localId: string;
@@ -360,7 +355,10 @@ export const getStationFactorySelectionOptionsFromStations = (
 	return [...existingOptions, ...draftOptions];
 };
 
-export const fetchAllStationFactoryStations = () => Station.backendFetchAllStations();
+export const fetchAllStationFactoryStations = () => {
+	const { getAllStations } = useStations();
+	return getAllStations();
+};
 
 export const loadStationFactoryPayload = async (selectionKey: string): Promise<{
 	payload: StationFactoryPayload;
@@ -370,6 +368,7 @@ export const loadStationFactoryPayload = async (selectionKey: string): Promise<{
 	const store = readStationFactoryStore();
 
 	if (selection.kind === "existing") {
+		const { getStationByUid } = useStations();
 		const override = store.overrides[selection.uid] ?? null;
 
 		if (override) {
@@ -379,7 +378,7 @@ export const loadStationFactoryPayload = async (selectionKey: string): Promise<{
 			};
 		}
 
-		const backendStation = await Station.backendFetchStationByUid(selection.uid);
+		const backendStation = await getStationByUid(selection.uid);
 
 		return {
 			payload: createStationDraft({
@@ -428,16 +427,13 @@ export const saveStationFactoryPayload = async (
 ): Promise<{ selectionKey: string; payload: StationFactoryPayload }> => {
 	const selection = parseStationFactorySelectionKey(selectionKey);
 	const requestBody = mapStationToBackendRequest(payload);
-	const { $api } = useNuxtApp();
+	const { createStation, getStationByUid, updateStation } = useStations();
 
 	if (selection.kind === "existing") {
-		await $api<Station>(`/stations/${selection.uid}`, {
-			method: "PUT",
-			body: requestBody,
-		});
+		await updateStation(selection.uid, requestBody);
 
 		clearStationFactoryOverride(selection.uid);
-		const station = await Station.backendFetchStationByUid(selection.uid);
+		const station = await getStationByUid(selection.uid);
 
 		return {
 			selectionKey: makeStationFactoryExistingSelectionKey(selection.uid),
@@ -445,10 +441,7 @@ export const saveStationFactoryPayload = async (
 		};
 	}
 
-	const createdStation = await $api<Station>("/stations", {
-		method: "POST",
-		body: requestBody,
-	});
+	const createdStation = await createStation(requestBody);
 
 	if (selection.kind === "draft") {
 		removeStationFactoryDraft(selection.localId);
@@ -463,11 +456,8 @@ export const saveStationFactoryPayload = async (
 export const saveStationFactoryPayloadAsNew = async (
 	payload: StationFactoryPayload,
 ): Promise<{ selectionKey: string; payload: StationFactoryPayload }> => {
-	const { $api } = useNuxtApp();
-  const createdStation = await $api<Station>("/stations", {
-		method: "POST",
-		body: mapStationToBackendRequest(payload),
-	});
+	const { createStation } = useStations();
+	const createdStation = await createStation(mapStationToBackendRequest(payload));
 
 	return {
 		selectionKey: makeStationFactoryExistingSelectionKey(createdStation.uid),
@@ -479,11 +469,9 @@ export const deleteStationFactorySelection = async (selectionKey: string) => {
 	const selection = parseStationFactorySelectionKey(selectionKey);
 
 	if (selection.kind === "existing") {
-		const { $api } = useNuxtApp();
+		const { deleteStation } = useStations();
 
-		await $api(`/stations/${selection.uid}`, {
-			method: "DELETE",
-		});
+		await deleteStation(selection.uid);
 
 		clearStationFactoryOverride(selection.uid);
 		return;

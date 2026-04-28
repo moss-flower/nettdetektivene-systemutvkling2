@@ -10,8 +10,8 @@ import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
 import { markExerciseCompleted, useCompletedExerciseUids } from '~/composables/utils/gameProgress'
 import { routePaths } from '~/composables/utils/routePaths'
 import { Exercise } from '~/composables/types/ExerciseType'
-import { Station } from '~/composables/types/StationType'
 import { useStudentProfile } from '~/composables/useStudentProfile'
+import { useStations } from '~/composables/useStations'
 import { getLevel } from '~/composables/utils/studentProgress'
 
 import type {
@@ -37,7 +37,8 @@ const requestedExerciseUid = typeof route.query.exerciseUid === 'string'
   ? route.query.exerciseUid
   : ''
 
-const station = await Station.backendFetchStationByUid(requestedStationUid)
+const { getStationByUid } = useStations()
+const station = await getStationByUid(requestedStationUid)
 
 if (!station) {
   throw createError({

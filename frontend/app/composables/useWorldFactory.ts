@@ -1,5 +1,5 @@
 import { createDraftId } from "~/composables/useExerciseFactory";
-import { Station } from "~/composables/types/StationType";
+import type { Station } from "~/composables/types/StationTypes";
 import { World } from "~/composables/types/WorldTypes";
 
 export type WorldFactoryPayload = {
