@@ -9,7 +9,6 @@ import {
 } from "~/composables/useExerciseFactory";
 
 const route = useRoute();
-const router = useRouter();
 const showSavedPopup = ref(false);
 const lockedExerciseUid = computed(() => {
 	const uid = route.query.uid;
@@ -21,12 +20,9 @@ const selectedExerciseKey = computed(() => lockedExerciseUid.value
 	: exerciseFactoryNewSelectionKey);
 
 const goBack = () => {
-	if (import.meta.client && window.history.length > 1) {
-		router.back();
-		return;
-	}
+	const returnTo = typeof route.query.returnTo === "string" ? route.query.returnTo : "";
 
-	void navigateTo(routePaths.teacherOverview);
+	void navigateTo(returnTo || routePaths.teacherFactoryStation);
 };
 
 const handleSelectionUpdated = async (selectionKey: string) => {

@@ -84,30 +84,28 @@ const handleLogout = async () => {
 		</div>
 
       <article class="panel panelHighlight managementPanel">
-        <h2>Avanserte funksjoner ↓</h2>
-        <p>Lag nye ressurser som kan brukes i klasserom og stasjonskart.</p>
+        <details class="advancedDetails">
+          <summary class="advancedSummary">
+            <h2>Avanserte funksjoner</h2>
+          </summary>
+          <p>Lag nye ressurser som kan brukes i klasserom og stasjonskart.</p>
 
-        <h3 class="advancedSubheading">Lag ny</h3>
+          <h3 class="advancedSubheading">Lag ny</h3>
 
-        <div class="factoryActions factoryActionsGrid">
-          <NuxtLink class="buttonLink buttonLinkSecondary" :to="routePaths.teacherFactoryWorld">
-            + Stasjonskart
-          </NuxtLink>
-          <NuxtLink class="buttonLink buttonLinkSecondary" :to="routePaths.teacherFactoryStation">
-            + Stasjon
-          </NuxtLink>
-          <NuxtLink class="buttonLink buttonLinkSecondary" :to="routePaths.teacherFactoryExercise">
-            + Oppgavesett
-          </NuxtLink>
-        </div>
+          <div class="factoryActions factoryActionsGrid">
+            <NuxtLink class="buttonLink buttonLinkSecondary" :to="routePaths.teacherFactoryWorld">
+              + Stasjonskart
+            </NuxtLink>
+            <NuxtLink class="buttonLink buttonLinkSecondary" :to="routePaths.teacherFactoryStation">
+              + Stasjon
+            </NuxtLink>
+            <NuxtLink class="buttonLink buttonLinkSecondary" :to="routePaths.teacherFactoryExercise">
+              + Oppgavesett
+            </NuxtLink>
+          </div>
+        </details>
       </article>
 
-        <article class="panel mysteryPanel">
-          <h2>Ukens mysterium</h2>
-          <button type="button" class="buttonLink buttonLinkSecondary mysteryButton">
-            Placeholder
-          </button>
-        </article>
       </div>
     </div>
   </section>
@@ -350,8 +348,17 @@ h2 {
   grid-column: 2;
 }
 
-.mysteryPanel {
-  grid-column: 2;
+.advancedDetails {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.advancedSummary {
+  cursor: pointer;
+}
+
+.advancedSummary h2 {
+  display: inline;
 }
 
 .factoryActions {
@@ -402,11 +409,6 @@ h2 {
   min-height: 3.5rem;
 }
 
-.mysteryButton {
-  margin-top: 0.9rem;
-  width: 100%;
-}
-
 @media (max-width: 900px) {
   .dashboardGrid {
     grid-template-columns: 1fr;
@@ -422,10 +424,6 @@ h2 {
 
   .factoryActionsGrid {
     grid-template-columns: 1fr;
-  }
-
-  .mysteryPanel {
-    grid-column: auto;
   }
 }
 
