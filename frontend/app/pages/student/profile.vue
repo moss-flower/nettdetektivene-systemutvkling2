@@ -2,7 +2,6 @@
 import { routePaths } from '~/composables/utils/routePaths'
 import { useStudentProfile } from '~/composables/useStudentProfile'
 import { getLevel } from '~/composables/utils/studentProgress'
-import UiStudentHomeBackButton from "~/components/ui/UiStudentHomeBackButton.vue";
 
 const { getMyProfile } = useStudentProfile()
 
@@ -34,7 +33,6 @@ onMounted(async () => {
 <template>
   <section class="profilePage">
     <header class="pageHeader">
-      <UiStudentHomeBackButton class="backLink" label="Tilbake" />
       <p v-if="isLoading" class="statusText">Laster profil...</p>
       <p v-if="profileError" class="errorText">{{ profileError }}</p>
     </header>

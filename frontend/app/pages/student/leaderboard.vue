@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import UiStudentHomeBackButton from "~/components/ui/UiStudentHomeBackButton.vue";
 </script>
 <template>
   <section class="leaderboardPage">
     <header class="pageHeader">
-      <UiStudentHomeBackButton class="backLink" />
       <p class="eyebrow">Detektivbyrået</p>
       <h1>leaderboard</h1>
       <p class="subtitle">Hvilken klasse leder etterforskningen?</p>
@@ -125,12 +123,6 @@ import UiStudentHomeBackButton from "~/components/ui/UiStudentHomeBackButton.vue
   display: grid;
   gap: var(--space-2);
   justify-items: start;
-}
-
-.backLink {
-  margin-bottom: var(--space-3);
-  /* default UiStudentHomeBackButton variant (white pill), reads on wood.
-     DO NOT pass variant="onLight"; variant is for light surfaces like notepad */
 }
 
 .eyebrow {

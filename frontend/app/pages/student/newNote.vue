@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { routePaths } from "~/composables/utils/routePaths";
-import UiStudentHomeBackButton from "~/components/ui/UiStudentHomeBackButton.vue";
 import { useStations } from "~/composables/useStations";
 import { useNotepad } from "~/composables/useNotepad";
 
@@ -67,7 +66,6 @@ async function handleSubmit() {
 <template>
   <section class="newNotePage">
     <header class="newNoteHeader">
-      <UiStudentHomeBackButton class="backButton" />
       <p class="eyebrow">Notepad</p>
       <h1>Create New Note</h1>
       <p class="intro">

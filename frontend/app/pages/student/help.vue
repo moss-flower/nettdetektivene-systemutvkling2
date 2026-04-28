@@ -13,7 +13,6 @@ const replayHelp = () => {
 <template>
   <section class="student-help">
     <header class="student-help__header">
-      <UiStudentHomeBackButton class="student-help__back" />
       <p class="student-help__eyebrow">Hjelp</p>
       <h2>Hjelpemeldinger for elev</h2>
       <p class="student-help__intro">
