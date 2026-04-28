@@ -9,12 +9,15 @@ import SortIntoBucketsTemplate from '~/components/gameplay/templates/SortIntoBuc
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoiceTemplate.vue'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
-import {markExerciseCompleted, useCompletedExerciseUids} from '~/composables/utils/gameProgress'
-import {routePaths} from '~/composables/utils/routePaths'
-import {Exercise} from '~/composables/types/ExerciseType'
-import {Station} from '~/composables/types/StationType'
-import {useStudentProfile} from '~/composables/useStudentProfile'
-import {getLevel} from '~/composables/utils/studentProgress'
+import { markExerciseCompleted, useCompletedExerciseUids } from '~/composables/utils/gameProgress'
+import { routePaths } from '~/composables/utils/routePaths'
+import { Exercise } from '~/composables/types/ExerciseType'
+import { Station } from '~/composables/types/StationType'
+import { useAudioSettings } from '~/composables/useAudioSettings'
+import { useEffectSound } from '~/composables/useEffectSound'
+import celebrationSfx from '~/assets/sound/celebration-sfx.mp3'
+import { useStudentProfile } from '~/composables/useStudentProfile'
+import { getLevel } from '~/composables/utils/studentProgress'
 
 import type {
   EmailHotspotResult,
@@ -100,6 +103,16 @@ const answerState = ref<{
 const isExerciseComplete = computed(() => tasks.length > 0 && correctCount.value === tasks.length)
 
 const isBossStation = station.isBoss
+const { bossfightActive } = useAudioSettings()
+const playCelebration = useEffectSound(celebrationSfx)
+
+if (isBossStation) {
+  bossfightActive.value = true
+}
+
+onBeforeUnmount(() => {
+  bossfightActive.value = false
+})
 const bossMaxHp = 100
 const bossHp = computed(() => {
   if (tasks.length === 0) return bossMaxHp
@@ -458,7 +471,15 @@ const next = async () => {
             || 'Kunne ikke lagre at oppgaven er fullført.'
       }
     }
+    
+    if (isExerciseComplete.value) {
+      bossfightActive.value = false
+      if (!showLevelupPopup.value) {
+        playCelebration()
+      }
+    }
 
+    showExerciseResultDialog.value = true
     if (!showLevelupPopup.value) {
       showExerciseResultDialog.value = true
     }

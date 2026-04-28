@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import datatyvenSprite from '~/assets/images/datatyven.png'
-import {useSound} from '@vueuse/sound'
 import damageSound from '~/assets/sound/ow.wav'
+import { useEffectSound } from '~/composables/useEffectSound'
 
 type BossTaskImage = {
   src: string
@@ -26,13 +26,13 @@ const hpPercent = computed(() => {
 const defeated = computed(() => props.hp <= 0)
 
 const showBubble = ref(false)
-const {play} = useSound(damageSound, {volume: 1})
+const playDamageSound = useEffectSound(damageSound)
 let bubbleTimeout: ReturnType<typeof setTimeout> | null = null
 
 watch(() => props.damaged, (next) => {
   if (!next) return
   if (bubbleTimeout) clearTimeout(bubbleTimeout)
-  play()
+  playDamageSound()
   showBubble.value = true
   bubbleTimeout = setTimeout(() => {
     showBubble.value = false

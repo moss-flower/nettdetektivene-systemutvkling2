@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import UiStudentHomeBackButton from "~/components/ui/UiStudentHomeBackButton.vue";
+import {useAudioSettings} from "~/composables/useAudioSettings";
 
-const musicVolume = ref(65)
-const effectsVolume = ref(80)
+const { musicVolume, effectsVolume } = useAudioSettings()
 
 const musicLabel = computed(() => `${musicVolume.value}%`)
 const effectsLabel = computed(() => `${effectsVolume.value}%`)

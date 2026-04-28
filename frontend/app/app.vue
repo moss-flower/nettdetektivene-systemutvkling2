@@ -1,3 +1,12 @@
+<script setup lang="ts">
+import BackgroundMusic from '~/components/audio/BackgroundMusic.vue'
+</script>
+
 <template>
-  <NuxtPage />
+  <NuxtLayout>
+    <NuxtPage />
+  </NuxtLayout>
+  <ClientOnly>
+    <BackgroundMusic />
+  </ClientOnly>
 </template>
