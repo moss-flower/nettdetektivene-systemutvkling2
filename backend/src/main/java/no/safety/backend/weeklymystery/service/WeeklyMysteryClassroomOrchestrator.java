@@ -32,7 +32,6 @@ public class WeeklyMysteryClassroomOrchestrator {
     private final ClassroomService classroomService;
     private final ClassroomRepository classroomRepository;
     private final UserService userService;
-    private final ClassroomWeeklyMysteryRepository classroomWeeklyMysteryRepository;
 
     public void updateWeeklyMysteryForClassroom(UUID classroomPublicId,
                                                 UUID weeklyMysteryPublicId,
@@ -61,17 +60,5 @@ public class WeeklyMysteryClassroomOrchestrator {
         classroomService.updateWeeklyMystery(classroom, prompt);
         weeklyMysteryService.updateWeeklyMystery(classroom, prompt);
     }
-
-    public List<WeeklyMysteryPromptResponse> getWeeklyMysteryHistory(UUID classroomPublicId) {
-        Long classroomId = classroomService.getFullClassroom(classroomPublicId).getInternalId();
-        List<ClassroomWeeklyMystery> mysteries =
-                classroomWeeklyMysteryRepository.findByClassroom_InternalIdOrderByAssignedDateDesc(classroomId);
-        List<WeeklyMysteryPromptResponse> responses = new ArrayList<>();
-        for (ClassroomWeeklyMystery mystery : mysteries) {
-            responses.add(WeeklyMysteryPromptResponse.fromEntity(mystery.getWeeklyMysteryPrompt()));
-        }
-        return responses;
-    }
-
     
 }

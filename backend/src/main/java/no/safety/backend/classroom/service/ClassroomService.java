@@ -1,5 +1,7 @@
 package no.safety.backend.classroom.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -7,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import no.safety.backend.classroom.dto.ClassroomRequest;
 import no.safety.backend.classroom.dto.ClassroomResponse;
 import no.safety.backend.classroom.model.Classroom;
+import no.safety.backend.classroom.model.ClassroomWeeklyMystery;
 import no.safety.backend.classroom.repository.ClassroomRepository;
 import no.safety.backend.classroom.repository.ClassroomWeeklyMysteryRepository;
 import no.safety.backend.exception.ConflictException;
@@ -19,7 +22,6 @@ import no.safety.backend.user.repository.StudentUserRepository;
 import no.safety.backend.user.repository.TeacherUserRepository;
 import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptResponse;
 import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -199,14 +201,33 @@ public class ClassroomService {
   }
 
   /**
-   * Method for retrieving the weekly mystery prompt connected directly to a classroom.
-   * @param classroomPublicId UUID representing a classrooms public id, for resolving.
+   * Method for retrieving the weekly mystery prompt connected directly to a
+   * classroom.
+   * 
+   * @param classroomPublicId UUID representing a classrooms public id, for
+   *                          resolving.
    * @return an object containing information about a Weekly Mystery Response.
    */
-  public WeeklyMysteryPromptResponse getClassroomWeeklyMystery(UUID classroomPublicId) {
-    return WeeklyMysteryPromptResponse.fromEntity(classroomRepo.findByUid(classroomPublicId)
-      .map(Classroom::getWeeklyMysteryPrompt)
-      .orElseThrow(() -> new EntityNotFoundException("Classroom not found")));
+  public Optional<WeeklyMysteryPrompt> getClassroomWeeklyMystery(UUID classroomPublicId) {
+    return classroomRepo.findByUid(classroomPublicId)
+        .map(Classroom::getWeeklyMysteryPrompt);
+  }
+
+  /**
+   * Method for retrieving weekly mysteries associated with a given classroom
+   * @param classroomPublicId the UUID of the classroom
+   * @return a list of prompt response data transfer objects
+   */
+  public List<WeeklyMysteryPromptResponse> getWeeklyMysteryHistory(UUID classroomPublicId) {
+    Long classroomId = classroomRepo.findByUid(classroomPublicId)
+      .map(Classroom::getInternalId).orElseThrow(() -> new EntityNotFoundException());
+
+    return classroomWeeklyMysteryRepository
+      .findByClassroom_InternalIdOrderByAssignedDateDesc(classroomId)
+      .stream()
+      .map(ClassroomWeeklyMystery::getWeeklyMysteryPrompt)
+      .map(WeeklyMysteryPromptResponse::fromEntity)
+      .toList();
   }
 
   private Classroom requireOwned(UUID classroomUid, UUID callerUuid) {
