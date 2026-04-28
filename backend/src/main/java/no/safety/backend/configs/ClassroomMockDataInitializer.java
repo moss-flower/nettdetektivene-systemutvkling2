@@ -8,6 +8,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.classroom.repository.ClassroomRepository;
+import no.safety.backend.completedexercise.model.CompletedExercise;
+import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
 import no.safety.backend.role.model.Role;
 import no.safety.backend.role.model.RoleType;
 import no.safety.backend.role.repository.RoleRepository;
@@ -59,6 +61,7 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
   private final StudentUserRepository studentRepository;
   private final ClassroomRepository classroomRepository;
   private final RoleRepository roleRepository;
+  private final CompletedExerciseRepository completedExerciseRepository;
   private final PasswordEncoder passwordEncoder;
 
   @Override
@@ -140,7 +143,6 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
         GameplayMockDataInitializer.QUICKSTART_WORLD_UID,
         Set.of(lisaLaerer, perLaerer)
     );
-
     assignMembers(klasse3a, List.of(adaElev, eliasElev));
     assignMembers(klasse3b, List.of(saraElev));
     assignMembers(klasse3c, List.of(noahElev));

@@ -12,6 +12,7 @@ const props = defineProps<{
   correctChoice: MultipleChoiceOptionKey
   disabled?: boolean
   selectedChoice?: MultipleChoiceOptionKey | null
+  hideImages?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -40,7 +41,6 @@ const choose = (choice: MultipleChoiceOptionKey) => {
         {{ props.prompt.text }}
       </p>
     </header>
-
     <div class="templateImageFrame">
       <img
         :src="props.prompt?.imageUrl ?? ''"
