@@ -52,6 +52,7 @@ const canSave = computed(() => {
 	return draft.title.trim().length > 0
 		&& draft.difficultyName.trim().length > 0
 		&& draft.description.trim().length > 0
+		&& draft.hint.trim().length > 0
 		&& draft.tasks.length > 0;
 });
 
@@ -59,6 +60,7 @@ const payloadPreview = computed<ExerciseFactoryPayload>(() => ({
 	title: draft.title.trim(),
 	difficultyName: draft.difficultyName.trim(),
 	description: draft.description.trim(),
+	hint: draft.hint.trim(),
 	tasks: draft.tasks,
 }));
 
@@ -138,6 +140,7 @@ const applyDraft = (payload: ExerciseFactoryPayload) => {
 	draft.title = clonedPayload.title;
 	draft.difficultyName = clonedPayload.difficultyName;
 	draft.description = clonedPayload.description;
+	draft.hint = clonedPayload.hint;
 	draft.tasks.splice(0, draft.tasks.length, ...clonedPayload.tasks);
 	setExpandedTasks([]);
 };
@@ -303,6 +306,11 @@ watch(payloadPreviewText, () => {
 						<span>Beskrivelse</span>
 						<textarea v-model="draft.description" rows="3" placeholder="Kort beskrivelse av hva eleven skal øve på." />
 					</label>
+
+					<label class="field fieldFull">
+						<span>Tips</span>
+						<textarea v-model="draft.hint" rows="3" placeholder="Tips som eleven kan åpne fra brevet under oppgaven." />
+					</label>
 				</div>
 			</section>
 
@@ -464,7 +472,7 @@ watch(payloadPreviewText, () => {
 					<article class="summaryCard">
 						<p class="cardEyebrow">Metadata</p>
 						<h3>{{ draft.difficultyName || 'Ingen difficulty name ennå' }}</h3>
-						<p>Tittel, difficulty name og beskrivelse blir lagret sammen med oppgavens tasks.</p>
+						<p>Tittel, difficulty name, beskrivelse og tips blir lagret sammen med oppgavens tasks.</p>
 					</article>
 				</div>
 			</section>

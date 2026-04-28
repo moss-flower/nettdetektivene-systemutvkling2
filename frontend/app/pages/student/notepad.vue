@@ -84,6 +84,7 @@ function handleNewNoteClick() {
   height: 100%;
   min-height: 0;
   padding: var(--layout-page-padding);
+  border-radius: var(--radius-2);
   box-sizing: border-box;
   color: var(--notepad-text-onDesk);
   background:

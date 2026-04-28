@@ -5,13 +5,19 @@ import EmailHotspotsTemplate from '~/components/gameplay/templates/EmailHotspots
 import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDialog.vue'
 import LevelupPopup from '~/components/gameplay/shared/LevelupPopup.vue'
 import PasswordStrengthTemplate from '~/components/gameplay/templates/PasswordStrengthTemplate.vue'
+import PopupTips from '~/components/gameplay/shared/PopupTips.vue'
 import SortIntoBucketsTemplate from '~/components/gameplay/templates/SortIntoBucketsTemplate.vue'
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoiceTemplate.vue'
+import UiStudentHomeBackButton from '~/components/ui/UiStudentHomeBackButton.vue'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
 import { markExerciseCompleted, useCompletedExerciseUids } from '~/composables/utils/gameProgress'
 import { routePaths } from '~/composables/utils/routePaths'
 import { Exercise } from '~/composables/types/ExerciseType'
+import { Station } from '~/composables/types/StationType'
+import { useAudioSettings } from '~/composables/useAudioSettings'
+import { useEffectSound } from '~/composables/useEffectSound'
+import celebrationSfx from '~/assets/sound/celebration-sfx.mp3'
 import { useStudentProfile } from '~/composables/useStudentProfile'
 import { useStations } from '~/composables/useStations'
 import { getLevel } from '~/composables/utils/studentProgress'
@@ -49,7 +55,7 @@ if (!station) {
   })
 }
 
-const { celebrateCorrectAnswer, stop } = useGameConfetti()
+const { celebrateCorrectAnswer, celebrateLevelComplete, stop } = useGameConfetti()
 const { getMyProfile } = useStudentProfile()
 const completedExerciseUids = await useCompletedExerciseUids()
 const completionError = ref('')
@@ -90,6 +96,7 @@ const tasks = activeExercise
 const currentIndex = ref(0)
 const showExerciseResultDialog = ref(false)
 const showLevelupPopup = ref(false)
+const showTipsPopup = ref(false)
 const leveledUpTo = ref(1)
 const correctCount = ref(0)
 const answerState = ref<{ correct: boolean, choice: string, missingStartingPassword?: boolean } | null>(null)
@@ -97,6 +104,16 @@ const answerState = ref<{ correct: boolean, choice: string, missingStartingPassw
 const isExerciseComplete = computed(() => tasks.length > 0 && correctCount.value === tasks.length)
 
 const isBossStation = station.isBoss
+const { bossfightActive } = useAudioSettings()
+const playCelebration = useEffectSound(celebrationSfx)
+
+if (isBossStation) {
+  bossfightActive.value = true
+}
+
+onBeforeUnmount(() => {
+  bossfightActive.value = false
+})
 const bossMaxHp = 100
 const bossHp = computed(() => {
   if (tasks.length === 0) return bossMaxHp
@@ -197,6 +214,8 @@ const bossVictoryRoute = computed(() => ({
 const showBossVictoryDialog = computed(() =>
   isBossStation && showExerciseResultDialog.value && isExerciseComplete.value
 )
+
+const exerciseHint = computed(() => activeExercise?.hint ?? '')
 
 const feedbackTitle = computed(() => {
   if (!currentTask.value) {
@@ -447,6 +466,8 @@ const next = async () => {
         if (!completedExerciseUids.includes(activeExercise.uid)) {
           completedExerciseUids.push(activeExercise.uid)
         }
+
+        celebrateLevelComplete()
       } catch (error: any) {
         completionError.value =
           error?.data?.detail
@@ -455,7 +476,15 @@ const next = async () => {
           || 'Kunne ikke lagre at oppgaven er fullført.'
       }
     }
+    
+    if (isExerciseComplete.value) {
+      bossfightActive.value = false
+      if (!showLevelupPopup.value) {
+        playCelebration()
+      }
+    }
 
+    showExerciseResultDialog.value = true
     if (!showLevelupPopup.value) {
       showExerciseResultDialog.value = true
     }
@@ -465,6 +494,13 @@ const next = async () => {
 
 <template>
   <section class="station-page">
+    <UiStudentHomeBackButton
+      class="station-page__back-button"
+      :to="exerciseSelectRoute"
+      aria-label="Tilbake til oppgavevalg"
+      label=""
+    />
+
     <header class="station-page__hero">
       <div class="station-page__header">
         <BossCharacter
@@ -482,6 +518,11 @@ const next = async () => {
     </header>
 
     <div class="stationPageBoard">
+      <button class="tipsLetterButton" type="button" @click="showTipsPopup = true">
+        <img src="https://placehold.co/96x72?text=Brev" alt="" aria-hidden="true">
+        <span>Åpne tipsbrev</span>
+      </button>
+
       <XOrYTemplate
         v-if="currentTask?.templateKind === 'x-or-y' && currentOptions"
         :key="`${currentTask.id}-xory`"
@@ -573,11 +614,30 @@ const next = async () => {
       @close="closeLevelupPopup"
     />
 
+    <PopupTips
+      v-if="showTipsPopup"
+      :hint="exerciseHint"
+      @close="showTipsPopup = false"
+    />
+
     <p v-if="completionError" class="station-page__completion-error">{{ completionError }}</p>
   </section>
 </template>
 
 <style scoped>
+.station-page {
+  position: relative;
+  min-height: 100%;
+  padding-bottom: 6rem;
+}
+
+.station-page__back-button {
+  position: fixed;
+  bottom: var(--space-5);
+  left: var(--space-5);
+  z-index: 10;
+}
+
 .stationPage {
   max-width: 72rem;
   margin: 0 auto;
@@ -639,9 +699,37 @@ const next = async () => {
 }
 
 .stationPageBoard {
+  display: grid;
+  gap: 1rem;
   padding: clamp(0.8rem, 1.4vw, 1.1rem);
   border-radius: 1.6rem;
   background: #f5f5f4;
+}
+
+.tipsLetterButton {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.85rem;
+  border: 2px solid #92400e;
+  border-radius: 999px;
+  background: #fffbeb;
+  color: #78350f;
+  font-weight: 900;
+  box-shadow: 0 8px 18px rgba(120, 53, 15, 0.16);
+  cursor: pointer;
+}
+
+.tipsLetterButton img {
+  width: 3rem;
+  height: 2.25rem;
+  border-radius: 0.35rem;
+  object-fit: cover;
+}
+
+.tipsLetterButton:hover {
+  transform: translateY(-1px);
 }
 
 .station-page__test-tools {
@@ -670,6 +758,11 @@ const next = async () => {
 }
 
 @media (max-width: 780px) {
+  .station-page__back-button {
+    bottom: var(--space-4);
+    left: var(--space-4);
+  }
+
   .station-page__hero {
     flex-direction: column;
     align-items: stretch;
@@ -682,6 +775,11 @@ const next = async () => {
 
   .station-page__board {
     padding: 0.85rem;
+  }
+
+  .tipsLetterButton {
+    justify-self: stretch;
+    justify-content: center;
   }
 }
 </style>

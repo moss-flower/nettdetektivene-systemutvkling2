@@ -16,6 +16,7 @@ export type ClassroomSummary = {
 export type ClassroomExercise = {
   uid: string;
   title: string;
+  stationUid: string;
   stationTitle: string;
   difficultyName: string;
   taskCount: number;
@@ -75,6 +76,7 @@ export const getClassroomExercises = async (classroom: Classroom | null): Promis
     exercises.map((exercise) => ({
       uid: exercise.uid,
       title: exercise.title,
+      stationUid: station.uid,
       stationTitle: station.title,
       difficultyName: exercise.difficultyName,
       taskCount: exercise.tasks.length,

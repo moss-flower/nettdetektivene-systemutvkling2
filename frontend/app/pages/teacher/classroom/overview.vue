@@ -1,13 +1,26 @@
 <script setup lang="ts">
 import { World } from '~/composables/types/WorldTypes';
+import starEmpty from '~/assets/images/star/spStarEmpty.png';
+import starFilled from '~/assets/images/star/spStarFilled.png';
+import { getClassroomExercises } from '~/composables/useTeacherDashboard';
 const route = useRoute();
 import { routePaths, routePathsWithString, routePathsWithUid } from '~/composables/utils/routePaths';
 
+type CompletedExerciseResponse = {
+  exerciseUid: string;
+};
+
+type StudentProgress = {
+  completed: number;
+  remaining: number;
+};
+
 const { teacher } = useClassrooms();
+const { $api } = useNuxtApp();
 
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
 
-const { data: classroom } = await useAsyncData(
+const { data: classroom, refresh: refreshClassroom } = await useAsyncData(
   'teacher-classroom-overview',
   () => (classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : null),
   { watch: [classroomId] },
@@ -20,6 +33,63 @@ const { data: world } = await useAsyncData(
   () => (worldUid.value ? World.backendFetchWorldByUid(worldUid.value) : null),
   { watch: [worldUid] },
 );
+
+const { data: exercises } = await useAsyncData(
+  'teacher-classroom-overview-exercises',
+  () => getClassroomExercises(classroom.value ?? null),
+  { watch: [classroom] },
+);
+
+const classroomExerciseUids = computed(() => new Set((exercises.value ?? []).map((exercise) => exercise.uid)));
+const totalExercises = computed(() => classroomExerciseUids.value.size);
+
+const { data: progressByStudent, refresh: refreshProgress } = await useAsyncData(
+  'teacher-classroom-student-progress',
+  async (): Promise<Record<string, StudentProgress>> => {
+    if (!classroom.value || totalExercises.value === 0) {
+      return {};
+    }
+
+    const entries = await Promise.all(classroom.value.members.map(async (student) => {
+      const completedExercises = await $api<CompletedExerciseResponse[]>(`/completed-exercises/students/${student.publicUuid}`, {
+        method: 'GET',
+      }).catch(() => []);
+
+      const completed = completedExercises.filter((exercise) => classroomExerciseUids.value.has(exercise.exerciseUid)).length;
+
+      return [student.publicUuid, {
+        completed,
+        remaining: Math.max(0, totalExercises.value - completed),
+      }] as const;
+    }));
+
+    return Object.fromEntries(entries);
+  },
+  { watch: [classroom, exercises] },
+);
+
+const removingStudentId = ref('');
+
+const getStudentProgress = (studentId: string): StudentProgress => progressByStudent.value?.[studentId] ?? {
+  completed: 0,
+  remaining: totalExercises.value,
+};
+
+const removeStudent = async (studentId: string) => {
+  if (!classroom.value || removingStudentId.value) {
+    return;
+  }
+
+  removingStudentId.value = studentId;
+
+  try {
+    await teacher.removeMember(classroom.value.uid, studentId);
+    await refreshClassroom();
+    await refreshProgress();
+  } finally {
+    removingStudentId.value = '';
+  }
+};
 </script>
 
 <template>
@@ -38,8 +108,8 @@ const { data: world } = await useAsyncData(
       </NuxtLink>
 
       <NuxtLink :to="routePathsWithUid(routePaths.teacherFactoryWorld, classroom.worldUid)" class="actionCard">
-        <span class="actionCardTitle">Verden</span>
-        <img src="https://placehold.co/128x128?text=VE" alt="Verden" class="actionCardImage">
+        <span class="actionCardTitle">Stasjonskart</span>
+        <img src="https://placehold.co/128x128?text=SK" alt="Stasjonskart" class="actionCardImage">
       </NuxtLink>
 
       <NuxtLink :to="routePaths.studentHome" class="actionCard">
@@ -72,8 +142,8 @@ const { data: world } = await useAsyncData(
 
     <section v-if="classroom" class="pendingCard">
       <div class="pendingCardHeader">
-        <h2>Verden</h2>
-        <p>Klasserommet bruker verdenen som er koblet til i backend.</p>
+        <h2>Stasjonskart</h2>
+        <p>Klasserommet bruker stasjonskartet som er koblet til i backend.</p>
       </div>
 
       <p class="pendingEmpty">{{ world?.title ?? classroom.worldUid }}</p>
@@ -84,7 +154,8 @@ const { data: world } = await useAsyncData(
         <thead>
           <tr>
             <th>Elev</th>
-            <th>Bruker-ID</th>
+            <th>Progresjon</th>
+            <th class="actionColumn">Fjern</th>
           </tr>
         </thead>
         <tbody>
@@ -94,7 +165,25 @@ const { data: world } = await useAsyncData(
                 {{ student.username }}
               </NuxtLink>
             </td>
-            <td>{{ student.publicUuid }}</td>
+            <td>
+              <div class="progressCell" :aria-label="`${getStudentProgress(student.publicUuid).completed} fullført, ${getStudentProgress(student.publicUuid).remaining} gjenstår`">
+                <span class="starCount">x{{ getStudentProgress(student.publicUuid).completed }}</span>
+                <img :src="starFilled" alt="Fullført" class="starIcon">
+                <span class="starCount">/x{{ getStudentProgress(student.publicUuid).remaining }}</span>
+                <img :src="starEmpty" alt="Gjenstår" class="starIcon">
+              </div>
+            </td>
+            <td class="actionColumn">
+              <button
+                class="removeButton"
+                type="button"
+                :aria-label="`Fjern ${student.username} fra klasserommet`"
+                :disabled="removingStudentId === student.publicUuid"
+                @click="removeStudent(student.publicUuid)"
+              >
+                X
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -285,6 +374,52 @@ thead th {
 
 .studentLink:hover {
   text-decoration: underline;
+}
+
+.progressCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--color-text-primary);
+  font-weight: 700;
+}
+
+.starCount {
+  line-height: 1;
+}
+
+.starIcon {
+  width: 1.35rem;
+  height: 1.35rem;
+  object-fit: contain;
+}
+
+.actionColumn {
+  width: 1%;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.removeButton {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: var(--border-width-hairline) solid color-mix(in srgb, var(--color-semantic-danger, #b42318) 65%, var(--color-border-default));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-bg-surface) 90%, var(--color-semantic-danger, #b42318) 10%);
+  color: var(--color-semantic-danger, #b42318);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.removeButton:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-bg-surface) 80%, var(--color-semantic-danger, #b42318) 20%);
+}
+
+.removeButton:disabled {
+  cursor: wait;
+  opacity: 0.55;
 }
 
 .emptyState {
