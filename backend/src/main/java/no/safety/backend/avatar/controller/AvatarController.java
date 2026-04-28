@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import no.safety.backend.auth.model.UserPrincipal;
 import no.safety.backend.avatar.dto.AvatarConfigRequest;
 import no.safety.backend.avatar.dto.AvatarConfigResponse;
+import no.safety.backend.avatar.dto.AvatarOptionsResponse;
 import no.safety.backend.avatar.service.AvatarService;
 
 @RestController
@@ -37,6 +38,17 @@ public class AvatarController {
     public AvatarConfigResponse getAvatar(
         @AuthenticationPrincipal UserPrincipal principal) {
             return avatarService.getAvatar(principal.getUserInternalId());
+    }
+
+    @Operation(
+        summary = "Get avatar customization options",
+        description = "Returns the available enum options for avatar customization",
+        tags = {"Profile Management for Students"}
+    )
+    @PreAuthorize("hasRole('STUDENT')")
+    @GetMapping("/avatar/options")
+    public AvatarOptionsResponse getAvatarOptions() {
+        return AvatarOptionsResponse.fromEnums();
     }
 
     /**
