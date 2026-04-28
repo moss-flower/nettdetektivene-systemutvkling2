@@ -39,24 +39,21 @@ const providerOptions: Array<{
   },
 ];
 
-const selectedRole = computed<"elev" | "lærer">(() => {
-  const role = String(route.query.role ?? "").toLowerCase();
-  return role === "lærer" ? "lærer" : "elev";
+const redirectRoute = computed(() => {
+  const redirect = route.query.redirect;
+
+  return typeof redirect === "string" && redirect.startsWith("/") ? redirect : "";
 });
 
-const targetRoute = computed(() =>
-  selectedRole.value === "lærer"
-    ? routePaths.teacherOverview
-    : routePaths.join,
-);
+const studentRegisterTarget = {
+  path: routePaths.register,
+  query: { role: "elev" },
+};
 
-const targetLabel = computed(() =>
-  selectedRole.value === "lærer" ? "lærerflaten" : "klasseromssiden",
-);
-
-const affiliationName = computed(() =>
-  selectedRole.value === "lærer" ? "NTNU ansatte" : "NTNU",
-);
+const teacherRegisterTarget = {
+  path: routePaths.register,
+  query: { role: "lærer" },
+};
 
 function selectProvider(providerId: ProviderId) {
   selectedProvider.value = providerId;
@@ -77,7 +74,7 @@ async function handleLogin() {
     const response = await login(email.value.trim(), password.value);
 
     if (response.roles.includes("ROLE_TEACHER")) {
-      await navigateTo(routePaths.teacherOverview);
+      await navigateTo(redirectRoute.value || routePaths.teacherOverview);
       return;
     }
 
@@ -91,7 +88,7 @@ async function handleLogin() {
       return;
     }
 
-    await navigateTo(targetRoute.value);
+    await navigateTo(routePaths.home);
 
   } catch (error: any) {
     formError.value =
@@ -132,7 +129,7 @@ async function handleLogin() {
             <div class="panelMark orgMark">N</div>
             <div class="panelBody">
               <p class="panelLabel">Din tilknytning</p>
-              <p class="panelValue">{{ affiliationName }}</p>
+              <p class="panelValue">Din skole</p>
               <button type="button" class="inlineLink">Bytt tilknytning</button>
             </div>
           </div>
@@ -187,11 +184,6 @@ async function handleLogin() {
               />
             </div>
 
-            <p class="mockHint">
-              Dette er en prototype av Feide-innloggingen deres. Innloggingen bruker
-              backend-endepunktet og sender deg videre til {{ targetLabel }} ved vellykket innlogging.
-            </p>
-
             <button type="submit" class="submitButton" :disabled="loading">
               {{ loading ? "Logger inn..." : "Fortsett med innlogging" }}
             </button>
@@ -200,17 +192,24 @@ async function handleLogin() {
           </form>
         </section>
 
+        <section class="registerPanel" aria-label="Registrering">
+          <p class="registerTitle">Har du ikke bruker?</p>
+          <div class="registerLinks">
+            <NuxtLink :to="studentRegisterTarget" class="registerLink">
+              Registrer elev
+            </NuxtLink>
+            <NuxtLink :to="teacherRegisterTarget" class="registerLink">
+              Registrer lærer
+            </NuxtLink>
+          </div>
+        </section>
+
         <details class="helpPanel">
           <summary>Trenger du hjelp?</summary>
           <div class="helpContent">
             <p>Dette er en prototype av Feide-innloggingen deres.</p>
             <p>
-              Logg inn med en backend-bruker for å gå videre til {{ targetLabel }}.
-            </p>
-            <p>
-              <NuxtLink :to="targetRoute" class="inlineTextLink">
-                Hopp over innlogging
-              </NuxtLink>
+              Logg inn med en backend-bruker. Rollen fra backend bestemmer om du sendes til elev- eller lærerflaten.
             </p>
           </div>
         </details>
@@ -233,7 +232,7 @@ async function handleLogin() {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  padding: 1rem;
+  padding: var(--space-4);
   background: #c5d4e7;
   color: #020202;
 }
@@ -241,15 +240,15 @@ async function handleLogin() {
 .feideShell {
   width: min(100%, 32rem);
   align-self: flex-start;
-  margin: 1rem auto;
-  background: #ffffff;
+  margin: var(--space-4) auto;
+  background: var(--palette-white);
   box-shadow: 0 18px 40px rgba(45, 56, 76, 0.15);
 }
 
 .shellHeader {
   display: flex;
   justify-content: flex-end;
-  padding: 0.5rem;
+  padding: var(--space-2);
   background: #dbe5f1;
 }
 
@@ -266,7 +265,7 @@ async function handleLogin() {
 .languageButton:hover,
 .languageButton:focus-visible {
   background: #606ca5;
-  color: #ffffff;
+  color: var(--palette-white);
   outline: none;
 }
 
@@ -289,7 +288,7 @@ async function handleLogin() {
 }
 
 h1 {
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
   color: #333333;
   font-size: clamp(1.8rem, 3vw, 2.1rem);
   font-weight: 900;
@@ -298,8 +297,8 @@ h1 {
 
 .summaryPanels {
   display: grid;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 
 .summaryPanel {
@@ -307,7 +306,7 @@ h1 {
   gap: 0.85rem;
   align-items: flex-start;
   padding: 0.85rem 0;
-  border-bottom: 2px solid #c5d4e7;
+  border-bottom: var(--border-width-thin) solid #c5d4e7;
 }
 
 .panelMark {
@@ -318,7 +317,7 @@ h1 {
   place-items: center;
   border-radius: 0.75rem;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--palette-white);
 }
 
 .serviceMark {
@@ -350,8 +349,7 @@ h1 {
   font-weight: 700;
 }
 
-.inlineLink,
-.inlineTextLink {
+.inlineLink {
   margin-top: 0.2rem;
   border: 0;
   padding: 0;
@@ -364,12 +362,12 @@ h1 {
 }
 
 .mainCard {
-  margin-top: 1rem;
+  margin-top: var(--space-4);
 }
 
 .providerList {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .providerButton,
@@ -380,10 +378,10 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 0.9rem;
-  padding: 0 1rem;
+  padding: 0 var(--space-4);
   border: 0;
   font: inherit;
-  font-size: 1rem;
+  font-size: var(--font-size-16);
   cursor: pointer;
   transition:
     background-color 160ms ease,
@@ -396,13 +394,13 @@ h1 {
 .submitButton:hover,
 .submitButton:focus-visible {
   background: #283678;
-  color: #ffffff;
+  color: var(--palette-white);
   outline: none;
 }
 
 .providerButton.active {
-  outline: 2px solid #606ca5;
-  outline-offset: -2px;
+  outline: var(--border-width-thin) solid #606ca5;
+  outline-offset: -var(--border-width-thin);
 }
 
 .providerButton.primary,
@@ -422,9 +420,9 @@ h1 {
   height: 2rem;
   display: grid;
   place-items: center;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(255, 255, 255, 0.65);
-  font-size: 0.75rem;
+  font-size: var(--font-size-12);
   font-weight: 800;
 }
 
@@ -445,12 +443,12 @@ h1 {
 }
 
 .formDivider span {
-  padding: 0 0.75rem;
+  padding: 0 var(--space-3);
 }
 
 .mockForm {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .fieldGroup {
@@ -465,23 +463,17 @@ h1 {
 .fieldInput {
   width: 100%;
   min-height: 4.125rem;
-  padding: 0 1rem;
-  border: 2px solid #606ca5;
-  background: #ffffff;
+  padding: 0 var(--space-4);
+  border: var(--border-width-thin) solid #606ca5;
+  background: var(--palette-white);
   color: #020202;
   font: inherit;
-  font-size: 1rem;
+  font-size: var(--font-size-16);
 }
 
 .fieldInput:focus {
-  outline: 2px solid #606ca5;
+  outline: var(--border-width-thin) solid #606ca5;
   outline-offset: 0;
-}
-
-.mockHint {
-  margin: 0;
-  color: #2d384c;
-  line-height: 1.45;
 }
 
 .formError {
@@ -490,10 +482,48 @@ h1 {
   font-weight: 700;
 }
 
+.registerPanel {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  background: #eef3f9;
+}
+
+.registerTitle {
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+}
+
+.registerLinks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.registerLink {
+  min-height: 3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.75rem;
+  background: #ffffff;
+  border: 2px solid #606ca5;
+  color: #283678;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+
+.registerLink:hover,
+.registerLink:focus-visible {
+  background: #283678;
+  color: #ffffff;
+  outline: none;
+}
+
 .helpPanel {
-  margin-top: 1.5rem;
-  border-top: 2px solid #c5d4e7;
-  border-bottom: 2px solid #c5d4e7;
+  margin-top: var(--space-6);
+  border-top: var(--border-width-thin) solid #c5d4e7;
+  border-bottom: var(--border-width-thin) solid #c5d4e7;
   padding: 0.8rem 0;
 }
 
@@ -518,16 +548,16 @@ h1 {
 }
 
 .helpContent {
-  padding-top: 1rem;
+  padding-top: var(--space-4);
 }
 
 .helpContent p {
-  margin: 0 0 0.75rem;
+  margin: 0 0 var(--space-3);
   line-height: 1.45;
 }
 
 .shellFooter {
-  padding: 1rem;
+  padding: var(--space-4);
   background: #dbe5f1;
   text-align: center;
   color: #2d384c;
@@ -565,6 +595,10 @@ h1 {
   .submitButton,
   .fieldInput {
     min-height: 3.75rem;
+  }
+
+  .registerLinks {
+    grid-template-columns: 1fr;
   }
 }
 </style>

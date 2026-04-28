@@ -1,11 +1,15 @@
+<script setup lang="ts">
+useHead({ htmlAttrs: { 'data-theme': 'game' } as any })
+</script>
+
 <template>
-  <div class="app-shell">
+  <div class="appShell">
     <aside class="sidebar">
       <div class="profile">
         <!-- avatar +(?) detektiv navn -->
       </div>
 
-      <button class="nav-home" type="button" aria-label="Tilbake til hovedmeny">
+      <button class="navHome" type="button" aria-label="Tilbake til hovedmeny">
         <!-- map-pin icon -->
       </button>
     </aside>
@@ -17,16 +21,17 @@
 </template>
 
 <style scoped>
-.app-shell {
+.appShell {
   min-height: 100dvh;
   width: 100%;
   display: grid;
   grid-template-columns: var(--layout-sidebar-width) 1fr;
+  background: var(--color-bg-canvas);
 }
 
 .sidebar {
-  background: var(--color-bg-surface);
-  border-right: var(--border-width-hairline) solid var(--color-border-default);
+  background: var(--color-bg-sidebar);
+  border-right: var(--border-width-hairline) solid var(--color-brand-primary);
   padding: var(--space-5) var(--space-3);
   display: flex;
   flex-direction: column;
@@ -42,7 +47,7 @@
   text-align: center;
 }
 
-.nav-home {
+.navHome {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -54,12 +59,13 @@
   transition: transform var(--transition-fast);
 }
 
-.nav-home:hover {
+.navHome:hover {
   transform: translateY(-2px);
 }
 
 .content {
   min-width: 0;
   min-height: 0;
+  background: var(--color-bg-canvas);
 }
 </style>

@@ -13,7 +13,6 @@ import java.util.UUID;
 import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
 import no.safety.backend.exception.NotFoundException;
-import no.safety.backend.exception.domain.StudentNotInClassException;
 import no.safety.backend.station.model.Station;
 import no.safety.backend.station.repository.StationRepository;
 import no.safety.backend.user.model.StudentUser;
@@ -89,15 +88,12 @@ class ProgressValidationServiceTest {
   }
 
   @Test
-  void isLocked_throwsWhenStudentNotInClass() {
+  void isLocked_returnsFalseWhenStudentNotInClass() {
     StudentUser student = StudentUser.builder()
         .publicUuid(UUID.randomUUID())
         .build();
 
-    assertThrows(
-        StudentNotInClassException.class,
-        () -> progressValidationService.isLocked(student, UUID.randomUUID())
-    );
+    assertFalse(progressValidationService.isLocked(student, UUID.randomUUID()));
   }
 
   @Test

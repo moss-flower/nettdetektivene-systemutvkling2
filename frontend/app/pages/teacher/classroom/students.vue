@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { routePaths, routePathsWithString } from '~/composables/utils/routePaths';
 const route = useRoute();
-const { getTeacherClassroomById, getteacherClassroomStudents } = useTeacherDashboard();
+const { teacher } = useClassrooms();
   
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
-const classroom = computed(() => getTeacherClassroomById(classroomId.value));
-const students = computed(() => getteacherClassroomStudents(classroomId.value));
+const { data: classroom } = await useAsyncData(
+  'teacher-classroom-students',
+  () => (classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : null),
+  { watch: [classroomId] },
+);
+
+const students = computed(() => classroom.value?.members ?? []);
 </script>
 
 <template>
@@ -22,21 +27,15 @@ const students = computed(() => getteacherClassroomStudents(classroomId.value));
         <thead>
           <tr>
             <th>Elev</th>
-            <th>Progresjon</th>
-            <th>Poeng</th>
-            <th>Medaljer</th>
-            <th>Sist aktiv</th>
+            <th>Bruker-ID</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="student in students" :key="student.id">
+          <tr v-for="student in students" :key="student.publicUuid">
             <td>
-              <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, `?classroomId=${classroomId}&studentId=${student.id}`)">{{ student.name }}</NuxtLink>
+              <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, `?classroomId=${classroomId}&studentId=${student.publicUuid}`)">{{ student.username }}</NuxtLink>
             </td>
-            <td>{{ Math.round((student.completedLevels / student.totalLevels) * 100) }} %</td>
-            <td>{{ student.points }}</td>
-            <td>{{ student.badges }}</td>
-            <td>{{ student.lastActive }}</td>
+            <td>{{ student.publicUuid }}</td>
           </tr>
         </tbody>
       </table>
@@ -50,6 +49,11 @@ const students = computed(() => getteacherClassroomStudents(classroomId.value));
   max-width: 1000px;
   margin: 0 auto;
   padding: var(--space-4);
+  color: var(--color-text-primary);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.88)),
+    linear-gradient(180deg, var(--palette-gray-50) 0%, var(--palette-cream-100) 100%);
+  border-radius: var(--radius-4);
 }
 
 .pageHeader {
@@ -58,34 +62,35 @@ const students = computed(() => getteacherClassroomStudents(classroomId.value));
 
 .backLink {
   display: inline-block;
-  margin-bottom: 0.75rem;
-  color: var(--primary);
+  margin-bottom: var(--space-3);
+  color: var(--color-brand-primary);
   font-weight: 600;
 }
 
 .eyebrow {
-  color: var(--primary);
+  color: var(--color-brand-primary);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
 }
 
 h1 {
-  margin: 0 0 0.5rem 0;
-  color: var(--text);
+  margin: 0 0 var(--space-2) 0;
+  color: var(--color-text-primary);
 }
 
 .subtitle {
   margin: 0;
-  color: var(--muted);
+  color: var(--color-text-secondary);
 }
 
 .tableCard {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-3);
+  background: var(--color-bg-surface);
   overflow: auto;
+  box-shadow: var(--shadow-1);
 }
 
 table {
@@ -97,16 +102,16 @@ table {
 th,
 td {
   text-align: left;
-  padding: 0.85rem 1rem;
-  border-bottom: 1px solid var(--border);
+  padding: 0.85rem var(--space-4);
+  border-bottom: var(--border-width-hairline) solid var(--color-border-default);
 }
 
 thead th {
-  background: var(--bg);
+  background: color-mix(in srgb, var(--color-bg-surface) 88%, var(--color-semantic-info) 12%);
 }
 
 tbody a {
-  color: var(--primary);
+  color: var(--color-brand-primary);
   font-weight: 700;
 }
 </style>

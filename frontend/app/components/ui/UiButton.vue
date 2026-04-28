@@ -2,7 +2,7 @@
 import { computed, useSlots } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 
-type Variant = 'primary' | 'reward' | 'ghost' | 'danger'
+type Variant = 'primary' | 'reward' | 'ghost' | 'danger' | 'onLight'
 type Size = 'sm' | 'md' | 'lg'
 
 const props = withDefaults(
@@ -44,12 +44,12 @@ const isExternal = computed(() => !!props.href && /^https?:\/\//i.test(props.hre
 const isInert = computed(() => props.disabled || props.loading)
 
 const classes = computed(() => [
-    'ui-btn',
-    `ui-btn--${props.variant}`,
-    `ui-btn--${props.size}`,
+    'uiBtn',
+    `uiBtn${props.variant}`,
+    `uiBtn${props.size}`,
   {
-    'ui-btn--block': props.block,
-    'ui-btn--loading': props.loading,
+    'uiBtnBlock': props.block,
+    'uiBtnLoading': props.loading,
   },
 ])
 
@@ -108,23 +108,23 @@ if (import.meta.dev) {
 
 <template>
   <component :is="tag" v-bind="bindings">
-    <span v-if="loading" class="ui-btn__spinner" aria-hidden="true"/>
-    <span v-else-if="$slots.iconLeft" class="ui-btn__icon ui-btn__icon--left">
+    <span v-if="loading" class="uiBtnSpinner" aria-hidden="true"/>
+    <span v-else-if="$slots.iconLeft" class="uiBtnIcon btnIconLeft">
       <slot name="iconLeft"/>
     </span>
 
-    <span class="ui-btn__label">
+    <span class="uiBtnLabel">
       <slot />
     </span>
 
-    <span v-if="$slots.iconRight && !loading" class="ui-btn__icon ui-btn__icon--right">
+    <span v-if="$slots.iconRight && !loading" class="uiBtnIcon btnIconRight">
       <slot name="iconRight"/>
     </span>
   </component>
 </template>
 
 <style scoped>
-.ui-btn {
+.uiBtn {
   /* layout */
   display: inline-flex;
   align-items: center;
@@ -149,24 +149,24 @@ if (import.meta.dev) {
     box-shadow var(--transition-fast);
 }
 
-.ui-btn--block {
+.uiBtnBlock {
   width: 100%;
 }
 
 /* -------- Sizes -------- */
-.ui-btn--sm {
+.uiBtnSm {
   height: var(--size-control-sm);
   padding-inline: var(--space-4);
   font-size: var(--font-size-14);
   border-radius: var(--radius-1);
 }
-.ui-btn--md {
+.uiBtnMd {
   height: var(--size-control-md);
   padding-inline: var(--space-5);
   font-size: var(--font-size-16);
   border-radius: var(--radius-2);
 }
-.ui-btn--lg {
+.uiBtnLg {
   height: var(--size-control-lg);
   padding-inline: var(--space-6);
   font-size: var(--font-size-18);
@@ -175,27 +175,27 @@ if (import.meta.dev) {
 
 /* -------- Variants -------- */
 /* Primary */
-.ui-btn--primary {
+.uiBtnPrimary {
   background: var(--color-brand-primary);
   color: var(--color-text-onDark);
 }
-.ui-btn--primary:hover:not([aria-disabled='true']) {
+.uiBtnPrimary:hover:not([aria-disabled='true']) {
   background: color-mix(in srgb, var(--color-brand-primary) 92%, white);
 }
 
-.ui-btn--primary:active:not([aria-disabled='true']) {
+.uiBtnPrimary:active:not([aria-disabled='true']) {
   box-shadow: var(--shadow-pressed);
 }
 
 /* reward */
-.ui-btn--reward {
+.uiBtnReward {
   background: var(--color-accent-reward);
   color: var(--color-text-primary);
 }
-.ui-btn--reward:hover:not([aria-disabled='true']) {
+.uiBtnReward:hover:not([aria-disabled='true']) {
   background: var(--color-accent-reward-hover);
 }
-.ui-btn--reward:active:not([aria-disabled='true']) {
+.uiBtnReward:active:not([aria-disabled='true']) {
   background: var(--color-accent-reward-pressed);
   box-shadow: var(--shadow-pressed);
   /* Subtle pupil-deligth press, skipped under reduced motion via global rule */
@@ -203,33 +203,49 @@ if (import.meta.dev) {
 }
 
 /* Ghost */
-.ui-btn--ghost {
+.uiBtnGhost {
   background: transparent;
   color: var(--color-text-primary);
   box-shadow: none;
 }
-.ui-btn--ghost:hover:not([aria-disabled='true']) {
+.uiBtnGhost:hover:not([aria-disabled='true']) {
   background: var(--color-bg-surface-hover);
 }
-.ui-btn--ghost:active:not([aria-disabled='true']) {
+.uiBtnGhost:active:not([aria-disabled='true']) {
+  box-shadow: var(--shadow-pressed);
+}
+
+/* onLight; cream/white pills on dark surface */
+.ui-btn--onLight {
+  background: var(--color-bg-onLight);
+  color: var(--color-text-onLight);
+  border: var(--border-width-hairline) solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+}
+
+.ui-btn--onLight:hover:not([aria-disabled='true']) {
+  background: var(--color-bg-onLight-hover);
+}
+
+.ui-btn--onLight:active:not([aria-disabled='true']) {
   box-shadow: var(--shadow-pressed);
 }
 
 /* Danger */
-.ui-btn--danger {
+.uiBtnDanger {
   background: var(--color-semantic-error);
   color: var(--color-text-onDark);
 }
-.ui-btn--danger:hover:not([aria-disabled='true']) {
+.uiBtnDanger:hover:not([aria-disabled='true']) {
   background: var(--color-semantic-error-hover);
 }
-.ui-btn--danger:active:not([aria-disabled='true']) {
+.uiBtnDanger:active:not([aria-disabled='true']) {
   box-shadow: var(--shadow-pressed);
 }
 
 /* -------- Disabled / Loading -------- */
-.ui-btn[aria-disabled='true'],
-.ui-btn:disabled {
+.uiBtn[aria-disabled='true'],
+.uiBtn:disabled {
   background: var(--color-disabled-bg);
   color: var(--color-disabled-text);
   cursor: not-allowed;
@@ -237,12 +253,12 @@ if (import.meta.dev) {
   transform: none;
 }
 
-.ui-btn--loading {
+.uiBtnLoading {
   cursor: progress;
 }
 
 /* -------- Icon + Spinner -------- */
-.ui-btn__icon {
+.uiBtnIcon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -250,21 +266,21 @@ if (import.meta.dev) {
   height: var(--size-icon-sm);
   flex: 0 0 auto;
 }
-.ui-btn--lg .ui-btn__icon {
+.uiBtnLg .uiBtnIcon {
   width: var(--size-icon-md);
   height: var(--size-icon-md);
 }
 
-.ui-btn__label {
+.uiBtnLabel {
   display: inline-flex;
   align-items: center;
 }
 
-.ui-btn__spinner {
+.uiBtnSpinner {
   width: var(--size-icon-sm);
   height: var(--size-icon-sm);
   border-radius: var(--radius-pill);
-  border: 2px solid currentColor;
+  border: var(--border-width-thin) solid currentColor;
   border-right-color: transparent;
   animation: ui-btn-spin 0.6s linear infinite;
 }

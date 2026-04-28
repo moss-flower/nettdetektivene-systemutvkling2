@@ -23,6 +23,8 @@ const landingPageStyle = {
   '--login-background-image': `url(${loginBackgroundImage})`,
   '--login-plate-image': `url(${loginPlateImage})`,
 };
+
+const titleTarget = computed(() => props.options[0]?.to ?? '/login');
 </script>
 
 <template>
@@ -34,18 +36,9 @@ const landingPageStyle = {
 
       <div class="loginPlate">
         <div class="plateContent">
-          <div class="titleBadge">{{ props.title }}</div>
-
-          <nav class="loginOptions" aria-label="Velg innloggingstype">
-            <NuxtLink
-              v-for="option in props.options"
-              :key="option.label"
-              :to="option.to"
-              :class="['loginOption', option.variant]"
-            >
-              {{ option.label }}
-            </NuxtLink>
-          </nav>
+          <NuxtLink :to="titleTarget" class="titleBadge">
+            {{ props.title }}
+          </NuxtLink>
         </div>
       </div>
     </div>
@@ -59,7 +52,7 @@ const landingPageStyle = {
   overflow: hidden;
   display: grid;
   place-items: start center;
-  padding: clamp(1.5rem, 3vw, 2.5rem);
+  padding: clamp(var(--space-6), 3vw, 2.5rem);
   background-image:
     linear-gradient(180deg, rgba(25, 17, 39, 0.32) 0%, rgba(17, 12, 26, 0.58) 100%),
     var(--login-background-image);
@@ -84,13 +77,13 @@ const landingPageStyle = {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: clamp(1rem, 4vh, 2.5rem);
+  margin-top: clamp(var(--space-4), 4vh, 2.5rem);
   animation: stage-enter 500ms ease-out;
 }
 
 .gameLogo {
   width: min(100%, 33rem);
-  margin-bottom: clamp(-1.25rem, -2.6vw, -2rem);
+  margin-bottom: clamp(-1.25rem, -2.6vw, -var(--space-8));
   filter: drop-shadow(0 14px 18px rgba(14, 18, 38, 0.32));
   animation: logo-float 4.5s ease-in-out infinite;
 }
@@ -119,25 +112,29 @@ const landingPageStyle = {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: var(--space-4);
   padding: 0;
   transform: translateY(-1.5rem);
 }
 
 .titleBadge {
   width: min(100%, 27rem);
-  border-radius: 1rem;
+  border-radius: var(--radius-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 1.35rem 1.75rem;
-  border: 4px solid #f7c02d;
-  background: linear-gradient(180deg, #ff5e0d 0%, #ff4e00 100%);
+  border: var(--border-width-heavy) solid var(--palette-gold-400);
+  background: linear-gradient(180deg, var(--palette-orange-500) 0%, var(--palette-orange-600) 100%);
   box-shadow:
     inset 0 2px 0 rgba(255, 255, 255, 0.22),
     0 10px 18px rgba(104, 49, 0, 0.28);
-  color: #fffaf2;
+  color: var(--palette-white);
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(1.75rem, 2.1vw, 2.5rem);
+  font-size: clamp(var(--font-size-28), 2.1vw, 2.5rem);
   line-height: 1.1;
   text-align: center;
+  text-decoration: none;
   text-shadow: 0 2px 3px rgba(94, 26, 0, 0.25);
 }
 
@@ -156,12 +153,12 @@ const landingPageStyle = {
   align-items: center;
   justify-content: center;
   border-radius: 0.9rem;
-  border: 3px solid rgba(255, 255, 255, 0.18);
+  border: var(--border-width-thick) solid rgba(255, 255, 255, 0.18);
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 1.6rem;
   line-height: 1;
   text-decoration: none;
-  color: #fff;
+  color: var(--palette-white);
   box-shadow: 0 8px 18px rgba(27, 22, 18, 0.18);
   transition:
     transform 160ms ease,
@@ -169,20 +166,22 @@ const landingPageStyle = {
     filter 160ms ease;
 }
 
-.loginOption:hover,
-.loginOption:focus-visible {
+.titleBadge:hover,
+.titleBadge:focus-visible {
   transform: translateY(-2px);
-  box-shadow: 0 12px 22px rgba(27, 22, 18, 0.24);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.22),
+    0 14px 24px rgba(104, 49, 0, 0.34);
   filter: brightness(1.04);
 }
 
 .loginOption:focus-visible {
-  outline: 3px solid #ffe38d;
-  outline-offset: 3px;
+  outline: var(--border-width-thick) solid #ffe38d;
+  outline-offset: var(--border-width-thick);
 }
 
 .loginOption.student {
-  background: linear-gradient(180deg, #ff8a1d 0%, #f2690f 100%);
+  background: linear-gradient(180deg, var(--palette-orange-500) 0%, var(--palette-orange-600) 100%);
 }
 
 .loginOption.teacher {
@@ -215,7 +214,7 @@ const landingPageStyle = {
 @media (max-width: 900px) {
   .gameLogo {
     width: min(100%, 29rem);
-    margin-bottom: -1rem;
+    margin-bottom: -var(--space-4);
   }
 
   .loginPlate {
@@ -265,16 +264,6 @@ const landingPageStyle = {
     border-radius: 0.8rem;
     padding: 0.9rem 0.7rem;
     font-size: clamp(1.2rem, 5vw, 1.55rem);
-  }
-
-  .loginOptions {
-    width: min(100%, 13.5rem);
-    gap: 0.65rem;
-  }
-
-  .loginOption {
-    min-height: 3.35rem;
-    font-size: 1.28rem;
   }
 }
 </style>

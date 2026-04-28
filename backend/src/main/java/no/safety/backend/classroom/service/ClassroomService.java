@@ -133,10 +133,10 @@ public class ClassroomService {
       throw new StudentNotInClassException("Student is not a member of this classroom");
     }
 
+    eventPublisher.publishEvent(new NotificationEvent(memberUuid, "Do a thing!", 0));
     member.setClassroom(null);
     c.getMembers().remove(member);
 
-    eventPublisher.publishEvent(new NotificationEvent(memberUuid, "Do a thing!", 0));
     return ClassroomResponse.from(c);
   }
 

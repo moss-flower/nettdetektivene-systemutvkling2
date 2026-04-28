@@ -13,9 +13,9 @@ import no.safety.backend.completedexercise.dto.CompletedExerciseRequest;
 import no.safety.backend.completedexercise.dto.CompletedExerciseResponse;
 import no.safety.backend.completedexercise.model.CompletedExercise;
 import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
-import no.safety.backend.exception.ConflictException;
 import no.safety.backend.exception.ForbiddenException;
 import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.repository.StudentUserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,6 +30,9 @@ class CompletedExerciseServiceTest {
 
   @Mock
   private ProgressValidationService progressValidationService;
+
+  @Mock
+  private StudentUserRepository studentUserRepository;
 
   @InjectMocks
   private CompletedExerciseService completedExerciseService;
@@ -50,7 +53,7 @@ class CompletedExerciseServiceTest {
   }
 
   @Test
-  void create_whenAlreadyCompleted_throwsConflict() {
+  void create_whenAlreadyCompleted_returnsExistingResponse() {
     UUID studentUid = UUID.randomUUID();
     UUID exerciseUid = UUID.randomUUID();
     StudentUser student = StudentUser.builder().publicUuid(studentUid).build();
@@ -59,11 +62,19 @@ class CompletedExerciseServiceTest {
     when(progressValidationService.isLocked(student, exerciseUid)).thenReturn(false);
     when(completedExerciseRepository.existsByStudentUidAndExerciseUid(studentUid, exerciseUid))
         .thenReturn(true);
+    CompletedExercise completed = new CompletedExercise();
+    completed.setStudentUid(studentUid);
+    completed.setExerciseUid(exerciseUid);
+    when(completedExerciseRepository.findByStudentUidAndExerciseUid(studentUid, exerciseUid))
+        .thenReturn(java.util.Optional.of(completed));
 
-    assertThrows(ConflictException.class, () -> completedExerciseService.create(request, student));
+    CompletedExerciseResponse response = completedExerciseService.create(request, student);
 
+    assertEquals(studentUid, response.studentUid());
+    assertEquals(exerciseUid, response.exerciseUid());
     verify(progressValidationService).isLocked(student, exerciseUid);
     verify(completedExerciseRepository).existsByStudentUidAndExerciseUid(studentUid, exerciseUid);
+    verify(studentUserRepository).save(student);
   }
 
   @Test
@@ -84,6 +95,7 @@ class CompletedExerciseServiceTest {
     assertEquals(studentUid, response.studentUid());
     assertEquals(exerciseUid, response.exerciseUid());
     verify(completedExerciseRepository).save(any(CompletedExercise.class));
+    verify(studentUserRepository).save(student);
   }
 
   @Test

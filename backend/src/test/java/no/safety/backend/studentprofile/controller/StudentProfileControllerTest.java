@@ -34,13 +34,13 @@ class StudentProfileControllerTest {
         .build();
     UserPrincipal principal = UserPrincipal.fromEntity(student);
 
-    StudentProfileResponse expected = new StudentProfileResponse(studentUid, "alice", 250, 2, 1);
+    StudentProfileResponse expected = new StudentProfileResponse(studentUid, "alice", 250, 2, 1, 0);
     when(studentProfileService.getProfile(student)).thenReturn(expected);
 
     StudentProfileResponse result = studentProfileController.getMyProfile(principal);
 
     assertSame(expected, result);
-    assertEquals(250, result.totalXp());
+    assertEquals(2, result.totalXp());
     verify(studentProfileService).getProfile(student);
   }
 }

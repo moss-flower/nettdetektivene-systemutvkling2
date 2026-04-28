@@ -249,8 +249,18 @@ watch(
 );
 
 onMounted(async () => {
-	availableStations.value = await Station.backendFetchAllStations();
-	knownExistingUids.value = new Set((await fetchAllWorldFactoryWorlds()).map((world) => world.uid));
+	try {
+		availableStations.value = await Station.backendFetchAllStations();
+	} catch {
+		availableStations.value = [];
+	}
+
+	try {
+		knownExistingUids.value = new Set((await fetchAllWorldFactoryWorlds()).map((world) => world.uid));
+	} catch {
+		knownExistingUids.value = new Set();
+	}
+
 	storedDrafts.value = readWorldFactoryStore().drafts;
 });
 
@@ -466,8 +476,8 @@ watch(payloadPreviewText, () => {
 	border-radius: 1.2rem;
 	background:
 		linear-gradient(180deg, rgba(101, 240, 175, 0.08), rgba(101, 240, 175, 0)) top/100% 5rem no-repeat,
-		var(--surface);
-	box-shadow: var(--shadow);
+		var(--color-bg-surface);
+	box-shadow: var(--shadow-1);
 }
 
 .panelSection + .panelSection {
@@ -620,8 +630,8 @@ watch(payloadPreviewText, () => {
 	padding: 1.5rem;
 	border: 1px solid var(--border);
 	border-radius: 1.2rem;
-	background: var(--surface);
-	box-shadow: var(--shadow);
+	background: var(--color-bg-surface);
+	box-shadow: var(--shadow-1);
 }
 
 .stationPicker__actions {
@@ -742,7 +752,7 @@ watch(payloadPreviewText, () => {
 	border-radius: 999px;
 	padding: 0.75rem 1rem;
 	font-weight: 700;
-	transition: transform var(--transition), border-color var(--transition), background var(--transition);
+	transition: transform var(--transition-base), border-color var(--transition-base), background var(--transition-base);
 }
 
 .ghostButton,
@@ -758,7 +768,7 @@ watch(payloadPreviewText, () => {
 .primaryButton {
 	border-color: var(--primary);
 	background: var(--primary);
-	color: var(--bg);
+	color: var(--color-text-onDark);
 }
 
 .deleteButton {

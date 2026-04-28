@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.UUID;
+import no.safety.backend.auth.service.JwtService;
 import no.safety.backend.exception.NotFoundException;
 import no.safety.backend.excercise.dto.ExerciseReadRequest;
 import no.safety.backend.excercise.dto.ExerciseRequest;
@@ -32,12 +33,15 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 import no.safety.backend.auth.service.JwtService;
 
 @WebMvcTest(ExerciseController.class)
 @AutoConfigureRestTestClient
+@EnableMethodSecurity
 class ExerciseControllerTest {
 
   @Autowired
@@ -97,7 +101,7 @@ class ExerciseControllerTest {
         .expectStatus().isCreated()
         .expectBody(ExerciseResponse.class).value(response -> {
           assertThat(response.title()).isEqualTo("Bokstavenes rangering");
-          assertThat(response.publicId()).isEqualTo(publicId);
+          assertThat(response.uid()).isEqualTo(publicId);
           assertThat(response.tasks()).hasSize(1);
         });
   }
@@ -117,14 +121,14 @@ class ExerciseControllerTest {
 
   @Test
   @WithMockUser(roles = "STUDENT")
-  void create_withStudentRole_returnsCreatedInWebMvcSlice() {
+  void create_withStudentRole_returnsForbiddenInWebMvcSlice() {
     client.post().uri("/api/v1/exercises")
         .contentType(MediaType.APPLICATION_JSON)
         .body(validRequest)
         .exchange()
-        .expectStatus().isCreated();
+        .expectStatus().isForbidden();
 
-    verify(mockService).create(any(ExerciseRequest.class));
+    verifyNoInteractions(mockService);
   }
 
   @Test
@@ -136,7 +140,7 @@ class ExerciseControllerTest {
         .exchange()
         .expectStatus().isOk()
         .expectBody(ExerciseResponse.class).value(response -> {
-          assertThat(response.publicId()).isEqualTo(publicId);
+          assertThat(response.uid()).isEqualTo(publicId);
           assertThat(response.title()).isEqualTo("Bokstavenes rangering");
           assertThat(response.tasks()).hasSize(1);
         });
@@ -166,12 +170,12 @@ class ExerciseControllerTest {
 
   @Test
   @WithMockUser(roles = "STUDENT")
-  void getAll_withStudentRole_returnsOkInWebMvcSlice() {
+  void getAll_withStudentRole_returnsForbiddenInWebMvcSlice() {
     client.get().uri("/api/v1/exercises")
         .exchange()
-        .expectStatus().isOk();
+        .expectStatus().isForbidden();
 
-    verify(mockService).list(any(ExerciseReadRequest.class));
+    verifyNoInteractions(mockService);
   }
 
   @Test
@@ -186,7 +190,7 @@ class ExerciseControllerTest {
         .exchange()
         .expectStatus().isOk()
         .expectBody(ExerciseResponse.class).value(response -> {
-          assertThat(response.publicId()).isEqualTo(publicId);
+          assertThat(response.uid()).isEqualTo(publicId);
           assertThat(response.title()).isEqualTo("Bokstavenes rangering");
         });
   }
@@ -241,11 +245,11 @@ class ExerciseControllerTest {
 
   @Test
   @WithMockUser(roles = "STUDENT")
-  void delete_withStudentRole_returnsNoContentInWebMvcSlice() {
+  void delete_withStudentRole_returnsForbiddenInWebMvcSlice() {
     client.delete().uri("/api/v1/exercises/{publicId}", publicId)
         .exchange()
-        .expectStatus().isNoContent();
+        .expectStatus().isForbidden();
 
-    verify(mockService).delete(publicId);
+    verifyNoInteractions(mockService);
   }
 }

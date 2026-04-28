@@ -12,6 +12,7 @@ import no.safety.backend.completedexercise.dto.CompletedExerciseRequest;
 import no.safety.backend.completedexercise.dto.CompletedExerciseResponse;
 import no.safety.backend.completedexercise.service.CompletedExerciseService;
 import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.repository.StudentUserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,6 +24,9 @@ class CompletedExerciseControllerTest {
 
   @Mock
   private CompletedExerciseService completedExerciseService;
+
+  @Mock
+  private StudentUserRepository studentUserRepository;
 
   @InjectMocks
   private CompletedExerciseController completedExerciseController;
@@ -36,6 +40,7 @@ class CompletedExerciseControllerTest {
     CompletedExerciseRequest request = new CompletedExerciseRequest(exerciseUid);
     CompletedExerciseResponse expected = new CompletedExerciseResponse(studentUid, exerciseUid);
 
+    when(studentUserRepository.findByPublicUuid(studentUid)).thenReturn(java.util.Optional.of(student));
     when(completedExerciseService.create(request, student)).thenReturn(expected);
 
     CompletedExerciseResponse response = completedExerciseController.create(request, principal);
@@ -54,6 +59,7 @@ class CompletedExerciseControllerTest {
         new CompletedExerciseResponse(studentUid, UUID.randomUUID())
     );
 
+    when(studentUserRepository.findByPublicUuid(studentUid)).thenReturn(java.util.Optional.of(student));
     when(completedExerciseService.getMyCompletedExercises(student)).thenReturn(expected);
 
     List<CompletedExerciseResponse> response = completedExerciseController.getMyCompletedExercises(

@@ -11,11 +11,12 @@
   --palette-gold-500: #E8B600;
   --palette-gold-400: #F5CA2E;
 
+  --palette-green-900: #1B5735;
   --palette-green-700: #247048;
   --palette-green-600: #2E8B57;
   --palette-green-100: #D4F5E2;
 
-  --palette-red-700: #A33225;
+  --palette-red-700: #8A2A2A;
   --palette-red-600: #C0392B;
   --palette-red-200: #F3C4BC;
   --palette-red-100: #FFF1EF;
@@ -66,12 +67,16 @@
   --palette-overlay-cork-medium: rgba(111, 66, 33, 0.22);
   --palette-overlay-cork-strong: rgba(125, 79, 42, 0.52);
   --palette-overlay-cork-shadow: rgba(74, 39, 15, 0.18);
+
+  --palette-overlay-red-soft: rgba(163, 50, 37, 0.18);
+  --palette-overlay-green-soft: rgba(36, 122, 72, 0.18);
 }
 
 /* -------- Shared semantic tokens -------- */
 :root {
   /* Colors: Brand & semantic */
   --color-brand-primary: var(--palette-navy-900);
+  --primary: var(--color-brand-primary);
 
   --color-semantic-success: var(--palette-green-600);
   --color-semantic-success-hover: var(--palette-green-700);
@@ -82,6 +87,9 @@
   --color-semantic-error-hover: var(--palette-red-700);
 
   --color-semantic-info: var(--palette-ice-200);
+  --text: var(--color-text-primary);
+  --muted: var(--color-text-secondary);
+  --border: var(--color-border-default);
 
   /* Typography */
   --font-family-display: 'Nunito', 'Fredoka', system-ui, sans-serif;
@@ -184,6 +192,7 @@
   --color-bg-canvas: var(--palette-gray-900);
   --color-bg-surface: var(--palette-white);
   --color-bg-surface-hover: var(--palette-game-surface-hover);
+  --color-bg-sidebar: var(--palette-navy-900);
 
   --color-text-primary: var(--palette-navy-900);
   --color-text-secondary: var(--palette-gray-500);
@@ -200,6 +209,10 @@
 
   --color-disabled-bg: var(--palette-gray-200);
   --color-disabled-text: var(--palette-gray-400);
+
+  --color-text-onLight: var(--palette-navy-900);
+  --color-bg-onLight: var(--palette-cream-100);
+  --color-bg-onLight-hover: var(--palette-game-surface-hover);
 
   /* Game specific */
   --color-tile-locked-bg: var(--palette-gray-200);
@@ -234,6 +247,10 @@
   --color-disabled-bg: var(--palette-gray-200);
   --color-disabled-text: var(--palette-gray-400);
 
+  --color-text-onLight: var(--palette-navy-900);
+  --color-bg-onLight: var(--palette-cream-100);
+  --color-bg-onLight-hover: var(--palette-teacher-surface-hover);
+
   /* Teacher table zebra */
   --color-table-row-alt: var(--palette-gray-50);
 
@@ -257,6 +274,7 @@
 html,
 body,
 #__nuxt {
+  height: 100%;
   min-height: 100%;
 }
 
@@ -269,6 +287,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
 /* -------- Typography primitives -------- */
 h1, h2, h3, h4 {
   font-family: var(--font-family-display), sans-serif;

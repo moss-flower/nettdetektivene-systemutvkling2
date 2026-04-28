@@ -25,6 +25,10 @@ const lockedWorldUid = computed(() => {
   return typeof uid === "string" ? uid.trim() : "";
 });
 
+const lockedWorld = computed(() => {
+  return (availableWorlds.value ?? []).find((world) => world.uid === lockedWorldUid.value) ?? null;
+});
+
 const showWorldSelector = computed(() => lockedWorldUid.value.length === 0);
 
 const effectiveWorldUid = computed(() => {
@@ -94,7 +98,7 @@ const createClassroom = async () => {
           </div>
 
           <div class="fieldGrid">
-            <div class="field field--full">
+            <div class="field fieldFull">
               <TextInput
                 name="name"
                 label="Navn"
@@ -104,7 +108,7 @@ const createClassroom = async () => {
               />
             </div>
 
-            <div class="field field--full">
+            <div class="field fieldFull">
               <TextInput
                 name="description"
                 label="Beskrivelse"
@@ -123,7 +127,7 @@ const createClassroom = async () => {
           </div>
 
           <div v-if="showWorldSelector" class="fieldGrid">
-            <label class="field field--full">
+            <label class="field fieldFull">
               <span>Velg verden</span>
               <select v-model="draft.worldUid">
                 <option value="">Velg verden</option>
@@ -133,7 +137,7 @@ const createClassroom = async () => {
                   :key="world.uid"
                   :value="world.uid"
                 >
-                  {{ world.uid }}
+                  {{ world.title }}
                 </option>
               </select>
             </label>
@@ -141,12 +145,12 @@ const createClassroom = async () => {
 
           <div v-else class="lockedWorldCard">
             <p class="cardEyebrow">Verden</p>
-            <h3>{{ lockedWorldUid }}</h3>
+            <h3>{{ lockedWorld?.title || lockedWorldUid }}</h3>
             <p>Denne verdenen er satt på forhånd og kan ikke endres her.</p>
           </div>
         </section>
 
-        <div class="actionRow actionRow--save">
+        <div class="actionRow actionRowSave">
           <button type="submit" class="primaryButton" :disabled="!canCreate || loading">
             {{ loading ? "Lagrer..." : "Lag klasserom" }}
           </button>
@@ -164,20 +168,25 @@ const createClassroom = async () => {
 	max-width: 1400px;
 	margin: 0 auto;
 	padding: var(--space-4);
+	color: var(--color-text-primary);
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.88)),
+		linear-gradient(180deg, var(--palette-gray-50) 0%, var(--palette-cream-100) 100%);
+	border-radius: var(--radius-4);
 }
 
 .pageHeader {
-	margin-bottom: 1rem;
+	margin-bottom: var(--space-4);
 }
 
 .backButton {
 	display: inline-flex;
 	align-items: center;
-	margin-bottom: 0.75rem;
+	margin-bottom: var(--space-3);
 	padding: 0;
 	border: 0;
 	background: transparent;
-	color: var(--primary);
+	color: var(--color-brand-primary);
 	font: inherit;
 	font-weight: 600;
 	cursor: pointer;
@@ -192,7 +201,7 @@ const createClassroom = async () => {
 .summaryCard p,
 .lockedWorldCard p {
 	margin: 0;
-	color: var(--muted);
+	color: var(--color-text-secondary);
 	line-height: 1.5;
 }
 
@@ -211,28 +220,28 @@ h3 {
 
 .editorPanel {
 	padding: 1.25rem;
-	border: 1px solid var(--border);
+	border: var(--border-width-hairline) solid var(--color-border-default);
 	border-radius: 1.2rem;
 	background:
 		linear-gradient(180deg, rgba(101, 240, 175, 0.08), rgba(101, 240, 175, 0)) top/100% 5rem no-repeat,
-		var(--surface);
-	box-shadow: var(--shadow);
+		var(--color-bg-surface);
+	box-shadow: var(--shadow-1);
 }
 
 .panelSection + .panelSection {
-	margin-top: 1.5rem;
+	margin-top: var(--space-6);
 }
 
 .sectionHeading {
 	display: grid;
 	gap: 0.35rem;
-	margin-bottom: 1rem;
+	margin-bottom: var(--space-4);
 }
 
-.sectionHeading--inline {
+.sectionHeadingInline {
 	grid-template-columns: 1fr auto;
 	align-items: start;
-	gap: 0.75rem;
+	gap: var(--space-3);
 }
 
 .fieldGrid {
@@ -246,7 +255,7 @@ h3 {
 	gap: 0.45rem;
 }
 
-.field--full {
+.fieldFull {
 	grid-column: 1 / -1;
 }
 
@@ -258,47 +267,47 @@ h3 {
 .field input,
 .field select {
 	width: 100%;
-	padding: 0.85rem 1rem;
-	border: 1px solid var(--border);
+	padding: 0.85rem var(--space-4);
+	border: var(--border-width-hairline) solid var(--color-border-default);
 	border-radius: 0.9rem;
-	background: rgba(0, 0, 0, 0.16);
-	color: var(--text);
+	background: color-mix(in srgb, var(--color-bg-surface) 92%, var(--color-bg-canvas) 8%);
+	color: var(--color-text-primary);
 	font: inherit;
 }
 
 .field input:focus,
 .field select:focus {
 	outline: none;
-	border-color: var(--primary);
+	border-color: var(--color-brand-primary);
 }
 
 .lockedWorldCard {
 	display: grid;
-	gap: 0.5rem;
-	padding: 1rem;
-	border: 1px solid var(--border);
-	border-radius: 1rem;
-	background: rgba(255, 255, 255, 0.02);
+	gap: var(--space-2);
+	padding: var(--space-4);
+	border: var(--border-width-hairline) solid var(--color-border-default);
+	border-radius: var(--radius-2);
+	background: color-mix(in srgb, var(--color-bg-surface) 94%, var(--color-semantic-info) 6%);
 }
 
 .ghostButton,
 .primaryButton {
-	border: 1px solid var(--border);
-	border-radius: 999px;
-	padding: 0.75rem 1rem;
+	border: var(--border-width-hairline) solid var(--color-border-default);
+	border-radius: var(--radius-pill);
+	padding: var(--space-3) var(--space-4);
 	font-weight: 700;
-	transition: transform var(--transition), border-color var(--transition), background var(--transition);
+	transition: transform var(--transition-base), border-color var(--transition-base), background var(--transition-base);
 }
 
 .ghostButton {
-	background: transparent;
-	color: var(--text);
+	background: color-mix(in srgb, var(--color-bg-surface) 94%, var(--color-semantic-info) 6%);
+	color: var(--color-text-primary);
 }
 
 .primaryButton {
-	border-color: var(--primary);
-	background: var(--primary);
-	color: var(--bg);
+	border-color: var(--color-brand-primary);
+	background: var(--color-brand-primary);
+	color: var(--color-text-onDark);
 }
 
 .ghostButton:hover,
@@ -315,10 +324,10 @@ h3 {
 .actionRow {
 	display: flex;
 	justify-content: flex-end;
-	margin-top: 1.5rem;
+	margin-top: var(--space-6);
 }
 
-.actionRow--save {
+.actionRowSave {
 	margin-top: 0;
 }
 
@@ -328,8 +337,8 @@ h3 {
 
 .payloadPreview {
 	overflow-x: auto;
-	padding: 1rem;
-	border-radius: 1rem;
+	padding: var(--space-4);
+	border-radius: var(--radius-2);
 	background: rgba(0, 0, 0, 0.24);
 	color: #d7f9ea;
 	font-size: 0.9rem;
@@ -348,7 +357,7 @@ h3 {
 		grid-template-columns: 1fr;
 	}
 
-	.sectionHeading--inline,
+	.sectionHeadingInline,
 	.actionRow {
 		display: grid;
 	}

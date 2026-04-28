@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import BossCharacter from '~/components/gameplay/shared/BossCharacter.vue'
+import BossVictoryDialog from '~/components/gameplay/shared/BossVictoryDialog.vue'
 import EmailHotspotsTemplate from '~/components/gameplay/templates/EmailHotspotsTemplate.vue'
 import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDialog.vue'
+import LevelupPopup from '~/components/gameplay/shared/LevelupPopup.vue'
 import PasswordStrengthTemplate from '~/components/gameplay/templates/PasswordStrengthTemplate.vue'
 import SortIntoBucketsTemplate from '~/components/gameplay/templates/SortIntoBucketsTemplate.vue'
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
@@ -10,6 +13,8 @@ import { markExerciseCompleted, useCompletedExerciseUids } from '~/composables/u
 import { routePaths } from '~/composables/utils/routePaths'
 import { Exercise } from '~/composables/types/ExerciseType'
 import { Station } from '~/composables/types/StationType'
+import { useStudentProfile } from '~/composables/useStudentProfile'
+import { getLevel } from '~/composables/utils/studentProgress'
 
 import type {
   EmailHotspotResult,
@@ -44,6 +49,7 @@ if (!station) {
 }
 
 const { celebrateCorrectAnswer, stop } = useGameConfetti()
+const { getMyProfile } = useStudentProfile()
 const completedExerciseUids = await useCompletedExerciseUids()
 const completionError = ref('')
 
@@ -82,10 +88,66 @@ const tasks = activeExercise
   : []
 const currentIndex = ref(0)
 const showExerciseResultDialog = ref(false)
+const showLevelupPopup = ref(false)
+const leveledUpTo = ref(1)
 const correctCount = ref(0)
 const answerState = ref<{ correct: boolean, choice: string, missingStartingPassword?: boolean } | null>(null)
 
+const isExerciseComplete = computed(() => tasks.length > 0 && correctCount.value === tasks.length)
+
+const isBossStation = station.isBoss
+const bossMaxHp = 100
+const bossHp = computed(() => {
+  if (tasks.length === 0) return bossMaxHp
+  if (correctCount.value >= tasks.length) return 0
+  return Math.max(0, bossMaxHp - Math.floor((correctCount.value * bossMaxHp) / tasks.length))
+})
+const bossDamaged = ref(false)
+let bossDamageTimeout: ReturnType<typeof setTimeout> | null = null
+
+const triggerBossDamage = () => {
+  if (bossDamageTimeout) {
+    clearTimeout(bossDamageTimeout)
+  }
+  bossDamaged.value = false
+  requestAnimationFrame(() => {
+    bossDamaged.value = true
+    bossDamageTimeout = setTimeout(() => {
+      bossDamaged.value = false
+    }, 400)
+  })
+}
+
 const currentTask = computed(() => tasks[currentIndex.value] ?? null)
+
+const bossTaskImages = computed(() => {
+  const task = currentTask.value
+  if (!task) return []
+
+  if (task.templateKind === 'multiple-choice' && task.prompt?.imageUrl) {
+    return [{
+      src: task.prompt.imageUrl,
+      alt: task.prompt.imageAlt ?? '',
+    }]
+  }
+
+  if (task.templateKind === 'x-or-y') {
+    return [
+      {
+        src: task.options.x.imageUrl,
+        alt: task.options.x.imageAlt,
+        label: task.options.x.eyebrow ?? task.options.x.title,
+      },
+      {
+        src: task.options.y.imageUrl,
+        alt: task.options.y.imageAlt,
+        label: task.options.y.eyebrow ?? task.options.y.title,
+      },
+    ]
+  }
+
+  return []
+})
 const currentOptions = computed(() => {
   if (!currentTask.value || currentTask.value.templateKind !== 'x-or-y') {
     return null
@@ -126,6 +188,14 @@ const exerciseSelectRoute = computed(() => ({
   path: routePaths.studentExerciseDifficultySelect,
   query: { uid: station.uid },
 }))
+
+const bossVictoryRoute = computed(() => ({
+  path: routePaths.studentLevels,
+}))
+
+const showBossVictoryDialog = computed(() =>
+  isBossStation && showExerciseResultDialog.value && isExerciseComplete.value
+)
 
 const feedbackTitle = computed(() => {
   if (!currentTask.value) {
@@ -179,6 +249,83 @@ const feedbackText = computed(() => {
 })
 
 const showAnswerDialog = computed(() => Boolean(answerState.value))
+const canAutoSolve = computed(() => Boolean(currentTask.value) && !answerState.value)
+const taskResultActionLabel = computed(() => {
+  if (!answerState.value) {
+    return 'Neste sak'
+  }
+
+  if (!answerState.value.correct) {
+    return 'Tilbake til stasjonen'
+  }
+
+  return currentIndex.value >= tasks.length - 1 ? 'Fullfor' : 'Neste sak'
+})
+
+const autoSolveCurrentTask = () => {
+  if (!currentTask.value || answerState.value) {
+    return
+  }
+
+  if (currentTask.value.templateKind === 'multiple-choice') {
+    onAnsweredMultipleChoice({
+      correct: true,
+      choice: currentTask.value.correctChoice,
+    })
+    return
+  }
+
+  if (currentTask.value.templateKind === 'x-or-y') {
+    onAnswered({
+      correct: true,
+      choice: currentTask.value.correctChoice,
+    })
+    return
+  }
+
+  if (currentTask.value.templateKind === 'email-hotspots') {
+    onAnsweredEmailHotspots({
+      correct: true,
+      selectedTargetIds: currentTask.value.targets
+        .filter((target) => target.isSuspicious)
+        .map((target) => target.id),
+    })
+    return
+  }
+
+  if (currentTask.value.templateKind === 'sort-into-buckets') {
+    const placements = currentTask.value.items.reduce<Record<string, string[]>>((accumulator, item) => {
+      if (!accumulator[item.correctBucketKey]) {
+        accumulator[item.correctBucketKey] = []
+      }
+
+      accumulator[item.correctBucketKey].push(item.id)
+      return accumulator
+    }, {})
+
+    onAnsweredSortIntoBuckets({
+      correct: true,
+      placements,
+    })
+    return
+  }
+
+  const fallbackPassword = currentTask.value.mode === 'improve'
+    ? `${currentTask.value.startingPassword ?? 'TryggStart'}!9X`
+    : 'TryggMaanebase!9X'
+
+  onAnsweredPasswordStrength({
+    correct: true,
+    password: fallbackPassword,
+    score: currentTask.value.minScoreToPass,
+  })
+}
+
+watch(correctCount, (next, prev) => {
+  if (isBossStation && next > prev) {
+    triggerBossDamage()
+  }
+})
 
 const onAnswered = (result: XOrYResult) => {
   answerState.value = {
@@ -241,8 +388,27 @@ const onAnsweredPasswordStrength = (result: PasswordStrengthResult) => {
   }
 }
 
+const fetchCurrentLevel = async () => {
+  const profile = await getMyProfile()
+
+  return getLevel(profile.score).level
+}
+
+const closeLevelupPopup = () => {
+  showLevelupPopup.value = false
+  showExerciseResultDialog.value = true
+}
+
 const next = async () => {
   stop()
+
+  if (answerState.value && !answerState.value.correct) {
+    answerState.value = null
+    completionError.value = ''
+    await navigateTo(exerciseSelectRoute.value)
+    return
+  }
+
   answerState.value = null
   completionError.value = ''
 
@@ -250,12 +416,36 @@ const next = async () => {
     currentIndex.value++
   } else {
     if (
-      activeExercise
-      && !completedExerciseUids.includes(activeExercise.uid)
+      isExerciseComplete.value
+      && activeExercise
     ) {
+      let levelBeforeCompletion: number | null = null
+
       try {
+        try {
+          levelBeforeCompletion = await fetchCurrentLevel()
+        } catch (error) {
+          console.error('Error fetching student level before completion:', error)
+        }
+
         await markExerciseCompleted(activeExercise.uid)
-        completedExerciseUids.push(activeExercise.uid)
+
+        if (levelBeforeCompletion !== null) {
+          try {
+            const levelAfterCompletion = await fetchCurrentLevel()
+
+            if (levelAfterCompletion > levelBeforeCompletion) {
+              leveledUpTo.value = levelAfterCompletion
+              showLevelupPopup.value = true
+            }
+          } catch (error) {
+            console.error('Error fetching student level after completion:', error)
+          }
+        }
+
+        if (!completedExerciseUids.includes(activeExercise.uid)) {
+          completedExerciseUids.push(activeExercise.uid)
+        }
       } catch (error: any) {
         completionError.value =
           error?.data?.detail
@@ -265,7 +455,9 @@ const next = async () => {
       }
     }
 
-    showExerciseResultDialog.value = true
+    if (!showLevelupPopup.value) {
+      showExerciseResultDialog.value = true
+    }
   }
 }
 </script>
@@ -274,14 +466,21 @@ const next = async () => {
   <section class="station-page">
     <header class="station-page__hero">
       <div class="station-page__header">
-        <div class="station-page__meta">
+        <BossCharacter
+          v-if="isBossStation"
+          :hp="bossHp"
+          :max-hp="bossMaxHp"
+          :damaged="bossDamaged"
+          :images="bossTaskImages"
+        />
+        <div v-else class="station-page__meta">
           <p class="station-page__eyebrow">{{ station.title }}</p>
           <p class="station-page__progress-pill">{{ progressLabel }}</p>
         </div>
       </div>
     </header>
 
-    <div class="station-page__board">
+    <div class="stationPageBoard">
       <XOrYTemplate
         v-if="currentTask?.templateKind === 'x-or-y' && currentOptions"
         :key="`${currentTask.id}-xory`"
@@ -290,6 +489,7 @@ const next = async () => {
         :correct-choice="currentTask.correctChoice"
         :disabled="Boolean(answerState)"
         :selected-choice="selectedChoice"
+        :hide-images="isBossStation"
         @answered="onAnswered"
       />
       <MultipleChoiceTemplate
@@ -300,6 +500,7 @@ const next = async () => {
         :correct-choice="currentTask.correctChoice"
         :disabled="Boolean(answerState)"
         :selected-choice="selectedMultipleChoiceOption"
+        :hide-images="isBossStation"
         @answered="onAnsweredMultipleChoice"
       />
       <EmailHotspotsTemplate
@@ -330,22 +531,45 @@ const next = async () => {
       />
     </div>
 
+    <div class="station-page__test-tools">
+      <button
+        class="station-page__test-button"
+        type="button"
+        :disabled="!canAutoSolve"
+        @click="autoSolveCurrentTask"
+      >
+        Autosolve
+      </button>
+    </div>
+
     <TaskResultDialog
       v-if="showAnswerDialog && answerState"
       :title="feedbackTitle"
       :message="feedbackText"
       :is-last="currentIndex >= tasks.length - 1"
       :correct="answerState.correct"
+      :action-label="taskResultActionLabel"
       @next="next"
     />
 
+    <BossVictoryDialog
+      v-if="showBossVictoryDialog"
+      :to="bossVictoryRoute"
+    />
+
     <ExerciseResultDialog
-      v-if="showExerciseResultDialog"
+      v-else-if="showExerciseResultDialog"
       :correct-count="correctCount"
       :total="tasks.length"
       msg-completed="Øvelse fullført!"
-      msg-failed="Øvelse fullført!"
+      msg-failed="Øvelse ikke fullført"
       :to="exerciseSelectRoute"
+    />
+
+    <LevelupPopup
+      v-if="showLevelupPopup"
+      :level="leveledUpTo"
+      @close="closeLevelupPopup"
     />
 
     <p v-if="completionError" class="station-page__completion-error">{{ completionError }}</p>
@@ -353,36 +577,36 @@ const next = async () => {
 </template>
 
 <style scoped>
-.station-page {
+.stationPage {
   max-width: 72rem;
   margin: 0 auto;
   display: grid;
-  gap: 1rem;
+  gap: var(--space-4);
   color: #111827;
 }
 
-.station-page__hero {
+.stationPageHero {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: var(--space-6);
   width: 100%;
 }
 
-.station-page__header {
+.stationPageHeader {
   display: grid;
   gap: 0.6rem;
   width: 100%;
 }
 
-.station-page__meta {
+.stationPageMeta {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
-.station-page__eyebrow {
+.stationPageEyebrow {
   color: #1d4f91;
   font-size: 1.15rem;
   font-weight: 700;
@@ -390,33 +614,52 @@ const next = async () => {
   text-transform: uppercase;
 }
 
-.station-page__progress-pill {
+.pageProgressPill {
   flex-shrink: 0;
   padding: 0.45rem 0.85rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: #dbeafe;
   color: #1e3a5f;
   font-size: 0.95rem;
   font-weight: 700;
 }
 
-.station-page__description {
+.stationPageDescription {
   max-width: 46rem;
   font-size: 0.9rem;
   line-height: 1.5;
-  color: #374151;
+  color: var(--palette-gray-700);
 }
 
-.station-page__exercise-title {
+.pageExerciseTitle {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--palette-gray-900);
 }
 
-.station-page__board {
+.stationPageBoard {
   padding: clamp(0.8rem, 1.4vw, 1.1rem);
   border-radius: 1.6rem;
   background: #f5f5f4;
+}
+
+.station-page__test-tools {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.station-page__test-button {
+  padding: 0.75rem 1rem;
+  border: 1px dashed #1d4f91;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4f91;
+  font-weight: 700;
+}
+
+.station-page__test-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .station-page__completion-error {

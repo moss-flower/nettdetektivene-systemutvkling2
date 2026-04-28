@@ -25,25 +25,25 @@ function handleClick(event: MouseEvent) {
 </script>
 
 <template>
-  <button type="button" class="menu-item" @click="handleClick">
+  <button type="button" class="menuItem" @click="handleClick">
     <img
       :src="props.imagePath"
       :alt="props.alt"
-      class="menu-item__image"
+      class="menuItemImage"
       :style="{ transform: `rotate(${props.rotation}deg)` }"
     >
     <span
       v-if="props.tooltipText"
       :class="[
-        'menu-item__tooltip',
-        `menu-item__tooltip--${props.tooltipPlacement}`,
+        'menuItemTooltip',
+        props.tooltipPlacement === 'top' ? 'itemTooltipTop' : 'itemTooltipBottom',
       ]"
     >{{ props.tooltipText }}</span>
   </button>
 </template>
 
 <style scoped>
-.menu-item {
+.menuItem {
   position: relative;
   isolation: isolate;
   width: 100%;
@@ -56,17 +56,17 @@ function handleClick(event: MouseEvent) {
   transition: transform var(--transition);
 }
 
-.menu-item:hover {
+.menuItem:hover {
   transform: translateY(-4px);
 }
 
-.menu-item:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--primary) 65%, white);
+.menuItem:focus-visible {
+  outline: var(--border-width-thick) solid color-mix(in srgb, var(--color-brand-primary) 65%, white);
   outline-offset: 0.35rem;
-  border-radius: 1rem;
+  border-radius: var(--radius-2);
 }
 
-.menu-item__image {
+.menuItemImage {
   width: 100%;
   height: auto;
   display: block;
@@ -74,22 +74,22 @@ function handleClick(event: MouseEvent) {
   transition: filter var(--transition);
 }
 
-.menu-item:hover .menu-item__image,
-.menu-item:focus-visible .menu-item__image {
+.menuItem:hover .menuItemImage,
+.menuItem:focus-visible .menuItemImage {
   filter:
     drop-shadow(0 0 0.5rem var(--primary-hover));
 }
 
-.menu-item__tooltip {
+.menuItemTooltip {
   position: absolute;
   left: 50%;
   z-index: 20;
   filter: none;
   width: max-content;
   max-width: min(15rem, calc(100vw - 2rem));
-  padding: 0.5rem 0.75rem;
-  border: 2px solid rgb(98 163 120 / 0.48);
-  border-radius: 1rem 1rem 1rem 0.45rem;
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width-thin) solid rgb(98 163 120 / 0.48);
+  border-radius: var(--radius-2) var(--radius-2) var(--radius-2) 0.45rem;
   background: linear-gradient(180deg, #e9ffd9 0%, #bde9a3 100%);
   color: #244b2d;
   font-size: 0.92rem;
@@ -102,7 +102,7 @@ function handleClick(event: MouseEvent) {
     transform 160ms ease;
 }
 
-.menu-item__tooltip::after {
+.menuItemTooltip::after {
   content: "";
   position: absolute;
   left: 50%;
@@ -110,42 +110,42 @@ function handleClick(event: MouseEvent) {
   filter: none;
   width: 0.85rem;
   height: 0.85rem;
-  border-right: 2px solid rgb(98 163 120 / 0.48);
-  border-bottom: 2px solid rgb(98 163 120 / 0.48);
+  border-right: var(--border-width-thin) solid rgb(98 163 120 / 0.48);
+  border-bottom: var(--border-width-thin) solid rgb(98 163 120 / 0.48);
   background: #bde9a3;
 }
 
-.menu-item__tooltip--top {
+.itemTooltipTop {
   bottom: calc(100%);
   transform: translateX(-50%) translateY(0.35rem) rotate(-2deg);
   transform-origin: bottom center;
 }
 
-.menu-item__tooltip--top::after {
+.itemTooltipTop::after {
   top: 100%;
   transform: translateX(-50%) translateY(-55%) rotate(45deg);
 }
 
-.menu-item__tooltip--bottom {
-  top: calc(100% - 2rem);
+.itemTooltipBottom {
+  top: calc(100% - var(--space-8));
   transform: translateX(-50%) translateY(-0.35rem) rotate(-2deg);
   transform-origin: top center;
 }
 
-.menu-item__tooltip--bottom::after {
+.itemTooltipBottom::after {
   top: 0;
   transform: translateX(-50%) translateY(-45%) rotate(225deg);
 }
 
-.menu-item:hover .menu-item__tooltip,
-.menu-item:focus-visible .menu-item__tooltip {
+.menuItem:hover .menuItemTooltip,
+.menuItem:focus-visible .menuItemTooltip {
   opacity: 1;
 }
 
-.menu-item:hover .menu-item__tooltip--top,
-.menu-item:focus-visible .menu-item__tooltip--top,
-.menu-item:hover .menu-item__tooltip--bottom,
-.menu-item:focus-visible .menu-item__tooltip--bottom {
+.menuItem:hover .itemTooltipTop,
+.menuItem:focus-visible .itemTooltipTop,
+.menuItem:hover .itemTooltipBottom,
+.menuItem:focus-visible .itemTooltipBottom {
   transform: translateX(-50%) translateY(0) rotate(-2deg);
 }
 </style>

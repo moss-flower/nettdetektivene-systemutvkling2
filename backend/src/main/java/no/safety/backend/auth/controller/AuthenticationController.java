@@ -41,8 +41,18 @@ public class AuthenticationController {
 
         ResponseCookie jwtCookie = jwtCookieService.createCookie(userTokenResponse.jwtToken());
         
+        
         return ResponseEntity.status(HttpStatus.OK)
             .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
             .body(userTokenResponse.userLoginResponse());
+    }
+
+    @PostMapping(value = "/logout")
+    public ResponseEntity<Void> logout(){
+        ResponseCookie jwtCookie = jwtCookieService.createEmptyCookie();
+
+        return ResponseEntity.noContent()
+            .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+            .build();
     }
 }
