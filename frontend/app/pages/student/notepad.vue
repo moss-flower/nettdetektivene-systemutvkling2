@@ -44,8 +44,7 @@ function handleNewNoteClick() {
 <template>
   <section class="notepadPage">
     <div class="leftColumn">
-      <div></div>
-      <p>PLACEHOLDER FOR PROFILE</p>
+      <AvatarElement />
     </div>
 
     <div class="notepadWrapper">
@@ -135,7 +134,7 @@ function handleNewNoteClick() {
 .leftColumn {
   /* three children: top spacer + profile placeholder + back to menu arrow
      space between = arrow pushed to bottom of rail + lets placeholder sit in the middle */
-  justify-content: space-between;
+  justify-content: center;
 }
 
 .rightColumn {
