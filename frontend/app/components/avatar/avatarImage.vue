@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AvatarConfig, HairStyle, Outfit } from "~/composables/types/AvatarTypes";
+import type { AvatarConfig, HairColor, HairStyle, Outfit, SkinColor } from "~/composables/types/AvatarTypes";
 import { DEFAULT_AVATAR_CONFIG } from "~/composables/types/AvatarTypes";
 import bodyImage from "~/assets/svg-files/body/body_comp.svg";
 import eyebrowsImage from "~/assets/svg-files/face/eyebrows.svg";
@@ -39,16 +39,42 @@ const hatBackImageMap: Record<Outfit, string> = {
   NOIR: hatNoirBack,
 };
 
-const hairImageMap: Record<HairStyle, string> = {
-  SHORT: hairImage,
+const hairBackImageMap: Partial<Record<HairStyle, string>> = {
   LONG: hairStraightBack,
+};
+
+const hairFilterMap: Record<HairColor, string> = {
+  BROWN: "none",
+  BLACK: "brightness(0.45) saturate(0.65) contrast(1.15)",
+  // Source hair art is a muted mud-brown, so these filters have to both lift
+  // brightness and shift hue harder than a neutral base would need.
+  BLONDE: "sepia(1) saturate(12) hue-rotate(2deg) brightness(1.82) contrast(0.94)",
+  ORANGE: "sepia(1) saturate(13.5) hue-rotate(330deg) brightness(1.26) contrast(1.1)",
+};
+
+const skinFilterMap: Record<SkinColor, string> = {
+  COLOR1: "none",
+  // Keep the progression dark, but add a slight warm-red bias so the tones
+  // read more naturally brown instead of drifting green on the light base art.
+  COLOR2: "sepia(0.04) hue-rotate(345deg) brightness(0.9) saturate(0.96) contrast(1.04)",
+  COLOR3: "sepia(0.08) hue-rotate(343deg) brightness(0.76) saturate(0.94) contrast(1.08)",
+  COLOR4: "sepia(0.12) hue-rotate(341deg) brightness(0.62) saturate(0.92) contrast(1.12)",
+  COLOR5: "sepia(0.16) hue-rotate(339deg) brightness(0.48) saturate(0.9) contrast(1.16)",
+  COLOR6: "sepia(0.2) hue-rotate(337deg) brightness(0.34) saturate(0.88) contrast(1.22)",
 };
 
 const avatar = computed(() => props.avatar ?? DEFAULT_AVATAR_CONFIG);
 const outfitImage = computed(() => outfitImageMap[avatar.value.outfit]);
 const hatFrontImage = computed(() => hatImageMap[avatar.value.outfit]);
 const hatBackImage = computed(() => hatBackImageMap[avatar.value.outfit]);
-const selectedHairImage = computed(() => hairImageMap[avatar.value.hairStyle]);
+const hairFrontImage = computed(() => hairImage);
+const hairBackImage = computed(() => hairBackImageMap[avatar.value.hairStyle] ?? null);
+const hairLayerStyle = computed(() => ({
+  filter: hairFilterMap[avatar.value.hairColor],
+}));
+const skinLayerStyle = computed(() => ({
+  filter: skinFilterMap[avatar.value.skinColor],
+}));
 </script>
 
 <template>
@@ -76,6 +102,17 @@ const selectedHairImage = computed(() => hairImageMap[avatar.value.hairStyle]);
       </defs>
 
       <g clip-path="url(#avatar-clip)">
+        <g v-if="hairBackImage" class="avatarLayerHair avatarLayerHairBack" :style="hairLayerStyle">
+          <image
+            :href="hairBackImage"
+            x="0"
+            y="0"
+            width="330"
+            height="460"
+            preserveAspectRatio="xMidYMin meet"
+          />
+        </g>
+
         <g v-if="hatBackImage" class="avatarLayerHat avatarLayerHatBack">
           <image
             :href="hatBackImage"
@@ -86,7 +123,7 @@ const selectedHairImage = computed(() => hairImageMap[avatar.value.hairStyle]);
             preserveAspectRatio="xMidYMin meet"
           />
         </g>
-        <g class="avatarLayerBody">
+        <g class="avatarLayerBody" :style="skinLayerStyle">
           <image
             :href="bodyImage"
             x="0"
@@ -121,9 +158,9 @@ const selectedHairImage = computed(() => hairImageMap[avatar.value.hairStyle]);
           </g>
         </g>
 
-        <g v-if="selectedHairImage" class="avatarLayerHair">
+        <g v-if="hairFrontImage" class="avatarLayerHair avatarLayerHairFront" :style="hairLayerStyle">
           <image
-            :href="selectedHairImage"
+            :href="hairFrontImage"
             x="0"
             y="0"
             width="330"
