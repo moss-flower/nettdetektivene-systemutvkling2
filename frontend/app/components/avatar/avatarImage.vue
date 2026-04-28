@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import type { AvatarConfig, HairColor, HairStyle, Outfit, SkinColor } from "~/composables/types/AvatarTypes";
 import { DEFAULT_AVATAR_CONFIG } from "~/composables/types/AvatarTypes";
-import bodyImage from "~/assets/svg-files/body/body_comp.svg";
-import eyebrowsImage from "~/assets/svg-files/face/eyebrows.svg";
-import eyesImage from "~/assets/svg-files/face/eyes.svg";
-import hairImage from "~/assets/svg-files/hair/hair.svg";
-import hairCurlyBack from "~/assets/svg-files/hair/hair_curly_back.svg";
-import hairStraightBack from "~/assets/svg-files/hair/hair_straight_back.svg";
+import bodyImage from "~/assets/svg-files/body/body_comp.vue";
+import eyebrowsImage from "~/assets/svg-files/face/eyebrows.vue";
+import eyesImage from "~/assets/svg-files/face/eyes.vue";
+import hairImage from "~/assets/svg-files/hair/hair.vue";
+import hairCurlyBack from "~/assets/svg-files/hair/hair_curly_back.vue";
+import hairStraightBack from "~/assets/svg-files/hair/hair_straight_back.vue";
 import hatNoirFront from "~/assets/svg-files/hat/hat_noir_front.svg";
 import hatSherlockFront from "~/assets/svg-files/hat/hat_sherlock_front.svg";
 import outfitNoir from "~/assets/svg-files/outfit/outfit_noir.svg";
 import outfitSherlock from "~/assets/svg-files/outfit/outfit_sherlock.svg";
 import hatNoirBack from "~/assets/svg-files/hat/hat_noir_back.svg";
 import hatSherlockBack from "~/assets/svg-files/hat/hat_sherlock_back.svg";
+import { SKIN_THEMES, HAIR_THEMES, EYE_COLORS } from "~/composables/useAvatarThemes";
 
 const props = withDefaults(
   defineProps<{
@@ -39,42 +40,20 @@ const hatBackImageMap: Record<Outfit, string> = {
   NOIR: hatNoirBack,
 };
 
-const hairBackImageMap: Partial<Record<HairStyle, string>> = {
+const hairBackComponentMap: Partial<Record<HairStyle, Component>> = {
   LONG: hairStraightBack,
+  CURLY: hairCurlyBack
 };
 
-const hairFilterMap: Record<HairColor, string> = {
-  BROWN: "none",
-  BLACK: "brightness(0.45) saturate(0.65) contrast(1.15)",
-  // Source hair art is a muted mud-brown, so these filters have to both lift
-  // brightness and shift hue harder than a neutral base would need.
-  BLONDE: "sepia(1) saturate(12) hue-rotate(2deg) brightness(1.82) contrast(0.94)",
-  ORANGE: "sepia(1) saturate(13.5) hue-rotate(330deg) brightness(1.26) contrast(1.1)",
-};
-
-const skinFilterMap: Record<SkinColor, string> = {
-  COLOR1: "none",
-  // Keep the progression dark, but add a slight warm-red bias so the tones
-  // read more naturally brown instead of drifting green on the light base art.
-  COLOR2: "sepia(0.04) hue-rotate(345deg) brightness(0.9) saturate(0.96) contrast(1.04)",
-  COLOR3: "sepia(0.08) hue-rotate(343deg) brightness(0.76) saturate(0.94) contrast(1.08)",
-  COLOR4: "sepia(0.12) hue-rotate(341deg) brightness(0.62) saturate(0.92) contrast(1.12)",
-  COLOR5: "sepia(0.16) hue-rotate(339deg) brightness(0.48) saturate(0.9) contrast(1.16)",
-  COLOR6: "sepia(0.2) hue-rotate(337deg) brightness(0.34) saturate(0.88) contrast(1.22)",
-};
 
 const avatar = computed(() => props.avatar ?? DEFAULT_AVATAR_CONFIG);
 const outfitImage = computed(() => outfitImageMap[avatar.value.outfit]);
 const hatFrontImage = computed(() => hatImageMap[avatar.value.outfit]);
 const hatBackImage = computed(() => hatBackImageMap[avatar.value.outfit]);
-const hairFrontImage = computed(() => hairImage);
-const hairBackImage = computed(() => hairBackImageMap[avatar.value.hairStyle] ?? null);
-const hairLayerStyle = computed(() => ({
-  filter: hairFilterMap[avatar.value.hairColor],
-}));
-const skinLayerStyle = computed(() => ({
-  filter: skinFilterMap[avatar.value.skinColor],
-}));
+const hairBackComponent = computed(() => hairBackComponentMap[avatar.value.hairStyle] ?? null)
+const skinLayerStyle = computed(() => SKIN_THEMES[avatar.value.skinColor]);
+const hairLayerStyle = computed(() => HAIR_THEMES[avatar.value.hairColor]);
+const eyeLayerStyle = computed(() => EYE_COLORS[avatar.value.eyeColor]);
 </script>
 
 <template>
@@ -102,15 +81,8 @@ const skinLayerStyle = computed(() => ({
       </defs>
 
       <g clip-path="url(#avatar-clip)">
-        <g v-if="hairBackImage" class="avatarLayerHair avatarLayerHairBack" :style="hairLayerStyle">
-          <image
-            :href="hairBackImage"
-            x="0"
-            y="0"
-            width="330"
-            height="460"
-            preserveAspectRatio="xMidYMin meet"
-          />
+        <g v-if="hairBackComponent" class="avatarLayerHair avatarLayerHairBack" :style="hairLayerStyle">
+          <hairBackComponent/>
         </g>
 
         <g v-if="hatBackImage" class="avatarLayerHat avatarLayerHatBack">
@@ -123,50 +95,14 @@ const skinLayerStyle = computed(() => ({
             preserveAspectRatio="xMidYMin meet"
           />
         </g>
-        <g class="avatarLayerBody" :style="skinLayerStyle">
-          <image
-            :href="bodyImage"
-            x="0"
-            y="0"
-            width="330"
-            height="460"
-            preserveAspectRatio="xMidYMid meet"
-          />
-        </g>
-
+        <g class="avatarLayerBody" :style="skinLayerStyle"><bodyImage/></g>
         <g class="avatarLayerFace">
-          <g class="avatarFeatureEyebrows">
-            <image
-              :href="eyebrowsImage"
-              x="0"
-              y="0"
-              width="330"
-              height="460"
-              preserveAspectRatio="xMidYMid meet"
-            />
-          </g>
-
-          <g class="avatarFeatureEyes">
-            <image
-              :href="eyesImage"
-              x="0"
-              y="0"
-              width="330"
-              height="460"
-              preserveAspectRatio="xMidYMid meet"
-            />
-          </g>
+          <g class="avatarFeatureEyebrows" :style="hairLayerStyle"><eyebrowsImage/></g>
+          <g class="avatarFeatureEyes" :style="eyeLayerStyle"><eyesImage/> </g>
         </g>
 
-        <g v-if="hairFrontImage" class="avatarLayerHair avatarLayerHairFront" :style="hairLayerStyle">
-          <image
-            :href="hairFrontImage"
-            x="0"
-            y="0"
-            width="330"
-            height="460"
-            preserveAspectRatio="xMidYMin meet"
-          />
+        <g class="avatarLayerHair avatarLayerHairFront" :style="hairLayerStyle">
+          <hairImage/>
         </g>
 
         <g v-if="outfitImage" class="avatarLayerOutfit">

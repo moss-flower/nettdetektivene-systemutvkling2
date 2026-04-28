@@ -1,4 +1,4 @@
-export type HairStyle = 'LONG' | 'SHORT';
+export type HairStyle = 'LONG' | 'SHORT' | 'CURLY';
 
 export type HairColor = 'BLONDE' | 'BROWN' | 'ORANGE' | 'BLACK';
 
