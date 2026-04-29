@@ -1,19 +1,7 @@
 <script setup lang="ts">
-
-//Temporary hardcoded level values
-const levels = ref<string[]>([
-  "Passordbanken",
-  "Sosiale møteplassen",
-  "Nyhetskvartalet",
-  "Markedsplassen",
-  "Postkontoret",
-  "Fotografen",
-  "Datasenteret",
-]);
-
-//Active filter, string or null (unfiltered)
 const props = defineProps<{
   activeFilter: string | null;
+  levels: string[];
 }>();
 
 //Emits select + selected filter in string or null
@@ -34,11 +22,11 @@ function selectFilter(level: string) {
 
     <div class="filterOptions">
       <button
-        v-for="level in levels"
+        v-for="level in props.levels"
         :key="level"
         :class="[
           'filterButton',
-          { activeFilter: props.activeFilter === level }
+          { active: props.activeFilter === level }
         ]"
         @click="selectFilter(level)"
       >

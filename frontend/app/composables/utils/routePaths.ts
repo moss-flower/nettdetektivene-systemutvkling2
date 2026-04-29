@@ -27,6 +27,7 @@ export enum routePaths {
     studentMystery = '/student/mystery',
     studentMysteryPlay = '/student/mystery/play',
     studentNotes = '/student/notepad',
+    studentNewNote = '/student/newNote',
     studentSettings = '/student/settings',
 
     notYetImplemented = '/shared/notYetImplemented',

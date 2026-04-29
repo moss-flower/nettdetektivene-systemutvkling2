@@ -2,7 +2,6 @@
 import { routePaths } from '~/composables/utils/routePaths'
 import { useStudentProfile } from '~/composables/useStudentProfile'
 import { getLevel } from '~/composables/utils/studentProgress'
-import UiStudentHomeBackButton from "~/components/ui/UiStudentHomeBackButton.vue";
 
 const { getMyProfile } = useStudentProfile()
 
@@ -14,6 +13,7 @@ const profileError = ref('')
 
 const progress = computed(() => getLevel(score.value))
 const progressWidth = computed(() => `${progress.value.progressPercent}%`)
+const progressPercentDisplay = computed(() => Math.floor(progress.value.progressPercent))
 
 onMounted(async () => {
   isLoading.value = true
@@ -34,7 +34,6 @@ onMounted(async () => {
 <template>
   <section class="profilePage">
     <header class="pageHeader">
-      <UiStudentHomeBackButton class="backLink" label="Tilbake" />
       <p v-if="isLoading" class="statusText">Laster profil...</p>
       <p v-if="profileError" class="errorText">{{ profileError }}</p>
     </header>
@@ -57,7 +56,7 @@ onMounted(async () => {
 
         <div class="idCard__xpRow">
           <span class="idCard__xpText">{{ totalXp }} / {{ progress.nextLevelXp }} XP</span>
-          <span class="idCard__xpPercent">{{ progress.progressPercent }}%</span>
+          <span class="idCard__xpPercent">{{ progressPercentDisplay }}%</span>
         </div>
         <div class="idCard__progressBar" role="progressbar"
              :aria-valuenow="progress.progressPercent" aria-valuemin="0" aria-valuemax="100">
