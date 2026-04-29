@@ -8,11 +8,13 @@ const { getMyProfile } = useStudentProfile()
 
 const studentName = ref('Laster...')
 const score = ref(0)
+const totalXp = ref(0)
 
 const isLoading = ref(true)
 const profileError = ref('')
 
-const progress = computed(() => getLevel(score.value))
+const initial = computed(() => studentName.value.charAt(0).toUpperCase())
+const progress = computed(() => getLevel(totalXp.value))
 const progressWidth = computed(() => `${progress.value.progressPercent}%`)
 
 onMounted(async () => {
@@ -23,6 +25,7 @@ onMounted(async () => {
     const profile = await getMyProfile()
     studentName.value = profile.studentName
     score.value = profile.score
+    totalXp.value = profile.totalXp
   } catch {
     profileError.value = 'Kunne ikke laste profildata akkurat nå.'
   } finally {
