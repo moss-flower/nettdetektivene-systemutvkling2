@@ -3,7 +3,7 @@ import { routePaths } from '~/composables/utils/routePaths'
 import { useStudentProfile } from '~/composables/useStudentProfile'
 import { getLevel } from '~/composables/utils/studentProgress'
 
-const { getMyProfile } = useStudentProfile()
+const { getMyProfile, updateUsername } = useStudentProfile()
 
 const studentName = ref('Laster...')
 const score = ref(0)
@@ -29,11 +29,17 @@ function cancelEditing() {
   pendingName.value = ''
 }
 
-function saveEditing() {
-  if (pendingName.value.trim()) {
-    studentName.value = pendingName.value.trim()
+async function saveEditing() {
+  const newName = pendingName.value.trim()
+  if (!newName) return
+
+  try {
+    const response = await updateUsername(newName)
+    studentName.value = response.username
+    cancelEditing()
+  } catch {
+    profileError.value = 'Kunne ikke oppdatere navnet. Prøv igjen senere.'
   }
-  cancelEditing()
 }
 
 onMounted(async () => {
