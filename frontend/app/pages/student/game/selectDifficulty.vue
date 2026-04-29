@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import datatyvenSprite from "~/assets/images/datatyven.png";
 import PopupNotYetUnlocked from "~/components/shared/PopupNotYetUnlocked.vue";
 import DifficultySelect from "~/components/station/difficultySelect.vue";
 import { useGamePreview } from "~/composables/useGamePreview";
@@ -114,9 +115,17 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
 
     <template v-if="station">
       <header class="difficultyHero">
-        <p class="difficultyEyebrow">Velg oppgave</p>
-        <h1 class="difficultyTitle">{{ station.title }}</h1>
-        <p class="difficultySummary">{{ station.description }}</p>
+        <div class="difficultyHero__content">
+          <p class="difficultyEyebrow">Velg oppgave</p>
+          <h1 class="difficultyTitle">{{ station.title }}</h1>
+          <p class="difficultySummary">{{ station.description }}</p>
+        </div>
+        <img
+          v-if="station.isBoss"
+          :src="datatyvenSprite"
+          alt="Datatyven"
+          class="difficultyHero__boss"
+        >
       </header>
 
       <div v-if="exerciseOptions.length > 0" class="difficultyGrid">
@@ -184,7 +193,9 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
 
 .difficultyHero {
   display: grid;
-  gap: var(--space-3);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
   /* fluid inner padding, deliberate exception (token system) */
   padding: clamp(1.25rem, 3vw, 2rem);
   border: var(--border-width-hairline) solid var(--difficulty-hero-border);
@@ -195,6 +206,19 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
       var(--difficulty-hero-bg-bottom) 100%
   );
   box-shadow: var(--shadow-2);
+}
+
+.difficultyHero__content {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.difficultyHero__boss {
+  width: clamp(5.5rem, 12vw, 8rem);
+  height: auto;
+  justify-self: end;
+  align-self: end;
+  filter: drop-shadow(0 0.5rem 0.75rem rgba(0, 0, 0, 0.22));
 }
 
 .difficultyEyebrow {
@@ -244,6 +268,15 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
 }
 
 @media (max-width: 900px) {
+  .difficultyHero {
+    grid-template-columns: 1fr;
+  }
+
+  .difficultyHero__boss {
+    justify-self: center;
+    align-self: center;
+  }
+
   .difficultyGrid {
     grid-template-columns: 1fr;
   }
