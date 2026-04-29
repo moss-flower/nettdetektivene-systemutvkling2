@@ -1,6 +1,6 @@
 import { Exercise } from "~/composables/types/ExerciseType";
-import { Station } from "~/composables/types/StationType";
 import type { Classroom, ClassroomUser } from "~/composables/types/ClassroomTypes";
+import { useStations } from "~/composables/useStations";
 import { World } from "~/composables/types/WorldTypes";
 
 export type ClassroomSummary = {
@@ -47,6 +47,8 @@ export const getClassroomMemberById = (classroom: Classroom | null, studentId: s
 };
 
 export const getClassroomExercises = async (classroom: Classroom | null): Promise<ClassroomExercise[]> => {
+  const { getStationsByUids } = useStations();
+
   if (!classroom?.worldUid) {
     return [];
   }
@@ -57,10 +59,7 @@ export const getClassroomExercises = async (classroom: Classroom | null): Promis
     return [];
   }
 
-  const stations = await Promise.all(world.stationUids.map((stationUid) => Station.backendFetchStationByUid(stationUid)));
-
-  const stationEntries = stations
-    .filter((station): station is Station => station !== null)
+  const stationEntries = (await getStationsByUids(world.stationUids))
     .map((station) => ({
       station,
       exerciseUids: station.exerciseUids,

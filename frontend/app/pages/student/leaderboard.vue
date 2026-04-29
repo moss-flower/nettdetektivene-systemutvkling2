@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import UiStudentHomeBackButton from "~/components/ui/UiStudentHomeBackButton.vue";
 import type { ClassroomLeaderboardEntry } from "~/composables/types/LeaderboardTypes";
+import { useLeaderboard } from "~/composables/useLeaderboard";
 
 const leaderboard = useLeaderboard();
 
@@ -75,7 +75,6 @@ await loadRankingsPage(0);
 <template>
   <section class="leaderboardPage">
     <header class="pageHeader">
-      <UiStudentHomeBackButton class="backLink" />
       <p class="eyebrow">Detektivbyrået</p>
       <h1>leaderboard</h1>
       <p class="subtitle">Hvilken klasse leder etterforskningen?</p>
@@ -198,12 +197,6 @@ await loadRankingsPage(0);
   display: grid;
   gap: var(--space-2);
   justify-items: start;
-}
-
-.backLink {
-  margin-bottom: var(--space-3);
-  /* default UiStudentHomeBackButton variant (white pill), reads on wood.
-     DO NOT pass variant="onLight"; variant is for light surfaces like notepad */
 }
 
 .eyebrow {
