@@ -4,6 +4,9 @@ import java.util.UUID;
 
 import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
 
+/**
+ * DTO for retrieving Weekly Mystery Prompts from the database
+ */
 public record WeeklyMysteryPromptResponse(
     UUID publicId,
     String weekLabel,

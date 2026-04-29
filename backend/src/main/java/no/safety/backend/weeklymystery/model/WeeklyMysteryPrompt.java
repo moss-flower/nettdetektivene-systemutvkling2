@@ -18,6 +18,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import no.safety.backend.user.model.TeacherUser;
 
+
+/**
+ * Entity that represents a weekly mystery object.
+ * Has public and private ID's, and fields for plugging in info.
+ */
 @Entity
 @Table(name = "WeeklyMysteryPrompt")
 @Getter

@@ -18,6 +18,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import no.safety.backend.user.model.StudentUser;
 
+
+/**
+ * Entity for tracking student submissions based on weekly mystery prompts.
+ * Has fields for storing its own public Id and its relationship to the
+ * student who submitted it, as well as the weekly mystery
+ * towards which it was directed.
+ */
 @Entity
 @Table(name = "mystery_submissions")
 @Getter
