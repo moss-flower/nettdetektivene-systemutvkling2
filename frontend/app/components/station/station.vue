@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { NuxtLink } from "#components";
+import datatyvenSprite from "~/assets/images/datatyven.png";
+import { useGamePreview } from "~/composables/useGamePreview";
 import starEmpty from "~/assets/images/star/spStarEmpty.png";
 import starFilled from "~/assets/images/star/spStarFilled.png";
 import { routePaths } from "~/composables/utils/routePaths";
-import type { Station } from "~/composables/types/StationType";
+import type { Station } from "~/composables/types/StationTypes";
+
+const emit = defineEmits<{
+  (event: "locked-click"): void;
+}>();
 
 const props = defineProps<{
   station: Station;
@@ -13,10 +19,19 @@ const props = defineProps<{
 
 const stationIsUnlocked = computed(() => props.isUnlocked ?? true);
 const completedExercises = computed(() => props.completedExercises ?? []);
+const { isPreview, classroomId } = useGamePreview();
 
 const stationPath = computed(() => ({
   path: routePaths.studentExerciseDifficultySelect,
-  query: { uid: props.station.uid },
+  query: {
+    uid: props.station.uid,
+    ...(isPreview.value && classroomId.value
+      ? {
+          preview: "1",
+          classroomId: classroomId.value,
+        }
+      : {}),
+  },
 }));
 
 const totalExercises = computed(() => {
@@ -38,16 +53,35 @@ const stars = computed(() =>
     };
   }),
 );
+
+const cardTag = computed(() => (stationIsUnlocked.value ? NuxtLink : "button"));
+
+const handleClick = () => {
+  if (!stationIsUnlocked.value) {
+    emit("locked-click");
+  }
+};
 </script>
 
 <template>
-    <component
-  :is="stationIsUnlocked ? NuxtLink : 'div'"
+  <component
+    :is="cardTag"
     class="levelCard"
-  :class="{ lockedCard: !stationIsUnlocked }"
-  :to="stationIsUnlocked ? stationPath : undefined"
+    :class="{ lockedCard: !stationIsUnlocked }"
+    :to="stationIsUnlocked ? stationPath : undefined"
   >
-    <img :src="station.image" :alt="station.title" class="levelImage">
+    <div class="levelImageWrap">
+      <img
+        v-if="station.isBoss"
+        :src="datatyvenSprite"
+        alt=""
+        aria-hidden="true"
+        class="bossSprite"
+        :type="stationIsUnlocked ? undefined : 'button'"
+    @click="handleClick"
+  >
+      <img :src="station.image" :alt="station.title" class="levelImage">
+    </div>
 
     <h4 class="levelName">{{ station.title }}</h4>
     <div class="starRow">
@@ -77,12 +111,19 @@ const stars = computed(() =>
   border-radius: var(--radius-2);
   background: var(--palette-white);
   color: var(--palette-navy-900);
+  font: inherit;
   text-decoration: none;
   box-shadow: var(--shadow-card);
+  cursor: pointer;
 }
 
 .lockedCard {
   opacity: 0.5;
+}
+
+.levelCard:focus-visible {
+  outline: var(--border-width-thick) solid color-mix(in srgb, var(--color-brand-primary) 65%, white);
+  outline-offset: 0.2rem;
 }
 
 .levelImage {
@@ -92,6 +133,26 @@ const stars = computed(() =>
   height: auto;
   border-radius: var(--radius-1);
   object-fit: cover;
+}
+
+.levelImageWrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding-top: var(--space-4);
+}
+
+.bossSprite {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 1;
+  width: 4.5rem;
+  height: auto;
+  transform: translate(-50%, -42%);
+  pointer-events: none;
+  filter: drop-shadow(0 0.35rem 0.5rem rgba(0, 0, 0, 0.22));
 }
 
 .levelName {
