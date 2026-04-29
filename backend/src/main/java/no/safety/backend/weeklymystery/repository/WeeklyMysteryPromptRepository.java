@@ -9,6 +9,6 @@ import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
 
 public interface WeeklyMysteryPromptRepository extends JpaRepository<WeeklyMysteryPrompt, Long> {
     public WeeklyMysteryPrompt findByPublicUuid(UUID publicUuid);
-    public HashSet<WeeklyMysteryPrompt> findAllByTeacher_id(Long teacher_id);
+    public HashSet<WeeklyMysteryPrompt> findAllByTeacherUser_internalId(Long teacher_id);
     boolean existsByPublicUuid(UUID publicUuid);
 }

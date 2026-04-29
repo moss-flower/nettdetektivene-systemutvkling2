@@ -32,7 +32,7 @@ public class WeeklyMysteryPrompt {
     @Column(updatable = false, nullable = false)
     private Long internalId;
 
-    @Column(updatable = false, nullable = false, unique = true, columnDefinition = "BINARY(16")
+    @Column(updatable = false, nullable = false, unique = true)
     private UUID publicUuid;
 
     @Column(unique = false, length = 50)

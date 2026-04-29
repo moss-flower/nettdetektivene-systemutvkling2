@@ -92,7 +92,7 @@ public class WeeklyMysteryService {
     }
 
     public HashSet<WeeklyMysteryPromptResponse> fetchUsersPrompts(Long internalUserId) {
-        HashSet<WeeklyMysteryPrompt> prompts = promptRepository.findAllByTeacher_id(internalUserId);
+        HashSet<WeeklyMysteryPrompt> prompts = promptRepository.findAllByTeacherUser_internalId(internalUserId);
 
         HashSet<WeeklyMysteryPromptResponse> responses = new HashSet<>();
 
@@ -108,7 +108,7 @@ public class WeeklyMysteryService {
 
     @Transactional
     public void delete(UUID promptId, Long teacherId) {
-        Set<WeeklyMysteryPrompt> teacherPrompts = promptRepository.findAllByTeacher_id(teacherId);
+        Set<WeeklyMysteryPrompt> teacherPrompts = promptRepository.findAllByTeacherUser_internalId(teacherId);
 
         teacherPrompts.stream().filter(p -> p.getPublicUuid() == promptId).findFirst()
                 .ifPresent(promptRepository::delete);

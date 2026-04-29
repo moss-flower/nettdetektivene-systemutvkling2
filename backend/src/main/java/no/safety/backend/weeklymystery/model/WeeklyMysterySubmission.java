@@ -47,6 +47,7 @@ public class WeeklyMysterySubmission {
     @JoinColumn(name = "student_id")
     private StudentUser submitterStudentUser;
 
+    @ManyToOne
     @JoinColumn(name = "weekly_mystery_prompt_id")
     private WeeklyMysteryPrompt weeklyMysteryPrompt;
 
