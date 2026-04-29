@@ -66,23 +66,23 @@ async function handleSubmit() {
 <template>
   <section class="newNotePage">
     <header class="newNoteHeader">
-      <p class="eyebrow">Notepad</p>
-      <h1>Create New Note</h1>
+      <p class="eyebrow">Notatblokk</p>
+      <h1>Lag ny notat</h1>
       <p class="intro">
-        Write down a title, where the note came from, and the note content.
+        Skriv ned en tittel, hvor notatet kommer fra, og det du vil notere.
       </p>
     </header>
 
     <form class="newNoteCard" @submit.prevent="handleSubmit">
       <label class="field">
-        <span class="fieldLabel">Title</span>
+        <span class="fieldLabel">Tittel</span>
         <input v-model="form.title" class="fieldInput" type="text" name="title" />
       </label>
 
       <label class="field">
-        <span class="fieldLabel">Source</span>
+        <span class="fieldLabel">Kilde</span>
         <select v-model="form.source" class="fieldInput" name="source">
-          <option disabled value="">Choose a station</option>
+          <option disabled value="">velg en stasjon</option>
           <option
             v-for="station in stationOptions"
             :key="station.uid"
@@ -94,7 +94,7 @@ async function handleSubmit() {
       </label>
 
       <label class="field">
-        <span class="fieldLabel">Content</span>
+        <span class="fieldLabel">Notatinnhold</span>
         <textarea
           v-model="form.content"
           class="fieldInput fieldTextarea"
@@ -105,15 +105,15 @@ async function handleSubmit() {
 
       <p v-if="errorMessage" class="errorText">{{ errorMessage }}</p>
       <p v-else-if="stationOptions.length === 0" class="errorText">
-        No stations available to use as a source.
+        Ingen stasjoner tilgjengelig. 
       </p>
 
       <div class="actions">
         <NuxtLink class="secondaryButton" :to="routePaths.studentNotes">
-          Cancel
+          Avbryt
         </NuxtLink>
         <button class="primaryButton" type="submit" :disabled="!isFormValid || isSaving">
-          Save note
+          Lagre notat
         </button>
       </div>
     </form>
@@ -173,6 +173,7 @@ async function handleSubmit() {
 
 h1 {
   margin: 0;
+  color: var(--palette-cream-100);
 }
 
 .intro {
