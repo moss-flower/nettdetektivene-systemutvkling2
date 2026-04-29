@@ -4,11 +4,13 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.exception.domain.UserNotFoundException;
+import no.safety.backend.user.dto.PasswordUpdateResponse;
 import no.safety.backend.user.dto.UsernameUpdateResponse;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.model.User;
@@ -25,7 +27,9 @@ public class UserService {
     private final UserRepository userRepository;
 
     private final StudentUserRepository studentUserRepository;
-    
+
+    private final PasswordEncoder passwordEncoder;
+
     /**
      * Retrieves a user by their public unique identifier.
      *
@@ -85,7 +89,7 @@ public class UserService {
      * * @param userId The unique identifier of the user.
      * 
      * @param newUsername The validated new username from the DTO.
-     * @return A specialized response DTO.
+     * @return A {@link UsernameUpdateResponse} DTO.
      */
     @Transactional
     public UsernameUpdateResponse updateStudentUsername(UUID studentUserPublicUuid, String newUsername) {
@@ -102,7 +106,7 @@ public class UserService {
      * * @param userId The unique identifier of the user.
      * 
      * @param newUsername The validated new username from the DTO.
-     * @return A specialized response DTO.
+     * @return A {@link UsernameUpdateResponse} DTO.
      */
     @Transactional
     public UsernameUpdateResponse updateUsername(Long callerUserInternalId, String newUsername) {
@@ -112,5 +116,22 @@ public class UserService {
         user.setUsername(newUsername);
 
         return new UsernameUpdateResponse(user.getPublicUuid(), newUsername, "Username updated.");
+    }
+
+    /**
+     * Updates the password of the calling {@link User}
+     * * @param userId The unique identifier of the user.
+     * 
+     * @param newPassword The validated new username from the DTO.
+     * @return A {@link PasswordUpdateResponse} DTO.
+     */
+    @Transactional
+    public PasswordUpdateResponse updatePassword(Long callerUserInternalId, String newPassword) {
+        User user = userRepository.findById(callerUserInternalId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + callerUserInternalId));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+
+        return new PasswordUpdateResponse(user.getPublicUuid(),"Password updated.");
     }
 }
