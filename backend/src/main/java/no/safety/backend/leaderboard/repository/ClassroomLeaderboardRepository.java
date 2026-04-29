@@ -12,10 +12,10 @@ import no.safety.backend.leaderboard.dto.ClassroomLeaderboardResponse;
 public interface ClassroomLeaderboardRepository extends JpaRepository<Classroom, Long> {
     @Query(value = """
             SELECT new no.safety.backend.leaderboard.dto.ClassroomLeaderboardResponse(
-                c.uid,
+                CAST(c.uid AS string),
                 c.name,
                 COALESCE(SUM(m.score), 0L),
-                DENSE_RANK() OVER (ORDER BY SUM(m.score) DESC)
+                CAST(DENSE_RANK() OVER (ORDER BY SUM(m.score) DESC) AS long)
             )
             FROM Classroom c
             LEFT JOIN c.members m
