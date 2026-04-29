@@ -39,10 +39,10 @@ public class LeaderboardService {
     public Page<ClassroomLeaderboardResponse> getClassroomRankings(@NonNull Pageable pageable) {
         return classroomLeaderboardRepository.findAllClassroomsTotalScores(pageable)
                 .map(result -> new ClassroomLeaderboardResponse(
-                        result.classroomPublicUuid(),
-                        result.className(),
-                        result.score(),
-                        result.rank()));
+                        result.getClassroomPublicUuid(),
+                        result.getClassName(),
+                        result.getScore(),
+                        result.getRank()));
     }
 
     /**
