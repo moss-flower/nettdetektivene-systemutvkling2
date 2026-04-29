@@ -28,7 +28,7 @@ const stationUid = computed(() => {
 
 const { data: station } = await useAsyncData(
   () => `layout-station-${stationUid.value}`,
-  () => stationUid.value ? getStationByUid(stationUid.value) : null,
+  async () => stationUid.value ? await getStationByUid(stationUid.value) : null,
   { watch: [stationUid] },
 )
 

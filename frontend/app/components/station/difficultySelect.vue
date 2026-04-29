@@ -4,6 +4,10 @@ import starEmpty from "~/assets/images/star/spStarEmpty.png";
 import starFilled from "~/assets/images/star/spStarFilled.png";
 import type { RouteLocationRaw } from "vue-router";
 
+const emit = defineEmits<{
+  (event: "locked-click"): void;
+}>();
+
 const props = defineProps<{
   title: string;
   difficultyText: string;
@@ -14,12 +18,18 @@ const props = defineProps<{
   showStar?: boolean;
 }>();
 
-const cardTag = computed(() => (props.isUnlocked && props.to ? NuxtLink : "div"));
+const cardTag = computed(() => (props.isUnlocked && props.to ? NuxtLink : "button"));
 const showStar = computed(() => props.showStar ?? true);
 const star = computed(() => ({
   src: props.isCompleted ? starFilled : starEmpty,
   alt: props.isCompleted ? `${props.difficultyText} fullført` : `${props.difficultyText} ikke fullført`,
 }));
+
+const handleClick = () => {
+  if (!props.isUnlocked) {
+    emit("locked-click");
+  }
+};
 </script>
 
 <template>
@@ -28,6 +38,8 @@ const star = computed(() => ({
     class="difficultyCard"
     :class="{ difficultyCardLocked: !isUnlocked }"
     :to="isUnlocked ? to : undefined"
+    :type="isUnlocked ? undefined : 'button'"
+    @click="handleClick"
   >
     <p class="difficultyLabel">{{ title }}</p>
     <h2 class="difficultyHeading">{{ difficultyText }}</h2>
@@ -53,24 +65,22 @@ const star = computed(() => ({
   border-radius: 1.25rem;
   text-decoration: none;
   color: #1d2433;
+  font: inherit;
   background: linear-gradient(180deg, #f9f5ea 0%, #efe2bf 100%);
   box-shadow: var(--shadow-1);
+  cursor: pointer;
   transition:
     transform 160ms ease,
     box-shadow 160ms ease,
     border-color 160ms ease;
 }
 
-a.difficultyCard {
-  cursor: pointer;
-}
-
-a.difficultyCard:hover {
+.difficultyCard:hover {
   transform: translateY(-4px);
   box-shadow: 0 1rem 2rem rgb(0 0 0 / 0.12);
 }
 
-a.difficultyCard:focus-visible {
+.difficultyCard:focus-visible {
   outline: var(--border-width-thick) solid color-mix(in srgb, var(--color-brand-primary) 65%, white);
   outline-offset: 0.2rem;
 }

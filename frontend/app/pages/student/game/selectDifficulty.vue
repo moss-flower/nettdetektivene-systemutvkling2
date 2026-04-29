@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PopupNotYetUnlocked from "~/components/shared/PopupNotYetUnlocked.vue";
 import DifficultySelect from "~/components/station/difficultySelect.vue";
 import { useGamePreview } from "~/composables/useGamePreview";
 import { useCompletedExerciseUids } from "~/composables/utils/gameProgress";
@@ -26,6 +27,7 @@ type ExerciseOption = {
 const route = useRoute();
 const { isPreview, classroomId, buildPreviewRoute } = useGamePreview();
 const { getStationByUid } = useStations();
+const showNotYetUnlockedPopup = ref(false);
 
 const stationUid = computed(() =>
   typeof route.query.uid === "string" ? route.query.uid : "",
@@ -127,6 +129,7 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
           :is-completed="option.isCompleted"
           :is-unlocked="option.isUnlocked"
           :to="option.to"
+          @locked-click="showNotYetUnlockedPopup = true"
           :show-star="!isPreview"
         />
       </div>
@@ -141,6 +144,13 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
       <h1>Fant ikke stasjonen</h1>
       <p>Prøv å gå tilbake og velg en stasjon på nytt.</p>
     </section>
+
+    <PopupNotYetUnlocked
+      v-if="showNotYetUnlockedPopup"
+      title="Denne oppgaven er fortsatt låst"
+      description="Fullfør oppgaven før denne for å låse opp neste vanskelighetsgrad."
+      @close="showNotYetUnlockedPopup = false"
+    />
   </section>
 </template>
 
