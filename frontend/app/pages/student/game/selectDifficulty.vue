@@ -4,7 +4,7 @@ import { useGamePreview } from "~/composables/useGamePreview";
 import { useCompletedExerciseUids } from "~/composables/utils/gameProgress";
 import { routePaths } from "~/composables/utils/routePaths";
 import { Exercise } from "~/composables/types/ExerciseType";
-import { Station } from "~/composables/types/StationType";
+import { useStations } from "~/composables/useStations";
 
 type ExerciseOption = {
   uid: string;
@@ -25,6 +25,7 @@ type ExerciseOption = {
 
 const route = useRoute();
 const { isPreview, classroomId, buildPreviewRoute } = useGamePreview();
+const { getStationByUid } = useStations();
 
 const stationUid = computed(() =>
   typeof route.query.uid === "string" ? route.query.uid : "",
@@ -32,12 +33,14 @@ const stationUid = computed(() =>
 
 const { data: station } = await useAsyncData(
   () => `station-${stationUid.value}`,
-  () => (stationUid.value ? Station.backendFetchStationByUid(stationUid.value) : null),
-  { watch: [stationUid] },
-);
+  async () => {
+    if (!stationUid.value) {
+      return null;
+    }
 
-const hydratedStation = computed(() =>
-  station.value ? Station.fromBackend(station.value) : null,
+    return await getStationByUid(stationUid.value);
+  },
+  { watch: [stationUid] },
 );
 
 const { data: completedExerciseUids } = await useAsyncData(
@@ -50,7 +53,13 @@ const { data: completedExerciseUids } = await useAsyncData(
 
 const { data: stationExercises } = await useAsyncData(
   () => `station-exercises-${stationUid.value}`,
-  () => (station.value ? Exercise.backendFetchExercisesByUids(station.value.exerciseUids) : []),
+  async () => {
+    if (!station.value) {
+      return [];
+    }
+
+    return await Exercise.backendFetchExercisesByUids(station.value.exerciseUids);
+  },
   { watch: [station] },
 );
 
@@ -63,17 +72,12 @@ const stationStatus = computed(() => ({
 const backRoute = computed(() =>
   isPreview.value ? buildPreviewRoute(routePaths.studentLevels) : routePaths.studentLevels,
 );
-
 const exerciseOptions = computed<ExerciseOption[]>(() => {
   if (!station.value) {
     return [];
   }
 
-  const currentStation = hydratedStation.value;
-
-  if (!currentStation) {
-    return [];
-  }
+  const currentStation = station.value;
 
   const currentExercises = stationExercises.value ?? [];
 
@@ -106,11 +110,11 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
       Tilbake til stasjoner
     </NuxtLink>
 
-    <template v-if="hydratedStation">
+    <template v-if="station">
       <header class="difficultyHero">
         <p class="difficultyEyebrow">Velg oppgave</p>
-        <h1 class="difficultyTitle">{{ hydratedStation.title }}</h1>
-        <p class="difficultySummary">{{ hydratedStation.description }}</p>
+        <h1 class="difficultyTitle">{{ station.title }}</h1>
+        <p class="difficultySummary">{{ station.description }}</p>
       </header>
 
       <div v-if="exerciseOptions.length > 0" class="difficultyGrid">

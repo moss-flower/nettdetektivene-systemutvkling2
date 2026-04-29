@@ -4,7 +4,7 @@ import { useGamePreview } from "~/composables/useGamePreview";
 import starEmpty from "~/assets/images/star/spStarEmpty.png";
 import starFilled from "~/assets/images/star/spStarFilled.png";
 import { routePaths } from "~/composables/utils/routePaths";
-import type { Station } from "~/composables/types/StationType";
+import type { Station } from "~/composables/types/StationTypes";
 
 const props = defineProps<{
   station: Station;

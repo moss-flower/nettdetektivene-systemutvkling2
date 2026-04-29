@@ -2,87 +2,33 @@
 import NewNote from "~/components/notepad/NewNote.vue";
 import NotepadFilters from "~/components/notepad/NotepadFilters.vue";
 import NotepadFrame from "~/components/notepad/NotepadFrame.vue";
-import type { NotepadEntry } from "~/composables/types/NotepadTypes.ts";
-import UiStudentHomeBackButton from "~/components/ui/UiStudentHomeBackButton.vue";
+import { routePaths } from "~/composables/utils/routePaths";
+import { mapNotepadEntryFromResponse, useNotepad } from "~/composables/useNotepad";
 
 //Holds selected filter as string
 const selectedFilter = ref<string | null>(null);
+const { getMyNotes } = useNotepad();
 
-//Temporary mockdata
-const mockEntries: NotepadEntry[] = [
-  {
-    title: "Se etter rare lenker",
-    date: "2026-04-17 09:15",
-    source: "Postkontoret",
-    type: "tip",
-    content:
-      "Sjekk alltid lenken før du klikker. Rare bokstaver, tall eller feilstavede nettadresser kan være tegn på svindel.",
-  },
-  {
-    title: "Ikke del alt med en gang",
-    date: "2026-04-17 10:40",
-    source: "Den sosiale møteplassen",
-    type: "info",
-    content:
-      "Innlegg som gjør deg veldig sint eller redd, prøver ofte å få deg til å dele raskt. Stopp opp og sjekk kilden først.",
-  },
-  {
-    title: "Jeg la merke til et svakt passord",
-    date: "2026-04-17 11:20",
-    source: "Passordbanken",
-    type: "observation",
-    content:
-      "Passord som bare inneholder navn eller fødselsår er lette å gjette. Det er tryggere å bruke flere ulike tegn.",
-  },
-  {
-    title: "Bilder kan være manipulerte",
-    date: "2026-04-17 12:05",
-    source: "Fotografen",
-    type: "tip",
-    content:
-      "Se etter detaljer som hender, bakgrunner eller skygger som ser unaturlige ut. Det kan være tegn på KI eller manipulering.",
-  },
-  {
-    title: "Vurder nettbutikken nøye",
-    date: "2026-04-17 13:30",
-    source: "Markedsplassen",
-    type: "info",
-    content:
-      "Hvis en butikk har ekstremt lave priser, dårlige anmeldelser eller ukjente betalingsmåter, bør du undersøke mer før du handler.",
-  },
-  {
-    title: "Vurder nettbutikken nøye",
-    date: "2026-04-17 13:30",
-    source: "Markedsplassen",
-    type: "info",
-    content:
-      "Hvis en butikk har ekstremt lave priser, dårlige anmeldelser eller ukjente betalingsmåter, bør du undersøke mer før du handler.",
-  },
-  {
-    title: "Vurder nettbutikken nøye",
-    date: "2026-04-17 13:30",
-    source: "Markedsplassen",
-    type: "info",
-    content:
-      "Hvis en butikk har ekstremt lave priser, dårlige anmeldelser eller ukjente betalingsmåter, bør du undersøke mer før du handler.",
-  },
-  {
-    title: "Vurder nettbutikken nøye",
-    date: "2026-04-17 13:30",
-    source: "Markedsplassen",
-    type: "info",
-    content:
-      "Hvis en butikk har ekstremt lave priser, dårlige anmeldelser eller ukjente betalingsmåter, bør du undersøke mer før du handler.",
-  },
-];
+const { data: notesPage, error: notesError } = await useAsyncData(
+  "student-notes",
+  () => getMyNotes(),
+);
+
+const allEntries = computed(() => {
+  return (notesPage.value?.content ?? []).map(mapNotepadEntryFromResponse);
+});
+
+const availableSources = computed(() => {
+  return [...new Set(allEntries.value.map((entry) => entry.source))].sort();
+});
 
 //Dynamically updates entries based on current selectedFilter value
 const filteredEntries = computed(() => {
   if (!selectedFilter.value) {
-    return mockEntries;
+    return allEntries.value;
   }
 
-  return mockEntries.filter((entry) => entry.source === selectedFilter.value);
+  return allEntries.value.filter((entry) => entry.source === selectedFilter.value);
 });
 
 //Called on filter button click, updates selectedFilter value
@@ -91,19 +37,20 @@ function handleFilterSelect(level: string | null) {
 }
 
 function handleNewNoteClick() {
-  // TODO:
-  // Open "new note" input bubble / modal when that feature is implemented.
+  void navigateTo(routePaths.studentNewNote);
 }
 </script>
 
 <template>
   <section class="notepadPage">
     <div class="leftColumn">
-      <div></div>
-      <p>PLACEHOLDER FOR PROFILE</p>
+      <AvatarElement />
     </div>
 
     <div class="notepadWrapper">
+      <p v-if="notesError" class="statusMessage">
+        Could not load notes right now.
+      </p>
       <NotepadFrame :notes="filteredEntries" />
     </div>
 
@@ -112,6 +59,7 @@ function handleNewNoteClick() {
 
       <NotepadFilters
         :active-filter="selectedFilter"
+        :levels="availableSources"
         @select="handleFilterSelect"
       />
     </div>
@@ -161,9 +109,17 @@ function handleNewNoteClick() {
 }
 
 .notepadWrapper {
+  display: grid;
+  gap: var(--space-3);
   min-width: 0;
   min-height: 0;
   height: 100%;
+}
+
+.statusMessage {
+  margin: 0;
+  color: var(--palette-cream-100);
+  font-family: var(--font-family-body), sans-serif;
 }
 
 /* side rails, transparent; widgets inside carry their own surfaces */
@@ -179,7 +135,7 @@ function handleNewNoteClick() {
 .leftColumn {
   /* three children: top spacer + profile placeholder + back to menu arrow
      space between = arrow pushed to bottom of rail + lets placeholder sit in the middle */
-  justify-content: space-between;
+  justify-content: center;
 }
 
 .rightColumn {

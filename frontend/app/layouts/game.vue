@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { NuxtLink } from '#components'
 import { useGamePreview } from '~/composables/useGamePreview'
-import { Station } from '~/composables/types/StationType'
 import { useStudentProfile } from '~/composables/useStudentProfile'
+import { useStations } from '~/composables/useStations'
 import { useThemeAttributes } from '~/composables/useThemeAttributes'
 import { getLevel } from '~/composables/utils/studentProgress'
 
 provideGameConfetti()
 useThemeAttributes('game')
 const { getMyProfile } = useStudentProfile()
+const { getStationByUid } = useStations()
 
 const route = useRoute()
 const { isPreview } = useGamePreview()
@@ -27,7 +28,7 @@ const stationUid = computed(() => {
 
 const { data: station } = await useAsyncData(
   () => `layout-station-${stationUid.value}`,
-  () => stationUid.value ? Station.backendFetchStationByUid(stationUid.value) : null,
+  () => stationUid.value ? getStationByUid(stationUid.value) : null,
   { watch: [stationUid] },
 )
 

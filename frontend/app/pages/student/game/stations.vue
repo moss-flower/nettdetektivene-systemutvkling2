@@ -2,12 +2,12 @@
 import StationCard from "~/components/station/station.vue";
 import { useGamePreview } from "~/composables/useGamePreview";
 import { World } from "~/composables/types/WorldTypes";
-import { Station } from "~/composables/types/StationType";
 import { useCompletedExerciseUids } from "~/composables/utils/gameProgress";
+import { useStations } from "~/composables/useStations";
 
-const { student, teacher } = useClassrooms();
+const { teacher } = useClassrooms();
 const { isPreview, classroomId, hasPreviewContext } = useGamePreview();
-
+const { getMyStations, getStationsByUids } = useStations();
 const { data: completedExerciseUids } = await useAsyncData(
   "student-completed-exercises",
   () => (isPreview.value ? [] : useCompletedExerciseUids()),
@@ -16,57 +16,50 @@ const { data: completedExerciseUids } = await useAsyncData(
   },
 );
 
-const classroomDataKey = computed(() =>
-  isPreview.value ? `preview-classroom-${classroomId.value}` : "student-classroom",
-);
-
-const { data: classroom } = await useAsyncData(
-  classroomDataKey,
-  () => {
-    if (isPreview.value) {
-      if (!hasPreviewContext.value) {
-        return null;
-      }
-
-      return teacher.getClassroomById(classroomId.value).catch(() => null);
+const { data: stationData } = await useAsyncData(
+  "student-world",
+  async () => {
+    if (!isPreview.value) {
+      return await getMyStations();
     }
 
-    return student.getMyClassroom().catch(() => null);
+    if (!hasPreviewContext.value) {
+      return {
+        world: null,
+        stations: [],
+      };
+    }
+
+    const classroom = await teacher.getClassroomById(classroomId.value).catch(() => null);
+    const worldUid = classroom?.worldUid?.trim() ?? "";
+
+    if (!worldUid) {
+      return {
+        world: null,
+        stations: [],
+      };
+    }
+
+    const world = await World.backendFetchWorldByUid(worldUid);
+
+    if (!world) {
+      return {
+        world: null,
+        stations: [],
+      };
+    }
+
+    return {
+      world,
+      stations: await getStationsByUids(world.stationUids),
+    };
   },
   {
     watch: [isPreview, classroomId],
   },
 );
 
-const worldUid = computed(() => classroom.value?.worldUid?.trim() ?? "");
-
-const { data: world } = await useAsyncData(
-  "student-world",
-  () => (worldUid.value ? World.backendFetchWorldByUid(worldUid.value) : null),
-  {
-    watch: [worldUid],
-  },
-);
-
-const { data: stations } = await useAsyncData(
-  "student-stations",
-  async () => {
-    const stationUids = world.value?.stationUids ?? [];
-
-    if (stationUids.length === 0) {
-      return [];
-    }
-
-    const loadedStations = await Promise.all(stationUids.map((stationUid) => Station.backendFetchStationByUid(stationUid)));
-
-    return loadedStations.filter((station): station is Station => station !== null);
-  },
-  {
-    watch: [world],
-  },
-);
-
-const pageTitle = computed(() => world.value?.title || "Stasjonskart");
+const pageTitle = computed(() => stationData.value?.world?.title || "Stasjonskart");
 
 type ConnectorPath = {
   id: string;
@@ -84,7 +77,7 @@ const stationCards = computed(() => {
   const completedUids = completedExerciseUids.value ?? [];
 
   if (isPreview.value) {
-    return (stations.value ?? []).map((station) => ({
+    return (stationData.value?.stations ?? []).map((station) => ({
       station,
       completedExercises: station.exerciseUids.map(() => false),
       isUnlocked: true,
@@ -93,7 +86,7 @@ const stationCards = computed(() => {
 
   let previousStationCompleted = true;
 
-  return (stations.value ?? []).map((station) => {
+  return (stationData.value?.stations ?? []).map((station) => {
     const completedExercises = station.exerciseUids.map((exerciseUid) => completedUids.includes(exerciseUid));
     const isUnlocked = previousStationCompleted;
     const isCompleted = station.exerciseUids.length > 0 && completedExercises.every(Boolean);
