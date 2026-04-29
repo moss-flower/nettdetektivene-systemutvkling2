@@ -15,9 +15,11 @@ const props = defineProps<{
   isCompleted: boolean;
   isUnlocked: boolean;
   to?: RouteLocationRaw;
+  showStar?: boolean;
 }>();
 
 const cardTag = computed(() => (props.isUnlocked && props.to ? NuxtLink : "button"));
+const showStar = computed(() => props.showStar ?? true);
 const star = computed(() => ({
   src: props.isCompleted ? starFilled : starEmpty,
   alt: props.isCompleted ? `${props.difficultyText} fullført` : `${props.difficultyText} ikke fullført`,
@@ -45,7 +47,7 @@ const handleClick = () => {
     <p class="difficultyState">
       {{ isUnlocked ? (isCompleted ? "Spill igjen" : "Start oppgave") : "Låst" }}
     </p>
-    <div class="difficultyStars" aria-hidden="true">
+    <div v-if="showStar" class="difficultyStars" aria-hidden="true">
       <img :src="star.src" :alt="star.alt" class="difficultyStarImage">
     </div>
     <p v-if="!isUnlocked" class="difficultyLock">🔒</p>

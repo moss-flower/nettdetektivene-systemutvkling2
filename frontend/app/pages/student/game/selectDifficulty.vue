@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import PopupNotYetUnlocked from "~/components/shared/PopupNotYetUnlocked.vue";
 import DifficultySelect from "~/components/station/difficultySelect.vue";
+import { useGamePreview } from "~/composables/useGamePreview";
 import { useCompletedExerciseUids } from "~/composables/utils/gameProgress";
 import { routePaths } from "~/composables/utils/routePaths";
 import { Exercise } from "~/composables/types/ExerciseType";
@@ -17,11 +18,14 @@ type ExerciseOption = {
     path: string;
     query: {
       exerciseUid: string;
+      preview?: string;
+      classroomId?: string;
     };
   };
 };
 
 const route = useRoute();
+const { isPreview, classroomId, buildPreviewRoute } = useGamePreview();
 const { getStationByUid } = useStations();
 const showNotYetUnlockedPopup = ref(false);
 
@@ -43,7 +47,10 @@ const { data: station } = await useAsyncData(
 
 const { data: completedExerciseUids } = await useAsyncData(
   "completed-exercises",
-  () => useCompletedExerciseUids(),
+  () => (isPreview.value ? [] : useCompletedExerciseUids()),
+  {
+    watch: [isPreview],
+  },
 );
 
 const { data: stationExercises } = await useAsyncData(
@@ -64,6 +71,9 @@ const stationStatus = computed(() => ({
   ),
 }));
 
+const backRoute = computed(() =>
+  isPreview.value ? buildPreviewRoute(routePaths.studentLevels) : routePaths.studentLevels,
+);
 const exerciseOptions = computed<ExerciseOption[]>(() => {
   if (!station.value) {
     return [];
@@ -79,10 +89,18 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
     difficultyText: exercise.entryName,
     description: exercise.description ?? currentStation.description ?? "",
     isCompleted: stationStatus.value.completedExercises[index] ?? false,
-    isUnlocked: index === 0 || Boolean(stationStatus.value.completedExercises[index - 1]),
+    isUnlocked: isPreview.value || index === 0 || Boolean(stationStatus.value.completedExercises[index - 1]),
     to: {
       path: `/games/${currentStation.uid}`,
-      query: { exerciseUid: exercise.uid },
+      query: {
+        exerciseUid: exercise.uid,
+        ...(isPreview.value
+          ? {
+              preview: "1",
+              classroomId: classroomId.value,
+            }
+          : {}),
+      },
     },
   }));
 });
@@ -90,7 +108,7 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
 
 <template>
   <section class="difficultyPage">
-    <NuxtLink class="backLink" :to="routePaths.studentLevels">
+    <NuxtLink class="backLink" :to="backRoute">
       Tilbake til stasjoner
     </NuxtLink>
 
@@ -112,6 +130,7 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
           :is-unlocked="option.isUnlocked"
           :to="option.to"
           @locked-click="showNotYetUnlockedPopup = true"
+          :show-star="!isPreview"
         />
       </div>
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { NuxtLink } from "#components";
+import { useGamePreview } from "~/composables/useGamePreview";
 import starEmpty from "~/assets/images/star/spStarEmpty.png";
 import starFilled from "~/assets/images/star/spStarFilled.png";
 import { routePaths } from "~/composables/utils/routePaths";
@@ -17,10 +18,19 @@ const props = defineProps<{
 
 const stationIsUnlocked = computed(() => props.isUnlocked ?? true);
 const completedExercises = computed(() => props.completedExercises ?? []);
+const { isPreview, classroomId } = useGamePreview();
 
 const stationPath = computed(() => ({
   path: routePaths.studentExerciseDifficultySelect,
-  query: { uid: props.station.uid },
+  query: {
+    uid: props.station.uid,
+    ...(isPreview.value && classroomId.value
+      ? {
+          preview: "1",
+          classroomId: classroomId.value,
+        }
+      : {}),
+  },
 }));
 
 const totalExercises = computed(() => {

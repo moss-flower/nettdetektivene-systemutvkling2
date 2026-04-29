@@ -1,18 +1,63 @@
 <script setup lang="ts">
 import PopupNotYetUnlocked from "~/components/shared/PopupNotYetUnlocked.vue";
 import StationCard from "~/components/station/station.vue";
+import { useGamePreview } from "~/composables/useGamePreview";
+import { World } from "~/composables/types/WorldTypes";
 import { useCompletedExerciseUids } from "~/composables/utils/gameProgress";
 import { useStations } from "~/composables/useStations";
 
-const { getMyStations } = useStations();
+const { teacher } = useClassrooms();
+const { isPreview, classroomId, hasPreviewContext } = useGamePreview();
+const { getMyStations, getStationsByUids } = useStations();
 const { data: completedExerciseUids } = await useAsyncData(
   "student-completed-exercises",
-  () => useCompletedExerciseUids(),
+  () => (isPreview.value ? [] : useCompletedExerciseUids()),
+  {
+    watch: [isPreview],
+  },
 );
 
 const { data: stationData } = await useAsyncData(
   "student-world",
-  () => getMyStations(),
+  async () => {
+    if (!isPreview.value) {
+      return await getMyStations();
+    }
+
+    if (!hasPreviewContext.value) {
+      return {
+        world: null,
+        stations: [],
+      };
+    }
+
+    const classroom = await teacher.getClassroomById(classroomId.value).catch(() => null);
+    const worldUid = classroom?.worldUid?.trim() ?? "";
+
+    if (!worldUid) {
+      return {
+        world: null,
+        stations: [],
+      };
+    }
+
+    const world = await World.backendFetchWorldByUid(worldUid);
+
+    if (!world) {
+      return {
+        world: null,
+        stations: [],
+      };
+    }
+
+    return {
+      world,
+      stations: await getStationsByUids(world.stationUids),
+    };
+  },
+  {
+    watch: [isPreview, classroomId],
+  },
 );
 
 const pageTitle = computed(() => stationData.value?.world?.title || "Stasjonskart");
@@ -32,6 +77,15 @@ let resizeObserver: ResizeObserver | null = null;
 
 const stationCards = computed(() => {
   const completedUids = completedExerciseUids.value ?? [];
+
+  if (isPreview.value) {
+    return (stationData.value?.stations ?? []).map((station) => ({
+      station,
+      completedExercises: station.exerciseUids.map(() => false),
+      isUnlocked: true,
+    }));
+  }
+
   let previousStationCompleted = true;
 
   return (stationData.value?.stations ?? []).map((station) => {
