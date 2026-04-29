@@ -110,7 +110,7 @@ onMounted(async () => {
   --id-action-hover: var(--palette-overlay-cork-soft);
 
   position: relative;
-  min-height: 100dvh;
+  min-height: 100%;
   width: 100%;
   display: grid;
   gap: var(--space-6);

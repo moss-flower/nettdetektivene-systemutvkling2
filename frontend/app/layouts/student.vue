@@ -47,7 +47,7 @@ const showBackToHome = computed(() => ![
 
 .studentShellFrame {
   position: relative;
-  width: 90vw;
+  width: min(90vw, 100%);
   height: 90vh;
   padding: var(--space-5);
   overflow: hidden;
