@@ -123,6 +123,7 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
           :is-completed="option.isCompleted"
           :is-unlocked="option.isUnlocked"
           :to="option.to"
+          :show-star="!isPreview"
         />
       </div>
 
