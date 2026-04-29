@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { Station } from '~/composables/types/StationType'
+import { NuxtLink } from '#components'
+import { useGamePreview } from '~/composables/useGamePreview'
 import { useStudentProfile } from '~/composables/useStudentProfile'
+import { useStations } from '~/composables/useStations'
 import { useThemeAttributes } from '~/composables/useThemeAttributes'
 import { getLevel } from '~/composables/utils/studentProgress'
 
 provideGameConfetti()
 useThemeAttributes('game')
 const { getMyProfile } = useStudentProfile()
+const { getStationByUid } = useStations()
 
 const route = useRoute()
+const { isPreview } = useGamePreview()
 const profileName = ref('Detektiv')
 const profileLevelText = ref('Laster nivå...')
 
@@ -24,7 +28,7 @@ const stationUid = computed(() => {
 
 const { data: station } = await useAsyncData(
   () => `layout-station-${stationUid.value}`,
-  () => stationUid.value ? Station.backendFetchStationByUid(stationUid.value) : null,
+  async () => stationUid.value ? await getStationByUid(stationUid.value) : null,
   { watch: [stationUid] },
 )
 
@@ -38,6 +42,12 @@ const layoutStyle = computed(() => {
 })
 
 onMounted(async () => {
+  if (isPreview.value) {
+    profileName.value = 'Laererpreview'
+    profileLevelText.value = 'Forhandsvisning'
+    return
+  }
+
   try {
     const profile = await getMyProfile()
     profileName.value = profile.studentName
@@ -51,10 +61,12 @@ onMounted(async () => {
 <template>
   <div class="game-layout" :style="layoutStyle">
     <aside class="game-layout__rail game-layout__rail--left" aria-label="Spillerpanel">
-      <NuxtLink
-        to="/student/profile"
-        class="game-layout__rail-card game-layout__rail-card--avatar game-layout__rail-link"
-        aria-label="Gå til elevprofil"
+      <component
+        :is="isPreview ? 'div' : NuxtLink"
+        :to="isPreview ? undefined : '/student/profile'"
+        class="game-layout__rail-card game-layout__rail-card--avatar"
+        :class="{ 'game-layout__rail-link': !isPreview }"
+        :aria-label="isPreview ? 'Larerforhandsvisning' : 'Gå til elevprofil'"
       >
         <div class="game-layout__avatar-placeholder" aria-hidden="true">
           <img
@@ -65,7 +77,7 @@ onMounted(async () => {
         </div>
         <p class="game-layout__rail-title">{{ profileName }}</p>
         <p class="game-layout__rail-text">{{ profileLevelText }}</p>
-      </NuxtLink>
+      </component>
     </aside>
 
     <main class="game-layout__content" aria-label="Spillinnhold">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import pencil from "~/assets/images/pencil.png";
+import pencil from "~/assets/ui-icons/Pencil.png";
 
 //Emits plain click event
 const emit = defineEmits<{
@@ -8,10 +8,10 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="newNote">
+  <button class="newNote" @click="emit('click')">
     <img class="newNoteImage" :src="pencil" alt="Pencil" />
-    <button class="newNoteButton" @click="emit('click')">New note</button>
-  </div>
+    <div class="newNoteButton">New note</div>
+  </button>
 </template>
 
 <style scoped>
@@ -20,16 +20,20 @@ const emit = defineEmits<{
   flex-direction: column;
   align-items: center;
   font-size: 2rem;
+  font-weight: bold;
+  border-radius: var(--radius-2);
+  background-color: var(--palette-cream-200);
   gap: var(--space-2);
 }
 
 .newNoteImage {
-  width: 80%;
+  width: 70%;
   object-fit: contain;
 }
 
 .newNoteButton {
   width: fit-content;
-  background-color: white;
+  padding: var(--space-2);
+  border-radius: var(--radius-2);
 }
 </style>

@@ -10,15 +10,16 @@ import SortIntoBucketsTemplate from '~/components/gameplay/templates/SortIntoBuc
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoiceTemplate.vue'
 import UiStudentHomeBackButton from '~/components/ui/UiStudentHomeBackButton.vue'
+import { useGamePreview } from '~/composables/useGamePreview'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
 import { markExerciseCompleted, useCompletedExerciseUids } from '~/composables/utils/gameProgress'
 import { routePaths } from '~/composables/utils/routePaths'
 import { Exercise } from '~/composables/types/ExerciseType'
-import { Station } from '~/composables/types/StationType'
 import { useAudioSettings } from '~/composables/useAudioSettings'
 import { useEffectSound } from '~/composables/useEffectSound'
 import celebrationSfx from '~/assets/sound/celebration-sfx.mp3'
 import { useStudentProfile } from '~/composables/useStudentProfile'
+import { useStations } from '~/composables/useStations'
 import { getLevel } from '~/composables/utils/studentProgress'
 
 import type {
@@ -37,6 +38,7 @@ definePageMeta({
 })
 
 const route = useRoute()
+const { isPreview, buildPreviewRoute } = useGamePreview()
 const requestedStationUid = Array.isArray(route.params.stationUid)
     ? route.params.stationUid[0] ?? ''
     : route.params.stationUid ?? ''
@@ -44,7 +46,8 @@ const requestedExerciseUid = typeof route.query.exerciseUid === 'string'
     ? route.query.exerciseUid
     : ''
 
-const station = await Station.backendFetchStationByUid(requestedStationUid)
+const { getStationByUid } = useStations()
+const station = await getStationByUid(requestedStationUid)
 
 if (!station) {
   throw createError({
@@ -55,21 +58,26 @@ if (!station) {
 
 const { celebrateCorrectAnswer, celebrateLevelComplete, stop } = useGameConfetti()
 const { getMyProfile } = useStudentProfile()
-const completedExerciseUids = await useCompletedExerciseUids()
+const completedExerciseUids = isPreview.value ? [] : await useCompletedExerciseUids()
 const completionError = ref('')
 
 const activeExerciseUid = station.exerciseUids.includes(requestedExerciseUid)
     ? requestedExerciseUid
     : station.exerciseUids[0] ?? null
 
-if (activeExerciseUid) {
+if (activeExerciseUid && !isPreview.value) {
   const activeExerciseIndex = station.exerciseUids.findIndex((exerciseUid) => exerciseUid === activeExerciseUid)
   const previousExerciseUid = activeExerciseIndex > 0 ? station.exerciseUids[activeExerciseIndex - 1] : null
 
   if (previousExerciseUid && !completedExerciseUids.includes(previousExerciseUid)) {
     await navigateTo({
-      path: routePaths.studentExerciseDifficultySelect,
-      query: {uid: station.uid},
+      ...(isPreview.value
+        ? buildPreviewRoute(routePaths.studentExerciseDifficultySelect)
+        : { path: routePaths.studentExerciseDifficultySelect, query: {} }),
+      query: {
+        ...(isPreview.value ? buildPreviewRoute(routePaths.studentExerciseDifficultySelect).query : {}),
+        uid: station.uid,
+      },
     })
   }
 }
@@ -78,8 +86,13 @@ const activeExercise = activeExerciseUid ? await Exercise.backendFetchExerciseBy
 
 if (!activeExercise) {
   await navigateTo({
-    path: routePaths.studentExerciseDifficultySelect,
-    query: {uid: station.uid},
+    ...(isPreview.value
+      ? buildPreviewRoute(routePaths.studentExerciseDifficultySelect)
+      : { path: routePaths.studentExerciseDifficultySelect, query: {} }),
+    query: {
+      ...(isPreview.value ? buildPreviewRoute(routePaths.studentExerciseDifficultySelect).query : {}),
+      uid: station.uid,
+    },
   })
 
   throw createError({
@@ -205,13 +218,18 @@ const progressLabel = computed(() => {
 })
 
 const exerciseSelectRoute = computed(() => ({
-  path: routePaths.studentExerciseDifficultySelect,
-  query: {uid: station.uid},
+  ...(isPreview.value
+    ? buildPreviewRoute(routePaths.studentExerciseDifficultySelect)
+    : { path: routePaths.studentExerciseDifficultySelect, query: {} }),
+  query: {
+    ...(isPreview.value ? buildPreviewRoute(routePaths.studentExerciseDifficultySelect).query : {}),
+    uid: station.uid,
+  },
 }))
 
-const bossVictoryRoute = computed(() => ({
-  path: routePaths.studentLevels,
-}))
+const bossVictoryRoute = computed(() =>
+  isPreview.value ? buildPreviewRoute(routePaths.studentLevels) : { path: routePaths.studentLevels },
+)
 
 const showBossVictoryDialog = computed(() =>
     isBossStation && showExerciseResultDialog.value && isExerciseComplete.value
@@ -411,6 +429,10 @@ const onAnsweredPasswordStrength = (result: PasswordStrengthResult) => {
 }
 
 const fetchCurrentLevel = async () => {
+  if (isPreview.value) {
+    return null
+  }
+
   const profile = await getMyProfile()
 
   return getLevel(profile.score).level
@@ -444,29 +466,31 @@ const next = async () => {
       let levelBeforeCompletion: number | null = null
 
       try {
-        try {
-          levelBeforeCompletion = await fetchCurrentLevel()
-        } catch (error) {
-          console.error('Error fetching student level before completion:', error)
-        }
-
-        await markExerciseCompleted(activeExercise.uid)
-
-        if (levelBeforeCompletion !== null) {
+        if (!isPreview.value) {
           try {
-            const levelAfterCompletion = await fetchCurrentLevel()
-
-            if (levelAfterCompletion > levelBeforeCompletion) {
-              leveledUpTo.value = levelAfterCompletion
-              showLevelupPopup.value = true
-            }
+            levelBeforeCompletion = await fetchCurrentLevel()
           } catch (error) {
-            console.error('Error fetching student level after completion:', error)
+            console.error('Error fetching student level before completion:', error)
           }
-        }
 
-        if (!completedExerciseUids.includes(activeExercise.uid)) {
-          completedExerciseUids.push(activeExercise.uid)
+          await markExerciseCompleted(activeExercise.uid)
+
+          if (levelBeforeCompletion !== null) {
+            try {
+              const levelAfterCompletion = await fetchCurrentLevel()
+
+              if (levelAfterCompletion !== null && levelAfterCompletion > levelBeforeCompletion) {
+                leveledUpTo.value = levelAfterCompletion
+                showLevelupPopup.value = true
+              }
+            } catch (error) {
+              console.error('Error fetching student level after completion:', error)
+            }
+          }
+
+          if (!completedExerciseUids.includes(activeExercise.uid)) {
+            completedExerciseUids.push(activeExercise.uid)
+          }
         }
 
         celebrateLevelComplete()

@@ -11,10 +11,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
 import no.safety.backend.auth.dto.UserLoginRequest;
 import no.safety.backend.auth.dto.UserLoginResponse;
+import no.safety.backend.leaderboard.repository.ClassroomLeaderboardRepository;
 import no.safety.backend.user.model.User;
 import no.safety.backend.user.repository.UserRepository;
 
@@ -22,6 +24,8 @@ import no.safety.backend.user.repository.UserRepository;
 @AutoConfigureRestTestClient
 @ActiveProfiles("test")
 public class UserLoginIntegrationTest {
+    @MockitoBean
+    private ClassroomLeaderboardRepository classroomLeaderboardRepository;
 
     @Autowired
     private RestTestClient client;
