@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.model.User;
 import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
 
@@ -57,7 +58,7 @@ public class Classroom {
       joinColumns = @JoinColumn(name = "classroom_uid", referencedColumnName = "uid"),
       inverseJoinColumns = @JoinColumn(name = "user_id")
   )
-  private Set<User> owners = new HashSet<>();
+  private Set<TeacherUser> owners = new HashSet<>();
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "current_weekly_mystery_internal_id")

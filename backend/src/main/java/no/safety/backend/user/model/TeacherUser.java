@@ -25,7 +25,7 @@ import no.safety.backend.classroom.model.Classroom;
 @NoArgsConstructor
 @SuperBuilder
 public class TeacherUser extends User {
-    @ManyToMany(mappedBy = "classrooms")
+    @ManyToMany(mappedBy = "owners")
     @Builder.Default
     private Set<Classroom> classrooms = new HashSet<>();
 }
