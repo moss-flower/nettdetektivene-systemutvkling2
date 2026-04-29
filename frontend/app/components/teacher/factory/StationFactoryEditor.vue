@@ -285,10 +285,15 @@ watch(payloadPreviewText, () => {
 						<textarea v-model="draft.description" rows="3" placeholder="Kort beskrivelse av hva eleven skal øve på i denne stasjonen." />
 					</label>
 
-          <label class="field field--checkbox">
-            <input v-model="draft.isBoss" type="checkbox" >
-            <span>Boss-stasjon</span>
-          </label>
+					<div class="bossToggleWrap">
+					<label
+						class="field field--checkbox field--checkbox-prominent"
+						title="Skurk-stasjon betyr at elevene moter en skurk de skal sla for ekstra mestringsfølelse. Legg gjerne inn et variert oppgavesett med lignende oppgaver fra det elevene har jobbet med fram til denne stasjonen."
+					>
+						<input v-model="draft.isBoss" type="checkbox" aria-label="Marker som skurk-stasjon" >
+						<span>Skurk-stasjon</span>
+					</label>
+				</div>
 				</div>
 
 				<div class="imagePreviewCard">
@@ -866,6 +871,27 @@ watch(payloadPreviewText, () => {
   align-items: center;
   gap: 0.65rem;
   display: flex;
+}
+
+.bossToggleWrap {
+	grid-column: 1 / -1;
+	display: grid;
+	place-items: center;
+	margin-top: 0.25rem;
+}
+
+.field--checkbox-prominent {
+	padding: 0.8rem 1rem;
+	border: 2px solid #f59e0b;
+	border-radius: 0.9rem;
+	background: rgba(245, 158, 11, 0.14);
+	box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22);
+	font-weight: 800;
+	cursor: help;
+}
+
+.field--checkbox-prominent span {
+	color: var(--text);
 }
 
 .field--checkbox input {
