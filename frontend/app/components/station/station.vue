@@ -5,6 +5,10 @@ import starFilled from "~/assets/images/star/spStarFilled.png";
 import { routePaths } from "~/composables/utils/routePaths";
 import type { Station } from "~/composables/types/StationTypes";
 
+const emit = defineEmits<{
+  (event: "locked-click"): void;
+}>();
+
 const props = defineProps<{
   station: Station;
   isUnlocked?: boolean;
@@ -38,14 +42,24 @@ const stars = computed(() =>
     };
   }),
 );
+
+const cardTag = computed(() => (stationIsUnlocked.value ? NuxtLink : "button"));
+
+const handleClick = () => {
+  if (!stationIsUnlocked.value) {
+    emit("locked-click");
+  }
+};
 </script>
 
 <template>
-    <component
-  :is="stationIsUnlocked ? NuxtLink : 'div'"
+  <component
+    :is="cardTag"
     class="levelCard"
-  :class="{ lockedCard: !stationIsUnlocked }"
-  :to="stationIsUnlocked ? stationPath : undefined"
+    :class="{ lockedCard: !stationIsUnlocked }"
+    :to="stationIsUnlocked ? stationPath : undefined"
+    :type="stationIsUnlocked ? undefined : 'button'"
+    @click="handleClick"
   >
     <img :src="station.image" :alt="station.title" class="levelImage">
 
@@ -77,12 +91,19 @@ const stars = computed(() =>
   border-radius: var(--radius-2);
   background: var(--palette-white);
   color: var(--palette-navy-900);
+  font: inherit;
   text-decoration: none;
   box-shadow: var(--shadow-card);
+  cursor: pointer;
 }
 
 .lockedCard {
   opacity: 0.5;
+}
+
+.levelCard:focus-visible {
+  outline: var(--border-width-thick) solid color-mix(in srgb, var(--color-brand-primary) 65%, white);
+  outline-offset: 0.2rem;
 }
 
 .levelImage {

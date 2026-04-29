@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PopupNotYetUnlocked from "~/components/shared/PopupNotYetUnlocked.vue";
 import StationCard from "~/components/station/station.vue";
 import { useCompletedExerciseUids } from "~/composables/utils/gameProgress";
 import { useStations } from "~/composables/useStations";
@@ -25,6 +26,7 @@ const stationPathElement = ref<HTMLElement | null>(null);
 const stationNodeElements = ref<HTMLElement[]>([]);
 const connectorPaths = ref<ConnectorPath[]>([]);
 const connectorCanvas = ref({ width: 0, height: 0 });
+const showNotYetUnlockedPopup = ref(false);
 
 let resizeObserver: ResizeObserver | null = null;
 
@@ -219,6 +221,7 @@ watch(stationCards, () => {
             :station="entry.station"
             :is-unlocked="entry.isUnlocked"
             :completed-exercises="entry.completedExercises"
+            @locked-click="showNotYetUnlockedPopup = true"
           />
         </div>
       </template>
@@ -228,6 +231,13 @@ watch(stationCards, () => {
       <h2>Ingen stasjoner tilgjengelig</h2>
       <p>Dette stasjonskartet har ingen stasjoner ennå, eller du er ikke koblet til et klasserom.</p>
     </section>
+
+    <PopupNotYetUnlocked
+      v-if="showNotYetUnlockedPopup"
+      title="Denne stasjonen er fortsatt låst"
+      description="Fullfør stasjonen før denne for å låse opp neste stopp på kartet."
+      @close="showNotYetUnlockedPopup = false"
+    />
   </section>
 </template>
 
