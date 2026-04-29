@@ -1,16 +1,42 @@
 <script setup lang="ts">
 import StationCard from "~/components/station/station.vue";
+import { useGamePreview } from "~/composables/useGamePreview";
 import { World } from "~/composables/types/WorldTypes";
 import { Station } from "~/composables/types/StationType";
 import { useCompletedExerciseUids } from "~/composables/utils/gameProgress";
 
-const { student } = useClassrooms();
+const { student, teacher } = useClassrooms();
+const { isPreview, classroomId, hasPreviewContext } = useGamePreview();
+
 const { data: completedExerciseUids } = await useAsyncData(
   "student-completed-exercises",
-  () => useCompletedExerciseUids(),
+  () => (isPreview.value ? [] : useCompletedExerciseUids()),
+  {
+    watch: [isPreview],
+  },
 );
 
-const { data: classroom } = await useAsyncData("student-classroom", () => student.getMyClassroom().catch(() => null));
+const classroomDataKey = computed(() =>
+  isPreview.value ? `preview-classroom-${classroomId.value}` : "student-classroom",
+);
+
+const { data: classroom } = await useAsyncData(
+  classroomDataKey,
+  () => {
+    if (isPreview.value) {
+      if (!hasPreviewContext.value) {
+        return null;
+      }
+
+      return teacher.getClassroomById(classroomId.value).catch(() => null);
+    }
+
+    return student.getMyClassroom().catch(() => null);
+  },
+  {
+    watch: [isPreview, classroomId],
+  },
+);
 
 const worldUid = computed(() => classroom.value?.worldUid?.trim() ?? "");
 
@@ -56,6 +82,15 @@ let resizeObserver: ResizeObserver | null = null;
 
 const stationCards = computed(() => {
   const completedUids = completedExerciseUids.value ?? [];
+
+  if (isPreview.value) {
+    return (stations.value ?? []).map((station) => ({
+      station,
+      completedExercises: station.exerciseUids.map(() => false),
+      isUnlocked: true,
+    }));
+  }
+
   let previousStationCompleted = true;
 
   return (stations.value ?? []).map((station) => {
