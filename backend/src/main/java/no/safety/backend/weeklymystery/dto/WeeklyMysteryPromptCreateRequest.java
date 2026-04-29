@@ -4,7 +4,10 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -21,10 +24,11 @@ public record WeeklyMysteryPromptCreateRequest(
     @NotBlank(message = "clue required")
     String clue,
 
-    @NotBlank(message = "please include scheduled date for release")
+    @NotNull(message = "please include scheduled date for release")
     LocalDate date,
 
     Set<UUID> publicClassroomIds
 ) {
-    
+    @JsonCreator
+    public WeeklyMysteryPromptCreateRequest {}
 }

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.safety.backend.auth.dto.UserLoginRequest;
 import no.safety.backend.auth.dto.UserLoginResponse;
 import no.safety.backend.auth.dto.UserLoginTokenResponse;
@@ -25,6 +26,7 @@ import no.safety.backend.registration.service.UserRegistrationService;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
     private final UserRegistrationService userRegistrationService;
@@ -37,10 +39,10 @@ public class AuthenticationController {
      */
     @PostMapping(value = "/login")
     public ResponseEntity<UserLoginResponse> login(@Valid @RequestBody UserLoginRequest request){
+        log.info("AuthenticationManager: Login attempt detected");
         UserLoginTokenResponse userTokenResponse = authenticationService.authenticateLogin(request);
 
         ResponseCookie jwtCookie = jwtCookieService.createCookie(userTokenResponse.jwtToken());
-        
         
         return ResponseEntity.status(HttpStatus.OK)
             .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())

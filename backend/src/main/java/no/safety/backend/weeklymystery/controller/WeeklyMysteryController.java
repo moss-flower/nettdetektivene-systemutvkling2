@@ -42,6 +42,7 @@ public class WeeklyMysteryController {
     public ResponseEntity<?> submitResponse(@Valid @RequestBody WeeklyMysterySubmissionCreateRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
         weeklyMysteryService.saveStudentSubmission(request, principal.getUserInternalId());
+        System.out.println("Request received: " + request); 
         return ResponseEntity.ok(null);
     }
 

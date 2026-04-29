@@ -3,6 +3,8 @@ package no.safety.backend.auth.service;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
+
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 
 @Service
+@Slf4j
 public class JwtService {
     @Value("${application.security.jwt.secretKey}")
     private String SECRET_KEY;

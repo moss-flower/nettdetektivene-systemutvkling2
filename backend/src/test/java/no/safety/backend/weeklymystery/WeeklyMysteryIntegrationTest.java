@@ -12,29 +12,40 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.client.RestTestClient;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import jakarta.transaction.Transactional;
 import no.safety.backend.BaseIntegrationTest;
+import no.safety.backend.auth.dto.UserLoginRequest;
 import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.classroom.repository.ClassroomRepository;
+import no.safety.backend.config.TestSecurityConfig;
 import no.safety.backend.role.model.Role;
 import no.safety.backend.role.model.RoleType;
 import no.safety.backend.role.repository.RoleRepository;
 import no.safety.backend.user.model.TeacherUser;
-import no.safety.backend.user.model.User;
 import no.safety.backend.user.repository.TeacherUserRepository;
 import no.safety.backend.user.repository.UserRepository;
 import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptCreateRequest;
-import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptRequest;
 import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptResponse;
 import no.safety.backend.weeklymystery.repository.WeeklyMysteryPromptRepository;
 import no.safety.backend.weeklymystery.repository.WeeklyMysterySubmissionRepository;
 
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
+@Testcontainers(disabledWithoutDocker = true)
+@Import(TestSecurityConfig.class)
 public class WeeklyMysteryIntegrationTest extends BaseIntegrationTest {
+
+    @LocalServerPort
+    private int port;
 
     @Autowired private UserRepository userRepository;
 
@@ -51,11 +62,32 @@ public class WeeklyMysteryIntegrationTest extends BaseIntegrationTest {
 
     private Classroom classroom;
     private TeacherUser user;
+
+    private WebTestClient webClient;
+
+    protected String jwtCookie;
+    protected String xsrfToken;
+
+    protected void loginAs(String email, String password) {
+        UserLoginRequest userLoginRequest = new UserLoginRequest(email, password);
+        var result = webClient.post()
+        .uri("/api/v1/auth/login")
+        .bodyValue(userLoginRequest)
+        .exchange()
+        .expectStatus().isOk()
+        .returnResult(Void.class);
+
+        jwtCookie = result.getResponseCookies().getFirst(jwtCookieName).getValue();
+    }
     
 
     @BeforeEach
     @Transactional
     void setUp() {
+        webClient = WebTestClient.bindToServer()
+                .baseUrl("http://localhost:" + port)
+                .build();
+
         Role teacherRole = new Role();
         if (roleRepository.findByType(RoleType.ROLE_TEACHER).isEmpty()) {
             teacherRole.setType(RoleType.ROLE_TEACHER);
@@ -86,20 +118,23 @@ public class WeeklyMysteryIntegrationTest extends BaseIntegrationTest {
         // 3. Now set the owner back on the classroom and update it
         classroom.setOwners(Set.of(user));
         classroomRepository.save(classroom);
+
+        loginAs("jane@test.com", "password12345");
     }
 
-    // @Test
-    // void shouldSubmitNewPromptSuccessfully() {
-    //     WeeklyMysteryPromptCreateRequest request = new WeeklyMysteryPromptCreateRequest("title", "prompt", "clue", LocalDate.of(2000,1,1), Set.of(classroom.getUid()));
+    @Test
+    void shouldSubmitNewPromptSuccessfully() {
+        WeeklyMysteryPromptCreateRequest request = new WeeklyMysteryPromptCreateRequest("title", "prompt", "clue", LocalDate.of(2000,1,1), Set.of(classroom.getUid()));
         
-    //     client.post()
-    //     .uri("/api/v1/WeeklyMystery/prompts")
-    //     .body(request)
-    //     .exchange()
-    //     .expectStatus().isOk()
-    //     .expectBody(WeeklyMysteryPromptResponse.class)
-    //     .value(response -> {
-    //         assertThat(response.title()).isEqualTo("title");
-    //     });
-    // }
+        webClient.post()
+        .uri("/api/v1/WeeklyMystery/prompts")
+        .cookie(jwtCookieName, jwtCookie)
+        .bodyValue(request)
+        .exchange()
+        .expectStatus().isOk()
+        .expectBody(WeeklyMysteryPromptResponse.class)
+        .value(response -> {
+            assertThat(response.title()).isEqualTo("title");
+        });
+    }
 }
