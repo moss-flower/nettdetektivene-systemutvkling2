@@ -129,7 +129,7 @@ public class WeeklyMysteryService {
                 .orElseThrow(() -> new EntityNotFoundException("Submission not found: " + submissionUid));
         boolean isSubmitter = submission.getSubmitterStudentUser().getInternalId().equals(requesterId);
         boolean isAuthorizedTeacher = classroomWeeklyMysteryRepository
-                .existsByWeeklyMysteryPrompt_AndClassroom_TeacherUser_InternalId(
+                .existsByWeeklyMysteryPrompt_AndClassroom_Owners_InternalId(
                     submission.getWeeklyMysteryPrompt(), requesterId
                 );
 

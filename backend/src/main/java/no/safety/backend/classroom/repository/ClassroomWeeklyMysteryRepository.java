@@ -9,5 +9,5 @@ import java.util.List;
 
 public interface ClassroomWeeklyMysteryRepository extends JpaRepository<ClassroomWeeklyMystery, Long> {
     List<ClassroomWeeklyMystery> findByClassroom_InternalIdOrderByAssignedDateDesc(Long classroomId);
-    boolean existsByWeeklyMysteryPrompt_AndClassroom_TeacherUser_InternalId(WeeklyMysteryPrompt prompt, Long teacherUserInternalId);
+    boolean existsByWeeklyMysteryPrompt_AndClassroom_Owners_InternalId(WeeklyMysteryPrompt prompt, Long teacherInternalId);;
 }
