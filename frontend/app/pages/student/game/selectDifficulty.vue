@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import datatyvenSprite from "~/assets/images/datatyven.png";
+import PopupNotYetUnlocked from "~/components/shared/PopupNotYetUnlocked.vue";
 import DifficultySelect from "~/components/station/difficultySelect.vue";
+import { useGamePreview } from "~/composables/useGamePreview";
 import { useCompletedExerciseUids } from "~/composables/utils/gameProgress";
 import { routePaths } from "~/composables/utils/routePaths";
 import { Exercise } from "~/composables/types/ExerciseType";
@@ -16,12 +19,16 @@ type ExerciseOption = {
     path: string;
     query: {
       exerciseUid: string;
+      preview?: string;
+      classroomId?: string;
     };
   };
 };
 
 const route = useRoute();
+const { isPreview, classroomId, buildPreviewRoute } = useGamePreview();
 const { getStationByUid } = useStations();
+const showNotYetUnlockedPopup = ref(false);
 
 const stationUid = computed(() =>
   typeof route.query.uid === "string" ? route.query.uid : "",
@@ -41,7 +48,10 @@ const { data: station } = await useAsyncData(
 
 const { data: completedExerciseUids } = await useAsyncData(
   "completed-exercises",
-  () => useCompletedExerciseUids(),
+  () => (isPreview.value ? [] : useCompletedExerciseUids()),
+  {
+    watch: [isPreview],
+  },
 );
 
 const { data: stationExercises } = await useAsyncData(
@@ -62,6 +72,9 @@ const stationStatus = computed(() => ({
   ),
 }));
 
+const backRoute = computed(() =>
+  isPreview.value ? buildPreviewRoute(routePaths.studentLevels) : routePaths.studentLevels,
+);
 const exerciseOptions = computed<ExerciseOption[]>(() => {
   if (!station.value) {
     return [];
@@ -77,10 +90,18 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
     difficultyText: exercise.entryName,
     description: exercise.description ?? currentStation.description ?? "",
     isCompleted: stationStatus.value.completedExercises[index] ?? false,
-    isUnlocked: index === 0 || Boolean(stationStatus.value.completedExercises[index - 1]),
+    isUnlocked: isPreview.value || index === 0 || Boolean(stationStatus.value.completedExercises[index - 1]),
     to: {
       path: `/games/${currentStation.uid}`,
-      query: { exerciseUid: exercise.uid },
+      query: {
+        exerciseUid: exercise.uid,
+        ...(isPreview.value
+          ? {
+              preview: "1",
+              classroomId: classroomId.value,
+            }
+          : {}),
+      },
     },
   }));
 });
@@ -88,15 +109,23 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
 
 <template>
   <section class="difficultyPage">
-    <NuxtLink class="backLink" :to="routePaths.studentLevels">
+    <NuxtLink class="backLink" :to="backRoute">
       Tilbake til stasjoner
     </NuxtLink>
 
     <template v-if="station">
       <header class="difficultyHero">
-        <p class="difficultyEyebrow">Velg oppgave</p>
-        <h1 class="difficultyTitle">{{ station.title }}</h1>
-        <p class="difficultySummary">{{ station.description }}</p>
+        <div class="difficultyHero__content">
+          <p class="difficultyEyebrow">Velg oppgave</p>
+          <h1 class="difficultyTitle">{{ station.title }}</h1>
+          <p class="difficultySummary">{{ station.description }}</p>
+        </div>
+        <img
+          v-if="station.isBoss"
+          :src="datatyvenSprite"
+          alt="Datatyven"
+          class="difficultyHero__boss"
+        >
       </header>
 
       <div v-if="exerciseOptions.length > 0" class="difficultyGrid">
@@ -109,6 +138,8 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
           :is-completed="option.isCompleted"
           :is-unlocked="option.isUnlocked"
           :to="option.to"
+          @locked-click="showNotYetUnlockedPopup = true"
+          :show-star="!isPreview"
         />
       </div>
 
@@ -122,6 +153,13 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
       <h1>Fant ikke stasjonen</h1>
       <p>Prøv å gå tilbake og velg en stasjon på nytt.</p>
     </section>
+
+    <PopupNotYetUnlocked
+      v-if="showNotYetUnlockedPopup"
+      title="Denne oppgaven er fortsatt låst"
+      description="Fullfør oppgaven før denne for å låse opp neste vanskelighetsgrad."
+      @close="showNotYetUnlockedPopup = false"
+    />
   </section>
 </template>
 
@@ -155,7 +193,9 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
 
 .difficultyHero {
   display: grid;
-  gap: var(--space-3);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
   /* fluid inner padding, deliberate exception (token system) */
   padding: clamp(1.25rem, 3vw, 2rem);
   border: var(--border-width-hairline) solid var(--difficulty-hero-border);
@@ -166,6 +206,19 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
       var(--difficulty-hero-bg-bottom) 100%
   );
   box-shadow: var(--shadow-2);
+}
+
+.difficultyHero__content {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.difficultyHero__boss {
+  width: clamp(5.5rem, 12vw, 8rem);
+  height: auto;
+  justify-self: end;
+  align-self: end;
+  filter: drop-shadow(0 0.5rem 0.75rem rgba(0, 0, 0, 0.22));
 }
 
 .difficultyEyebrow {
@@ -215,6 +268,15 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
 }
 
 @media (max-width: 900px) {
+  .difficultyHero {
+    grid-template-columns: 1fr;
+  }
+
+  .difficultyHero__boss {
+    justify-self: center;
+    align-self: center;
+  }
+
   .difficultyGrid {
     grid-template-columns: 1fr;
   }
