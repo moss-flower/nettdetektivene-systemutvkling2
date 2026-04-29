@@ -1,5 +1,76 @@
 <script setup lang="ts">
 import UiStudentHomeBackButton from "~/components/ui/UiStudentHomeBackButton.vue";
+import type { ClassroomLeaderboardEntry } from "~/composables/types/LeaderboardTypes";
+
+const leaderboard = useLeaderboard();
+
+const pageSize = 25;
+const rankings = ref<ClassroomLeaderboardEntry[]>([]);
+const pageNumber = ref(0);
+const isLastPage = ref(true);
+const isLoading = ref(false);
+const loadError = ref<string | null>(null);
+
+const orderedRankings = computed(() =>
+  [...rankings.value].sort(
+    (a, b) => a.rank - b.rank || b.score - a.score || a.className.localeCompare(b.className),
+  ),
+);
+const podiumRankings = computed(() => orderedRankings.value.slice(0, 3));
+const podiumDisplayRankings = computed(() => {
+  const [first, second, third] = podiumRankings.value;
+
+  return [second, first, third].filter((entry): entry is ClassroomLeaderboardEntry => Boolean(entry));
+});
+const rosterRankings = computed(() => orderedRankings.value.slice(3));
+const hasRankings = computed(() => orderedRankings.value.length > 0);
+
+const formatScore = (score: number) => new Intl.NumberFormat("nb-NO").format(score);
+
+const romanRank = (rank: number) => {
+  if (rank === 1) return "I";
+  if (rank === 2) return "II";
+  if (rank === 3) return "III";
+  return String(rank);
+};
+
+const podiumClass = (rank: number) => {
+  if (rank === 1) return "podiumStep--gold";
+  if (rank === 2) return "podiumStep--silver";
+  if (rank === 3) return "podiumStep--bronze";
+  return "";
+};
+
+const placeLabel = (rank: number) => {
+  if (rank === 1) return "Førsteplass";
+  if (rank === 2) return "Andreplass";
+  if (rank === 3) return "Tredjeplass";
+  return `${rank}. plass`;
+};
+
+const loadRankingsPage = async (page: number) => {
+  isLoading.value = true;
+  loadError.value = null;
+
+  try {
+    const response = await leaderboard.getClassroomRankings(page, pageSize);
+    rankings.value = page === 0 ? response.content : [...rankings.value, ...response.content];
+    pageNumber.value = response.number;
+    isLastPage.value = response.last;
+  } catch {
+    loadError.value = "Kunne ikke hente leaderboard akkurat nå.";
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const loadMoreRankings = async () => {
+  if (isLoading.value || isLastPage.value) return;
+
+  await loadRankingsPage(pageNumber.value + 1);
+};
+
+await loadRankingsPage(0);
 </script>
 <template>
   <section class="leaderboardPage">
@@ -10,52 +81,54 @@ import UiStudentHomeBackButton from "~/components/ui/UiStudentHomeBackButton.vue
       <p class="subtitle">Hvilken klasse leder etterforskningen?</p>
     </header>
 
+    <p v-if="loadError && !hasRankings" class="statusMessage">{{ loadError }}</p>
+    <p v-else-if="isLoading && !hasRankings" class="statusMessage">Henter klassepoeng...</p>
+    <p v-else-if="!hasRankings" class="statusMessage">Ingen klasser har poeng ennå.</p>
+
     <!-- Top 3, hung plaques, center raised  -->
-    <ol class="podium" aria-label="Topp 3 klasser">
-      <li class="podiumStep podiumStep--silver" aria-label="Andreplass">
-        <span class="medallion">II</span>
-        <p class="className">5A</p>
-        <p class="classScore">2 140</p>
-        <p class="scoreUnit">poeng</p>
-      </li>
-      <li class="podiumStep podiumStep--gold" aria-label="Førsteplass">
-        <span class="medallion">I</span>
-        <p class="className">7B</p>
-        <p class="classScore">2 860</p>
-        <p class="scoreUnit">poeng</p>
-      </li>
-      <li class="podiumStep podiumStep--bronze" aria-label="Tredjeplass">
-        <span class="medallion">III</span>
-        <p class="className">6C</p>
-        <p class="classScore">1 980</p>
-        <p class="scoreUnit">poeng</p>
+    <ol v-else class="podium" aria-label="Topp 3 klasser">
+      <li
+        v-for="entry in podiumDisplayRankings"
+        :key="entry.classroomPublicUuid"
+        class="podiumStep"
+        :class="podiumClass(entry.rank)"
+        :aria-label="placeLabel(entry.rank)"
+      >
+        <span class="medallion">{{ romanRank(entry.rank) }}</span>
+        <p class="className">{{ entry.className }}</p>
+        <p class="classScore">{{ formatScore(entry.score) }}</p>
+        <p class="scoreUnit">XP</p>
       </li>
     </ol>
 
     <!-- Rank 4+, single cream placard with file-cabinet rows -->
-    <section class="roster" aria-label="Øvrig rangering">
+    <section v-if="rosterRankings.length" class="roster" aria-label="Øvrig rangering">
       <header class="rosterHeader">
         <span>Rang</span>
         <span>Klasse</span>
-        <span>Poeng</span>
+        <span>XP</span>
       </header>
       <ol class="rosterList" start="4">
-        <li class="rosterRow">
-          <span class="rosterRank">4</span>
-          <span class="rosterName">7A</span>
-          <span class="rosterScore">1 725</span>
-        </li>
-        <li class="rosterRow">
-          <span class="rosterRank">5</span>
-          <span class="rosterName">4B</span>
-          <span class="rosterScore">1 605</span>
-        </li>
-        <li class="rosterRow">
-          <span class="rosterRank">6</span>
-          <span class="rosterName">3A</span>
-          <span class="rosterScore">1 430</span>
+        <li
+          v-for="entry in rosterRankings"
+          :key="entry.classroomPublicUuid"
+          class="rosterRow"
+        >
+          <span class="rosterRank">{{ entry.rank }}</span>
+          <span class="rosterName">{{ entry.className }}</span>
+          <span class="rosterScore">{{ formatScore(entry.score) }}</span>
         </li>
       </ol>
+      <p v-if="loadError" class="rosterStatus">{{ loadError }}</p>
+      <button
+        v-if="!isLastPage"
+        class="loadMoreButton"
+        type="button"
+        :disabled="isLoading"
+        @click="loadMoreRankings"
+      >
+        {{ isLoading ? "Henter flere..." : "Vis flere klasser" }}
+      </button>
     </section>
   </section>
 </template>
@@ -164,6 +237,28 @@ h1 {
   line-height: var(--font-leading-base);
 }
 
+.statusMessage {
+  margin: 0;
+  width: 100%;
+  max-width: 880px;
+  padding: var(--space-5) var(--space-6);
+  background: linear-gradient(
+    180deg,
+    var(--plaque-mat-top) 0%,
+    var(--plaque-mat-bottom) 100%
+  );
+  border: var(--border-width-chunky) solid var(--plaque-gilt);
+  border-radius: var(--radius-2);
+  box-shadow:
+    inset 0 0 0 var(--border-width-thin) var(--plaque-liner),
+    inset 0 var(--border-width-thin) 0 var(--plaque-highlight),
+    var(--space-2) var(--space-4) var(--space-6) var(--plaque-shadow);
+  color: var(--palette-cork-900);
+  font-family: var(--font-family-body), sans-serif;
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+}
+
 /* --- Podium: three hung brass plaques --- */
 .podium {
   list-style: none;
@@ -267,6 +362,7 @@ h1 {
 
 /* --- Tier differentiation: ring color on medallion + border on plaque --- */
 .podiumStep--gold {
+  order: 2;
   transform: translateY(calc(-1 * var(--space-4)));
   border-color: var(--tier-gold-ring);
   box-shadow:
@@ -288,6 +384,7 @@ h1 {
 }
 
 .podiumStep--silver {
+  order: 1;
   border-color: var(--tier-silver-ring);
 }
 
@@ -299,6 +396,7 @@ h1 {
 }
 
 .podiumStep--bronze {
+  order: 3;
   border-color: var(--tier-bronze-ring);
 }
 
@@ -347,6 +445,40 @@ h1 {
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+.rosterStatus {
+  margin: var(--space-3) 0 0;
+  color: var(--roster-row-ink);
+  font-family: var(--font-family-body), sans-serif;
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+}
+
+.loadMoreButton {
+  justify-self: center;
+  margin-top: var(--space-4);
+  padding: var(--space-2) var(--space-5);
+  border: var(--border-width-thick) solid var(--plaque-gilt);
+  border-radius: var(--radius-pill);
+  background: var(--palette-cream-100);
+  color: var(--palette-cork-900);
+  font-family: var(--font-family-body), sans-serif;
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.loadMoreButton:hover:not(:disabled) {
+  background: var(--palette-gold-400);
+  transform: translateY(-1px);
+}
+
+.loadMoreButton:disabled {
+  cursor: wait;
+  opacity: 0.7;
 }
 
 .rosterRow {
