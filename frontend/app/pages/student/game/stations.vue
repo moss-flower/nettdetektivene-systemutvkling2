@@ -1,46 +1,20 @@
 <script setup lang="ts">
 import StationCard from "~/components/station/station.vue";
-import { World } from "~/composables/types/WorldTypes";
-import { Station } from "~/composables/types/StationType";
 import { useCompletedExerciseUids } from "~/composables/utils/gameProgress";
+import { useStations } from "~/composables/useStations";
 
-const { student } = useClassrooms();
+const { getMyStations } = useStations();
 const { data: completedExerciseUids } = await useAsyncData(
   "student-completed-exercises",
   () => useCompletedExerciseUids(),
 );
 
-const { data: classroom } = await useAsyncData("student-classroom", () => student.getMyClassroom().catch(() => null));
-
-const worldUid = computed(() => classroom.value?.worldUid?.trim() ?? "");
-
-const { data: world } = await useAsyncData(
+const { data: stationData } = await useAsyncData(
   "student-world",
-  () => (worldUid.value ? World.backendFetchWorldByUid(worldUid.value) : null),
-  {
-    watch: [worldUid],
-  },
+  () => getMyStations(),
 );
 
-const { data: stations } = await useAsyncData(
-  "student-stations",
-  async () => {
-    const stationUids = world.value?.stationUids ?? [];
-
-    if (stationUids.length === 0) {
-      return [];
-    }
-
-    const loadedStations = await Promise.all(stationUids.map((stationUid) => Station.backendFetchStationByUid(stationUid)));
-
-    return loadedStations.filter((station): station is Station => station !== null);
-  },
-  {
-    watch: [world],
-  },
-);
-
-const pageTitle = computed(() => world.value?.title || "Stasjonskart");
+const pageTitle = computed(() => stationData.value?.world?.title || "Stasjonskart");
 
 type ConnectorPath = {
   id: string;
@@ -58,7 +32,7 @@ const stationCards = computed(() => {
   const completedUids = completedExerciseUids.value ?? [];
   let previousStationCompleted = true;
 
-  return (stations.value ?? []).map((station) => {
+  return (stationData.value?.stations ?? []).map((station) => {
     const completedExercises = station.exerciseUids.map((exerciseUid) => completedUids.includes(exerciseUid));
     const isUnlocked = previousStationCompleted;
     const isCompleted = station.exerciseUids.length > 0 && completedExercises.every(Boolean);

@@ -14,13 +14,17 @@ import {
 	type WorldFactoryPayload,
 	type WorldFactoryStoredRecord,
 } from "~/composables/useWorldFactory";
-import { Station } from "~/composables/types/StationType";
+
+import type { Station } from "~/composables/types/StationTypes";
+import { useStations } from "~/composables/useStations";
 import type { World } from "~/composables/types/WorldTypes";
 import { useFactorySessionCache } from "~/composables/useFactorySessionCache";
 
 const props = defineProps<{
 	selectionKey: string;
 }>();
+
+const { getAllStations } = useStations();
 
 const emit = defineEmits<{
 	(event: "selection-updated", selectionKey: string): void;
@@ -267,9 +271,9 @@ watch(
 	{ immediate: true },
 );
 
-onMounted(async () => {
+	onMounted(async () => {
 	try {
-		availableStations.value = await Station.backendFetchAllStations();
+		availableStations.value = await getAllStations();
 	} catch {
 		availableStations.value = [];
 	}
