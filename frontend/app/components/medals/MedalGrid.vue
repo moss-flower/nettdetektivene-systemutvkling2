@@ -26,7 +26,9 @@ const emit = defineEmits<{
 .medalGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: minmax(0, 1fr);
   gap: var(--space-5);
   width: 100%;
+  height: 100%;
 }
 </style>
