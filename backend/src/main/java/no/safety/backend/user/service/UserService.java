@@ -1,5 +1,6 @@
 package no.safety.backend.user.service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import no.safety.backend.role.model.Role;
@@ -101,5 +102,15 @@ public class UserService {
 
     public User findByInternalId(Long id) {
         return userRepository.findById(id).get();
+    }
+
+    public Optional<StudentUser> findStudentByInternalId(Long id) {
+        User user = findByInternalId(id);
+        
+        if(isStudent(user)){
+            StudentUser student = (StudentUser) user;
+            return Optional.of(student);
+        }
+        return null;
     }
 }
