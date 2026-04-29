@@ -35,8 +35,8 @@ public class ExerciseService {
   }
 
   @Transactional(readOnly = true)
-  public ExerciseResponse get(UUID publicId) {
-    return ExerciseResponse.from(require(publicId));
+  public ExerciseResponse get(UUID uid) {
+    return ExerciseResponse.from(require(uid));
   }
 
   @Transactional(readOnly = true)
@@ -45,8 +45,8 @@ public class ExerciseService {
   }
 
   @Transactional
-  public ExerciseResponse update(UUID publicId, ExerciseRequest req) {
-    Exercise e = require(publicId);
+  public ExerciseResponse update(UUID uid, ExerciseRequest req) {
+    Exercise e = require(uid);
     applyScalarFields(e, req);
 
     e.getTasks().clear();
@@ -59,14 +59,15 @@ public class ExerciseService {
   }
 
   @Transactional
-  public void delete(UUID publicId) {
-    exerciseRepo.delete(require(publicId));
+  public void delete(UUID uid) {
+    exerciseRepo.delete(require(uid));
   }
 
   private void applyScalarFields(Exercise e, ExerciseRequest req) {
     e.setTitle(req.title());
     e.setDifficultyName(req.difficultyName());
     e.setDescription(req.description());
+    e.setHint(req.hint());
   }
 
   private Task newTask(Exercise e, TaskRequest tr) {
@@ -84,8 +85,8 @@ public class ExerciseService {
     t.setTemplateKind(null);
   }
 
-  private Exercise require(UUID publicId) {
-    return exerciseRepo.findByPublicId(publicId)
+  private Exercise require(UUID uid) {
+    return exerciseRepo.findByPublicId(uid)
         .orElseThrow(() -> new NotFoundException("Exercise not found"));
   }
 }

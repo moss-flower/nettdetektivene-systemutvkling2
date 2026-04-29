@@ -1,17 +1,19 @@
 <script setup lang="ts">
+import draggable from "vuedraggable";
 import { routePaths } from "~/composables/utils/routePaths";
 import {
 	createStationDraft,
 	deleteStationFactorySelection,
+	fetchAllStationFactoryStations,
 	loadStationFactoryPayload,
 	normalizeStationExerciseUids,
 	parseStationFactorySelectionKey,
 	saveStationFactoryPayload,
-	saveStationFactoryPayloadAsNew,
 	stationFactoryDefaultImage,
 	type StationFactoryPayload,
 } from "~/composables/useStationFactory";
 import { Exercise } from "~/composables/types/ExerciseType";
+import { useFactorySessionCache } from "~/composables/useFactorySessionCache";
 
 const props = defineProps<{
 	selectionKey: string;
@@ -24,19 +26,33 @@ const emit = defineEmits<{
 }>();
 
 const draft = reactive<StationFactoryPayload>(createStationDraft());
+const route = useRoute();
+const factorySessionCache = useFactorySessionCache();
 const loadedSnapshot = ref<StationFactoryPayload>(createStationDraft());
 const copyState = ref<"idle" | "copied" | "failed">("idle");
 const loadedLocalId = ref("");
 const availableExercises = ref<Exercise[]>([]);
+const availableStations = ref<Station[]>([]);
 
 const knownExerciseMap = computed(() => new Map(availableExercises.value.map((exercise) => [exercise.uid, exercise])));
 const parsedSelection = computed(() => parseStationFactorySelectionKey(props.selectionKey));
+
+type StationExerciseCard = {
+	uid: string;
+	order: number;
+	title: string;
+	entryName: string;
+	description: string;
+	isKnown: boolean;
+	usageTags: string[];
+};
 
 const payloadPreview = computed<StationFactoryPayload>(() => ({
 	title: draft.title.trim(),
 	description: draft.description.trim(),
 	image: draft.image.trim() || stationFactoryDefaultImage,
 	exerciseUids: normalizeStationExerciseUids(draft.exerciseUids),
+  isBoss : draft.isBoss,
 }));
 
 const payloadPreviewText = computed(() => JSON.stringify(payloadPreview.value, null, 2));
@@ -49,6 +65,20 @@ const canSave = computed(() => {
 
 const hasChanges = computed(() => JSON.stringify(payloadPreview.value) !== JSON.stringify(loadedSnapshot.value));
 
+const exerciseUsageTags = computed(() => {
+	const tagsByExerciseUid = new Map<string, string[]>();
+
+	for (const station of availableStations.value) {
+		for (const exerciseUid of station.exerciseUids) {
+			const tags = tagsByExerciseUid.get(exerciseUid) ?? [];
+			tags.push(station.title || station.uid);
+			tagsByExerciseUid.set(exerciseUid, tags);
+		}
+	}
+
+	return tagsByExerciseUid;
+});
+
 const selectedExercises = computed(() => payloadPreview.value.exerciseUids.map((uid, index) => {
 	const exercise = knownExerciseMap.value.get(uid);
 
@@ -59,8 +89,35 @@ const selectedExercises = computed(() => payloadPreview.value.exerciseUids.map((
 		entryName: exercise?.entryName ?? "Ikke tilgjengelig",
 		description: exercise?.description ?? "Denne oppgaven finnes ikke i oversikten akkurat na.",
 		isKnown: Boolean(exercise),
+		usageTags: exerciseUsageTags.value.get(uid) ?? [],
 	};
 }));
+
+const selectedExerciseCards = computed<StationExerciseCard[]>({
+	get: () => selectedExercises.value,
+	set: (exercises) => {
+		const nextExerciseUids = exercises
+			.map((exercise) => exercise.uid)
+			.filter((uid, index, uids) => uid && uids.indexOf(uid) === index);
+
+		draft.exerciseUids.splice(0, draft.exerciseUids.length, ...nextExerciseUids);
+	},
+});
+
+const availableExerciseCards = computed<StationExerciseCard[]>({
+	get: () => availableExercises.value
+		.filter((exercise) => !draft.exerciseUids.includes(exercise.uid))
+		.map((exercise) => ({
+			uid: exercise.uid,
+			order: 0,
+			title: exercise.title,
+			entryName: exercise.entryName,
+			description: exercise.description,
+			isKnown: true,
+			usageTags: exerciseUsageTags.value.get(exercise.uid) ?? [],
+		})),
+	set: () => {},
+});
 
 const editorTitle = computed(() => {
 	if (parsedSelection.value.kind === "existing") {
@@ -91,6 +148,7 @@ const applyDraft = (payload: StationFactoryPayload) => {
 	draft.description = payload.description;
 	draft.image = payload.image;
 	draft.exerciseUids.splice(0, draft.exerciseUids.length, ...payload.exerciseUids);
+  draft.isBoss = Boolean(payload.isBoss);
 };
 
 const updateLoadedSnapshot = (payload: StationFactoryPayload) => {
@@ -99,50 +157,21 @@ const updateLoadedSnapshot = (payload: StationFactoryPayload) => {
 		description: payload.description,
 		image: payload.image,
 		exerciseUids: [...payload.exerciseUids],
+    isBoss: Boolean(payload.isBoss),
 	};
 };
 
 const loadSelection = async (selectionKey: string) => {
 	const loaded = await loadStationFactoryPayload(selectionKey);
+	const cachedPayload = factorySessionCache.getDraft("station", selectionKey);
 
 	loadedLocalId.value = loaded.localId;
-	applyDraft(loaded.payload);
 	updateLoadedSnapshot(loaded.payload);
+	applyDraft(cachedPayload ?? loaded.payload);
 	copyState.value = "idle";
 };
 
-const addExerciseUid = (uidValue: string) => {
-	const nextUid = uidValue.trim();
-
-	if (!nextUid || draft.exerciseUids.includes(nextUid)) {
-		return;
-	}
-
-	draft.exerciseUids.push(nextUid);
-};
-
-const removeExerciseUid = (uidToRemove: string) => {
-	const nextExerciseUids = draft.exerciseUids.filter((uid) => uid !== uidToRemove);
-	draft.exerciseUids.splice(0, draft.exerciseUids.length, ...nextExerciseUids);
-};
-
-const moveExercise = (index: number, direction: -1 | 1) => {
-	const targetIndex = index + direction;
-
-	if (targetIndex < 0 || targetIndex >= draft.exerciseUids.length) {
-		return;
-	}
-
-	const nextExerciseUids = [...draft.exerciseUids];
-	const [movedUid] = nextExerciseUids.splice(index, 1);
-
-	if (movedUid === undefined) {
-		return;
-	}
-
-	nextExerciseUids.splice(targetIndex, 0, movedUid);
-	draft.exerciseUids.splice(0, draft.exerciseUids.length, ...nextExerciseUids);
-};
+const cloneExerciseCard = (exercise: StationExerciseCard): StationExerciseCard => ({ ...exercise });
 
 const resetDraft = () => {
 	applyDraft(loadedSnapshot.value);
@@ -150,7 +179,15 @@ const resetDraft = () => {
 };
 
 const goToExerciseFactory = () => {
-	void navigateTo(routePaths.teacherFactoryExercise);
+	factorySessionCache.setDraft("station", props.selectionKey, payloadPreview.value);
+	factorySessionCache.pushReturnTarget(route.fullPath);
+	void navigateTo(`${routePaths.teacherFactoryExercise}?returnTo=${encodeURIComponent(route.fullPath)}`);
+};
+
+const editExercise = (uid: string) => {
+	factorySessionCache.setDraft("station", props.selectionKey, payloadPreview.value);
+	factorySessionCache.pushReturnTarget(route.fullPath);
+	void navigateTo(`${routePaths.teacherFactoryExercise}?uid=${uid}&returnTo=${encodeURIComponent(route.fullPath)}`);
 };
 
 const finishSave = (selectionKey: string) => {
@@ -166,19 +203,19 @@ const savePayload = async () => {
 	const saved = await saveStationFactoryPayload(props.selectionKey, payloadPreview.value);
 
 	loadedLocalId.value = "";
+	factorySessionCache.moveDraft("station", props.selectionKey, saved.selectionKey);
 	updateLoadedSnapshot(saved.payload);
-	finishSave(saved.selectionKey);
-};
+	const returnTo = typeof route.query.returnTo === "string" ? route.query.returnTo : "";
+	if (returnTo) {
+		factorySessionCache.popReturnTarget();
+	}
+	const returnTarget = returnTo ? { fullPath: returnTo } : factorySessionCache.popReturnTarget();
 
-const saveAsNew = async () => {
-	if (!canSave.value) {
+	if (returnTarget) {
+		await navigateTo(returnTarget.fullPath);
 		return;
 	}
 
-	const saved = await saveStationFactoryPayloadAsNew(payloadPreview.value);
-
-	loadedLocalId.value = "";
-	updateLoadedSnapshot(saved.payload);
 	finishSave(saved.selectionKey);
 };
 
@@ -206,12 +243,20 @@ watch(
 
 onMounted(async () => {
 	availableExercises.value = await Exercise.backendFetchAllExercises();
+
+	try {
+		availableStations.value = await fetchAllStationFactoryStations();
+	} catch {
+		availableStations.value = [];
+	}
 });
 
 watch(payloadPreviewText, () => {
 	if (copyState.value !== "idle") {
 		copyState.value = "idle";
 	}
+
+	factorySessionCache.setDraft("station", props.selectionKey, payloadPreview.value);
 });
 </script>
 
@@ -239,6 +284,11 @@ watch(payloadPreviewText, () => {
 						<span>Beskrivelse</span>
 						<textarea v-model="draft.description" rows="3" placeholder="Kort beskrivelse av hva eleven skal øve på i denne stasjonen." />
 					</label>
+
+          <label class="field field--checkbox">
+            <input v-model="draft.isBoss" type="checkbox" >
+            <span>Boss-stasjon</span>
+          </label>
 				</div>
 
 				<div class="imagePreviewCard">
@@ -258,33 +308,40 @@ watch(payloadPreviewText, () => {
 							<h3>Oppgavesett i stasjonen</h3>
 						</div>
 
-						<div v-if="selectedExercises.length > 0" class="selectedList">
-							<article v-for="(exercise, index) in selectedExercises" :key="exercise.uid" class="selectedCard">
-								<div>
-									<p class="cardEyebrow">Plass {{ exercise.order }}</p>
-									<h3>{{ exercise.title }}</h3>
-									<span :class="['statusPill', { 'statusPill--manual': !exercise.isKnown }]">
-										{{ exercise.isKnown ? exercise.entryName : 'Ikke tilgjengelig' }}
-									</span>
-								</div>
+						<draggable
+							v-model="selectedExerciseCards"
+							class="selectedList"
+							item-key="uid"
+							:group="'station-exercises'"
+						>
+							<template #item="{ element: exercise }">
+								<article class="selectedCard">
+									<span class="orderBadge" :aria-label="`Plass ${exercise.order}`">{{ exercise.order }}</span>
+									<span class="dragHandle" aria-hidden="true">Grip</span>
+									<div class="selectedCardContent">
+										<p class="cardEyebrow">Plass {{ exercise.order }}</p>
+										<h3>{{ exercise.title }}</h3>
+										<span :class="['statusPill', { 'statusPill--manual': !exercise.isKnown }]">
+											{{ exercise.isKnown ? exercise.entryName : 'Ikke tilgjengelig' }}
+										</span>
+										<div v-if="exercise.usageTags.length > 0" class="usageTags" aria-label="Brukt i stasjoner">
+											<span v-for="tag in exercise.usageTags" :key="tag" class="usageTag">{{ tag }}</span>
+										</div>
+									</div>
+									<div class="selectedCardActions">
+										<button type="button" class="iconButton" :disabled="!exercise.isKnown" @click="editExercise(exercise.uid)">
+											<img src="https://placehold.co/80x80?text=E&color=6b7280" alt="Rediger oppgavesett" class="selectedCardActionIcon" >
+										</button>
+									</div>
+								</article>
+							</template>
 
-								<div class="selectedActions">
-									<button type="button" class="ghostButton" :disabled="index === 0" @click="moveExercise(index, -1)">
-										&uarr;
-									</button>
-									<button type="button" class="ghostButton" :disabled="index === selectedExercises.length - 1" @click="moveExercise(index, 1)">
-										&darr;
-									</button>
-									<button type="button" class="deleteButton" @click="removeExerciseUid(exercise.uid)">
-										Fjern
-									</button>
-								</div>
-							</article>
-						</div>
-
-						<p v-else class="emptyState">
-							Ingen oppgavesett er lagt til i stasjonen ennå.
-						</p>
+							<template #footer>
+								<p v-if="selectedExercises.length === 0" class="emptyState dropHint">
+									Dra oppgavesett hit for å legge dem til i stasjonen.
+								</p>
+							</template>
+						</draggable>
 					</div>
 
 					<div class="exerciseColumn">
@@ -295,23 +352,38 @@ watch(payloadPreviewText, () => {
 							</button>
 						</div>
 
-						<div class="knownExercises knownExercises--columns">
-							<article v-for="exercise in availableExercises" :key="exercise.uid" class="knownExerciseCard">
-								<div>
-									<p class="cardEyebrow">{{ exercise.entryName }}</p>
-									<h3>{{ exercise.title }}</h3>
-								</div>
+						<draggable
+							v-model="availableExerciseCards"
+							class="knownExercises knownExercises--columns"
+							item-key="uid"
+							:group="{ name: 'station-exercises', pull: 'clone', put: true }"
+							:sort="false"
+							:clone="cloneExerciseCard"
+						>
+							<template #item="{ element: exercise }">
+								<article class="knownExerciseCard">
+									<span class="dragHandle" aria-hidden="true">Grip</span>
+									<div class="selectedCardContent">
+										<p class="cardEyebrow">{{ exercise.entryName }}</p>
+										<h3>{{ exercise.title }}</h3>
+										<div v-if="exercise.usageTags.length > 0" class="usageTags" aria-label="Brukt i stasjoner">
+											<span v-for="tag in exercise.usageTags" :key="tag" class="usageTag">{{ tag }}</span>
+										</div>
+									</div>
+									<div class="selectedCardActions">
+										<button type="button" class="iconButton" :disabled="!exercise.isKnown" @click="editExercise(exercise.uid)">
+											<img src="https://placehold.co/80x80?text=E&color=6b7280" alt="Rediger oppgavesett" class="selectedCardActionIcon" >
+										</button>
+									</div>
+								</article>
+							</template>
 
-								<button
-									type="button"
-									class="ghostButton"
-									:disabled="draft.exerciseUids.includes(exercise.uid)"
-									@click="addExerciseUid(exercise.uid)"
-								>
-									{{ draft.exerciseUids.includes(exercise.uid) ? 'Lagt til' : '+ Bruk' }}
-								</button>
-							</article>
-						</div>
+							<template #footer>
+								<p v-if="availableExerciseCards.length === 0" class="emptyState dropHint">
+									Alle tilgjengelige oppgavesett er lagt til. Dra hit for å fjerne fra stasjonen.
+								</p>
+							</template>
+						</draggable>
 					</div>
 				</div>
 			</section>
@@ -347,21 +419,17 @@ watch(payloadPreviewText, () => {
 
 			<div class="actionRow actionRow--save">
 				<button
-					v-if="parsedSelection.kind !== 'new'"
+					v-if="parsedSelection.kind === 'existing'"
 					type="button"
 					class="deleteButton"
 					@click="deleteSelection"
 				>
 					Slett
 				</button>
-				<button type="button" class="ghostButton" :disabled="!canSave" @click="saveAsNew">
-					Lagre som ny
-				</button>
 				<button
-					v-if="parsedSelection.kind !== 'new'"
 					type="submit"
 					class="primaryButton"
-					:disabled="!canSave || !hasChanges"
+					:disabled="!canSave || (parsedSelection.kind !== 'new' && !hasChanges)"
 				>
 					Lagre
 				</button>
@@ -405,8 +473,8 @@ watch(payloadPreviewText, () => {
 	border-radius: 1.2rem;
 	background:
 		linear-gradient(180deg, rgba(101, 240, 175, 0.08), rgba(101, 240, 175, 0)) top/100% 5rem no-repeat,
-		var(--surface);
-	box-shadow: var(--shadow);
+		var(--color-bg-surface);
+	box-shadow: var(--shadow-1);
 }
 
 .panelSection + .panelSection {
@@ -512,7 +580,7 @@ watch(payloadPreviewText, () => {
 .knownExerciseCard,
 .selectedCard {
 	display: flex;
-	justify-content: space-between;
+	justify-content: flex-start;
 	align-items: flex-start;
 	gap: 0.75rem;
 	padding: 1rem;
@@ -544,14 +612,83 @@ watch(payloadPreviewText, () => {
 	flex-wrap: wrap;
 }
 
+.selectedCardContent {
+	flex: 1;
+}
+
+.selectedCardActions {
+	display: flex;
+	gap: 0.5rem;
+	margin-left: auto;
+}
+
+.iconButton {
+	padding: 0;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+}
+
+.iconButton:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.selectedCardActionIcon {
+	display: block;
+	width: 3rem;
+	height: 3rem;
+	border-radius: 0.45rem;
+}
+
+.orderBadge {
+	display: inline-grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border: 1px solid var(--primary);
+	border-radius: 999px;
+	background: rgba(101, 240, 175, 0.14);
+	color: var(--primary);
+	font-weight: 900;
+}
+
 .knownExercises,
 .selectedList {
 	margin-top: 1rem;
+	min-height: 5rem;
 }
 
 .knownExercises--columns,
 .selectedList {
 	margin-top: 0;
+}
+
+.dropHint {
+	padding: 1rem;
+	border: 1px dashed var(--border);
+	border-radius: 1rem;
+	background: rgba(101, 240, 175, 0.05);
+}
+
+.dragHandle {
+	display: inline-grid;
+	place-items: center;
+	min-width: 3.2rem;
+	padding: 0.45rem 0.6rem;
+	border: 1px dashed var(--border);
+	border-radius: 999px;
+	color: var(--primary);
+	font-size: 0.75rem;
+	font-weight: 800;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	cursor: grab;
+	user-select: none;
+}
+
+.dragHandle:active {
+	cursor: grabbing;
 }
 
 .statusPill {
@@ -570,6 +707,49 @@ watch(payloadPreviewText, () => {
 	color: var(--text);
 }
 
+.usageTags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35rem 0.7rem;
+	margin-top: 0.55rem;
+}
+
+.usageTag {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	max-width: 100%;
+	color: var(--muted);
+	font-size: 0.76rem;
+	font-weight: 700;
+	line-height: 1.2;
+}
+
+.usageTag::before {
+	content: "";
+	width: 0.45rem;
+	height: 0.45rem;
+	border-radius: 999px;
+	background: var(--primary);
+	box-shadow: 0 0 0 2px rgba(101, 240, 175, 0.12);
+	flex: 0 0 auto;
+}
+
+.usageTag:nth-child(4n + 2)::before {
+	background: #60a5fa;
+	box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.12);
+}
+
+.usageTag:nth-child(4n + 3)::before {
+	background: #fbbf24;
+	box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.14);
+}
+
+.usageTag:nth-child(4n + 4)::before {
+	background: #f472b6;
+	box-shadow: 0 0 0 2px rgba(244, 114, 182, 0.12);
+}
+
 .ghostButton,
 .deleteButton,
 .primaryButton {
@@ -577,7 +757,7 @@ watch(payloadPreviewText, () => {
 	border-radius: 999px;
 	padding: 0.75rem 1rem;
 	font-weight: 700;
-	transition: transform var(--transition), border-color var(--transition), background var(--transition);
+	transition: transform var(--transition-base), border-color var(--transition-base), background var(--transition-base);
 }
 
 .ghostButton,
@@ -589,7 +769,7 @@ watch(payloadPreviewText, () => {
 .primaryButton {
 	border-color: var(--primary);
 	background: var(--primary);
-	color: var(--bg);
+	color: var(--color-text-onDark);
 }
 
 .deleteButton {
@@ -666,6 +846,7 @@ watch(payloadPreviewText, () => {
 	.summaryCard,
 	.knownExerciseCard,
 	.selectedCard,
+	.selectedCardActions,
 	.actionRow {
 		display: grid;
 	}
@@ -677,5 +858,21 @@ watch(payloadPreviewText, () => {
 	.actionRow {
 		justify-content: stretch;
 	}
+}
+
+.field--checkbox {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.65rem;
+  display: flex;
+}
+
+.field--checkbox input {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--primary);
+  cursor: pointer;
+  flex-shrink: 0;
 }
 </style>

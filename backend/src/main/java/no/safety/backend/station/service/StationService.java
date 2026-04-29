@@ -58,6 +58,7 @@ public class StationService {
     station.setImage(request.image());
     station.setBackgroundColor(request.backgroundColor());
     station.setExerciseUids(request.exerciseUids());
+    station.setBoss(request.isBoss());
   }
 
   private Station require(UUID uid) {

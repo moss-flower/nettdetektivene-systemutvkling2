@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import leftArrowImage from '~/assets/images/leftArrow.png'
 import { routePaths } from "~/composables/utils/routePaths";
+import type { RouteLocationRaw } from "vue-router";
 
 type Variant = "primary" | "reward" | "ghost" | "danger" | "onLight";
 type Size = "sm" | "md" | "lg";
@@ -7,38 +9,55 @@ type Size = "sm" | "md" | "lg";
 const props = withDefaults(
   defineProps<{
     label?: string;
-    variant?: Variant;
-    size?: Size;
-    block?: boolean;
     disabled?: boolean;
-    loading?: boolean;
-    iconLeft?: boolean;
     ariaLabel?: string;
+    to?: RouteLocationRaw;
   }>(),
   {
-    label: "Tilbake til hjem",
+    label: "",
     variant: "onLight",
     size: "sm",
     block: false,
     disabled: false,
-    loading: false,
-    iconLeft: true,
     ariaLabel: "Tilbake til elevhjem",
+    to: routePaths.studentHome,
   },
 );
 </script>
 
 <template>
-  <UiButton
-    :to="routePaths.studentHome"
-    :variant="props.variant"
-    :size="props.size"
-    :block="props.block"
-    :disabled="props.disabled"
-    :loading="props.loading"
+  <NuxtLink
+    class="homeBackButton"
+    :class="{ 'backButtonDisabled': props.disabled }"
+    :to="props.disabled ? undefined : props.to"
     :aria-label="props.ariaLabel"
   >
-    <template v-if="props.iconLeft" #iconLeft>&larr;</template>
-    {{ props.label }}
-  </UiButton>
+    <img class="backButtonIcon" :src="leftArrowImage" alt="" aria-hidden="true">
+    <span class="srOnly">{{ props.label }}</span>
+  </NuxtLink>
 </template>
+
+<style scoped>
+.homeBackButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: var(--radius-pill);
+  border: var(--border-width-hairline) solid var(--palette-cork-900);
+  background: var(--palette-cream-100);
+  box-shadow: var(--shadow-2);
+}
+
+.backButtonIcon {
+  display: block;
+  width: 2.6rem;
+  height: auto;
+}
+
+.backButtonDisabled {
+  pointer-events: none;
+  opacity: 0.6;
+}
+</style>

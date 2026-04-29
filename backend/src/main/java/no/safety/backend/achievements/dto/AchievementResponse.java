@@ -14,6 +14,5 @@ public class AchievementResponse {
   private String category;
   private String source;
   private boolean unlocked;
-  private String imageUrl;
   private String reward;
 }

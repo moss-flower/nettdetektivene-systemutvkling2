@@ -101,7 +101,6 @@ function handleNewNoteClick() {
     <div class="leftColumn">
       <div></div>
       <p>PLACEHOLDER FOR PROFILE</p>
-      <UiStudentHomeBackButton class="arrowButton" label="Tilbake" />
     </div>
 
     <div class="notepadWrapper">
@@ -132,11 +131,12 @@ function handleNewNoteClick() {
   --notepad-text-onDesk-muted: var(--palette-cream-300);
 
   display: grid;
-  grid-template-columns: 0.2fr 1fr 0.2fr;
+  grid-template-columns: minmax(0, 0.22fr) minmax(0, 1fr) minmax(0, 0.22fr);
   gap: var(--space-4);
-  height: 100dvh;
+  height: 100%;
   min-height: 0;
   padding: var(--layout-page-padding);
+  border-radius: var(--radius-2);
   box-sizing: border-box;
   color: var(--notepad-text-onDesk);
   background:

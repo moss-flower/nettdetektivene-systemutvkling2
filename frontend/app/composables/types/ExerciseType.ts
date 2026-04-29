@@ -14,38 +14,37 @@ type BackendExercisePage = {
 };
 
 export type ExerciseData = {
-  publicId: string;
+  uid: string;
   title: string;
   difficultyName: string;
   description?: string;
+  hint: string;
   tasks: BackendTask[];
 };
 
 export class Exercise {
-  publicId: string;
+  uid: string;
   title: string;
   difficultyName: string;
   description?: string;
+  hint: string;
   tasks: ExerciseTask[];
 
   constructor(data: {
-    publicId?: string;
     uid?: string;
     title: string;
     difficultyName?: string;
     entryName?: string;
     description?: string;
+    hint?: string;
     tasks: ExerciseTask[];
   }) {
-    this.publicId = data.publicId ?? data.uid ?? "";
+    this.uid = data.uid ?? "";
     this.title = data.title;
     this.difficultyName = data.difficultyName ?? data.entryName ?? "";
     this.description = data.description;
+    this.hint = data.hint ?? "";
     this.tasks = data.tasks;
-  }
-
-  get uid() {
-    return this.publicId;
   }
 
   get entryName() {
@@ -54,17 +53,18 @@ export class Exercise {
 
   static fromBackend(data: ExerciseData): Exercise {
     return new Exercise({
-      uid: data.publicId,
+      uid: data.uid,
       title: data.title,
       entryName: data.difficultyName,
       description: data.description,
+      hint: data.hint,
       tasks: data.tasks.map((task, index) => {
         const { content, ...taskBase } = task;
 
         return {
           ...taskBase,
           ...(content ?? {}),
-          id: String(task.internalId ?? `${data.publicId}-${index + 1}`),
+          id: String(task.internalId ?? `${data.uid}-${index + 1}`),
         };
       }) as ExerciseTask[],
     });

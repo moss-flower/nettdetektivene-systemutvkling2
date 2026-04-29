@@ -44,15 +44,15 @@ const star = computed(() => ({
 .difficultyCard {
   position: relative;
   min-height: 220px;
-  padding: 1.5rem;
+  padding: var(--space-6);
   display: grid;
-  gap: 0.75rem;
-  border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+  gap: var(--space-3);
+  border: var(--border-width-hairline) solid color-mix(in srgb, var(--color-border-default) 65%, transparent);
   border-radius: 1.25rem;
   text-decoration: none;
   color: #1d2433;
   background: linear-gradient(180deg, #f9f5ea 0%, #efe2bf 100%);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-1);
   transition:
     transform 160ms ease,
     box-shadow 160ms ease,
@@ -69,7 +69,7 @@ a.difficultyCard:hover {
 }
 
 a.difficultyCard:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--primary) 65%, white);
+  outline: var(--border-width-thick) solid color-mix(in srgb, var(--color-brand-primary) 65%, white);
   outline-offset: 0.2rem;
 }
 
@@ -96,11 +96,11 @@ a.difficultyCard:focus-visible {
 
 .difficultyStars {
   position: absolute;
-  right: 1rem;
-  bottom: 1rem;
+  right: var(--space-4);
+  bottom: var(--space-4);
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--space-1);
 }
 
 .difficultyStarImage {
@@ -116,8 +116,8 @@ a.difficultyCard:focus-visible {
 
 .difficultyLock {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: var(--space-4);
+  right: var(--space-4);
   margin: 0;
   font-size: 2rem;
 }
@@ -127,9 +127,4 @@ a.difficultyCard:focus-visible {
   opacity: 0.7;
 }
 
-@media (max-width: 700px) {
-  .difficultyCard {
-    min-height: 180px;
-  }
-}
 </style>
