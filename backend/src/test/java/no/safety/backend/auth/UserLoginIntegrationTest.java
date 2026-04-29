@@ -32,13 +32,13 @@ public class UserLoginIntegrationTest extends BaseIntegrationTest {
         User user = new User();
         user.setUsername("user");
         user.setEmail("user@email.no");
-        user.setPassword(passwordEncoder.encode("password"));
+        user.setPassword(passwordEncoder.encode("password123"));
         userRepository.saveAndFlush(user);
     }
     
     @Test
     void shouldLoginUserSuccessfully() {
-        UserLoginRequest request = new UserLoginRequest("user@email.no", "password");
+        UserLoginRequest request = new UserLoginRequest("user@email.no", "password123");
 
         client.post()
             .uri("/api/v1/auth/login")
