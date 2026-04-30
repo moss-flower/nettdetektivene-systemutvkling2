@@ -11,7 +11,7 @@ import no.safety.backend.validation.NoProfanity;
  */
 public record TeacherUserRegistrationRequest(
     @NotBlank(message = "Username is required.")
-    @NoProfanity
+    @NoProfanity(message = "Username contains inappropriate language.")
     String username,
     
     @NotBlank(message = "Email is required")

@@ -15,6 +15,6 @@ public record UsernameUpdateRequest(
         regexp = "^[a-zA-Z0-9._-]+$",
         message = "Please provide a valid username."
     )
-    @NoProfanity
+    @NoProfanity(message = "Username contains inappropriate language.")
     String username
 ) {}
