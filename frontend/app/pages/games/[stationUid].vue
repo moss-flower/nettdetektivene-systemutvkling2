@@ -10,6 +10,7 @@ import SortIntoBucketsTemplate from '~/components/gameplay/templates/SortIntoBuc
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoiceTemplate.vue'
 import UiStudentHomeBackButton from '~/components/ui/UiStudentHomeBackButton.vue'
+import { useGamePreview } from '~/composables/useGamePreview'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
 import { markExerciseCompleted } from '~/composables/utils/gameProgress'
 import { routePaths } from '~/composables/utils/routePaths'
@@ -37,6 +38,7 @@ definePageMeta({
 })
 
 const route = useRoute()
+const { isPreview, buildPreviewRoute } = useGamePreview()
 const requestedStationUid = Array.isArray(route.params.stationUid)
     ? route.params.stationUid[0] ?? ''
     : route.params.stationUid ?? ''
@@ -60,12 +62,40 @@ if (!station) {
 const { celebrateCorrectAnswer, celebrateLevelComplete, stop } = useGameConfetti()
 const { getMyProfile } = useStudentProfile()
 const completionError = ref('')
+const shouldSkipProgress = computed(() => isPreview.value || station.isTeacherPreview)
 
-if (!station.isUnlocked) {
-  await navigateTo({
+const stationMapRoute = computed(() => {
+  if (isPreview.value) {
+    return buildPreviewRoute(routePaths.studentLevels)
+  }
+
+  return {
     path: routePaths.studentLevels,
     query: previewWorldUid ? { worldUid: previewWorldUid } : undefined,
-  })
+  }
+})
+
+const stationDifficultyRoute = computed(() => {
+  if (isPreview.value) {
+    const previewRoute = buildPreviewRoute(routePaths.studentExerciseDifficultySelect)
+
+    return {
+      ...previewRoute,
+      query: {
+        ...previewRoute.query,
+        uid: station.uid,
+      },
+    }
+  }
+
+  return {
+    path: routePaths.studentExerciseDifficultySelect,
+    query: previewWorldUid ? { uid: station.uid, worldUid: previewWorldUid } : { uid: station.uid },
+  }
+})
+
+if (!station.isUnlocked) {
+  await navigateTo(stationMapRoute.value)
 }
 
 const activeExerciseUid = station.exerciseUids.includes(requestedExerciseUid)
@@ -76,20 +106,14 @@ if (activeExerciseUid) {
   const activeExerciseStatus = station.exercises.find((exercise) => exercise.uid === activeExerciseUid)
 
   if (activeExerciseStatus && !activeExerciseStatus.isUnlocked) {
-    await navigateTo({
-      path: routePaths.studentExerciseDifficultySelect,
-      query: previewWorldUid ? {uid: station.uid, worldUid: previewWorldUid} : {uid: station.uid},
-    })
+    await navigateTo(stationDifficultyRoute.value)
   }
 }
 
 const activeExercise = activeExerciseUid ? await Exercise.backendFetchExerciseByUid(activeExerciseUid) : null
 
 if (!activeExercise) {
-  await navigateTo({
-    path: routePaths.studentExerciseDifficultySelect,
-    query: previewWorldUid ? {uid: station.uid, worldUid: previewWorldUid} : {uid: station.uid},
-  })
+  await navigateTo(stationDifficultyRoute.value)
 
   throw createError({
     statusCode: 404,
@@ -213,15 +237,9 @@ const progressLabel = computed(() => {
   return `Sak ${currentIndex.value + 1} av ${tasks.length}`
 })
 
-const exerciseSelectRoute = computed(() => ({
-  path: routePaths.studentExerciseDifficultySelect,
-  query: previewWorldUid ? {uid: station.uid, worldUid: previewWorldUid} : {uid: station.uid},
-}))
+const exerciseSelectRoute = computed(() => stationDifficultyRoute.value)
 
-const bossVictoryRoute = computed(() => ({
-  path: routePaths.studentLevels,
-  query: previewWorldUid ? { worldUid: previewWorldUid } : undefined,
-}))
+const bossVictoryRoute = computed(() => stationMapRoute.value)
 
 const showBossVictoryDialog = computed(() =>
     isBossStation && showExerciseResultDialog.value && isExerciseComplete.value
@@ -421,6 +439,10 @@ const onAnsweredPasswordStrength = (result: PasswordStrengthResult) => {
 }
 
 const fetchCurrentLevel = async () => {
+  if (shouldSkipProgress.value) {
+    return null
+  }
+
   const profile = await getMyProfile()
 
   return getLevel(profile.score).level
@@ -454,7 +476,7 @@ const next = async () => {
       let levelBeforeCompletion: number | null = null
 
       try {
-        if (!station.isTeacherPreview) {
+        if (!shouldSkipProgress.value) {
           try {
             levelBeforeCompletion = await fetchCurrentLevel()
           } catch (error) {
@@ -467,7 +489,7 @@ const next = async () => {
             try {
               const levelAfterCompletion = await fetchCurrentLevel()
 
-              if (levelAfterCompletion > levelBeforeCompletion) {
+              if (levelAfterCompletion !== null && levelAfterCompletion > levelBeforeCompletion) {
                 leveledUpTo.value = levelAfterCompletion
                 showLevelupPopup.value = true
               }
