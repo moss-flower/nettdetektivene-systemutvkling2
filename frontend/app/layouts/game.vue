@@ -68,15 +68,18 @@ onMounted(async () => {
         :class="{ 'game-layout__rail-link': !isPreview }"
         :aria-label="isPreview ? 'Larerforhandsvisning' : 'Gå til elevprofil'"
       >
-        <div class="game-layout__avatar-placeholder" aria-hidden="true">
+        <AvatarElement v-if="!isPreview" />
+        <div v-else class="game-layout__avatar-placeholder" aria-hidden="true">
           <img
             src="/assets/images/elev_avatar.png"
             alt="Elev avatar"
             class="game-layout__avatar-image"
           />
         </div>
-        <p class="game-layout__rail-title">{{ profileName }}</p>
-        <p class="game-layout__rail-text">{{ profileLevelText }}</p>
+        <template v-if="isPreview">
+          <p class="game-layout__rail-title">{{ profileName }}</p>
+          <p class="game-layout__rail-text">{{ profileLevelText }}</p>
+        </template>
       </component>
     </aside>
 
