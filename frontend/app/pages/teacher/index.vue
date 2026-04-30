@@ -102,6 +102,9 @@ const handleLogout = async () => {
             <NuxtLink class="buttonLink buttonLinkSecondary" :to="{ path: routePaths.teacherFactoryExercise, query: { returnTo: routePaths.teacherOverview } }">
               + Oppgavesett
             </NuxtLink>
+            <NuxtLink class="buttonLink buttonLinkSecondary" :to="{ path: routePaths.teacherCreateNewNote, query: { returnTo: routePaths.teacherOverview } }">
+              + Notat
+            </NuxtLink>
           </div>
         </details>
       </article>
