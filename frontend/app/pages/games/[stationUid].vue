@@ -651,6 +651,8 @@ const next = async () => {
     <PopupTips
       v-if="showTipsPopup"
       :hint="exerciseHint"
+      :title="activeExercise?.notepadEntry?.title ?? ''"
+      :type="activeExercise?.notepadEntry?.type ?? 'TIP'"
       @close="showTipsPopup = false"
     />
 

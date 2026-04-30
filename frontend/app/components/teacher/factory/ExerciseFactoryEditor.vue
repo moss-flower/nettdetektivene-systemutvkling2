@@ -163,11 +163,10 @@ const applyDraft = (payload: ExerciseFactoryPayload) => {
 	setExpandedTasks([]);
 };
 
-const noteTypeOptions: Array<{ value: BackendNotepadEntryType; label: string }> = [
-	{ value: "TIP", label: "Tips" },
-	{ value: "INFO", label: "Info" },
-	{ value: "OBSERVATION", label: "Observasjon" },
-];
+	const noteTypeOptions: Array<{ value: BackendNotepadEntryType; label: string }> = [
+		{ value: "TIP", label: "Tips" },
+		{ value: "INFO", label: "Info" },
+	];
 
 const enableNotepadEntry = () => {
 	if (draft.notepadEntry) {
