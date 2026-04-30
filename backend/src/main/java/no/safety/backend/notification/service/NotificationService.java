@@ -41,6 +41,7 @@ public class NotificationService {
             notification = Notification.builder()
             .message(event.getMessage())
             .target(user)
+            .senderId(sender.getPublicUuid())
             .priority(event.getPriority())
             .build();
 

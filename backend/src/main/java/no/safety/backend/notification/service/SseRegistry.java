@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import no.safety.backend.notification.dto.NotificationDto;
+import no.safety.backend.notification.model.Notification;
+
 @Service
 public class SseRegistry {
     private final Logger logger = LoggerFactory.getLogger(SseRegistry.class);
@@ -26,13 +29,14 @@ public class SseRegistry {
         return emitter;
     }
 
-    public void send(Long userId, Object payload) {
+    public void send(Long userId, Notification payload) {
         logger.debug("Sending message to user with internal id: " + userId);
+
         SseEmitter emitter = emitters.get(userId);
         if(emitter != null) {
             try {
                 synchronized(emitter) {
-                    emitter.send(payload);
+                    emitter.send(NotificationDto.fromEntity(payload));
                 }
             } catch (IOException e) {
                 logger.error("Registry: Emitter not found: " + e );

@@ -46,6 +46,9 @@ public class Notification {
     @Column
     private UUID publicId;
 
+    @Column
+    private UUID senderId;
+
     @ManyToOne
     @JoinColumn(name = "target_id", nullable = false)
     private User target;
