@@ -101,10 +101,6 @@ const onEffectsPointerDown = (event: PointerEvent) => startDialDrag(effectsVolum
           <span class="student-settings__dialReadout" v-text="effectsLabel"></span>
         </label>
       </div>
-
-      <p class="student-settings__note">
-        bare en mal rn, vri ratt eller bruk pil-taster.
-      </p>
     </article>
   </section>
 </template>
