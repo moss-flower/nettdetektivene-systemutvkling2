@@ -15,6 +15,7 @@ import {
 	saveExerciseFactoryPayload,
 	type ExerciseFactoryPayload,
 } from "~/composables/useExerciseFactory";
+import type { BackendNotepadEntryType } from "~/composables/types/NotepadTypes";
 import type {
 	EmailHotspotTaskData,
 	ExerciseTask,
@@ -51,10 +52,16 @@ const loadedLocalId = ref("");
 const parsedSelection = computed(() => parseExerciseFactorySelectionKey(props.selectionKey));
 
 const canSave = computed(() => {
+	const hasValidNotepadEntry = !draft.notepadEntry || (
+		draft.notepadEntry.title.trim().length > 0
+		&& draft.notepadEntry.content.trim().length > 0
+	);
+
 	return draft.title.trim().length > 0
 		&& draft.difficultyName.trim().length > 0
 		&& draft.description.trim().length > 0
 		&& draft.hint.trim().length > 0
+		&& hasValidNotepadEntry
 		&& draft.tasks.length > 0;
 });
 
@@ -63,6 +70,14 @@ const payloadPreview = computed<ExerciseFactoryPayload>(() => ({
 	difficultyName: draft.difficultyName.trim(),
 	description: draft.description.trim(),
 	hint: draft.hint.trim(),
+	notepadEntry: draft.notepadEntry
+		? {
+			title: draft.notepadEntry.title.trim(),
+			type: draft.notepadEntry.type,
+			content: draft.notepadEntry.content.trim(),
+			source: draft.notepadEntry.source.trim(),
+		}
+		: null,
 	tasks: draft.tasks,
 }));
 
@@ -143,8 +158,31 @@ const applyDraft = (payload: ExerciseFactoryPayload) => {
 	draft.difficultyName = clonedPayload.difficultyName;
 	draft.description = clonedPayload.description;
 	draft.hint = clonedPayload.hint;
+	draft.notepadEntry = clonedPayload.notepadEntry ? JSON.parse(JSON.stringify(clonedPayload.notepadEntry)) : null;
 	draft.tasks.splice(0, draft.tasks.length, ...clonedPayload.tasks);
 	setExpandedTasks([]);
+};
+
+	const noteTypeOptions: Array<{ value: BackendNotepadEntryType; label: string }> = [
+		{ value: "TIP", label: "Tips" },
+		{ value: "INFO", label: "Info" },
+	];
+
+const enableNotepadEntry = () => {
+	if (draft.notepadEntry) {
+		return;
+	}
+
+	draft.notepadEntry = {
+		title: "",
+		type: "TIP",
+		content: "",
+		source: "",
+	};
+};
+
+const disableNotepadEntry = () => {
+	draft.notepadEntry = null;
 };
 
 const updateLoadedSnapshot = (payload: ExerciseFactoryPayload) => {
@@ -315,6 +353,55 @@ watch(payloadPreviewText, () => {
 						<span>Tips</span>
 						<textarea v-model="draft.hint" rows="3" placeholder="Tips som eleven kan åpne fra brevet under oppgaven." />
 					</label>
+
+					<div class="field fieldFull noteToggleRow">
+						<div>
+							<span>Notatoppføring</span>
+							<p class="fieldHelp">Legg til et notat som følger oppgaven når den lagres i backend.</p>
+						</div>
+						<button
+							v-if="!draft.notepadEntry"
+							type="button"
+							class="ghostButton"
+							@click="enableNotepadEntry"
+						>
+							+ Legg til notat
+						</button>
+						<button
+							v-else
+							type="button"
+							class="ghostButton"
+							@click="disableNotepadEntry"
+						>
+							Fjern notat
+						</button>
+					</div>
+
+					<template v-if="draft.notepadEntry">
+						<label class="field">
+							<span>Notattittel</span>
+							<input v-model="draft.notepadEntry.title" type="text" placeholder="For eksempel: Huskeregel" >
+						</label>
+
+						<label class="field">
+							<span>Notattype</span>
+							<select v-model="draft.notepadEntry.type">
+								<option v-for="option in noteTypeOptions" :key="option.value" :value="option.value">
+									{{ option.label }}
+								</option>
+							</select>
+						</label>
+
+						<label class="field fieldFull">
+							<span>Notatkilde</span>
+							<p class="fieldHelp">Kilde settes automatisk ut fra stasjonen som oppgaven blir brukt i.</p>
+						</label>
+
+						<label class="field fieldFull">
+							<span>Notatinnhold</span>
+							<textarea v-model="draft.notepadEntry.content" rows="3" placeholder="Teksten som skal lagres sammen med oppgaven." />
+						</label>
+					</template>
 				</div>
 			</section>
 
