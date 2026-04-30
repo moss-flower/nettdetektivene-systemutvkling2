@@ -8,13 +8,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.auth.model.UserPrincipal;
@@ -38,11 +41,10 @@ public class WeeklyMysteryController {
      * @return an empty response entity indicating success or failure.
      */
     @PreAuthorize("hasRole('STUDENT')")
-    @PostMapping(value = "/")
-    public ResponseEntity<?> submitResponse(@Valid @RequestBody WeeklyMysterySubmissionCreateRequest request,
+    @PostMapping(value = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> submitResponse(@Valid @ModelAttribute WeeklyMysterySubmissionCreateRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
         weeklyMysteryService.saveStudentSubmission(request, principal.getUserInternalId());
-        System.out.println("Request received: " + request); 
         return ResponseEntity.ok(null);
     }
 
@@ -77,7 +79,7 @@ public class WeeklyMysteryController {
         summary = "Get a set of submissions",
         description = "Get a set of submissions related to a weekly mystery prompt."
     )
-    @RequestMapping(value = "/{promptId}/submissions")
+    @RequestMapping(value = "/{promptId}/submissions", method = RequestMethod.GET)
     public ResponseEntity<Set<WeeklyMysterySubmissionResponse>> getSubmissions(
         @PathVariable UUID promptId 
         ) {
@@ -96,7 +98,7 @@ public class WeeklyMysteryController {
         description = "Endpoint allows teachers to retrieve a list of all prompts connected to their account."
     )
     @PreAuthorize("hasRole('TEACHER')")
-    @RequestMapping(value = "/prompts")
+    @RequestMapping(value = "/prompts", method = RequestMethod.GET)
     public ResponseEntity<HashSet<WeeklyMysteryPromptResponse>> fetchPrompts(
         @AuthenticationPrincipal UserPrincipal principal
     ) {

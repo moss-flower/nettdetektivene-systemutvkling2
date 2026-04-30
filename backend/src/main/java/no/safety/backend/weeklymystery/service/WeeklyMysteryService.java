@@ -10,7 +10,6 @@ import no.safety.backend.classroom.model.ClassroomWeeklyMystery;
 import no.safety.backend.classroom.repository.ClassroomWeeklyMysteryRepository;
 
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -18,12 +17,13 @@ import lombok.extern.slf4j.Slf4j;
 import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.exception.AccessDeniedException;
 import no.safety.backend.exception.domain.FilePersistenceException;
+import no.safety.backend.media.dto.MediaUploadResponse;
+import no.safety.backend.media.service.MediaStorageService;
 import no.safety.backend.notification.dto.NotificationEvent;
 import no.safety.backend.notification.dto.WeeklyMysterySubmissionEvent;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.service.UserService;
-import no.safety.backend.utility.service.FileService;
 import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptResponse;
 import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptCreateRequest;
 import no.safety.backend.weeklymystery.dto.WeeklyMysterySubmissionCreateRequest;
@@ -40,7 +40,7 @@ public class WeeklyMysteryService {
 
     private final WeeklyMysteryPromptRepository promptRepository;
     private final WeeklyMysterySubmissionRepository submissionRepository;
-    private final FileService fileService;
+    private final MediaStorageService mediaStorageService;
     private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
     private final ClassroomWeeklyMysteryRepository classroomWeeklyMysteryRepository;
@@ -64,9 +64,9 @@ public class WeeklyMysteryService {
         String fileName = request.file().getOriginalFilename() != null
                 ? request.file().getOriginalFilename()
                 : "unknown_file";
-        String storageKey = generateStorageKey(studentId, prompt.getInternalId(), fileName);
-
-        fileService.save(request.file(), storageKey);
+        String folder = generateStorageFolder(studentId, prompt.getInternalId());
+        MediaUploadResponse uploadedFile = mediaStorageService.uploadPublicImage(request.file(), folder);
+        String storageKey = uploadedFile.objectKey();
 
         WeeklyMysterySubmission submission = WeeklyMysterySubmission.builder()
                 .message(request.message())
@@ -85,7 +85,7 @@ public class WeeklyMysteryService {
             eventPublisher.publishEvent(event);
         } catch (Exception e) {
             log.error("Error storing submission {}", submission, e);
-            fileService.delete(storageKey);
+            mediaStorageService.deletePublicObject(storageKey);
             throw new FilePersistenceException("Error persisting file, please try again.");
         }
     }
@@ -100,15 +100,13 @@ public class WeeklyMysteryService {
     public Set<WeeklyMysterySubmissionResponse> getWeeklyMysterySubmissionResponses(UUID promptUid) {
         return submissionRepository.getByWeeklyMysteryPrompt_publicUuid(promptUid)
                 .stream()
-                .map(submission -> {
-                    Resource file = fileService.load(submission.getStorageKey());
-                    return new WeeklyMysterySubmissionResponse(
-                            submission.getPublicUuid(),
-                            submission.getMessage(),
-                            submission.getSubmitterStudentUser().getPublicUuid(),
-                            file
-                    );
-                })
+                .map(submission -> new WeeklyMysterySubmissionResponse(
+                        submission.getPublicUuid(),
+                        submission.getMessage(),
+                        submission.getSubmitterStudentUser().getPublicUuid(),
+                        submission.getFileName(),
+                        mediaStorageService.publicUrl(submission.getStorageKey())
+                ))
                 .collect(Collectors.toSet());
     }
 
@@ -139,7 +137,7 @@ public class WeeklyMysteryService {
 
         try {
             submissionRepository.delete(submission);
-            fileService.delete(submission.getStorageKey());
+            mediaStorageService.deletePublicObject(submission.getStorageKey());
         } catch (Exception e) {
             log.error("Error deleting submission {}", submissionUid, e);
             throw new FilePersistenceException("Error deleting submission, please try again.");
@@ -236,7 +234,7 @@ public class WeeklyMysteryService {
      * @param fileName the name of the file
      * @return the generated storage key
      */
-    private String generateStorageKey(Long userId, Long promptId, String fileName) {
-        return "/" + userId + "/" + promptId + "/" + fileName;
+    private String generateStorageFolder(Long userId, Long promptId) {
+        return "uploads/mysteries/submissions/" + userId + "/" + promptId;
     }
 }

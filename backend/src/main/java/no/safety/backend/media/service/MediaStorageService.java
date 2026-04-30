@@ -1,6 +1,7 @@
 package no.safety.backend.media.service;
 
 import io.minio.MinioClient;
+import io.minio.RemoveObjectArgs;
 import io.minio.PutObjectArgs;
 import java.io.InputStream;
 import java.util.Locale;
@@ -46,6 +47,19 @@ public class MediaStorageService {
 		String normalizedBase = mediaProperties.getPublicBaseUrl().replaceAll("/+$", "");
 		String normalizedKey = objectKey.replaceFirst("^/+", "");
 		return normalizedBase + "/" + mediaProperties.getPublicBucket() + "/" + normalizedKey;
+	}
+
+	public void deletePublicObject(String objectKey) {
+		try {
+			minioClient.removeObject(
+				RemoveObjectArgs.builder()
+					.bucket(mediaProperties.getPublicBucket())
+					.object(objectKey)
+					.build()
+			);
+		} catch (Exception ex) {
+			throw new IllegalStateException("Could not delete media file.", ex);
+		}
 	}
 
 	private void validateFile(MultipartFile file) {
