@@ -662,6 +662,9 @@ watch(payloadPreviewText, () => {
 .selectedList {
 	margin-top: 1rem;
 	min-height: 5rem;
+	max-height: 65vh;
+	overflow-y: auto;
+	padding: 0.25rem;
 }
 
 .knownExercises--columns,
