@@ -69,29 +69,34 @@ const handleClick = () => {
     class="levelCard"
     :class="{ lockedCard: !stationIsUnlocked }"
     :to="stationIsUnlocked ? stationPath : undefined"
-  >
-    <div class="levelImageWrap">
-      <img
-        v-if="station.isBoss"
-        :src="datatyvenSprite"
-        alt=""
-        aria-hidden="true"
-        class="bossSprite"
-        :type="stationIsUnlocked ? undefined : 'button'"
+    :type="stationIsUnlocked ? undefined : 'button'"
     @click="handleClick"
   >
-      <img :src="station.image" :alt="station.title" class="levelImage">
+    <div class="levelBubble" :style="{ '--station-image': `url(${station.image})` }">
+      <div class="levelImageWrap">
+        <img
+          v-if="station.isBoss"
+          :src="datatyvenSprite"
+          alt=""
+          aria-hidden="true"
+          class="bossSprite"
+        >
+        <img :src="station.image" :alt="station.title" class="levelImage">
+      </div>
+
+      <h4 class="levelName">{{ station.title }}</h4>
     </div>
 
-    <h4 class="levelName">{{ station.title }}</h4>
-    <div class="starRow">
-      <img
-        v-for="star in stars"
-        :key="star.id"
-        :src="star.src"
-        :alt="star.alt"
-        class="starImage"
-      >
+    <div class="starTray" aria-label="Oppgavestjerner">
+      <div class="starRow">
+        <img
+          v-for="star in stars"
+          :key="star.id"
+          :src="star.src"
+          :alt="star.alt"
+          class="starImage"
+        >
+      </div>
     </div>
     <p v-if="!stationIsUnlocked" class="lock">🔒</p>
   </component>
@@ -99,48 +104,83 @@ const handleClick = () => {
 
 <style scoped>
 .levelCard {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-3);
+  gap: 0;
   width: 100%;
-  /* 220px matches minmax(220px, 1fr) minimum on .stationGrid */
-  max-width: 220px;
-  padding: var(--space-4);
-  border: var(--border-width-hairline) solid var(--palette-gray-200);
-  border-radius: var(--radius-2);
-  background: var(--palette-white);
+  max-width: 15.5rem;
+  padding: 0 0 var(--space-2);
+  border: 0;
+  background: transparent;
   color: var(--palette-navy-900);
   font: inherit;
   text-decoration: none;
-  box-shadow: var(--shadow-card);
   cursor: pointer;
 }
 
 .lockedCard {
-  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.65) saturate(0.75);
 }
 
 .levelCard:focus-visible {
-  outline: var(--border-width-thick) solid color-mix(in srgb, var(--color-brand-primary) 65%, white);
-  outline-offset: 0.2rem;
+  outline: none;
+}
+
+.levelCard:focus-visible .levelBubble {
+  outline: var(--border-width-thick) solid color-mix(in srgb, #78e5ff 70%, white);
+  outline-offset: 0.22rem;
+}
+
+.levelBubble {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: var(--space-1);
+  width: min(100%, 13.5rem);
+  aspect-ratio: 1;
+  padding: 1.35rem 1.2rem 2.65rem;
+  border: 0.36rem solid #fff8b8;
+  border-radius: 50%;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.68) 0%, rgba(255, 255, 255, 0.34) 30%, rgba(255, 255, 255, 0.02) 68%),
+    radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.92) 0 10%, transparent 11%),
+    var(--station-image) center / cover no-repeat,
+    linear-gradient(145deg, #ff77c8 0%, #ffb64d 48%, #7bdcff 100%);
+  box-shadow:
+    0 0.5rem 0 #d45a88,
+    0 0.85rem 1.2rem rgba(38, 18, 52, 0.34),
+    inset 0 -0.65rem 0 rgba(160, 53, 109, 0.24),
+    inset 0 0.55rem 0 rgba(255, 255, 255, 0.34);
+  transition: transform 150ms ease, filter 150ms ease;
+}
+
+.levelCard:hover .levelBubble {
+  transform: translateY(-0.18rem) rotate(-1deg) scale(1.025);
+  filter: saturate(1.12);
 }
 
 .levelImage {
-  width: 100%;
-  /* thumbnail ceiling inside the 220px card */
-  max-width: 140px;
-  height: auto;
-  border-radius: var(--radius-1);
+  width: 0;
+  height: 0;
+  opacity: 0;
+  border: 0.2rem solid rgba(255, 255, 255, 0.9);
+  border-radius: 999rem;
   object-fit: cover;
+  box-shadow:
+    0 0.24rem 0 rgba(122, 62, 42, 0.28),
+    0 0.45rem 0.7rem rgba(38, 18, 52, 0.22);
 }
 
 .levelImageWrap {
   position: relative;
   display: flex;
   justify-content: center;
-  width: 100%;
-  padding-top: var(--space-4);
+  width: min(82%, 9.2rem);
+  min-height: 3.1rem;
 }
 
 .bossSprite {
@@ -148,35 +188,72 @@ const handleClick = () => {
   top: 0;
   left: 50%;
   z-index: 1;
-  width: 4.5rem;
+  width: 4.25rem;
   height: auto;
-  transform: translate(-50%, -42%);
+  transform: translate(-50%, -58%);
   pointer-events: none;
   filter: drop-shadow(0 0.35rem 0.5rem rgba(0, 0, 0, 0.22));
 }
 
 .levelName {
-  margin: 0;
+  margin: -0.25rem 0 0;
+  max-width: 9.8rem;
   text-align: center;
-  font-size: var(--font-size-16);
-  line-height: var(--font-leading-16);
+  font-size: clamp(0.9rem, 2.6vw, 1.08rem);
+  line-height: 1.05;
+  font-weight: var(--font-weight-bold);
+  color: #4a226c;
+  text-shadow:
+    0 0.08rem 0 #fff7c4,
+    0 0.16rem 0 rgba(255, 255, 255, 0.55);
+}
+
+.starTray {
+  position: relative;
+  z-index: 1;
+  min-width: min(78%, 10.8rem);
+  min-height: 3.2rem;
+  margin-top: -1.85rem;
+  padding: 0.65rem 0.85rem 0.5rem;
+  border: 0.22rem solid #ffe783;
+  border-radius: 1.15rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 38%),
+    linear-gradient(135deg, #8b5cff 0%, #44c7ff 100%);
+  box-shadow:
+    0 0.36rem 0 #5839b7,
+    0 0.58rem 0.9rem rgba(25, 22, 69, 0.28),
+    inset 0 -0.22rem 0 rgba(58, 34, 126, 0.26);
 }
 
 .starRow {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
+  gap: 0.18rem;
+  min-height: 1.65rem;
 }
 
 .starImage {
-  width: var(--size-icon-md);
-  height: var(--size-icon-md);
+  width: clamp(1.45rem, 4.5vw, 1.85rem);
+  height: clamp(1.45rem, 4.5vw, 1.85rem);
+  filter: drop-shadow(0 0.14rem 0 rgba(49, 31, 97, 0.28));
 }
 
 .lock {
+  position: absolute;
+  top: 0.75rem;
+  right: 1.1rem;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
   margin: 0;
-  font-size: 1.25rem;
+  border-radius: 50%;
+  background: #fff4a8;
+  font-size: 1.1rem;
+  box-shadow: 0 0.22rem 0 rgba(92, 52, 96, 0.32);
 }
 
 </style>
