@@ -38,8 +38,6 @@ public class AuthenticationService {
         UserPrincipal userPrincipal = (UserPrincipal) authenticationResponse.getPrincipal();
 
         User user = userPrincipal.user();
-      
-        String jwtToken = jwtService.generateToken(user.getEmail());
         log.info("AUTHSERVICE: Token Generated");
         String accessToken = jwtService.generateAccessToken(user.getEmail());
         String refreshToken = jwtService.generateRefreshToken(user.getEmail());
