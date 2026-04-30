@@ -544,8 +544,23 @@ const next = async () => {
               :images="bossTaskImages"
           />
           <div v-else class="stationPageMeta">
-            <p class="stationPageEyebrow">{{ station.title }}</p>
-            <p class="pageProgressPill">{{ progressLabel }}</p>
+            <div class="stationPageMeta__text">
+              <p class="stationPageEyebrow">{{ station.title }}</p>
+              <p class="pageProgressPill">{{ progressLabel }}</p>
+            </div>
+            <button
+              type="button"
+              class="tipsLetterButton"
+              aria-label="Åpne tipsbrev for oppgaven"
+              @click="showTipsPopup = true"
+            >
+              <img
+                src="https://placehold.co/160x110?text=Brev"
+                alt=""
+                aria-hidden="true"
+              >
+              <span>Tipsbrev</span>
+            </button>
           </div>
         </div>
       </header>
@@ -702,6 +717,11 @@ const next = async () => {
   gap: var(--space-4);
 }
 
+.stationPageMeta__text {
+  display: grid;
+  gap: 0.5rem;
+}
+
 .stationPageEyebrow {
   color: #1d4f91;
   font-size: 1.15rem;
@@ -797,12 +817,12 @@ const next = async () => {
     left: var(--space-4);
   }
 
-  .station-page__hero {
+  .stationPageHero {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .station-page__meta {
+  .stationPageMeta {
     align-items: flex-start;
     flex-direction: column;
   }
