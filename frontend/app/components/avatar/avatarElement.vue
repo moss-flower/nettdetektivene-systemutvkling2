@@ -4,6 +4,7 @@ import { DEFAULT_AVATAR_CONFIG } from '~/composables/types/AvatarTypes'
 import AvatarImage from '~/components/avatar/avatarImage.vue'
 import { useAvatar } from '~/composables/useAvatar'
 import type { StudentProfileResponse } from '~/composables/types/StudentProfileTypes'
+import { getLevel } from '~/composables/utils/studentProgress'
 
 const { getMyAvatar } = useAvatar()
 const { getMyProfile} = useStudentProfile()
@@ -21,6 +22,7 @@ const avatar = ref(await getMyAvatar().catch(() => null));
 const userStats = ref((await getMyProfile().catch(() => null)) ?? fallbackStats);
 
 const resolvedAvatar = computed(() => avatar.value ?? DEFAULT_AVATAR_CONFIG)
+const level = computed(() => getLevel(userStats.value.totalXp).level)
 </script>
 
 <template>
@@ -33,7 +35,7 @@ const resolvedAvatar = computed(() => avatar.value ?? DEFAULT_AVATAR_CONFIG)
       </div>
 
       <p class="avatarUsername">{{ userStats.studentName }}</p>
-      <p class="level">Level {{ userStats.totalXp / 300 }} </p>
+      <p class="level">Level {{ level }}</p>
       
     </div>
   </div>

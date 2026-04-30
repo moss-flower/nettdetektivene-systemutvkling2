@@ -322,7 +322,7 @@ watch(payloadPreviewText, () => {
 				<div class="sectionHeading sectionHeadingInline">
 					<div>
 						<h2>Oppgaver</h2>
-						<p>Hver oppgave blir ett element i tasks-arrayet.</p>
+						<p>Hver oppgave blir ett element i oppgavelisten.</p>
 					</div>
 
 					<div class="taskAddRow">
@@ -469,15 +469,15 @@ watch(payloadPreviewText, () => {
 
 				<div class="statusStack">
 					<article class="summaryCard">
-						<p class="cardEyebrow">Tasks</p>
+						<p class="cardEyebrow">Oppgaver</p>
 						<h3>{{ draft.tasks.length }} oppgaver</h3>
 						<p>{{ hasChanges ? 'Det finnes ulagrede endringer.' : 'Editoren er synkron med sist lastede versjon.' }}</p>
 					</article>
 
 					<article class="summaryCard">
-						<p class="cardEyebrow">Metadata</p>
-						<h3>{{ draft.difficultyName || 'Ingen difficulty name ennå' }}</h3>
-						<p>Tittel, difficulty name, beskrivelse og tips blir lagret sammen med oppgavens tasks.</p>
+						<p class="cardEyebrow">Info</p>
+						<h3>{{ draft.difficultyName || 'Ingen vanskelighetsgrad enda' }}</h3>
+						<p>Tittel, vanskelighetsgrad, beskrivelse og tips blir lagret sammen med oppgavene.</p>
 					</article>
 				</div>
 			</section>
