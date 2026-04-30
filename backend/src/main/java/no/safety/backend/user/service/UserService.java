@@ -140,6 +140,7 @@ public class UserService {
             );
 
         studentUser.setUsername(newUsername);
+        studentUserRepository.saveAndFlush(studentUser);
 
         return new UsernameUpdateResponse(
             studentUserPublicUuid,
@@ -169,6 +170,7 @@ public class UserService {
             );
 
         user.setUsername(newUsername);
+        userRepository.saveAndFlush(user);
 
         return new UsernameUpdateResponse(
             user.getPublicUuid(),
