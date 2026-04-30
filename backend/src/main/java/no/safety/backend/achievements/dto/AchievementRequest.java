@@ -11,6 +11,5 @@ public class AchievementRequest {
   private String description;
   private AchievementCategory category;
   private String source;
-  private String imageUrl;
   private String reward;
 }

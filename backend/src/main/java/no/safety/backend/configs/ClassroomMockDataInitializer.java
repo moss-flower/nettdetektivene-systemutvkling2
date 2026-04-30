@@ -163,7 +163,7 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     teacher.setUsername(username);
     teacher.setEmail(email);
     teacher.setPassword(passwordEncoder.encode(DEMO_PASSWORD));
-    teacher.setRoles(Set.of(teacherRole));
+    teacher.setRoles(new HashSet<>(Set.of(teacherRole)));
 
     return teacherRepository.save(teacher);
   }
@@ -175,7 +175,7 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     student.setUsername(username);
     student.setEmail(email);
     student.setPassword(passwordEncoder.encode(DEMO_PASSWORD));
-    student.setRoles(Set.of(studentRole));
+    student.setRoles(new HashSet<>(Set.of(studentRole)));
 
     return studentRepository.save(student);
   }

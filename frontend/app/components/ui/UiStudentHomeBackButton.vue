@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import leftArrowImage from '~/assets/images/leftArrow.png'
 import { routePaths } from "~/composables/utils/routePaths";
+import type { RouteLocationRaw } from "vue-router";
 
 type Variant = "primary" | "reward" | "ghost" | "danger" | "onLight";
 type Size = "sm" | "md" | "lg";
@@ -10,6 +11,7 @@ const props = withDefaults(
     label?: string;
     disabled?: boolean;
     ariaLabel?: string;
+    to?: RouteLocationRaw;
   }>(),
   {
     label: "",
@@ -18,6 +20,7 @@ const props = withDefaults(
     block: false,
     disabled: false,
     ariaLabel: "Tilbake til elevhjem",
+    to: routePaths.studentHome,
   },
 );
 </script>
@@ -26,7 +29,7 @@ const props = withDefaults(
   <NuxtLink
     class="homeBackButton"
     :class="{ 'backButtonDisabled': props.disabled }"
-    :to="props.disabled ? undefined : routePaths.studentHome"
+    :to="props.disabled ? undefined : props.to"
     :aria-label="props.ariaLabel"
   >
     <img class="backButtonIcon" :src="leftArrowImage" alt="" aria-hidden="true">

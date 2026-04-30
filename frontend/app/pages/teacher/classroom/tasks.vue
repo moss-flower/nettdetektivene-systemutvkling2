@@ -31,7 +31,7 @@ const { data: exercises } = await useAsyncData(
     <div class="stack">
       <article v-if="(exercises ?? []).length === 0" class="card">
         <h2>Ingen oppgaver tilgjengelig</h2>
-        <p>Fant ingen oppgaver via klasserommets verden og stasjoner.</p>
+        <p>Fant ingen oppgaver via klasserommets stasjonskart og stasjoner.</p>
       </article>
       <article v-for="exercise in exercises" :key="exercise.uid" class="card">
         <h2>{{ exercise.title }}</h2>

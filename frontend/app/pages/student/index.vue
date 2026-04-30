@@ -2,14 +2,15 @@
 import StudentHomeMenuItem from '~/components/student/StudentHomeMenuItem.vue';
 import { routePaths } from '~/composables/utils/routePaths';
 import { useAuth } from '~/composables/useAuth';
-import mapImage from "~/assets/images/studentHome/map.png";
+import mapImage from "~/assets/ui-icons/Map-big.png";
 import helpImage from "~/assets/images/studentHome/help.png";
-import profileImage from "~/assets/images/studentHome/profile.png";
-import leaderboardImage from "~/assets/images/studentHome/leaderboard.png";
-import medalsImage from "~/assets/images/studentHome/medals.png";
-import mysteryImage from "~/assets/images/studentHome/mystery.png";
-import notebookImage from "~/assets/images/studentHome/notebook.png";
-import settingsImage from "~/assets/images/studentHome/settings.png";
+import profileImage from "~/assets/ui-icons/ID-card.png";
+import leaderboardImage from "~/assets/ui-icons/leaderboard-sign.png";
+import leaderboardNamePlate from "~/assets/ui-icons/leaderboard-name-plate.png";
+import medalsImage from "~/assets/ui-icons/Medal.png";
+import mysteryImage from "~/assets/ui-icons/newspaper.png";
+import notebookImage from "~/assets/ui-icons/Notepad.png";
+import settingsImage from "~/assets/ui-icons/Radio.png";
 
 type StudentHomeItem = {
   id: string;
@@ -17,6 +18,7 @@ type StudentHomeItem = {
   description: string;
   route: string;
   imagePath?: string;
+  imagePaths?: string[];
   rotation?: number;
   tooltipPlacement?: "top" | "bottom";
 };
@@ -45,7 +47,12 @@ const items: StudentHomeItem[] = [
     title: 'Ledertavle',
     description: 'Se poeng, plassering og hvem som har samlet flest spor.',
     route: routePaths.studentLeaderboard,
-    imagePath: leaderboardImage,
+    imagePaths: [
+      leaderboardImage,
+      leaderboardNamePlate,
+      leaderboardNamePlate,
+      leaderboardNamePlate,
+    ],
     rotation: -2,
     tooltipPlacement: "bottom",
   },
@@ -135,6 +142,7 @@ async function handleLogout() {
         v-for="item in items"
         :key="item.id"
         :image-path="item.imagePath"
+        :image-paths="item.imagePaths"
         :alt="item.title"
         :tooltip-text="item.description"
         :tooltip-placement="item.tooltipPlacement"
@@ -151,7 +159,6 @@ async function handleLogout() {
   position: relative;
   width: 100%;
   height: 100%;
-  padding: clamp(var(--space-4), 2vw, var(--space-6));
   overflow: hidden;
   box-sizing: border-box;
   position: relative;
@@ -208,51 +215,51 @@ async function handleLogout() {
 
 .student-home__item--avatar {
   left: 3%;
-  bottom: 19%;
+  bottom: 30%;
   width: 21%;
   z-index: 4;
 }
 
 .student-home__item--medals {
-  left: 6%;
+  left: 5%;
   bottom: 4.5%;
-  width: 14%;
+  width: 10%;
   z-index: 2;
 }
 
 .student-home__item--map {
-  top: 19%;
-  left: 29%;
-  width: 39%;
-  z-index: 8;
+  top: 20%;
+  left: 20%;
+  width: 50%;
+  z-index: 3;
 }
 
 .student-home__item--mystery {
-  top: 6%;
-  right: 19%;
-  width: 22%;
-  z-index: 5;
+  top: 2%;
+  right: 15%;
+  width: 20%;
+  z-index: 2;
 }
 
 .student-home__item--help {
-  top: 5%;
-  right: 5%;
+  top: 1%;
+  right: 1%;
   width: 16%;
   z-index: 6;
 }
 
 .student-home__item--notebook {
-  right: 3.5%;
+  right: 0.5%;
   bottom: 3.5%;
-  width: 15%;
+  width: 30%;
   z-index: 4;
 }
 
 .student-home__item--settings {
-  right: 3.5%;
-  bottom: 35%;
+  right: 40%;
+  bottom: 1%;
   width: 20%;
-  z-index: 4;
+  z-index: 1;
 }
 
 @media (max-width: 980px) {

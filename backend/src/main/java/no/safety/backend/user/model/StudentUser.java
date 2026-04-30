@@ -1,7 +1,7 @@
 package no.safety.backend.user.model;
 
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -30,6 +30,7 @@ import no.safety.backend.classroom.model.Classroom;
 @SuperBuilder
 public class StudentUser extends User {
 
+    /* The score of the user. */
     @Column(nullable = false)
     @Builder.Default
     private int score = 0;

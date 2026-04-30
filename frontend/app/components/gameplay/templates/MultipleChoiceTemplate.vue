@@ -41,7 +41,7 @@ const choose = (choice: MultipleChoiceOptionKey) => {
         {{ props.prompt.text }}
       </p>
     </header>
-    <div class="templateImageFrame">
+    <div v-if="!props.hideImages" class="templateImageFrame">
       <img
         :src="props.prompt?.imageUrl ?? ''"
         :alt="props.prompt?.imageAlt ?? ''"
