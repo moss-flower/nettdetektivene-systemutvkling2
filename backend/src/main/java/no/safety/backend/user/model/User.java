@@ -2,6 +2,7 @@ package no.safety.backend.user.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -57,7 +58,7 @@ public class User {
     /**
      * Creates a many to many database relation between users and roles.
      */
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -65,6 +66,7 @@ public class User {
     )
 
     /* The set of roles the user has. */
+    @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
     /**

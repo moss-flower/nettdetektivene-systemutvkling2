@@ -18,7 +18,7 @@ const goBack = () => {
 		<header class="pageHeader">
 			<button class="backButton" type="button" @click="goBack">Tilbake</button>
 			<h1>Varslinger</h1>
-			<p>Denne siden er tom forelopig.</p>
+			<p>Denne siden er tom foreløpig.</p>
 		</header>
 	</section>
 </template>

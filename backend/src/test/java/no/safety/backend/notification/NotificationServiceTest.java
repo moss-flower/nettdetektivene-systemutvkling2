@@ -26,7 +26,7 @@ import no.safety.backend.notification.repository.NotificationRepository;
 import no.safety.backend.notification.service.NotificationService;
 import no.safety.backend.notification.service.SseRegistry;
 import no.safety.backend.user.model.StudentUser;
-import no.safety.backend.user.model.User;
+import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,13 +41,13 @@ public class NotificationServiceTest {
 
     StudentUser sender;
     NotificationEvent mockEvent;
-    User target;
-    Set<User> targets;
+    TeacherUser target;
+    Set<TeacherUser> targets;
 
     @BeforeEach
     void setUp() {
-        mockEvent = new NotificationEvent(new UUID(0, 0), "Something Happened!", 2);
-        target = User.builder()
+        mockEvent = new NotificationEvent(42l, "Something Happened!", 2);
+        target = TeacherUser.builder()
             .publicUuid(new UUID(1, 0))
             .internalId((2l))
             .email("teacher@test.com")
@@ -65,6 +65,7 @@ public class NotificationServiceTest {
             "desc",
             UUID.randomUUID(),
             targets,
+            null,
             Set.of()
         );
         sender = StudentUser.builder()
@@ -81,7 +82,7 @@ public class NotificationServiceTest {
     @Test
     void shouldSaveNotificationOnEvent(){
         //arrange, act, assert
-        when(userService.findByPublicUuid(any())).thenReturn(Optional.of(sender));
+        when(userService.findStudentByInternalId(any())).thenReturn(Optional.of(sender));
 
         notificationService.handleNotificationEvent(mockEvent);
 
@@ -90,14 +91,14 @@ public class NotificationServiceTest {
 
     @Test
     void shouldPushToRegistryAfterSaving() {
-        when(userService.findByPublicUuid(any())).thenReturn(Optional.of(sender));
+        when(userService.findStudentByInternalId(any())).thenReturn(Optional.of(sender));
         notificationService.handleNotificationEvent(mockEvent);
         verify(registry).send(eq(2L), any());
     }
 
     @Test
     void shouldStillSaveIfUserOffline() {
-        when(userService.findByPublicUuid(any())).thenReturn(Optional.of(sender));
+        when(userService.findStudentByInternalId(any())).thenReturn(Optional.of(sender));
         
         doThrow(new RuntimeException("No emitter"))
         .when(registry).send(eq(2l), any());
