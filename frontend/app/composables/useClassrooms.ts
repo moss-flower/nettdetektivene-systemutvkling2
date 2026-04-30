@@ -17,6 +17,15 @@ export function useClassrooms() {
    */
   const { $api } = useNuxtApp();
 
+  const normalizeClassroom = (classroom: Classroom): Classroom => ({
+    ...classroom,
+    owners: Array.isArray(classroom.owners) ? classroom.owners : [],
+    members: Array.isArray(classroom.members) ? classroom.members : [],
+  });
+
+  const normalizeClassrooms = (classrooms: Classroom[]) =>
+    classrooms.map(normalizeClassroom);
+
   /**
    * Teacher-only classroom management actions.
    *
@@ -32,18 +41,22 @@ export function useClassrooms() {
      * Fetch all classrooms owned by the logged-in teacher.
      */
     getOwnedClassrooms: async (): Promise<Classroom[]> => {
-      return await $api("/classrooms", {
+      const classrooms = await $api<Classroom[]>("/classrooms", {
         method: "GET",
       });
+
+      return normalizeClassrooms(classrooms);
     },
 
     /**
      * Fetch one specific classroom by its uid.
      */
     getClassroomById: async (classroomUid: string): Promise<Classroom> => {
-      return await $api(`/classrooms/${classroomUid}`, {
+      const classroom = await $api<Classroom>(`/classrooms/${classroomUid}`, {
         method: "GET",
       });
+
+      return normalizeClassroom(classroom);
     },
 
     /**
@@ -54,10 +67,12 @@ export function useClassrooms() {
     createClassroom: async (
       payload: ClassroomRequest,
     ): Promise<Classroom> => {
-      return await $api("/classrooms", {
+      const classroom = await $api<Classroom>("/classrooms", {
         method: "POST",
         body: payload,
       });
+
+      return normalizeClassroom(classroom);
     },
 
     /**
@@ -67,10 +82,12 @@ export function useClassrooms() {
       classroomUid: string,
       payload: ClassroomRequest,
     ): Promise<Classroom> => {
-      return await $api(`/classrooms/${classroomUid}`, {
+      const classroom = await $api<Classroom>(`/classrooms/${classroomUid}`, {
         method: "PUT",
         body: payload,
       });
+
+      return normalizeClassroom(classroom);
     },
 
     /**
@@ -117,9 +134,11 @@ export function useClassrooms() {
      * The previous code becomes invalid after regeneration.
      */
     regenerateJoinCode: async (classroomUid: string): Promise<Classroom> => {
-      return await $api(`/classrooms/${classroomUid}/code`, {
+      const classroom = await $api<Classroom>(`/classrooms/${classroomUid}/code`, {
         method: "POST",
       });
+
+      return normalizeClassroom(classroom);
     },
 
     /**
@@ -132,9 +151,11 @@ export function useClassrooms() {
       classroomUid: string,
       userUuid: string,
     ): Promise<Classroom> => {
-      return await $api(`/classrooms/${classroomUid}/members/${userUuid}`, {
+      const classroom = await $api<Classroom>(`/classrooms/${classroomUid}/members/${userUuid}`, {
         method: "DELETE",
       });
+
+      return normalizeClassroom(classroom);
     },
   };
 
@@ -153,18 +174,22 @@ export function useClassrooms() {
      * A student is only allowed to belong to one classroom at a time.
      */
     joinClassroom: async (code: string): Promise<Classroom> => {
-      return await $api(`/classrooms/join/${code}`, {
+      const classroom = await $api<Classroom>(`/classrooms/join/${code}`, {
         method: "POST",
       });
+
+      return normalizeClassroom(classroom);
     },
 
     /**
      * Fetch the classroom the currently logged-in student belongs to.
      */
     getMyClassroom: async (): Promise<Classroom> => {
-      return await $api("/classrooms/me", {
+      const classroom = await $api<Classroom>("/classrooms/me", {
         method: "GET",
       });
+
+      return normalizeClassroom(classroom);
     },
 
     /**

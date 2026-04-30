@@ -27,6 +27,8 @@ const { data: classroom, refresh: refreshClassroom } = await useAsyncData(
 );
 
 const worldUid = computed(() => classroom.value?.worldUid ?? '');
+const classroomMembers = computed(() => Array.isArray(classroom.value?.members) ? classroom.value.members : []);
+const classroomOwners = computed(() => Array.isArray(classroom.value?.owners) ? classroom.value.owners : []);
 
 const { data: world } = await useAsyncData(
   'teacher-classroom-world',
@@ -50,7 +52,7 @@ const { data: progressByStudent, refresh: refreshProgress } = await useAsyncData
       return {};
     }
 
-    const entries = await Promise.all(classroom.value.members.map(async (student) => {
+    const entries = await Promise.all(classroomMembers.value.map(async (student) => {
       const completedExercises = await $api<CompletedExerciseResponse[]>(`/completed-exercises/students/${student.publicUuid}`, {
         method: 'GET',
       }).catch(() => []);
@@ -126,12 +128,12 @@ const removeStudent = async (studentId: string) => {
     <div v-if="classroom" class="summaryRow">
       <article class="summaryCard">
         <span class="summaryCardLabel">Elever</span>
-        <strong>{{ classroom.members.length }}</strong>
+        <strong>{{ classroomMembers.length }}</strong>
       </article>
 
       <article class="summaryCard">
         <span class="summaryCardLabel">Eiere</span>
-        <strong>{{ classroom.owners.length }}</strong>
+        <strong>{{ classroomOwners.length }}</strong>
       </article>
 
       <article class="summaryCard">
@@ -159,7 +161,7 @@ const removeStudent = async (studentId: string) => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="student in classroom.members" :key="student.publicUuid">
+          <tr v-for="student in classroomMembers" :key="student.publicUuid">
             <td>
               <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, `?classroomId=${classroomId}&studentId=${student.publicUuid}`)" class="studentLink">
                 {{ student.username }}

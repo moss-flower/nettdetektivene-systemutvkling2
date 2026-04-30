@@ -35,7 +35,7 @@ const {
 await useAsyncData('student-mystery-data', loadMysteryData);
 
 const canSubmit = computed(() => {
-  return selectedFile.value !== null && studentMessage.value.trim().length >= 8;
+  return currentMystery.value !== null && selectedFile.value !== null && studentMessage.value.trim().length >= 8;
 });
 
 const anyDialogOpen = computed(() => showPreviousMysteries.value || showSuggestionDialog.value);
@@ -178,6 +178,7 @@ async function sendMysterySubmission() {
             <p class="studentMysteryHelper">{{ currentMystery?.prompt ?? 'Beskriv et innlegg eller bilde som kan passe til et senere mysterium.' }}</p>
             <p class="studentMysteryHelper">Send inn et bilde og en kort forklaring. Læreren kan bruke det i et senere mysterium.</p>
             <p v-if="currentMystery?.clue" class="studentMysteryMeta"><strong>Tips:</strong> {{ currentMystery.clue }}</p>
+            <p v-if="!currentMystery" class="studentMysteryError">Klassen har ikke et aktivt ukens mysterium ennå. Læreren må velge en sak før du kan sende inn forslag.</p>
           </div>
 
           <button
@@ -199,6 +200,7 @@ async function sendMysterySubmission() {
                 class="mysteryFileInput"
                 type="file"
                 accept="image/*"
+                :disabled="!currentMystery || isSubmitting"
                 @change="handleFileChange"
               >
               <span class="mysteryUploadMain">
@@ -229,7 +231,7 @@ async function sendMysterySubmission() {
             <button
               type="button"
               class="studentMysterySubmit"
-              :disabled="!canSubmit || !currentMystery || isSubmitting"
+              :disabled="!canSubmit || isSubmitting"
               @click="sendMysterySubmission"
             >
               {{ isSubmitting ? 'Sender...' : 'Send til lærer' }}
@@ -654,7 +656,9 @@ async function sendMysterySubmission() {
   gap: var(--space-4);
   padding: clamp(1rem, 2vw, 1.5rem);
   border-radius: clamp(1rem, 2vw, 1.25rem);
-  background: color-mix(in srgb, var(--color-bg-surface) 94%, var(--color-semantic-info) 6%);
+  border: 1px solid color-mix(in srgb, var(--color-brand-primary) 12%, var(--color-border-default));
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgb(15 23 42 / 0.22);
 }
 
 .mysteryDialogHeader {

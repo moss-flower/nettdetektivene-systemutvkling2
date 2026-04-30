@@ -10,7 +10,7 @@ const { data: classroom } = await useAsyncData(
   { watch: [classroomId] },
 );
 
-const students = computed(() => classroom.value?.members ?? []);
+const students = computed(() => Array.isArray(classroom.value?.members) ? classroom.value.members : []);
 </script>
 
 <template>

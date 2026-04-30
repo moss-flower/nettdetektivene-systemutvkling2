@@ -49,7 +49,7 @@ public class SecurityConfig {
                 // header on requests (everything other than GETs responds 401). We do not want
                 // this in the final product.
                 //TODO: Remove eventually.
-                .ignoringRequestMatchers("/api/v1/auth/**", "/api/v1/register/**", "/api/v1/classrooms/**", "/api/v1/exercises/**", "/api/v1/stations/**", "/api/v1/worlds/**", "/api/v1/notepad/**", "/api/v1/achievements/**", "/api/v1/completed-exercises/**", "/api/v1/leaderboard/**", "/api/v1/users/**", "/api/v1/media/**")
+                .ignoringRequestMatchers("/api/v1/auth/**", "/api/v1/register/**", "/api/v1/classrooms/**", "/api/v1/exercises/**", "/api/v1/stations/**", "/api/v1/worlds/**", "/api/v1/notepad/**", "/api/v1/achievements/**", "/api/v1/completed-exercises/**", "/api/v1/leaderboard/**", "/api/v1/users/**", "/api/v1/media/**", "/api/v1/WeeklyMystery/**")
             )
 
             .headers(headers -> headers
@@ -88,7 +88,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
         configuration.setAllowCredentials(true);
         

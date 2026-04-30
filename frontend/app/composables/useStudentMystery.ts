@@ -43,20 +43,22 @@ export function useStudentMystery() {
 
 			currentStudentUid.value = profile.studentUid;
 
-			const [currentPromptResponse, historyResponse] = await Promise.all([
-				$api<WeeklyMysteryPrompt | null>(`/classrooms/${classroom.uid}/weekly-mystery`, {
-					method: "GET",
-				}),
-				$api<WeeklyMysteryPrompt[]>(`/classrooms/${classroom.uid}/weekly-mystery/history`, {
-					method: "GET",
-				}),
-			]);
+			const currentPromptResponse = await $api<WeeklyMysteryPrompt | null>(`/classrooms/${classroom.uid}/weekly-mystery`, {
+				method: "GET",
+			});
+
+			const historyResponse = await $api<WeeklyMysteryPrompt[]>("/weekly-mystery/classroom-history", {
+				method: "GET",
+				query: {
+					classroomUid: classroom.uid,
+				},
+			}).catch(() => []);
 
 			currentMystery.value = currentPromptResponse && typeof currentPromptResponse === "object"
 				? normalizePrompt(currentPromptResponse)
 				: null;
 
-			const normalizedHistory = (historyResponse ?? [])
+			const normalizedHistory = (Array.isArray(historyResponse) ? historyResponse : [])
 				.map(normalizePrompt)
 				.filter((prompt) => prompt.publicId !== currentMystery.value?.publicId);
 
