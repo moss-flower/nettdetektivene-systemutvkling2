@@ -21,6 +21,7 @@ import celebrationSfx from '~/assets/sound/celebration-sfx.mp3'
 import { useStudentProfile } from '~/composables/useStudentProfile'
 import { useStations } from '~/composables/useStations'
 import { getLevel } from '~/composables/utils/studentProgress'
+import envelopeIcon from '~/assets/ui-icons/Envelope.png'
 
 import type {
   EmailHotspotResult,
@@ -245,7 +246,7 @@ const showBossVictoryDialog = computed(() =>
     isBossStation && showExerciseResultDialog.value && isExerciseComplete.value
 )
 
-const exerciseHint = computed(() => activeExercise?.hint ?? '')
+const exerciseHint = computed(() => activeExercise?.notepadEntry?.content ?? '')
 
 const feedbackTitle = computed(() => {
   if (!currentTask.value) {
@@ -551,6 +552,16 @@ const next = async () => {
       </header>
 
       <div class="stationPageBoard">
+        <button
+          v-if="exerciseHint"
+          class="tipsLetterButton"
+          type="button"
+          @click="showTipsPopup = true"
+        >
+          <img :src="envelopeIcon" alt="Tipsbrev" >
+          <span>Åpne tipsbrev</span>
+        </button>
+
         <XOrYTemplate
             v-if="currentTask?.templateKind === 'x-or-y' && currentOptions"
             :key="`${currentTask.id}-xory`"
@@ -646,6 +657,8 @@ const next = async () => {
     <PopupTips
       v-if="showTipsPopup"
       :hint="exerciseHint"
+      :title="activeExercise?.notepadEntry?.title ?? ''"
+      :type="activeExercise?.notepadEntry?.type ?? 'TIP'"
       @close="showTipsPopup = false"
     />
 

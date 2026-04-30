@@ -95,6 +95,7 @@ async function handleRegister() {
     await navigateTo(loginTarget.value);
   } catch (error: any) {
     formError.value =
+      error?.data?.detail ||
       error?.data?.message ||
       error?.data?.error ||
       error?.statusMessage ||

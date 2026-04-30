@@ -15,6 +15,12 @@ import no.safety.backend.completedexercise.repository.CompletedExerciseRepositor
 import no.safety.backend.exception.ForbiddenException;
 import no.safety.backend.station.model.Station;
 import no.safety.backend.station.repository.StationRepository;
+import no.safety.backend.exception.NotFoundException;
+import no.safety.backend.excercise.model.Exercise;
+import no.safety.backend.excercise.repository.ExerciseRepository;
+import no.safety.backend.notepad.dto.NotepadEntryCreateRequest;
+import no.safety.backend.notepad.model.NotepadEntry;
+import no.safety.backend.notepad.service.NotepadEntryService;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.repository.StudentUserRepository;
 import org.springframework.stereotype.Service;
@@ -29,6 +35,8 @@ public class CompletedExerciseService {
   private final StudentUserRepository studentUserRepository;
   private final StationRepository stationRepository;
   private final AchievementService achievementService;
+  private final ExerciseRepository exerciseRepository;
+  private final NotepadEntryService notepadEntryService;
 
   @Transactional
   public CompletedExerciseResponse create(CompletedExerciseRequest request, StudentUser student) {
@@ -51,12 +59,14 @@ public class CompletedExerciseService {
     CompletedExercise completedExercise = new CompletedExercise();
     completedExercise.setStudentUid(studentUid);
     completedExercise.setExerciseUid(exerciseUid);
-
+ 
+  
     CompletedExercise saved = completedExerciseRepository.save(completedExercise);
 
     checkAndUnlockStationAchievement(student, exerciseUid);
+    createExerciseNotepadEntryIfConfigured(student, exerciseUid);
 
-    return CompletedExerciseResponse.from(saved);
+    return CompletedExerciseResponse.from(savedExercise);
   }
 
   @Transactional(readOnly = true)
@@ -100,5 +110,23 @@ public class CompletedExerciseService {
     if (station.isBoss()) {
       achievementService.unlockAchievementForStudent(student, station.getTitle(), AchievementCategory.SPECIAL);
     }
+  }
+
+  private void createExerciseNotepadEntryIfConfigured(StudentUser student, UUID exerciseUid) {
+    Exercise exercise = exerciseRepository.findByPublicId(exerciseUid)
+        .orElseThrow(() -> new NotFoundException("Exercise not found"));
+
+    NotepadEntry notepadEntry = exercise.getNotepadEntry();
+    if (notepadEntry == null) {
+      return;
+    }
+
+    notepadEntryService.create(student.getInternalId(), new NotepadEntryCreateRequest(
+        notepadEntry.getTitle(),
+        notepadEntry.getType(),
+        notepadEntry.getContent(),
+        notepadEntry.getSource()
+    ));
+
   }
 }
