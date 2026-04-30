@@ -6,3 +6,9 @@ export interface StudentProfileResponse {
   completedExercises: number;
   unlockedAchievements: number;
 }
+
+export interface UsernameUpdateResponse {
+  userUid: string;
+  username: string;
+  message: string;
+}
