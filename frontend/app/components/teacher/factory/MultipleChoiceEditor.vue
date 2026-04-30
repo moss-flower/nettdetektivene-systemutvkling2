@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { MultipleChoiceTaskData } from "~/composables/types/TaskTypes";
+import { useFactoryImageUpload } from "~/composables/useFactoryImageUpload";
 
 const props = defineProps<{
 	task: MultipleChoiceTaskData;
@@ -9,6 +10,34 @@ const emit = defineEmits<{
 	(e: "add-option"): void;
 	(e: "remove-option", optionIndex: number): void;
 }>();
+
+const { uploadImage } = useFactoryImageUpload();
+const imageUploadState = ref<"idle" | "uploading">("idle");
+const imageUploadError = ref("");
+
+const handleImageSelected = async (event: Event) => {
+	const input = event.target as HTMLInputElement | null;
+	const file = input?.files?.[0];
+
+	if (!file) {
+		return;
+	}
+
+	imageUploadState.value = "uploading";
+	imageUploadError.value = "";
+
+	try {
+		const uploaded = await uploadImage(file, "uploads/factory/tasks");
+		props.task.prompt.imageUrl = uploaded.url;
+	} catch (error) {
+		imageUploadError.value = error instanceof Error ? error.message : "Bildet kunne ikke lastes opp.";
+	} finally {
+		imageUploadState.value = "idle";
+		if (input) {
+			input.value = "";
+		}
+	}
+};
 </script>
 
 <template>
@@ -26,14 +55,20 @@ const emit = defineEmits<{
 			</label>
 
 			<label class="field">
-				<span>Bilde-URL</span>
-				<input v-model="props.task.prompt.imageUrl" type="url" >
+				<span>Bilde</span>
+				<input type="file" accept="image/*" :disabled="imageUploadState === 'uploading'" @change="handleImageSelected" >
+				<small class="fieldHint">{{ imageUploadState === "uploading" ? "Laster opp..." : "Velg et bilde som lastes opp til prosjektets MinIO-lager." }}</small>
+				<p v-if="imageUploadError" class="fieldError">{{ imageUploadError }}</p>
 			</label>
 
 			<label class="field">
 				<span>Bildetekst</span>
 				<input v-model="props.task.prompt.imageAlt" type="text" >
 			</label>
+
+			<div class="imagePreviewCard fieldFull">
+				<img :src="props.task.prompt.imageUrl" :alt="props.task.prompt.imageAlt || 'Forhandsvisning av oppgavebilde'" class="imagePreview" >
+			</div>
 
 			<label class="field">
 				<span>Riktig svar</span>
@@ -103,6 +138,17 @@ const emit = defineEmits<{
 	font-weight: 700;
 }
 
+.fieldHint {
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
+.fieldError {
+	margin: 0;
+	color: #fca5a5;
+	font-size: 0.9rem;
+}
+
 .field input,
 .field select,
 .field textarea {
@@ -117,6 +163,21 @@ const emit = defineEmits<{
 
 .field textarea {
 	resize: vertical;
+}
+
+.imagePreviewCard {
+	padding: 0.85rem;
+	border: var(--border-width-hairline) solid var(--color-border-default);
+	border-radius: var(--radius-2);
+	background: rgba(255, 255, 255, 0.02);
+}
+
+.imagePreview {
+	display: block;
+	width: 100%;
+	max-height: 14rem;
+	object-fit: cover;
+	border-radius: 0.75rem;
 }
 
 .field input:focus,

@@ -16,6 +16,7 @@ import {
 } from "~/composables/useWorldFactory";
 
 import type { Station } from "~/composables/types/StationTypes";
+import { useFactoryImageUpload } from "~/composables/useFactoryImageUpload";
 import { useStations } from "~/composables/useStations";
 import type { World } from "~/composables/types/WorldTypes";
 import { useFactorySessionCache } from "~/composables/useFactorySessionCache";
@@ -25,6 +26,7 @@ const props = defineProps<{
 }>();
 
 const { getAllStations } = useStations();
+const { uploadImage } = useFactoryImageUpload();
 
 const emit = defineEmits<{
 	(event: "selection-updated", selectionKey: string): void;
@@ -42,6 +44,8 @@ const loadedLocalId = ref("");
 const availableStations = ref<Station[]>([]);
 const availableWorlds = ref<World[]>([]);
 const knownExistingUids = ref<Set<string>>(new Set());
+const imageUploadState = ref<"idle" | "uploading">("idle");
+const imageUploadError = ref("");
 
 const knownStationMap = computed(() => new Map(availableStations.value.map((station) => [station.uid, station])));
 const parsedSelection = computed(() => parseWorldFactorySelectionKey(props.selectionKey));
@@ -263,6 +267,30 @@ const copyPayload = async () => {
 	}
 };
 
+const handleImageSelected = async (event: Event) => {
+	const input = event.target as HTMLInputElement | null;
+	const file = input?.files?.[0];
+
+	if (!file) {
+		return;
+	}
+
+	imageUploadState.value = "uploading";
+	imageUploadError.value = "";
+
+	try {
+		const uploaded = await uploadImage(file, "uploads/factory/worlds");
+		draft.image = uploaded.url;
+	} catch (error) {
+		imageUploadError.value = error instanceof Error ? error.message : "Bildet kunne ikke lastes opp.";
+	} finally {
+		imageUploadState.value = "idle";
+		if (input) {
+			input.value = "";
+		}
+	}
+};
+
 watch(
 	() => props.selectionKey,
 	async (selectionKey) => {
@@ -315,8 +343,10 @@ watch(payloadPreviewText, () => {
 					</label>
 
 					<label class="field">
-						<span>Bilde-URL</span>
-						<input v-model="draft.image" type="url" placeholder="https://..." >
+						<span>Bilde</span>
+						<input type="file" accept="image/*" :disabled="imageUploadState === 'uploading'" @change="handleImageSelected" >
+						<small class="fieldHint">{{ imageUploadState === "uploading" ? "Laster opp..." : "Velg et bilde som lastes opp til prosjektets MinIO-lager." }}</small>
+						<p v-if="imageUploadError" class="fieldError">{{ imageUploadError }}</p>
 					</label>
 
 					<label class="field field--full">
@@ -362,7 +392,7 @@ watch(payloadPreviewText, () => {
 									</div>
 									<div class="selectedCardActions">
 										<button type="button" class="iconButton" :disabled="!station.isKnown" @click="editStation(station.uid)">
-										<img src="/images/placeholders/action-edit.svg" alt="Rediger stasjon" class="selectedCardActionIcon" >
+										<img :src="'/images/placeholders/action-edit.svg'" alt="Rediger stasjon" class="selectedCardActionIcon" >
 										</button>
 									</div>
 								</article>
@@ -406,7 +436,7 @@ watch(payloadPreviewText, () => {
 									</div>
 									<div class="selectedCardActions">
 										<button type="button" class="iconButton" :disabled="!station.isKnown" @click="editStation(station.uid)">
-										<img src="/images/placeholders/action-edit.svg" alt="Rediger stasjon" class="selectedCardActionIcon" >
+										<img :src="'/images/placeholders/action-edit.svg'" alt="Rediger stasjon" class="selectedCardActionIcon" >
 										</button>
 									</div>
 								</article>
@@ -580,6 +610,17 @@ watch(payloadPreviewText, () => {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 0.9rem;
+}
+
+.fieldHint {
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
+.fieldError {
+	margin: 0;
+	color: #fca5a5;
+	font-size: 0.9rem;
 }
 
 .field {
