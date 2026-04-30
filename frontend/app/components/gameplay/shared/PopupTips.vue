@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import envelopeIcon from '~/assets/ui-icons/Envelope.png'
+
 defineProps<{
   hint: string;
 }>();
@@ -17,7 +19,7 @@ const emit = defineEmits<{
 
       <img
         class="tipsImage"
-        src="https://placehold.co/720x360?text=Tipsbrev"
+        :src=envelopeIcon
         alt="Illustrasjon av et brev med tips"
       >
 

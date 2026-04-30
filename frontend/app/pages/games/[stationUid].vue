@@ -21,6 +21,7 @@ import celebrationSfx from '~/assets/sound/celebration-sfx.mp3'
 import { useStudentProfile } from '~/composables/useStudentProfile'
 import { useStations } from '~/composables/useStations'
 import { getLevel } from '~/composables/utils/studentProgress'
+import envelopeIcon from '~/assets/ui-icons/Envelope.png'
 
 import type {
   EmailHotspotResult,
@@ -545,6 +546,15 @@ const next = async () => {
       </header>
 
       <div class="stationPageBoard">
+        <button
+          class="tipsLetterButton"
+          type="button"
+          @click="showTipsPopup = true"
+        >
+          <img :src="envelopeIcon" alt="Tipsbrev" >
+          <span>Åpne tipsbrev</span>
+        </button>
+
         <XOrYTemplate
             v-if="currentTask?.templateKind === 'x-or-y' && currentOptions"
             :key="`${currentTask.id}-xory`"
