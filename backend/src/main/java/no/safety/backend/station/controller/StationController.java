@@ -7,6 +7,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.auth.model.UserPrincipal;
 import no.safety.backend.exception.NotFoundException;
+import no.safety.backend.role.model.RoleType;
 import no.safety.backend.station.dto.StationDataResponse;
 import no.safety.backend.station.dto.StationRequest;
 import no.safety.backend.station.dto.StationResponse;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -51,9 +53,19 @@ public class StationController {
   }
 
   @Operation(summary = "Get station data for logged-in student", tags = {"Stations"})
-  @PreAuthorize("hasRole('STUDENT')")
+  @PreAuthorize("hasAnyRole('STUDENT', 'TEACHER')")
   @GetMapping("/me/data")
-  public StudentStationDataResponse getMyStationData(@AuthenticationPrincipal UserPrincipal principal) {
+  public StudentStationDataResponse getMyStationData(
+      @AuthenticationPrincipal UserPrincipal principal,
+      @RequestParam(required = false) UUID worldUid) {
+    if (isTeacher(principal)) {
+      if (worldUid == null) {
+        throw new NotFoundException("World uid is required for teacher preview");
+      }
+
+      return stationService.getTeacherPreviewStationData(worldUid);
+    }
+
     return stationService.getMyStationData(getStudent(principal));
   }
 
@@ -64,11 +76,16 @@ public class StationController {
   }
 
   @Operation(summary = "Get station data by UID for logged-in student", tags = {"Stations"})
-  @PreAuthorize("hasRole('STUDENT')")
+  @PreAuthorize("hasAnyRole('STUDENT', 'TEACHER')")
   @GetMapping("/{uid}/data")
   public StationDataResponse getStationDataByUid(
       @PathVariable UUID uid,
-      @AuthenticationPrincipal UserPrincipal principal) {
+      @AuthenticationPrincipal UserPrincipal principal,
+      @RequestParam(required = false) UUID worldUid) {
+    if (isTeacher(principal)) {
+      return stationService.getTeacherPreviewStationData(uid, worldUid);
+    }
+
     return stationService.getStationData(uid, getStudent(principal));
   }
 
@@ -90,5 +107,10 @@ public class StationController {
   private StudentUser getStudent(UserPrincipal principal) {
     return studentUserRepository.findByPublicUuid(principal.getUserPublicUuid())
         .orElseThrow(() -> new NotFoundException("Student not found"));
+  }
+
+  private boolean isTeacher(UserPrincipal principal) {
+    return principal.user().getRoles().stream()
+        .anyMatch(role -> role.getType() == RoleType.ROLE_TEACHER);
   }
 }

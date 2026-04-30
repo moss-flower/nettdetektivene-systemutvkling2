@@ -11,13 +11,18 @@ const props = defineProps<{
   completedExercises?: boolean[];
 }>();
 
+const route = useRoute();
 const stationIsUnlocked = computed(() => props.isUnlocked ?? true);
 const completedExercises = computed(() => props.completedExercises ?? []);
 
-const stationPath = computed(() => ({
-  path: routePaths.studentExerciseDifficultySelect,
-  query: { uid: props.station.uid },
-}));
+const stationPath = computed(() => {
+  const worldUid = typeof route.query.worldUid === "string" ? route.query.worldUid : undefined;
+
+  return {
+    path: routePaths.studentExerciseDifficultySelect,
+    query: worldUid ? { uid: props.station.uid, worldUid } : { uid: props.station.uid },
+  };
+});
 
 const totalExercises = computed(() => {
   if (props.station.exerciseUids.length > 0) {

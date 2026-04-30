@@ -6,5 +6,6 @@ export default defineEventHandler(async (event) => {
 
   return await api(`/stations/${uid}/data`, {
     method: "GET",
+    query: getQuery(event),
   });
 });

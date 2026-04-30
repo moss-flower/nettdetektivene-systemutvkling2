@@ -16,6 +16,7 @@ public record StationDataResponse(
     int totalExerciseCount,
     boolean isCompleted,
     boolean isUnlocked,
+    boolean isTeacherPreview,
     List<StationExerciseDataResponse> exercises
 ) {
 }

@@ -3,9 +3,13 @@ import StationCard from "~/components/station/station.vue";
 import { useStations } from "~/composables/useStations";
 
 const { getMyStations } = useStations();
+const route = useRoute();
+const previewWorldUid = computed(() => typeof route.query.worldUid === "string" ? route.query.worldUid : undefined);
+
 const { data: stationData } = await useAsyncData(
   "student-world",
-  () => getMyStations(),
+  () => getMyStations(previewWorldUid.value),
+  { watch: [previewWorldUid] },
 );
 
 const pageTitle = computed(() => stationData.value?.world?.title || "Stasjonskart");

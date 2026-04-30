@@ -43,9 +43,12 @@ const requestedStationUid = Array.isArray(route.params.stationUid)
 const requestedExerciseUid = typeof route.query.exerciseUid === 'string'
     ? route.query.exerciseUid
     : ''
+const previewWorldUid = typeof route.query.worldUid === 'string'
+    ? route.query.worldUid
+    : undefined
 
 const { getStationDataByUid } = useStations()
-const station = await getStationDataByUid(requestedStationUid)
+const station = await getStationDataByUid(requestedStationUid, previewWorldUid)
 
 if (!station) {
   throw createError({
@@ -59,7 +62,10 @@ const { getMyProfile } = useStudentProfile()
 const completionError = ref('')
 
 if (!station.isUnlocked) {
-  await navigateTo(routePaths.studentLevels)
+  await navigateTo({
+    path: routePaths.studentLevels,
+    query: previewWorldUid ? { worldUid: previewWorldUid } : undefined,
+  })
 }
 
 const activeExerciseUid = station.exerciseUids.includes(requestedExerciseUid)
@@ -72,7 +78,7 @@ if (activeExerciseUid) {
   if (activeExerciseStatus && !activeExerciseStatus.isUnlocked) {
     await navigateTo({
       path: routePaths.studentExerciseDifficultySelect,
-      query: {uid: station.uid},
+      query: previewWorldUid ? {uid: station.uid, worldUid: previewWorldUid} : {uid: station.uid},
     })
   }
 }
@@ -82,7 +88,7 @@ const activeExercise = activeExerciseUid ? await Exercise.backendFetchExerciseBy
 if (!activeExercise) {
   await navigateTo({
     path: routePaths.studentExerciseDifficultySelect,
-    query: {uid: station.uid},
+    query: previewWorldUid ? {uid: station.uid, worldUid: previewWorldUid} : {uid: station.uid},
   })
 
   throw createError({
@@ -209,11 +215,12 @@ const progressLabel = computed(() => {
 
 const exerciseSelectRoute = computed(() => ({
   path: routePaths.studentExerciseDifficultySelect,
-  query: {uid: station.uid},
+  query: previewWorldUid ? {uid: station.uid, worldUid: previewWorldUid} : {uid: station.uid},
 }))
 
 const bossVictoryRoute = computed(() => ({
   path: routePaths.studentLevels,
+  query: previewWorldUid ? { worldUid: previewWorldUid } : undefined,
 }))
 
 const showBossVictoryDialog = computed(() =>
@@ -447,24 +454,26 @@ const next = async () => {
       let levelBeforeCompletion: number | null = null
 
       try {
-        try {
-          levelBeforeCompletion = await fetchCurrentLevel()
-        } catch (error) {
-          console.error('Error fetching student level before completion:', error)
-        }
-
-        await markExerciseCompleted(activeExercise.uid)
-
-        if (levelBeforeCompletion !== null) {
+        if (!station.isTeacherPreview) {
           try {
-            const levelAfterCompletion = await fetchCurrentLevel()
-
-            if (levelAfterCompletion > levelBeforeCompletion) {
-              leveledUpTo.value = levelAfterCompletion
-              showLevelupPopup.value = true
-            }
+            levelBeforeCompletion = await fetchCurrentLevel()
           } catch (error) {
-            console.error('Error fetching student level after completion:', error)
+            console.error('Error fetching student level before completion:', error)
+          }
+
+          await markExerciseCompleted(activeExercise.uid)
+
+          if (levelBeforeCompletion !== null) {
+            try {
+              const levelAfterCompletion = await fetchCurrentLevel()
+
+              if (levelAfterCompletion > levelBeforeCompletion) {
+                leveledUpTo.value = levelAfterCompletion
+                showLevelupPopup.value = true
+              }
+            } catch (error) {
+              console.error('Error fetching student level after completion:', error)
+            }
           }
         }
 

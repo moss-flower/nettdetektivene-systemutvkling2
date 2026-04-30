@@ -24,6 +24,12 @@ const { getStationDataByUid } = useStations();
 const stationUid = computed(() =>
   typeof route.query.uid === "string" ? route.query.uid : "",
 );
+const previewWorldUid = computed(() => typeof route.query.worldUid === "string" ? route.query.worldUid : undefined);
+
+const stationMapRoute = computed(() => ({
+  path: routePaths.studentLevels,
+  query: previewWorldUid.value ? { worldUid: previewWorldUid.value } : undefined,
+}));
 
 const { data: station } = await useAsyncData(
   () => `station-${stationUid.value}`,
@@ -32,9 +38,9 @@ const { data: station } = await useAsyncData(
       return null;
     }
 
-    return await getStationDataByUid(stationUid.value);
+    return await getStationDataByUid(stationUid.value, previewWorldUid.value);
   },
-  { watch: [stationUid] },
+  { watch: [stationUid, previewWorldUid] },
 );
 
 const exerciseOptions = computed<ExerciseOption[]>(() => {
@@ -53,7 +59,9 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
     isUnlocked: exercise.isUnlocked,
     to: {
       path: `/games/${currentStation.uid}`,
-      query: { exerciseUid: exercise.uid },
+      query: previewWorldUid.value
+        ? { exerciseUid: exercise.uid, worldUid: previewWorldUid.value }
+        : { exerciseUid: exercise.uid },
     },
   }));
 });
@@ -61,7 +69,7 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
 
 <template>
   <section class="difficultyPage">
-    <NuxtLink class="backLink" :to="routePaths.studentLevels">
+    <NuxtLink class="backLink" :to="stationMapRoute">
       Tilbake til stasjoner
     </NuxtLink>
 

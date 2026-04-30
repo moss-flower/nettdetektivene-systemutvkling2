@@ -69,7 +69,7 @@ public class StationService {
     for (UUID stationUid : world.getStationUids()) {
       Station station = require(stationUid);
       boolean isUnlocked = previousStationCompleted;
-      StationDataResponse stationData = getStationData(station, completedExerciseUids, isUnlocked);
+      StationDataResponse stationData = getStationData(station, completedExerciseUids, isUnlocked, false);
       stations.add(stationData);
       previousStationCompleted = stationData.isCompleted();
     }
@@ -82,7 +82,34 @@ public class StationService {
     Station station = require(uid);
     Set<UUID> completedExerciseUids = getCompletedExerciseUids(student);
 
-    return getStationData(station, completedExerciseUids, isStationUnlocked(station, student, completedExerciseUids));
+    return getStationData(station, completedExerciseUids, isStationUnlocked(station, student, completedExerciseUids), false);
+  }
+
+  @Transactional(readOnly = true)
+  public StudentStationDataResponse getTeacherPreviewStationData(UUID worldUid) {
+    World world = worldRepository.findByUid(worldUid)
+        .orElseThrow(() -> new NotFoundException("World not found with uid: " + worldUid));
+
+    List<StationDataResponse> stations = world.getStationUids().stream()
+        .map(stationUid -> getTeacherPreviewStationData(require(stationUid)))
+        .toList();
+
+    return new StudentStationDataResponse(WorldResponse.from(world), stations);
+  }
+
+  @Transactional(readOnly = true)
+  public StationDataResponse getTeacherPreviewStationData(UUID stationUid, UUID worldUid) {
+    Station station = require(stationUid);
+
+    if (worldUid != null) {
+      World world = worldRepository.findByUid(worldUid)
+          .orElseThrow(() -> new NotFoundException("World not found with uid: " + worldUid));
+      if (!world.getStationUids().contains(stationUid)) {
+        throw new NotFoundException("Station not found in world: " + stationUid);
+      }
+    }
+
+    return getTeacherPreviewStationData(station);
   }
 
   public boolean isStationComplete(Station station, Set<UUID> completedExerciseUids) {
@@ -117,7 +144,11 @@ public class StationService {
         .orElseThrow(() -> new NotFoundException("Station not found with uid: " + uid));
   }
 
-  private StationDataResponse getStationData(Station station, Set<UUID> completedExerciseUids, boolean isUnlocked) {
+  private StationDataResponse getStationData(
+      Station station,
+      Set<UUID> completedExerciseUids,
+      boolean isUnlocked,
+      boolean isTeacherPreview) {
     List<UUID> exerciseUids = station.getExerciseUids();
     List<Boolean> completedExercises = exerciseUids.stream()
         .map(completedExerciseUids::contains)
@@ -137,11 +168,20 @@ public class StationService {
         exerciseUids.size(),
         isStationComplete(station, completedExerciseUids),
         isUnlocked,
-        getExerciseData(station, completedExerciseUids)
+        isTeacherPreview,
+        getExerciseData(station, completedExerciseUids, isTeacherPreview)
     );
   }
 
-  private List<StationExerciseDataResponse> getExerciseData(Station station, Set<UUID> completedExerciseUids) {
+  private StationDataResponse getTeacherPreviewStationData(Station station) {
+    Set<UUID> completedExerciseUids = Set.copyOf(station.getExerciseUids());
+    return getStationData(station, completedExerciseUids, true, true);
+  }
+
+  private List<StationExerciseDataResponse> getExerciseData(
+      Station station,
+      Set<UUID> completedExerciseUids,
+      boolean isTeacherPreview) {
     List<UUID> exerciseUids = station.getExerciseUids();
 
     return exerciseUids.stream()
@@ -150,7 +190,7 @@ public class StationService {
           Exercise exercise = exerciseRepository.findByPublicId(exerciseUid)
               .orElseThrow(() -> new NotFoundException("Exercise not found with uid: " + exerciseUid));
           boolean isCompleted = completedExerciseUids.contains(exerciseUid);
-          boolean isUnlocked = index == 0 || completedExerciseUids.contains(exerciseUids.get(index - 1));
+          boolean isUnlocked = isTeacherPreview || index == 0 || completedExerciseUids.contains(exerciseUids.get(index - 1));
 
           return new StationExerciseDataResponse(
               exercise.getPublicId(),

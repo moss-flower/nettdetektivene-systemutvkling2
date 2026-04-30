@@ -77,10 +77,11 @@ export function useStations() {
     return loadedStations.filter((station): station is Station => station !== null);
   };
 
-  const getStationDataByUid = async (uid: string): Promise<StationProgressData | null> => {
+  const getStationDataByUid = async (uid: string, worldUid?: string): Promise<StationProgressData | null> => {
     try {
       const station = await $api<StationProgressResponse>(`/stations/${uid}/data`, {
         method: "GET",
+        query: worldUid ? { worldUid } : undefined,
       });
 
       return mapStationProgressFromResponse(station);
@@ -89,9 +90,10 @@ export function useStations() {
     }
   };
 
-  const getMyStations = async (): Promise<StudentStationsResult> => {
+  const getMyStations = async (worldUid?: string): Promise<StudentStationsResult> => {
     const response = await $api<StudentStationsResponse>("/stations/me/data", {
       method: "GET",
+      query: worldUid ? { worldUid } : undefined,
     });
 
     return {

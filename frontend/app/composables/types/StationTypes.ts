@@ -27,6 +27,7 @@ export type StationProgressData = Station & {
   totalExerciseCount: number;
   isCompleted: boolean;
   isUnlocked: boolean;
+  isTeacherPreview: boolean;
   exercises: StationExerciseData[];
 };
 
@@ -46,6 +47,7 @@ export type StationProgressResponse = StationData & {
   totalExerciseCount?: number;
   isCompleted?: boolean;
   isUnlocked?: boolean;
+  isTeacherPreview?: boolean;
   exercises?: StationExerciseData[];
 };
 
@@ -75,5 +77,6 @@ export const mapStationProgressFromResponse = (data: StationProgressResponse): S
   totalExerciseCount: data.totalExerciseCount ?? data.exerciseUids?.length ?? 0,
   isCompleted: data.isCompleted ?? false,
   isUnlocked: data.isUnlocked ?? true,
+  isTeacherPreview: data.isTeacherPreview ?? false,
   exercises: data.exercises ?? [],
 });

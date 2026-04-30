@@ -112,7 +112,7 @@ const removeStudent = async (studentId: string) => {
         <img src="https://placehold.co/128x128?text=SK" alt="Stasjonskart" class="actionCardImage">
       </NuxtLink>
 
-      <NuxtLink :to="routePaths.studentHome" class="actionCard">
+      <NuxtLink :to="routePathsWithString(routePaths.studentLevels, `?worldUid=${classroom.worldUid}`)" class="actionCard">
         <span class="actionCardTitle">Test spillet</span>
         <img src="https://placehold.co/128x128?text=TS" alt="Test spillet" class="actionCardImage">
       </NuxtLink>
