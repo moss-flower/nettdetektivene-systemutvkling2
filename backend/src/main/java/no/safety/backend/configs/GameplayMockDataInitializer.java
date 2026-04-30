@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import no.safety.backend.achievements.model.Achievement;
+import no.safety.backend.achievements.model.AchievementCategory;
+import no.safety.backend.achievements.repository.AchievementRepository;
 import no.safety.backend.excercise.model.Exercise;
 import no.safety.backend.excercise.repository.ExerciseRepository;
 import no.safety.backend.station.model.Station;
@@ -58,6 +61,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   private final ExerciseRepository exerciseRepository;
   private final StationRepository stationRepository;
   private final WorldRepository worldRepository;
+  private final AchievementRepository achievementRepository;
 
   @Override
   @Transactional
@@ -1092,6 +1096,24 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     station.setBoss(isBoss);
 
     stationRepository.save(station);
+
+    createStationAchievement(title, description, isBoss);
+  }
+
+  private void createStationAchievement(String title, String description, boolean isBoss) {
+    if (achievementRepository.findByTitle(title).isPresent()) {
+      return;
+    }
+
+    Achievement achievement = new Achievement();
+    achievement.setUUID(UUID.randomUUID());
+    achievement.setTitle(title);
+    achievement.setDescription(description);
+    achievement.setCategory(isBoss ? AchievementCategory.SPECIAL : AchievementCategory.STOP);
+    achievement.setSource(title);
+    achievement.setReward(isBoss ? "Spesialmedalje for å ha slått bossen" : null);
+
+    achievementRepository.save(achievement);
   }
 
   private void upsertWorld(UUID uid, String title, String description, String image, List<UUID> stationUids) {
