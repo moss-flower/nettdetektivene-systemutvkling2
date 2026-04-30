@@ -47,6 +47,9 @@ public class Notification {
     private UUID publicId;
 
     @Column
+    private String senderName;
+
+    @Column
     private UUID senderId;
 
     @ManyToOne

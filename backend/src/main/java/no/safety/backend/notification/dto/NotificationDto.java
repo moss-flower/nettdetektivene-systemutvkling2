@@ -9,6 +9,7 @@ import no.safety.backend.notification.model.Notification;
  */
 public record NotificationDto(
     UUID notificationUuid,
+    String senderName,
     String message,
     LocalDateTime timestamp,
     int priority,
@@ -17,6 +18,7 @@ public record NotificationDto(
     public static NotificationDto fromEntity(Notification notification) {
         return new NotificationDto(
             notification.getPublicId(),
+            notification.getSenderName(),
             notification.getMessage(),
             notification.getCreatedAt(),
             notification.getPriority(),

@@ -5,11 +5,17 @@ import lombok.RequiredArgsConstructor;
 import no.safety.backend.auth.model.UserPrincipal;
 import no.safety.backend.notification.service.NotificationService;
 import no.safety.backend.notification.service.SseRegistry;
+
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -55,4 +61,14 @@ public class NotificationController {
         notificationService.flushPending(userId);
         return emitter;
     }
+
+    @DeleteMapping("/{notificationUuid}")
+    public ResponseEntity<Void> deleteNotification(
+        @PathVariable UUID notificationUuid,
+        @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        notificationService.deleteNotification(notificationUuid, principal.getUserInternalId());
+        return ResponseEntity.noContent().build();
+    }
+
 }
