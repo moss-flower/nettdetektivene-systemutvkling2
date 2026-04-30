@@ -5,6 +5,7 @@ const notifications = ref<Notification[]>([])
 let _source: EventSource | null = null
 
 export function useNotifications() {
+    const {$api} = useNuxtApp();
   function connect() {
     if (_source) return
 
@@ -36,5 +37,11 @@ export function useNotifications() {
     connected.value = false
   }
 
-  return { connected, notifications, connect, disconnect }
+  const deleteNotification = async (uuid: string): Promise<void> => {
+    await $api(`/notifications/${uuid}`, {
+      method: "DELETE",
+    });
+  };
+
+  return { connected, notifications, connect, disconnect, deleteNotification}
 }
