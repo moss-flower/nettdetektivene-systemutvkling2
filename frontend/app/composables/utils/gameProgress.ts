@@ -28,6 +28,7 @@ export const markExerciseCompleted = async (exerciseUid: string) => {
     await Promise.all([
       refreshNuxtData("completed-exercises"),
       refreshNuxtData("student-completed-exercises"),
+      refreshNuxtData("student-world"),
       refreshNuxtData("student-profile"),
     ]);
   } catch (error: any) {
@@ -38,6 +39,7 @@ export const markExerciseCompleted = async (exerciseUid: string) => {
       await Promise.all([
         refreshNuxtData("completed-exercises"),
         refreshNuxtData("student-completed-exercises"),
+        refreshNuxtData("student-world"),
         refreshNuxtData("student-profile"),
       ]);
 

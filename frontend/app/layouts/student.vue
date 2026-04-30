@@ -21,6 +21,22 @@ const backButtonRoute = computed(() => {
     }
   }
 
+  if (route.path === routePaths.studentExerciseDifficultySelect) {
+    if (isPreview.value && classroomId.value) {
+      return {
+        path: routePaths.studentLevels,
+        query: { preview: '1', classroomId: classroomId.value },
+      }
+    }
+
+    const worldUid = typeof route.query.worldUid === 'string' ? route.query.worldUid : undefined
+
+    return {
+      path: routePaths.studentLevels,
+      query: worldUid ? { worldUid } : undefined,
+    }
+  }
+
   return routePaths.studentHome
 })
 </script>

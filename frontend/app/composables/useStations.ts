@@ -1,19 +1,26 @@
 import {
   mapStationFromResponse,
+  mapStationProgressFromResponse,
   type Station,
   type StationData,
+  type StationProgressData,
+  type StationProgressResponse,
   type StationRequest,
 } from "~/composables/types/StationTypes";
-import { World } from "~/composables/types/WorldTypes";
+import type { World } from "~/composables/types/WorldTypes";
 
 export type StudentStationsResult = {
   world: World | null;
-  stations: Station[];
+  stations: StationProgressData[];
+};
+
+type StudentStationsResponse = {
+  world: World | null;
+  stations: StationProgressResponse[];
 };
 
 export function useStations() {
   const { $api } = useNuxtApp();
-  const { student } = useClassrooms();
 
   const getAllStations = async (): Promise<Station[]> => {
     const stations = await $api<StationData[]>("/stations", {
@@ -70,30 +77,28 @@ export function useStations() {
     return loadedStations.filter((station): station is Station => station !== null);
   };
 
-  const getMyStations = async (): Promise<StudentStationsResult> => {
-    const classroom = await student.getMyClassroom().catch(() => null);
-    const worldUid = classroom?.worldUid?.trim() ?? "";
+  const getStationDataByUid = async (uid: string, worldUid?: string): Promise<StationProgressData | null> => {
+    try {
+      const station = await $api<StationProgressResponse>(`/stations/${uid}/data`, {
+        method: "GET",
+        query: worldUid ? { worldUid } : undefined,
+      });
 
-    if (!worldUid) {
-      return {
-        world: null,
-        stations: [],
-      };
+      return mapStationProgressFromResponse(station);
+    } catch {
+      return null;
     }
+  };
 
-    const world = await World.backendFetchWorldByUid(worldUid);
-    const stationUids = world?.stationUids ?? [];
-
-    if (stationUids.length === 0) {
-      return {
-        world,
-        stations: [],
-      };
-    }
+  const getMyStations = async (worldUid?: string): Promise<StudentStationsResult> => {
+    const response = await $api<StudentStationsResponse>("/stations/me/data", {
+      method: "GET",
+      query: worldUid ? { worldUid } : undefined,
+    });
 
     return {
-      world,
-      stations: await getStationsByUids(stationUids),
+      world: response.world,
+      stations: response.stations.map(mapStationProgressFromResponse),
     };
   };
 
@@ -104,6 +109,7 @@ export function useStations() {
     updateStation,
     deleteStation,
     getStationsByUids,
+    getStationDataByUid,
     getMyStations,
   };
 }

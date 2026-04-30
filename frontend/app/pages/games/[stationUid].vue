@@ -12,7 +12,7 @@ import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoi
 import UiStudentHomeBackButton from '~/components/ui/UiStudentHomeBackButton.vue'
 import { useGamePreview } from '~/composables/useGamePreview'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
-import { markExerciseCompleted, useCompletedExerciseUids } from '~/composables/utils/gameProgress'
+import { markExerciseCompleted } from '~/composables/utils/gameProgress'
 import { routePaths } from '~/composables/utils/routePaths'
 import { Exercise } from '~/composables/types/ExerciseType'
 import { useAudioSettings } from '~/composables/useAudioSettings'
@@ -45,9 +45,12 @@ const requestedStationUid = Array.isArray(route.params.stationUid)
 const requestedExerciseUid = typeof route.query.exerciseUid === 'string'
     ? route.query.exerciseUid
     : ''
+const previewWorldUid = typeof route.query.worldUid === 'string'
+    ? route.query.worldUid
+    : undefined
 
-const { getStationByUid } = useStations()
-const station = await getStationByUid(requestedStationUid)
+const { getStationDataByUid } = useStations()
+const station = await getStationDataByUid(requestedStationUid, previewWorldUid)
 
 if (!station) {
   throw createError({
@@ -58,42 +61,59 @@ if (!station) {
 
 const { celebrateCorrectAnswer, celebrateLevelComplete, stop } = useGameConfetti()
 const { getMyProfile } = useStudentProfile()
-const completedExerciseUids = isPreview.value ? [] : await useCompletedExerciseUids()
 const completionError = ref('')
+const shouldSkipProgress = computed(() => isPreview.value || station.isTeacherPreview)
+
+const stationMapRoute = computed(() => {
+  if (isPreview.value) {
+    return buildPreviewRoute(routePaths.studentLevels)
+  }
+
+  return {
+    path: routePaths.studentLevels,
+    query: previewWorldUid ? { worldUid: previewWorldUid } : undefined,
+  }
+})
+
+const stationDifficultyRoute = computed(() => {
+  if (isPreview.value) {
+    const previewRoute = buildPreviewRoute(routePaths.studentExerciseDifficultySelect)
+
+    return {
+      ...previewRoute,
+      query: {
+        ...previewRoute.query,
+        uid: station.uid,
+      },
+    }
+  }
+
+  return {
+    path: routePaths.studentExerciseDifficultySelect,
+    query: previewWorldUid ? { uid: station.uid, worldUid: previewWorldUid } : { uid: station.uid },
+  }
+})
+
+if (!station.isUnlocked) {
+  await navigateTo(stationMapRoute.value)
+}
 
 const activeExerciseUid = station.exerciseUids.includes(requestedExerciseUid)
     ? requestedExerciseUid
     : station.exerciseUids[0] ?? null
 
-if (activeExerciseUid && !isPreview.value) {
-  const activeExerciseIndex = station.exerciseUids.findIndex((exerciseUid) => exerciseUid === activeExerciseUid)
-  const previousExerciseUid = activeExerciseIndex > 0 ? station.exerciseUids[activeExerciseIndex - 1] : null
+if (activeExerciseUid) {
+  const activeExerciseStatus = station.exercises.find((exercise) => exercise.uid === activeExerciseUid)
 
-  if (previousExerciseUid && !completedExerciseUids.includes(previousExerciseUid)) {
-    await navigateTo({
-      ...(isPreview.value
-        ? buildPreviewRoute(routePaths.studentExerciseDifficultySelect)
-        : { path: routePaths.studentExerciseDifficultySelect, query: {} }),
-      query: {
-        ...(isPreview.value ? buildPreviewRoute(routePaths.studentExerciseDifficultySelect).query : {}),
-        uid: station.uid,
-      },
-    })
+  if (activeExerciseStatus && !activeExerciseStatus.isUnlocked) {
+    await navigateTo(stationDifficultyRoute.value)
   }
 }
 
 const activeExercise = activeExerciseUid ? await Exercise.backendFetchExerciseByUid(activeExerciseUid) : null
 
 if (!activeExercise) {
-  await navigateTo({
-    ...(isPreview.value
-      ? buildPreviewRoute(routePaths.studentExerciseDifficultySelect)
-      : { path: routePaths.studentExerciseDifficultySelect, query: {} }),
-    query: {
-      ...(isPreview.value ? buildPreviewRoute(routePaths.studentExerciseDifficultySelect).query : {}),
-      uid: station.uid,
-    },
-  })
+  await navigateTo(stationDifficultyRoute.value)
 
   throw createError({
     statusCode: 404,
@@ -217,19 +237,9 @@ const progressLabel = computed(() => {
   return `Sak ${currentIndex.value + 1} av ${tasks.length}`
 })
 
-const exerciseSelectRoute = computed(() => ({
-  ...(isPreview.value
-    ? buildPreviewRoute(routePaths.studentExerciseDifficultySelect)
-    : { path: routePaths.studentExerciseDifficultySelect, query: {} }),
-  query: {
-    ...(isPreview.value ? buildPreviewRoute(routePaths.studentExerciseDifficultySelect).query : {}),
-    uid: station.uid,
-  },
-}))
+const exerciseSelectRoute = computed(() => stationDifficultyRoute.value)
 
-const bossVictoryRoute = computed(() =>
-  isPreview.value ? buildPreviewRoute(routePaths.studentLevels) : { path: routePaths.studentLevels },
-)
+const bossVictoryRoute = computed(() => stationMapRoute.value)
 
 const showBossVictoryDialog = computed(() =>
     isBossStation && showExerciseResultDialog.value && isExerciseComplete.value
@@ -429,7 +439,7 @@ const onAnsweredPasswordStrength = (result: PasswordStrengthResult) => {
 }
 
 const fetchCurrentLevel = async () => {
-  if (isPreview.value) {
+  if (shouldSkipProgress.value) {
     return null
   }
 
@@ -466,7 +476,7 @@ const next = async () => {
       let levelBeforeCompletion: number | null = null
 
       try {
-        if (!isPreview.value) {
+        if (!shouldSkipProgress.value) {
           try {
             levelBeforeCompletion = await fetchCurrentLevel()
           } catch (error) {
@@ -486,10 +496,6 @@ const next = async () => {
             } catch (error) {
               console.error('Error fetching student level after completion:', error)
             }
-          }
-
-          if (!completedExerciseUids.includes(activeExercise.uid)) {
-            completedExerciseUids.push(activeExercise.uid)
           }
         }
 
