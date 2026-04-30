@@ -93,7 +93,7 @@ onMounted(async () => {
 
     <article class="idCard">
       <div class="idCard__left">
-        <NuxtLink to="/student/editAvatar" aria-label="Endre avatar">
+        <NuxtLink :to="routePaths.editAvatar" aria-label="Endre avatar">
           <AvatarElement />
         </NuxtLink>
       </div>

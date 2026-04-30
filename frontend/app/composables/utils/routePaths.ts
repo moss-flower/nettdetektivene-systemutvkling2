@@ -33,6 +33,9 @@ export enum routePaths {
 
     notYetImplemented = '/shared/notYetImplemented',
     studentHelp = '/student/help',
+
+
+    editAvatar = "/student/editavatar"
 }
 
 export const routePathsWithString = (path: routePaths, string: string) => `${path}${string}`;
