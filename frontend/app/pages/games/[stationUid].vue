@@ -236,7 +236,7 @@ const showBossVictoryDialog = computed(() =>
     isBossStation && showExerciseResultDialog.value && isExerciseComplete.value
 )
 
-const exerciseHint = computed(() => activeExercise?.hint ?? '')
+const exerciseHint = computed(() => activeExercise?.notepadEntry?.content ?? '')
 
 const feedbackTitle = computed(() => {
   if (!currentTask.value) {
@@ -547,6 +547,7 @@ const next = async () => {
 
       <div class="stationPageBoard">
         <button
+          v-if="exerciseHint"
           class="tipsLetterButton"
           type="button"
           @click="showTipsPopup = true"

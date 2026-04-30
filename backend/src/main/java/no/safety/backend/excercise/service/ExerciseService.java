@@ -57,7 +57,7 @@ public class ExerciseService {
         .toList();
     e.getTasks().addAll(updatedTasks);
 
-    return ExerciseResponse.from(e);
+    return ExerciseResponse.from(exerciseRepo.save(e));
   }
 
   @Transactional
@@ -79,12 +79,16 @@ public class ExerciseService {
       return;
     }
 
-    NotepadEntry notepadEntry = new NotepadEntry();
+    NotepadEntry notepadEntry = exercise.getNotepadEntry();
+    if (notepadEntry == null) {
+      notepadEntry = new NotepadEntry();
+      exercise.setNotepadEntry(notepadEntry);
+    }
+
     notepadEntry.setTitle(request.title());
     notepadEntry.setType(request.type());
     notepadEntry.setContent(request.content());
     notepadEntry.setSource(request.source());
-    exercise.setNotepadEntry(notepadEntry);
   }
 
   private Task newTask(Exercise e, TaskRequest tr) {

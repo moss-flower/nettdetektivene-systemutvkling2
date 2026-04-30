@@ -66,6 +66,7 @@ class ExerciseServiceTest {
     existing.setNotepadEntry(existingEntry);
 
     when(exerciseRepository.findByPublicId(exerciseId)).thenReturn(Optional.of(existing));
+    when(exerciseRepository.save(existing)).thenReturn(existing);
 
     ExerciseResponse response = exerciseService.update(exerciseId, new ExerciseRequest(
         "New title",
