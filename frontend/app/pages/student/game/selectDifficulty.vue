@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import DifficultySelect from "~/components/station/difficultySelect.vue";
-import { useCompletedExerciseUids } from "~/composables/utils/gameProgress";
 import { routePaths } from "~/composables/utils/routePaths";
-import { Exercise } from "~/composables/types/ExerciseType";
 import { useStations } from "~/composables/useStations";
 
 type ExerciseOption = {
@@ -21,7 +19,7 @@ type ExerciseOption = {
 };
 
 const route = useRoute();
-const { getStationByUid } = useStations();
+const { getStationDataByUid } = useStations();
 
 const stationUid = computed(() =>
   typeof route.query.uid === "string" ? route.query.uid : "",
@@ -34,33 +32,10 @@ const { data: station } = await useAsyncData(
       return null;
     }
 
-    return await getStationByUid(stationUid.value);
+    return await getStationDataByUid(stationUid.value);
   },
   { watch: [stationUid] },
 );
-
-const { data: completedExerciseUids } = await useAsyncData(
-  "completed-exercises",
-  () => useCompletedExerciseUids(),
-);
-
-const { data: stationExercises } = await useAsyncData(
-  () => `station-exercises-${stationUid.value}`,
-  async () => {
-    if (!station.value) {
-      return [];
-    }
-
-    return await Exercise.backendFetchExercisesByUids(station.value.exerciseUids);
-  },
-  { watch: [station] },
-);
-
-const stationStatus = computed(() => ({
-  completedExercises: (station.value?.exerciseUids ?? []).map((exerciseUid) =>
-    (completedExerciseUids.value ?? []).includes(exerciseUid),
-  ),
-}));
 
 const exerciseOptions = computed<ExerciseOption[]>(() => {
   if (!station.value) {
@@ -69,15 +44,13 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
 
   const currentStation = station.value;
 
-  const currentExercises = stationExercises.value ?? [];
-
-  return currentExercises.map((exercise, index) => ({
+  return currentStation.exercises.map((exercise) => ({
     uid: exercise.uid,
     title: exercise.title,
-    difficultyText: exercise.entryName,
+    difficultyText: exercise.difficultyText,
     description: exercise.description ?? currentStation.description ?? "",
-    isCompleted: stationStatus.value.completedExercises[index] ?? false,
-    isUnlocked: index === 0 || Boolean(stationStatus.value.completedExercises[index - 1]),
+    isCompleted: exercise.isCompleted,
+    isUnlocked: exercise.isUnlocked,
     to: {
       path: `/games/${currentStation.uid}`,
       query: { exerciseUid: exercise.uid },

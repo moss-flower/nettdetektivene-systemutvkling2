@@ -11,7 +11,7 @@ import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoiceTemplate.vue'
 import UiStudentHomeBackButton from '~/components/ui/UiStudentHomeBackButton.vue'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
-import { markExerciseCompleted, useCompletedExerciseUids } from '~/composables/utils/gameProgress'
+import { markExerciseCompleted } from '~/composables/utils/gameProgress'
 import { routePaths } from '~/composables/utils/routePaths'
 import { Exercise } from '~/composables/types/ExerciseType'
 import { useAudioSettings } from '~/composables/useAudioSettings'
@@ -44,8 +44,8 @@ const requestedExerciseUid = typeof route.query.exerciseUid === 'string'
     ? route.query.exerciseUid
     : ''
 
-const { getStationByUid } = useStations()
-const station = await getStationByUid(requestedStationUid)
+const { getStationDataByUid } = useStations()
+const station = await getStationDataByUid(requestedStationUid)
 
 if (!station) {
   throw createError({
@@ -56,18 +56,20 @@ if (!station) {
 
 const { celebrateCorrectAnswer, celebrateLevelComplete, stop } = useGameConfetti()
 const { getMyProfile } = useStudentProfile()
-const completedExerciseUids = await useCompletedExerciseUids()
 const completionError = ref('')
+
+if (!station.isUnlocked) {
+  await navigateTo(routePaths.studentLevels)
+}
 
 const activeExerciseUid = station.exerciseUids.includes(requestedExerciseUid)
     ? requestedExerciseUid
     : station.exerciseUids[0] ?? null
 
 if (activeExerciseUid) {
-  const activeExerciseIndex = station.exerciseUids.findIndex((exerciseUid) => exerciseUid === activeExerciseUid)
-  const previousExerciseUid = activeExerciseIndex > 0 ? station.exerciseUids[activeExerciseIndex - 1] : null
+  const activeExerciseStatus = station.exercises.find((exercise) => exercise.uid === activeExerciseUid)
 
-  if (previousExerciseUid && !completedExerciseUids.includes(previousExerciseUid)) {
+  if (activeExerciseStatus && !activeExerciseStatus.isUnlocked) {
     await navigateTo({
       path: routePaths.studentExerciseDifficultySelect,
       query: {uid: station.uid},
@@ -464,10 +466,6 @@ const next = async () => {
           } catch (error) {
             console.error('Error fetching student level after completion:', error)
           }
-        }
-
-        if (!completedExerciseUids.includes(activeExercise.uid)) {
-          completedExerciseUids.push(activeExercise.uid)
         }
 
         celebrateLevelComplete()

@@ -42,9 +42,10 @@ describe("gameProgress", () => {
       method: "POST",
       body: { exerciseUid: "exercise-1" },
     });
-    expect(refreshNuxtDataMock).toHaveBeenCalledTimes(3);
+    expect(refreshNuxtDataMock).toHaveBeenCalledTimes(4);
     expect(refreshNuxtDataMock).toHaveBeenCalledWith("completed-exercises");
     expect(refreshNuxtDataMock).toHaveBeenCalledWith("student-completed-exercises");
+    expect(refreshNuxtDataMock).toHaveBeenCalledWith("student-world");
     expect(refreshNuxtDataMock).toHaveBeenCalledWith("student-profile");
   });
 
@@ -52,7 +53,7 @@ describe("gameProgress", () => {
     apiMock.mockRejectedValueOnce({ statusCode: 409 });
 
     await expect(markExerciseCompleted("exercise-2")).resolves.toBeUndefined();
-    expect(refreshNuxtDataMock).toHaveBeenCalledTimes(3);
+    expect(refreshNuxtDataMock).toHaveBeenCalledTimes(4);
   });
 
   it("rethrows non-409 errors", async () => {
@@ -61,4 +62,3 @@ describe("gameProgress", () => {
     await expect(markExerciseCompleted("exercise-3")).rejects.toEqual({ statusCode: 500 });
   });
 });
-

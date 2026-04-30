@@ -1,14 +1,8 @@
 <script setup lang="ts">
 import StationCard from "~/components/station/station.vue";
-import { useCompletedExerciseUids } from "~/composables/utils/gameProgress";
 import { useStations } from "~/composables/useStations";
 
 const { getMyStations } = useStations();
-const { data: completedExerciseUids } = await useAsyncData(
-  "student-completed-exercises",
-  () => useCompletedExerciseUids(),
-);
-
 const { data: stationData } = await useAsyncData(
   "student-world",
   () => getMyStations(),
@@ -29,22 +23,11 @@ const connectorCanvas = ref({ width: 0, height: 0 });
 let resizeObserver: ResizeObserver | null = null;
 
 const stationCards = computed(() => {
-  const completedUids = completedExerciseUids.value ?? [];
-  let previousStationCompleted = true;
-
-  return (stationData.value?.stations ?? []).map((station) => {
-    const completedExercises = station.exerciseUids.map((exerciseUid) => completedUids.includes(exerciseUid));
-    const isUnlocked = previousStationCompleted;
-    const isCompleted = station.exerciseUids.length > 0 && completedExercises.every(Boolean);
-
-    previousStationCompleted = isCompleted;
-
-    return {
-      station,
-      completedExercises,
-      isUnlocked,
-    };
-  });
+  return (stationData.value?.stations ?? []).map((station) => ({
+    station,
+    completedExercises: station.completedExercises,
+    isUnlocked: station.isUnlocked,
+  }));
 });
 
 const hasStations = computed(() => stationCards.value.length > 0);
