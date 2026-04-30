@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import UiStudentHomeBackButton from "~/components/ui/UiStudentHomeBackButton.vue";
+import {useAudioSettings} from "~/composables/useAudioSettings";
 
-const musicVolume = ref(65)
-const effectsVolume = ref(80)
+const { musicVolume, effectsVolume } = useAudioSettings()
 
 const musicLabel = computed(() => `${musicVolume.value}%`)
 const effectsLabel = computed(() => `${effectsVolume.value}%`)
@@ -55,7 +54,6 @@ const onEffectsPointerDown = (event: PointerEvent) => startDialDrag(effectsVolum
 <template>
   <section class="student-settings">
     <header class="student-settings__header">
-      <UiStudentHomeBackButton class="student-settings__back" />
       <p class="student-settings__eyebrow">Innstillinger</p>
       <h2>Lyd-konsoll</h2>
       <p class="student-settings__intro">
@@ -164,13 +162,14 @@ const onEffectsPointerDown = (event: PointerEvent) => startDialDrag(effectsVolum
   --settings-back-text: var(--palette-navy-900);
 
   position: relative;
-  min-height: 100dvh;
+  min-height: 100%;
   width: 100%;
   display: grid;
   gap: var(--space-6);
   align-content: start;
   justify-items: center;
   padding: var(--layout-page-padding);
+  border-radius: var(--radius-2);
   color: var(--settings-title);
   background:
     radial-gradient(ellipse 70% 50% at 50% 20%, var(--settings-wall-glow), transparent 70%),

@@ -13,6 +13,7 @@ export type ExerciseFactoryPayload = {
   title: string;
   difficultyName: string;
   description: string;
+  hint: string;
   tasks: ExerciseTask[];
 };
 
@@ -20,6 +21,7 @@ export type BackendExerciseRequestPayload = {
   title: string;
   difficultyName: string;
   description: string;
+  hint: string;
   tasks: BackendTaskRequestPayload[];
 };
 
@@ -28,6 +30,7 @@ type BackendExerciseResponsePayload = {
   title: string;
   difficultyName: string;
   description?: string;
+  hint?: string;
   tasks: Array<{
     internalId?: number | null;
     templateKind: ExerciseTemplateKind;
@@ -271,6 +274,7 @@ export const createExerciseDraft = (): ExerciseFactoryPayload => ({
   title: "",
   difficultyName: "",
   description: "",
+  hint: "",
   tasks: [],
 });
 
@@ -286,11 +290,12 @@ const normalizeStoredPayload = (payload: Record<string, unknown>): StoredExercis
       ? payload.difficultyText
       : "";
   const description = typeof payload.description === "string" ? payload.description : "";
+  const hint = typeof payload.hint === "string" ? payload.hint : "";
   const tasks = Array.isArray(payload.tasks) ? payload.tasks as ExerciseTask[] : [];
   const localId = typeof payload.localId === "string" ? payload.localId : createDraftId("exercise");
   const createdAt = typeof payload.createdAt === "string" ? payload.createdAt : new Date().toISOString();
 
-  if (!title && !difficultyName && !description && tasks.length === 0) {
+  if (!title && !difficultyName && !description && !hint && tasks.length === 0) {
     return null;
   }
 
@@ -298,6 +303,7 @@ const normalizeStoredPayload = (payload: Record<string, unknown>): StoredExercis
     title,
     difficultyName,
     description,
+    hint,
     tasks,
     localId,
     createdAt,
@@ -391,12 +397,13 @@ const normalizeExerciseFactoryRecord = (record: Record<string, unknown>): Exerci
   return {
     localId: payload.localId,
     sourceUid: typeof record.sourceUid === "string" && record.sourceUid.trim().length > 0 ? record.sourceUid.trim() : undefined,
-    payload: {
-      title: payload.title,
-      difficultyName: payload.difficultyName,
-      description: payload.description,
-      tasks: payload.tasks,
-    },
+      payload: {
+        title: payload.title,
+        difficultyName: payload.difficultyName,
+        description: payload.description,
+        hint: payload.hint,
+        tasks: payload.tasks,
+      },
     createdAt: payload.createdAt,
     updatedAt: typeof record.updatedAt === "string"
       ? record.updatedAt
@@ -423,6 +430,7 @@ export const readExerciseFactoryStore = (): ExerciseFactoryStore => {
           title: payload.title,
           difficultyName: payload.difficultyName,
           description: payload.description,
+          hint: payload.hint,
           tasks: payload.tasks,
         },
         createdAt: payload.createdAt,
@@ -614,6 +622,7 @@ const toExercisePayloadFromBackend = (exercise: Exercise): ExerciseFactoryPayloa
   title: exercise.title,
   difficultyName: exercise.difficultyName,
   description: exercise.description ?? "",
+  hint: exercise.hint,
   tasks: exercise.tasks,
 });
 
@@ -684,6 +693,7 @@ export const saveExerciseFactoryPayload = async (
         title: response.title,
         difficultyName: response.difficultyName,
         description: response.description ?? "",
+        hint: response.hint ?? "",
         tasks: payload.tasks,
       },
     };
@@ -704,6 +714,7 @@ export const saveExerciseFactoryPayload = async (
       title: response.title,
       difficultyName: response.difficultyName,
       description: response.description ?? "",
+      hint: response.hint ?? "",
       tasks: payload.tasks,
     },
   };
@@ -724,6 +735,7 @@ export const saveExerciseFactoryPayloadAsNew = async (
       title: response.title,
       difficultyName: response.difficultyName,
       description: response.description ?? "",
+      hint: response.hint ?? "",
       tasks: payload.tasks,
     },
   };
@@ -813,5 +825,6 @@ export const mapExerciseToBackendRequest = (
   title: payload.title,
   difficultyName: payload.difficultyName,
   description: payload.description,
+  hint: payload.hint,
   tasks: payload.tasks.map(mapTaskToBackendTaskRequest),
 });

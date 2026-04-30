@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
-    @Value("${application.security.jwt.cookie.name}")
+    @Value("${application.security.jwt.cookie.access.name}")
     private String jwtCookieName;
 
     @Bean

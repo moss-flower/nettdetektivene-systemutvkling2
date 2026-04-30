@@ -1,7 +1,6 @@
 package no.safety.backend;
 
 import org.junit.jupiter.api.Test;
-
 class BackendApplicationTests extends BaseIntegrationTest {
 
 	@Test

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AchievementPopup from "~/components/medals/AchievementPopup.vue";
 import MedalGrid from "~/components/medals/MedalGrid.vue";
 import MedalElement from "~/components/medals/MedalElement.vue";
 import type { AchievementResponse } from "~/composables/types/AchievementTypes";
@@ -9,6 +10,7 @@ const { student } = useAchievements();
 const medals = ref<AchievementResponse[]>([]);
 const loading = ref(true);
 const formError = ref("");
+const selectedAchievement = ref<AchievementResponse | null>(null);
 
 const regularMedals = computed(() =>
   medals.value.filter((medal) => medal.category !== "special"),
@@ -34,6 +36,14 @@ onMounted(async () => {
     loading.value = false;
   }
 });
+
+function openAchievement(achievement: AchievementResponse) {
+  selectedAchievement.value = achievement;
+}
+
+function closeAchievement() {
+  selectedAchievement.value = null;
+}
 </script>
 
 <template>
@@ -55,14 +65,25 @@ onMounted(async () => {
     <template v-else>
       <div class="achievementsSection">
         <h1 class="sectionTitle">Achievements</h1>
-        <MedalGrid :medals="regularMedals" />
+        <MedalGrid :medals="regularMedals" @select="openAchievement" />
       </div>
 
       <div class="specialSection">
         <h1 class="sectionTitle">Special achievement</h1>
-        <MedalElement v-if="specialMedal" class="specialMedal" :medal="specialMedal" />
+        <MedalElement
+          v-if="specialMedal"
+          class="specialMedal"
+          :medal="specialMedal"
+          @select="openAchievement"
+        />
       </div>
     </template>
+
+    <AchievementPopup
+      v-if="selectedAchievement"
+      :achievement="selectedAchievement"
+      @close="closeAchievement"
+    />
   </section>
 </template>
 
@@ -89,6 +110,7 @@ onMounted(async () => {
   height: 100%;
   width: 100%;
   padding: var(--space-7) var(--space-6);
+  border-radius: var(--radius-2);
   display: grid;
   grid-template-columns: 1.65fr 1fr;
   background: var(--color-bg-canvas);
@@ -103,15 +125,14 @@ onMounted(async () => {
     ),
     var(--trophy-wall);
   color: var(--trophy-text);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .achievementsSection {
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  align-items: stretch;
   gap: var(--space-5);
   padding: var(--space-6) var(--space-5);
   background:
@@ -120,8 +141,13 @@ onMounted(async () => {
     var(--trophy-canvas);
   border-radius: var(--radius-1);
   box-shadow: 0 var(--space-2) var(--space-5) var(--palette-overlay-dark-deep);
-  overflow: hidden;
   isolation: isolate;
+  min-height: 0;
+}
+
+.medalsPage :deep(.medalGrid) {
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .achievementsSection::before {
@@ -174,6 +200,7 @@ onMounted(async () => {
 }
 
 .sectionTitle {
+  flex-shrink: 0;
   margin: 0 0 var(--space-5);
   font-family: var(--font-family-serif), sans-serif;
   font-size: var(--font-size-36);

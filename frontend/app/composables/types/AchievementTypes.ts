@@ -7,7 +7,6 @@ export type AchievementResponse = {
   category: MedalCategory;
   source: string;
   unlocked: boolean;
-  imageUrl: string;
   reward: string | null;
 };
 
@@ -16,6 +15,5 @@ export type AchievementRequest = {
   description: string;
   category: MedalCategory;
   source: string;
-  imageUrl: string;
   reward: string | null;
 };

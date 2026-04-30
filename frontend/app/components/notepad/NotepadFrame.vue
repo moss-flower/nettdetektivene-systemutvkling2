@@ -12,7 +12,7 @@ const props = defineProps<{
     <div class="notesScroll">
       <NotepadEntry
         v-for="note in props.notes"
-        :key="`${note.date}-${note.title}`"
+        :key="note.publicUuid"
         :entry="note"
       />
     </div>

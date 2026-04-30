@@ -84,25 +84,28 @@ const handleLogout = async () => {
 		</div>
 
       <article class="panel panelHighlight managementPanel">
-        <h2>Lag og rediger</h2>
-        <p>Lag og/eller rediger klasserom og ressurser fra samme sted.</p>
+        <details class="advancedDetails">
+          <summary class="advancedSummary">
+            <h2>Avanserte funksjoner</h2>
+          </summary>
+          <p>Lag nye ressurser som kan brukes i klasserom og stasjonskart.</p>
 
-        <div class="factoryActions factoryActionsGrid">
-          <NuxtLink class="buttonLink buttonLinkSecondary" :to="routePaths.teacherFactoryStation">
-            Stasjoner
-          </NuxtLink>
-          <NuxtLink class="buttonLink buttonLinkSecondary" :to="routePaths.teacherFactoryExercise">
-            Øvelser
-          </NuxtLink>
-        </div>
+          <h3 class="advancedSubheading">Lag ny</h3>
+
+          <div class="factoryActions factoryActionsGrid">
+            <NuxtLink class="buttonLink buttonLinkSecondary" :to="{ path: routePaths.teacherFactoryWorld, query: { returnTo: routePaths.teacherOverview } }">
+              + Stasjonskart
+            </NuxtLink>
+            <NuxtLink class="buttonLink buttonLinkSecondary" :to="{ path: routePaths.teacherFactoryStation, query: { returnTo: routePaths.teacherOverview } }">
+              + Stasjon
+            </NuxtLink>
+            <NuxtLink class="buttonLink buttonLinkSecondary" :to="{ path: routePaths.teacherFactoryExercise, query: { returnTo: routePaths.teacherOverview } }">
+              + Oppgavesett
+            </NuxtLink>
+          </div>
+        </details>
       </article>
 
-        <article class="panel mysteryPanel">
-          <h2>Ukens mysterium</h2>
-          <button type="button" class="buttonLink buttonLinkSecondary mysteryButton">
-            Placeholder
-          </button>
-        </article>
       </div>
     </div>
   </section>
@@ -345,8 +348,17 @@ h2 {
   grid-column: 2;
 }
 
-.mysteryPanel {
-  grid-column: 2;
+.advancedDetails {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.advancedSummary {
+  cursor: pointer;
+}
+
+.advancedSummary h2 {
+  display: inline;
 }
 
 .factoryActions {
@@ -358,7 +370,13 @@ h2 {
 
 .factoryActionsGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.advancedSubheading {
+  margin: var(--space-4) 0 0;
+  color: var(--color-text-primary);
+  font-size: 1rem;
 }
 
 .buttonLink {
@@ -391,11 +409,6 @@ h2 {
   min-height: 3.5rem;
 }
 
-.mysteryButton {
-  margin-top: 0.9rem;
-  width: 100%;
-}
-
 @media (max-width: 900px) {
   .dashboardGrid {
     grid-template-columns: 1fr;
@@ -409,8 +422,8 @@ h2 {
     grid-column: auto;
   }
 
-  .mysteryPanel {
-    grid-column: auto;
+  .factoryActionsGrid {
+    grid-template-columns: 1fr;
   }
 }
 

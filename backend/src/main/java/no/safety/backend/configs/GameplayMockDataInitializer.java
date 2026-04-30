@@ -1053,12 +1053,20 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
 
   private void upsertExercise(UUID publicId, String title, String difficultyName, String description,
       List<TaskRequest> taskRequests) {
+    upsertExercise(publicId, title, difficultyName, description,
+        "Tips: Les oppgaven rolig og se etter detaljer som virker uvanlige eller vanskelige a kontrollere.",
+        taskRequests);
+  }
+
+  private void upsertExercise(UUID publicId, String title, String difficultyName, String description,
+      String hint, List<TaskRequest> taskRequests) {
     Exercise exercise = exerciseRepository.findByPublicId(publicId).orElseGet(Exercise::new);
 
     exercise.setPublicId(publicId);
     exercise.setTitle(title);
     exercise.setDifficultyName(difficultyName);
     exercise.setDescription(description);
+    exercise.setHint(hint);
     exercise.getTasks().clear();
     exercise.getTasks().addAll(newTasks(exercise, taskRequests));
 

@@ -42,7 +42,6 @@ public class AchievementService {
             .category(achievement.getCategory().name().toLowerCase())
             .source(achievement.getSource())
             .unlocked(unlockedAchievementIds.contains(achievement.getInternalId()))
-            .imageUrl(achievement.getImageUrl())
             .reward(achievement.getReward())
             .build())
         .toList();
@@ -74,7 +73,6 @@ public class AchievementService {
     achievement.setDescription(request.getDescription());
     achievement.setCategory(request.getCategory());
     achievement.setSource(request.getSource());
-    achievement.setImageUrl(request.getImageUrl());
     achievement.setReward(request.getReward());
 
     Achievement saved = achievementRepository.save(achievement);
@@ -93,7 +91,6 @@ public class AchievementService {
     achievement.setDescription(request.getDescription());
     achievement.setCategory(request.getCategory());
     achievement.setSource(request.getSource());
-    achievement.setImageUrl(request.getImageUrl());
     achievement.setReward(request.getReward());
 
     Achievement saved = achievementRepository.save(achievement);
@@ -119,7 +116,6 @@ public class AchievementService {
         .category(achievement.getCategory().name().toLowerCase())
         .source(achievement.getSource())
         .unlocked(unlocked)
-        .imageUrl(achievement.getImageUrl())
         .reward(achievement.getReward())
         .build();
   }
