@@ -4,12 +4,14 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import no.safety.backend.user.model.TeacherUser;
+import no.safety.backend.validation.NoProfanity;
 
 /**
  * Defines a {@link TeacherUser} registration request to handle data specific to teachers.
  */
 public record TeacherUserRegistrationRequest(
     @NotBlank(message = "Username is required.")
+    @NoProfanity
     String username,
     
     @NotBlank(message = "Email is required")
