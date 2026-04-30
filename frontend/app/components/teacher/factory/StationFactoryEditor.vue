@@ -308,7 +308,7 @@ watch(payloadPreviewText, () => {
 					<label class="field">
 						<span>Bilde</span>
 						<input type="file" accept="image/*" :disabled="imageUploadState === 'uploading'" @change="handleImageSelected" >
-						<small class="fieldHint">{{ imageUploadState === "uploading" ? "Laster opp..." : "Velg et bilde som lastes opp til prosjektets MinIO-lager." }}</small>
+						<small class="fieldHint">{{ imageUploadState === "uploading" ? "Laster opp..." : "Velg et bilde til stasjonen." }}</small>
 						<p v-if="imageUploadError" class="fieldError">{{ imageUploadError }}</p>
 					</label>
 
