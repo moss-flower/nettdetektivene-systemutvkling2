@@ -435,7 +435,7 @@ const fetchCurrentLevel = async () => {
 
   const profile = await getMyProfile()
 
-  return getLevel(profile.score).level
+  return getLevel(profile.totalXp).level
 }
 
 const closeLevelupPopup = () => {
