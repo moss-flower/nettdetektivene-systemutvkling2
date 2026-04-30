@@ -66,7 +66,6 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
   private final CompletedExerciseRepository completedExerciseRepository;
   private final PasswordEncoder passwordEncoder;
 
-  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   @Transactional
@@ -153,8 +152,6 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     assignMembers(klasse7a, List.of(ingridElev, emilElev));
     assignMembers(klasse7b, List.of(miaElev));
     assignMembers(klasse7c, List.of(lukasElev));
-
-    eventPublisher.publishEvent(new NotificationEvent(adaElev.getInternalId(), "testevent", 0));
   }
 
   private Role getOrCreateRole(RoleType roleType) {
