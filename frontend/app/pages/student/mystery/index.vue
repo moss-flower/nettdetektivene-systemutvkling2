@@ -14,6 +14,7 @@ const successMessage = ref('');
 const previewUrl = ref('');
 const showPreviousMysteries = ref(false);
 const showSuggestionDialog = ref(false);
+const isSubmitting = ref(false);
 
 function handleDialogKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
@@ -26,8 +27,12 @@ const {
   currentMystery,
   previousMysteries,
   submissionHistory,
+  isLoading,
+  loadMysteryData,
   submitMysteryExample,
 } = useStudentMystery();
+
+await useAsyncData('student-mystery-data', loadMysteryData);
 
 const canSubmit = computed(() => {
   return selectedFile.value !== null && studentMessage.value.trim().length >= 8;
@@ -81,7 +86,7 @@ function clearForm() {
   fileInputKey.value += 1;
 }
 
-function sendMysterySubmission() {
+async function sendMysterySubmission() {
   errorMessage.value = '';
   successMessage.value = '';
 
@@ -95,9 +100,17 @@ function sendMysterySubmission() {
     return;
   }
 
-  submitMysteryExample(studentMessage.value, selectedFile.value.name);
-  successMessage.value = 'Innleveringen er sendt til lærer for verifisering.';
-  clearForm();
+  isSubmitting.value = true;
+
+  try {
+    await submitMysteryExample(studentMessage.value, selectedFile.value);
+    successMessage.value = 'Innleveringen er sendt til lærer for vurdering.';
+    clearForm();
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Kunne ikke sende inn bidraget akkurat nå.';
+  } finally {
+    isSubmitting.value = false;
+  }
 }
 </script>
 
@@ -107,20 +120,23 @@ function sendMysterySubmission() {
       <header class="studentMysteryHeader">
         <p class="studentMysteryEyebrow">Ukens mysterium</p>
         <div class="mysteryTitleRow">
-          <h1>{{ currentMystery.title }}</h1>
-          <p class="studentMysteryWeek mysteryWeekHero">{{ currentMystery.weekLabel }}</p>
+          <h1>{{ currentMystery?.title ?? 'Ukens mysterium' }}</h1>
+          <p class="studentMysteryWeek mysteryWeekHero">{{ currentMystery?.weekLabel ?? 'Ingen sak valgt' }}</p>
         </div>
         <p class="studentMysteryIntro">
-          Spill ukens mysterium, eller tips læreren om en senere sak.
+          {{ currentMystery ? 'Spill ukens mysterium, eller tips læreren om en senere sak.' : 'Læreren har ikke valgt et mysterium for klassen ennå.' }}
         </p>
       </header>
 
       <section class="studentMysterySection mysterySectionFeature" aria-labelledby="current-mystery-heading">
         <div class="mysteryPlayCard">
           <h2 id="current-mystery-heading" class="mysteryPlayTitle">Denne ukens sak</h2>
+          <p v-if="isLoading" class="studentMysteryHelper">Laster mysteriet...</p>
+          <p class="studentMysteryHelper">{{ currentMystery?.prompt ?? 'Det er ikke publisert noen aktiv sak ennå.' }}</p>
+          <p v-if="currentMystery?.clue" class="studentMysteryMeta"><strong>Tips:</strong> {{ currentMystery.clue }}</p>
 
           <div class="mysteryActionsRow">
-            <NuxtLink :to="routePaths.studentMysteryPlay" class="mysteryPlayAction">
+            <NuxtLink :to="routePaths.studentMysteryPlay" class="mysteryPlayAction" :aria-disabled="!currentMystery" :tabindex="currentMystery ? 0 : -1" :class="{ mysteryPlayActionDisabled: !currentMystery }">
               Spill ukens mysterium
             </NuxtLink>
 
@@ -159,9 +175,9 @@ function sendMysterySubmission() {
           <div class="mysterySectionHeader">
             <p class="studentMysteryEyebrow">Neste uke</p>
             <h2 id="suggestion-dialog-title">Tips læreren om et nytt mysterium</h2>
-            <p class="studentMysteryHelper">{{ currentMystery.prompt }}</p>
+            <p class="studentMysteryHelper">{{ currentMystery?.prompt ?? 'Beskriv et innlegg eller bilde som kan passe til et senere mysterium.' }}</p>
             <p class="studentMysteryHelper">Send inn et bilde og en kort forklaring. Læreren kan bruke det i et senere mysterium.</p>
-            <p class="studentMysteryMeta"><strong>Tips:</strong> {{ currentMystery.clue }}</p>
+            <p v-if="currentMystery?.clue" class="studentMysteryMeta"><strong>Tips:</strong> {{ currentMystery.clue }}</p>
           </div>
 
           <button
@@ -213,10 +229,10 @@ function sendMysterySubmission() {
             <button
               type="button"
               class="studentMysterySubmit"
-              :disabled="!canSubmit"
+              :disabled="!canSubmit || !currentMystery || isSubmitting"
               @click="sendMysterySubmission"
             >
-              Send til lærer
+              {{ isSubmitting ? 'Sender...' : 'Send til lærer' }}
             </button>
           </div>
 
@@ -237,10 +253,10 @@ function sendMysterySubmission() {
             <li v-for="submission in submissionHistory.slice(0, 3)" :key="submission.id" class="mysteryListItem">
               <div class="mysteryStatusRow">
                 <strong>{{ submission.status }}</strong>
-                <span>{{ submission.submittedAt }}</span>
+                <span>{{ submission.screenshotName }}</span>
               </div>
               <p>{{ submission.message }}</p>
-              <p class="studentMysteryMeta">{{ submission.screenshotName }}</p>
+              <a :href="submission.screenshotUrl" target="_blank" rel="noreferrer" class="studentMysteryMeta">Vis bildet</a>
             </li>
           </ul>
         </section>
@@ -276,9 +292,12 @@ function sendMysterySubmission() {
         </div>
 
         <ul class="mysteryDialogList">
+          <li v-if="previousMysteries.length === 0" class="mysteryDialogCard">
+            <p>Ingen tidligere mysterier er registrert for klasserommet ennå.</p>
+          </li>
           <li
             v-for="mystery in previousMysteries"
-            :key="mystery.id"
+            :key="mystery.publicId"
             class="mysteryDialogCard"
           >
             <div class="dialogCardHeader">
@@ -390,6 +409,11 @@ function sendMysterySubmission() {
   font-weight: var(--font-weight-semibold);
   text-decoration: none;
   cursor: pointer;
+}
+
+.mysteryPlayActionDisabled {
+  pointer-events: none;
+  opacity: 0.55;
 }
 
 .studentMysterySection {
