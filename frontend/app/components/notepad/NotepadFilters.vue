@@ -18,7 +18,7 @@ function selectFilter(level: string) {
 
 <template>
   <div class="sideFilter">
-    <h4 class="title">Filters</h4>
+    <h4 class="title">Filtere</h4>
 
     <div class="filterOptions">
       <button

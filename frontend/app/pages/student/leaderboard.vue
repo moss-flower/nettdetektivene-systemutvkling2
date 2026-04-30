@@ -76,7 +76,7 @@ await loadRankingsPage(0);
   <section class="leaderboardPage">
     <header class="pageHeader">
       <p class="eyebrow">Detektivbyrået</p>
-      <h1>leaderboard</h1>
+      <h1>Ledertavle</h1>
       <p class="subtitle">Hvilken klasse leder etterforskningen?</p>
     </header>
 

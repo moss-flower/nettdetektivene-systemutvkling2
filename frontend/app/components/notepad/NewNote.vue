@@ -10,7 +10,7 @@ const emit = defineEmits<{
 <template>
   <button class="newNote" @click="emit('click')">
     <img class="newNoteImage" :src="pencil" alt="Pencil" />
-    <div class="newNoteButton">New note</div>
+    <div class="newNoteButton">Nytt notat</div>
   </button>
 </template>
 
