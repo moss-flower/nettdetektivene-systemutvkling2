@@ -2,6 +2,7 @@ package no.safety.backend.user.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import no.safety.backend.user.model.User;
 import no.safety.backend.validation.NoProfanity;
 
 /**
