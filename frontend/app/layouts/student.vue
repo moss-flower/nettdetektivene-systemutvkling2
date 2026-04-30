@@ -1,15 +1,44 @@
 <script setup lang="ts">
+import { useGamePreview } from '~/composables/useGamePreview'
 import { useThemeAttributes } from '~/composables/useThemeAttributes'
 import { routePaths } from '~/composables/utils/routePaths'
 
 useThemeAttributes('game')
 
 const route = useRoute()
+const { isPreview, classroomId } = useGamePreview()
 
 const showBackToHome = computed(() => ![
   routePaths.studentHome,
   routePaths.studentMysteryPlay,
 ].includes(route.path as routePaths))
+
+const backButtonRoute = computed(() => {
+  if (isPreview.value && route.path === routePaths.studentLevels && classroomId.value) {
+    return {
+      path: routePaths.teacherClassroomOverview,
+      query: { classroomId: classroomId.value },
+    }
+  }
+
+  if (route.path === routePaths.studentExerciseDifficultySelect) {
+    if (isPreview.value && classroomId.value) {
+      return {
+        path: routePaths.studentLevels,
+        query: { preview: '1', classroomId: classroomId.value },
+      }
+    }
+
+    const worldUid = typeof route.query.worldUid === 'string' ? route.query.worldUid : undefined
+
+    return {
+      path: routePaths.studentLevels,
+      query: worldUid ? { worldUid } : undefined,
+    }
+  }
+
+  return routePaths.studentHome
+})
 </script>
 
 <template>
@@ -18,6 +47,7 @@ const showBackToHome = computed(() => ![
       <UiStudentHomeBackButton
         v-if="showBackToHome"
         class="shellBackButton"
+        :to="backButtonRoute"
       />
 
       <div class="studentShellContent studentShellPage">
