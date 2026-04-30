@@ -8,7 +8,7 @@ export function useNotifications() {
   function connect() {
     if (_source) return
 
-    _source = new EventSource('/api/notifications/stream')
+    _source = new EventSource('/api/v1/notifications/stream')
 
     _source.onopen = () => {
       connected.value = true
@@ -24,10 +24,10 @@ export function useNotifications() {
       }
     }
 
-    _source.addEventListener('notification', (e: MessageEvent) => {
-      const data: Notification = JSON.parse(e.data)
-      notifications.value.unshift(data)
-    })
+    _source.onmessage = (e: MessageEvent) => {
+        const data: Notification = JSON.parse(e.data)
+        notifications.value.unshift(data)
+    }
   }
 
   function disconnect() {

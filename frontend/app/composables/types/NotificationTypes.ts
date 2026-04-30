@@ -1,7 +1,7 @@
 export interface Notification {
-  id: string
+  notificationUuid: string
   message: string
-  date: string
+  timestamp: string
   priority: number
-  senderId: string
+  senderUuid: string
 }
