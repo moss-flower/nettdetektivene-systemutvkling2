@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * A ConstraintValidator implementation that invalidates strings that contain profanities listed in
@@ -21,6 +23,17 @@ public class ProfanityValidator implements ConstraintValidator<NoProfanity, Stri
     private static final String LIST_RESOURCE = "/profanity-list.txt";
     private static final List<String> BLOCKED = loadList();
 
+    private static final Map<Character, Character> LEET_SUBSTITUTIONS = Map.of(
+            '0', 'o',
+            '1', 'i',
+            '3', 'e',
+            '4', 'a',
+            '5', 's',
+            '7', 't',
+            '@', 'a',
+            '$', 's'
+    );
+
     private static List<String> loadList() {
         try (InputStream in = ProfanityValidator.class.getResourceAsStream(LIST_RESOURCE)) {
             if (in == null) {
@@ -31,7 +44,7 @@ public class ProfanityValidator implements ConstraintValidator<NoProfanity, Stri
                 return reader.lines()
                         .map(String::trim)
                         .filter(line -> !line.isEmpty() && !line.startsWith("#"))
-                        .map(line -> line.toLowerCase(java.util.Locale.ROOT))
+                        .map(line -> line.toLowerCase(Locale.ROOT))
                         .toList();
             }
         } catch (IOException e) {
@@ -40,12 +53,22 @@ public class ProfanityValidator implements ConstraintValidator<NoProfanity, Stri
         }
     }
 
+    private static String normalize(String value) {
+        String lower = value.toLowerCase(Locale.ROOT);
+        StringBuilder sb = new StringBuilder(lower.length());
+        for (int i = 0; i < lower.length(); i++) {
+            char c = lower.charAt(i);
+            sb.append(LEET_SUBSTITUTIONS.getOrDefault(c, c));
+        }
+        return sb.toString();
+    }
+
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         if (value == null) {
             return true;
         }
-        String normalized = value.toLowerCase(java.util.Locale.ROOT);
+        String normalized = normalize(value);
         return BLOCKED.stream().noneMatch(normalized::contains);
     }
 }

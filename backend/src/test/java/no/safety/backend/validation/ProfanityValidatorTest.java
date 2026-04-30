@@ -44,4 +44,10 @@ class ProfanityValidatorTest {
     void profanityMatching_issCaseInsensitive(String username) {
         assertThat(validator.isValid(username, context)).isFalse();
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "f4en", "sh1t", "@sshole", "h3lv3t3", "5h1t", "h0re", "twa7", "$hit" })
+    void leetspeakSubstitutions_areDetected(String username) {
+        assertThat(validator.isValid(username, context)).isFalse();
+    }
 }
