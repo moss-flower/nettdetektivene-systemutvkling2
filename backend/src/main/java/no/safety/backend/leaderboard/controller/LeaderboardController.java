@@ -65,4 +65,21 @@ public class LeaderboardController {
 
         return ResponseEntity.ok(leaderboardService.getUserStats(userPrincipal.getUserInternalId()));
     }
+
+    /**
+     * Gets the rank of the logged in {@link StudentUser} relative to the other students in their {@link Classroom}.
+     * @param userPrincipal
+     * @return
+     */
+    @GetMapping("/{classroomUid}/students")
+    @PreAuthorize("hasRole('TEACHER')")
+    @Operation(summary = "Get leaderboard of all students in classroom.", description = "Returns the leaderboard ranking the students in the given class.")
+    public ResponseEntity<Page<UserLeaderboardResponse>> getCallerUserRanking(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable UUID classroomUid,
+            @PageableDefault(size = 20, sort = "score", direction = Sort.Direction.DESC) Pageable pageable
+        ) {
+
+        return ResponseEntity.ok(leaderboardService.getStudentRankings(userPrincipal.getUserInternalId(), classroomUid, pageable));
+    }
 }
