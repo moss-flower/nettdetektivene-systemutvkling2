@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.safety.backend.auth.dto.UserLoginRequest;
 import no.safety.backend.auth.dto.UserLoginResponse;
 import no.safety.backend.auth.dto.UserLoginTokenResponse;
@@ -16,6 +17,7 @@ import no.safety.backend.user.model.User;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
@@ -24,18 +26,19 @@ public class AuthenticationService {
     private final UserDetailsService userDetailsService;
 
     public UserLoginTokenResponse authenticateLogin(UserLoginRequest request){
+        log.info("AUTHSERVICE: Login Request");
 
         Authentication authenticationRequest = new UsernamePasswordAuthenticationToken(
             request.email(), 
             request.password()
         );
-
-        Authentication authenticationResponse = authenticationManager.authenticate(authenticationRequest);
         
+        Authentication authenticationResponse = authenticationManager.authenticate(authenticationRequest);
+        log.info("AUTH SERVICE: Authenticated");
         UserPrincipal userPrincipal = (UserPrincipal) authenticationResponse.getPrincipal();
 
         User user = userPrincipal.user();
-
+        log.info("AUTHSERVICE: Token Generated");
         String accessToken = jwtService.generateAccessToken(user.getEmail());
         String refreshToken = jwtService.generateRefreshToken(user.getEmail());
 

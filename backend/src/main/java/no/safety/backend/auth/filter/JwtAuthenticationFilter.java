@@ -6,6 +6,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.safety.backend.auth.service.JwtService;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +22,7 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
@@ -40,6 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         }
+        log.info("AUTHFILTER: Token not found");
 
         if (token != null && jwtService.isTokenValid(token) && jwtService.isAccessToken(token)) {
             String username = jwtService.extractUsername(token);
