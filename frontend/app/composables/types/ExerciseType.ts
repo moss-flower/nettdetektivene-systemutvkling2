@@ -18,6 +18,7 @@ export type ExerciseData = {
   title: string;
   difficultyName: string;
   description?: string;
+  hint: string;
   tasks: BackendTask[];
 };
 
@@ -26,6 +27,7 @@ export class Exercise {
   title: string;
   difficultyName: string;
   description?: string;
+  hint: string;
   tasks: ExerciseTask[];
 
   constructor(data: {
@@ -34,12 +36,14 @@ export class Exercise {
     difficultyName?: string;
     entryName?: string;
     description?: string;
+    hint?: string;
     tasks: ExerciseTask[];
   }) {
     this.uid = data.uid ?? "";
     this.title = data.title;
     this.difficultyName = data.difficultyName ?? data.entryName ?? "";
     this.description = data.description;
+    this.hint = data.hint ?? "";
     this.tasks = data.tasks;
   }
 
@@ -53,6 +57,7 @@ export class Exercise {
       title: data.title,
       entryName: data.difficultyName,
       description: data.description,
+      hint: data.hint,
       tasks: data.tasks.map((task, index) => {
         const { content, ...taskBase } = task;
 

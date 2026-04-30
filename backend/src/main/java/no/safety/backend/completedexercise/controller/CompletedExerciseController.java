@@ -3,6 +3,7 @@ package no.safety.backend.completedexercise.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.auth.model.UserPrincipal;
 import no.safety.backend.completedexercise.dto.CompletedExerciseRequest;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,6 +55,18 @@ public class CompletedExerciseController {
   public List<CompletedExerciseResponse> getMyCompletedExercises(
       @AuthenticationPrincipal UserPrincipal principal) {
     return completedExerciseService.getMyCompletedExercises(getStudent(principal));
+  }
+
+  @Operation(
+      summary = "Get completed exercises for a student",
+      description = "Returns all completed exercise rows for the selected student. Used by teachers for classroom progress.",
+      tags = {"Completed exercises"}
+  )
+  @PreAuthorize("hasRole('TEACHER')")
+  @GetMapping("/students/{studentUid}")
+  public List<CompletedExerciseResponse> getCompletedExercisesForStudent(
+      @PathVariable UUID studentUid) {
+    return completedExerciseService.getCompletedExercisesForStudent(studentUid);
   }
 
   private StudentUser getStudent(UserPrincipal principal) {

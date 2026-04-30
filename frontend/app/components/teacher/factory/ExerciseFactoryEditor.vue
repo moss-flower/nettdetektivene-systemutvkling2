@@ -13,7 +13,6 @@ import {
 	mapExerciseToBackendRequest,
 	parseExerciseFactorySelectionKey,
 	saveExerciseFactoryPayload,
-	saveExerciseFactoryPayloadAsNew,
 	type ExerciseFactoryPayload,
 } from "~/composables/useExerciseFactory";
 import type {
@@ -25,6 +24,7 @@ import type {
 	SortIntoBucketsTaskData,
 	XOrYTaskData,
 } from "~/composables/types/TaskTypes";
+import { useFactorySessionCache } from "~/composables/useFactorySessionCache";
 
 const props = defineProps<{
 	selectionKey: string;
@@ -41,6 +41,8 @@ const cloneExercisePayload = (payload: ExerciseFactoryPayload): ExerciseFactoryP
 };
 
 const draft = reactive<ExerciseFactoryPayload>(createExerciseDraft());
+const route = useRoute();
+const factorySessionCache = useFactorySessionCache();
 const loadedSnapshot = ref<ExerciseFactoryPayload>(createExerciseDraft());
 const copyState = ref<"idle" | "copied" | "failed">("idle");
 const expandedTaskIds = ref<string[]>([]);
@@ -52,6 +54,7 @@ const canSave = computed(() => {
 	return draft.title.trim().length > 0
 		&& draft.difficultyName.trim().length > 0
 		&& draft.description.trim().length > 0
+		&& draft.hint.trim().length > 0
 		&& draft.tasks.length > 0;
 });
 
@@ -59,6 +62,7 @@ const payloadPreview = computed<ExerciseFactoryPayload>(() => ({
 	title: draft.title.trim(),
 	difficultyName: draft.difficultyName.trim(),
 	description: draft.description.trim(),
+	hint: draft.hint.trim(),
 	tasks: draft.tasks,
 }));
 
@@ -138,6 +142,7 @@ const applyDraft = (payload: ExerciseFactoryPayload) => {
 	draft.title = clonedPayload.title;
 	draft.difficultyName = clonedPayload.difficultyName;
 	draft.description = clonedPayload.description;
+	draft.hint = clonedPayload.hint;
 	draft.tasks.splice(0, draft.tasks.length, ...clonedPayload.tasks);
 	setExpandedTasks([]);
 };
@@ -148,10 +153,11 @@ const updateLoadedSnapshot = (payload: ExerciseFactoryPayload) => {
 
 const loadSelection = async (selectionKey: string) => {
 	const loaded = await loadExerciseFactoryPayload(selectionKey);
+	const cachedPayload = factorySessionCache.getDraft("exercise", selectionKey);
 
 	loadedLocalId.value = loaded.localId;
-	applyDraft(loaded.payload);
 	updateLoadedSnapshot(loaded.payload);
+	applyDraft(cachedPayload ?? loaded.payload);
 	copyState.value = "idle";
 };
 
@@ -234,20 +240,19 @@ const savePayload = async () => {
 	const saved = await saveExerciseFactoryPayload(props.selectionKey, nextPayload);
 
 	loadedLocalId.value = "";
+	factorySessionCache.moveDraft("exercise", props.selectionKey, saved.selectionKey);
 	updateLoadedSnapshot(saved.payload);
-	finishSave(saved.selectionKey);
-};
+	const returnTo = typeof route.query.returnTo === "string" ? route.query.returnTo : "";
+	if (returnTo) {
+		factorySessionCache.popReturnTarget();
+	}
+	const returnTarget = returnTo ? { fullPath: returnTo } : factorySessionCache.popReturnTarget();
 
-const saveAsNew = async () => {
-	if (!canSave.value) {
+	if (returnTarget) {
+		await navigateTo(returnTarget.fullPath);
 		return;
 	}
 
-	const nextPayload = cloneExercisePayload(payloadPreview.value);
-	const saved = await saveExerciseFactoryPayloadAsNew(nextPayload);
-
-	loadedLocalId.value = "";
-	updateLoadedSnapshot(saved.payload);
 	finishSave(saved.selectionKey);
 };
 
@@ -276,6 +281,8 @@ watch(payloadPreviewText, () => {
 	if (copyState.value !== "idle") {
 		copyState.value = "idle";
 	}
+
+	factorySessionCache.setDraft("exercise", props.selectionKey, payloadPreview.value);
 });
 </script>
 
@@ -303,6 +310,11 @@ watch(payloadPreviewText, () => {
 						<span>Beskrivelse</span>
 						<textarea v-model="draft.description" rows="3" placeholder="Kort beskrivelse av hva eleven skal øve på." />
 					</label>
+
+					<label class="field fieldFull">
+						<span>Tips</span>
+						<textarea v-model="draft.hint" rows="3" placeholder="Tips som eleven kan åpne fra brevet under oppgaven." />
+					</label>
 				</div>
 			</section>
 
@@ -310,7 +322,7 @@ watch(payloadPreviewText, () => {
 				<div class="sectionHeading sectionHeadingInline">
 					<div>
 						<h2>Oppgaver</h2>
-						<p>Hver oppgave blir ett element i tasks-arrayet.</p>
+						<p>Hver oppgave blir ett element i oppgavelisten.</p>
 					</div>
 
 					<div class="taskAddRow">
@@ -347,6 +359,7 @@ watch(payloadPreviewText, () => {
 						<article class="taskCard">
 							<div class="taskCardHeader">
 								<div class="taskCardTitle">
+									<span class="orderBadge" :aria-label="`Plass ${taskIndex + 1}`">{{ taskIndex + 1 }}</span>
 									<span class="dragHandle" aria-hidden="true">Grip</span>
 									<div>
 										<p class="taskEyebrow">{{ taskLabel(task, taskIndex) }}</p>
@@ -456,36 +469,32 @@ watch(payloadPreviewText, () => {
 
 				<div class="statusStack">
 					<article class="summaryCard">
-						<p class="cardEyebrow">Tasks</p>
+						<p class="cardEyebrow">Oppgaver</p>
 						<h3>{{ draft.tasks.length }} oppgaver</h3>
 						<p>{{ hasChanges ? 'Det finnes ulagrede endringer.' : 'Editoren er synkron med sist lastede versjon.' }}</p>
 					</article>
 
 					<article class="summaryCard">
-						<p class="cardEyebrow">Metadata</p>
-						<h3>{{ draft.difficultyName || 'Ingen difficulty name ennå' }}</h3>
-						<p>Tittel, difficulty name og beskrivelse blir lagret sammen med oppgavens tasks.</p>
+						<p class="cardEyebrow">Info</p>
+						<h3>{{ draft.difficultyName || 'Ingen vanskelighetsgrad enda' }}</h3>
+						<p>Tittel, vanskelighetsgrad, beskrivelse og tips blir lagret sammen med oppgavene.</p>
 					</article>
 				</div>
 			</section>
 
 			<div class="actionRow actionRowSave">
 				<button
-					v-if="parsedSelection.kind !== 'new'"
+					v-if="parsedSelection.kind === 'existing'"
 					type="button"
 					class="deleteButton"
 					@click="deleteSelection"
 				>
 					Slett
 				</button>
-				<button type="button" class="ghostButton" :disabled="!canSave" @click="saveAsNew">
-					Lagre som ny
-				</button>
 				<button
-					v-if="parsedSelection.kind !== 'new'"
 					type="submit"
 					class="primaryButton"
-					:disabled="!canSave || !hasChanges"
+					:disabled="!canSave || (parsedSelection.kind !== 'new' && !hasChanges)"
 				>
 					Lagre
 				</button>
@@ -694,6 +703,18 @@ watch(payloadPreviewText, () => {
 
 .dragHandle:active {
 	cursor: grabbing;
+}
+
+.orderBadge {
+	display: inline-grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border: var(--border-width-hairline) solid var(--color-brand-primary);
+	border-radius: var(--radius-pill);
+	background: rgba(101, 240, 175, 0.14);
+	color: var(--color-brand-primary);
+	font-weight: 900;
 }
 
 .removeDropZone {

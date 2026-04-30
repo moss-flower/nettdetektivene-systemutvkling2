@@ -9,6 +9,10 @@ const props = defineProps<{
   medal: AchievementResponse;
 }>();
 
+const emit = defineEmits<{
+  (e: "select", medal: AchievementResponse): void;
+}>();
+
 const categoryLabel = computed(() => {
   if (props.medal.category === "stop") return "Stoppested";
   if (props.medal.category === "mystery") return "Ukens mysterium";
@@ -22,12 +26,16 @@ const medalImage = (): string => {
 </script>
 
 <template>
-  <div :class="['medalElement', { locked: !props.medal.unlocked }]">
+  <button
+    type="button"
+    :class="['medalElement', { locked: !props.medal.unlocked }]"
+    @click="emit('select', props.medal)"
+  >
     <img class="medalImage" :src="medalImage()" :alt="props.medal.title" />
-    <span v-if="props.medal.unlocked" class="title">
+    <span class="title">
       {{ props.medal.title }}
     </span>
-  </div>
+  </button>
 </template>
 
 <style scoped>
@@ -38,11 +46,15 @@ const medalImage = (): string => {
 
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  height: 100%;
 
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
 .medalImage {

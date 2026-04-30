@@ -13,8 +13,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AchievementInitializer implements CommandLineRunner {
 
-  private static final String MEDAL_IMAGE_URL = "/images/medal.png";
-
   private final AchievementRepository achievementRepository;
 
   @Override
@@ -24,7 +22,6 @@ public class AchievementInitializer implements CommandLineRunner {
         "Fullførte Passordbanken.",
         AchievementCategory.STOP,
         "Passordbanken",
-        MEDAL_IMAGE_URL,
         null
     );
 
@@ -33,7 +30,6 @@ public class AchievementInitializer implements CommandLineRunner {
         "Fullførte Sosiale møteplassen.",
         AchievementCategory.STOP,
         "Sosiale møteplassen",
-        MEDAL_IMAGE_URL,
         null
     );
 
@@ -42,7 +38,6 @@ public class AchievementInitializer implements CommandLineRunner {
         "Fullførte Nyhetskvartalet.",
         AchievementCategory.STOP,
         "Nyhetskvartalet",
-        MEDAL_IMAGE_URL,
         null
     );
 
@@ -51,7 +46,6 @@ public class AchievementInitializer implements CommandLineRunner {
         "Fullførte Markedsplassen.",
         AchievementCategory.STOP,
         "Markedsplassen",
-        MEDAL_IMAGE_URL,
         null
     );
 
@@ -60,7 +54,6 @@ public class AchievementInitializer implements CommandLineRunner {
         "Fullførte Postkontoret.",
         AchievementCategory.STOP,
         "Postkontoret",
-        MEDAL_IMAGE_URL,
         null
     );
 
@@ -69,7 +62,6 @@ public class AchievementInitializer implements CommandLineRunner {
         "Fullførte Fotografen.",
         AchievementCategory.STOP,
         "Fotografen",
-        MEDAL_IMAGE_URL,
         null
     );
 
@@ -78,7 +70,6 @@ public class AchievementInitializer implements CommandLineRunner {
         "Beseiret hovedbossen i Datasenteret.",
         AchievementCategory.SPECIAL,
         "Datasenteret",
-        MEDAL_IMAGE_URL,
         "Spesialmedalje for å ha slått bossen"
     );
   }
@@ -88,7 +79,6 @@ public class AchievementInitializer implements CommandLineRunner {
       String description,
       AchievementCategory category,
       String source,
-      String imageUrl,
       String reward
   ) {
     if (achievementRepository.findByTitle(title).isPresent()) {
@@ -101,7 +91,6 @@ public class AchievementInitializer implements CommandLineRunner {
     achievement.setDescription(description);
     achievement.setCategory(category);
     achievement.setSource(source);
-    achievement.setImageUrl(imageUrl);
     achievement.setReward(reward);
 
     achievementRepository.save(achievement);

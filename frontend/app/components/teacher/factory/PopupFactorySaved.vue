@@ -11,9 +11,9 @@ const closePopup = () => {
 <template>
 	<div class="popupOverlay" @click.self="closePopup">
 		<section class="popupCard" role="dialog" aria-modal="true" aria-labelledby="popup-title">
-			<h2 id="popup-title">Oppgaven er lagret</h2>
+			<h2 id="popup-title">Lagret</h2>
 			<p>
-				Dette blir senere sendt til backend. For nå er oppgaven lagret lokalt.
+				Endringene er lagret i backend.
 			</p>
 			<button type="button" class="primaryButton" @click="closePopup">
 				Lukk

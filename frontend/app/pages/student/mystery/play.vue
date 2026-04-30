@@ -18,7 +18,7 @@ import type {
 } from '~/composables/types/TaskTypes'
 
 const { mysteryPlaySession } = useStudentMysteryPlay()
-const { celebrateCorrectAnswer, stop } = useGameConfetti()
+const { celebrateCorrectAnswer, celebrateLevelComplete, stop } = useGameConfetti()
 
 const tasks = mysteryPlaySession.tasks
 const currentIndex = ref(0)
@@ -36,6 +36,7 @@ const currentOptions = computed(() => {
 })
 
 const progressLabel = computed(() => `Ledetråd ${currentIndex.value + 1} av ${tasks.length}`)
+const isMysteryComplete = computed(() => tasks.length > 0 && correctCount.value === tasks.length)
 
 const selectedChoice = computed<XOrYChoice | null>(() => {
   if (answerState.value?.choice === 'x') {
@@ -116,6 +117,10 @@ function next() {
   if (currentIndex.value < tasks.length - 1) {
     currentIndex.value += 1
     return
+  }
+
+  if (isMysteryComplete.value) {
+    celebrateLevelComplete()
   }
 
   showMysteryResultDialog.value = true

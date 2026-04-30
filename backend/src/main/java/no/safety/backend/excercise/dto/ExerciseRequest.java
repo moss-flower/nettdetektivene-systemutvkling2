@@ -19,6 +19,10 @@ public record ExerciseRequest(
     @Size(max = 2000, message = "description cannot exceed 2000 characters.")
     String description,
 
+    @NotBlank(message = "hint is required.")
+    @Size(max = 2000, message = "hint cannot exceed 2000 characters.")
+    String hint,
+
     @NotEmpty(message = "An exercise must contain at least one task.")
     @Valid
     List<TaskRequest> tasks
