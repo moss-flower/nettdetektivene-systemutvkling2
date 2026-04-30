@@ -14,6 +14,12 @@ export const useAuth = () => {
     });
   };
 
+  const refresh = async () => {
+    await $api("/auth/refresh", {
+      method: "POST",
+    });
+  };
+
   const registerStudent = async (
     username: string,
     email: string,
@@ -39,6 +45,7 @@ export const useAuth = () => {
   return {
     login,
     logout,
+    refresh,
     registerStudent,
     registerTeacher,
   };

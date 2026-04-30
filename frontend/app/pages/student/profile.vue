@@ -3,17 +3,44 @@ import { routePaths } from '~/composables/utils/routePaths'
 import { useStudentProfile } from '~/composables/useStudentProfile'
 import { getLevel } from '~/composables/utils/studentProgress'
 
-const { getMyProfile } = useStudentProfile()
+const { getMyProfile, updateUsername } = useStudentProfile()
 
 const studentName = ref('Laster...')
 const score = ref(0)
+const totalXp = ref(0)
 
 const isLoading = ref(true)
 const profileError = ref('')
+const isEditing = ref(false)
+const pendingName = ref('')
 
-const progress = computed(() => getLevel(score.value))
+const initial = computed(() => studentName.value.charAt(0).toUpperCase())
+const progress = computed(() => getLevel(totalXp.value))
 const progressWidth = computed(() => `${progress.value.progressPercent}%`)
 const progressPercentDisplay = computed(() => Math.floor(progress.value.progressPercent))
+
+function startEditing() {
+  pendingName.value = studentName.value
+  isEditing.value = true
+}
+
+function cancelEditing() {
+  isEditing.value = false
+  pendingName.value = ''
+}
+
+async function saveEditing() {
+  const newName = pendingName.value.trim()
+  if (!newName) return
+
+  try {
+    const response = await updateUsername(newName)
+    studentName.value = response.username
+    cancelEditing()
+  } catch {
+    profileError.value = 'Kunne ikke oppdatere navnet. Prøv igjen senere.'
+  }
+}
 
 onMounted(async () => {
   isLoading.value = true
@@ -23,6 +50,7 @@ onMounted(async () => {
     const profile = await getMyProfile()
     studentName.value = profile.studentName
     score.value = profile.score
+    totalXp.value = profile.totalXp
   } catch {
     profileError.value = 'Kunne ikke laste profildata akkurat nå.'
   } finally {
@@ -47,8 +75,17 @@ onMounted(async () => {
 
       <div class="idCard__right">
         <h2 class="idCard__title">Detektiv</h2>
-        <div class="idCard__field">
+        <div class="idCard__field" v-if="!isEditing">
           <p class="idCard__fieldValue">{{ studentName }}</p>
+          <p class="idCard__fieldLabel">Navn</p>
+        </div>
+        <div class="idCard__field" v-else>
+          <input
+            class="idCard__input"
+            type="text"
+            v-model="pendingName"
+            autofocus
+          />
           <p class="idCard__fieldLabel">Navn</p>
         </div>
 
@@ -66,6 +103,13 @@ onMounted(async () => {
 
       <div class="idCard__actions">
         <NuxtLink class="idCard__actionLink" :to="routePaths.studentAchievements">Medaljer</NuxtLink>
+        <template v-if="!isEditing">
+          <button class="idCard__actionLink idCard__actionBtn" type="button" @click="startEditing">Rediger</button>
+        </template>
+        <template v-else>
+          <button class="idCard__actionLink idCard__actionBtn" type="button" @click="cancelEditing">Avbryt</button>
+          <button class="idCard__actionLink idCard__actionBtn idCard__actionBtn--primary" type="button" @click="saveEditing">Lagre</button>
+        </template>
       </div>
     </article>
   </section>
@@ -249,6 +293,44 @@ onMounted(async () => {
   line-height: var(--font-leading-14);
   font-weight: var(--font-weight-medium);
   color: var(--id-label);
+}
+
+.idCard__input {
+  margin: 0;
+  font-family: var(--font-family-serif), sans-serif;
+  font-size: var(--font-size-22);
+  line-height: var(--font-leading-22);
+  font-weight: var(--font-weight-semibold);
+  color: var(--id-value);
+  background: transparent;
+  border: 0;
+  border-bottom: var(--border-width-thin) solid var(--id-field-rule);
+  padding-bottom: var(--space-1);
+  outline: none;
+  width: 100%;
+}
+
+.idCard__actionBtn {
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-family-body), sans-serif;
+  font-weight: var(--font-weight-bold);
+  background: transparent;
+  color: var(--id-action-text);
+  transition: background var(--transition-fast);
+}
+
+.idCard__actionBtn:hover {
+  background: var(--id-action-hover);
+}
+
+.idCard__actionBtn--primary {
+  background: var(--id-action-text);
+  color: var(--id-bg-top);
+}
+
+.idCard__actionBtn--primary:hover {
+  background: var(--id-value);
 }
 
 .idCard__levelHeading {
