@@ -1,23 +1,14 @@
 package no.safety.backend.weeklymystery;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.test.web.servlet.client.RestTestClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import jakarta.transaction.Transactional;
@@ -25,15 +16,12 @@ import no.safety.backend.BaseIntegrationTest;
 import no.safety.backend.auth.dto.UserLoginRequest;
 import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.classroom.repository.ClassroomRepository;
-import no.safety.backend.config.TestSecurityConfig;
 import no.safety.backend.role.model.Role;
 import no.safety.backend.role.model.RoleType;
 import no.safety.backend.role.repository.RoleRepository;
 import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.repository.TeacherUserRepository;
 import no.safety.backend.user.repository.UserRepository;
-import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptCreateRequest;
-import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptResponse;
 import no.safety.backend.weeklymystery.repository.WeeklyMysteryPromptRepository;
 import no.safety.backend.weeklymystery.repository.WeeklyMysterySubmissionRepository;
 
@@ -41,7 +29,6 @@ import no.safety.backend.weeklymystery.repository.WeeklyMysterySubmissionReposit
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Testcontainers(disabledWithoutDocker = true)
-@Import(TestSecurityConfig.class)
 public class WeeklyMysteryIntegrationTest extends BaseIntegrationTest {
 
     @LocalServerPort
