@@ -2,6 +2,7 @@ package no.safety.backend.notification.service;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +15,7 @@ import no.safety.backend.notification.model.Notification;
 @Service
 public class SseRegistry {
     private final Logger logger = LoggerFactory.getLogger(SseRegistry.class);
-    private Map<Long, SseEmitter> emitters;
+    private Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
 
     public SseEmitter register(Long userId) {
         logger.debug("Registering emitter for userId " + userId);

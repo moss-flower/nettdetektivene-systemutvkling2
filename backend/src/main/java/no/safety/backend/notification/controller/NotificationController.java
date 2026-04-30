@@ -19,7 +19,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
  * Passes user information to service layer.
  */
 @RestController
-@RequestMapping("/api/v1/notifications/stream")
+@RequestMapping("/api/v1/notifications")
 @RequiredArgsConstructor
 public class NotificationController {
 

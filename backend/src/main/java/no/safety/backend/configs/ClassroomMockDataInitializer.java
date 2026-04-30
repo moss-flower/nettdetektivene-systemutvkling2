@@ -154,7 +154,7 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     assignMembers(klasse7b, List.of(miaElev));
     assignMembers(klasse7c, List.of(lukasElev));
 
-    eventPublisher.publishEvent(new NotificationEvent(ADA_ELEV_UID, "testevent", 0));
+    eventPublisher.publishEvent(new NotificationEvent(adaElev.getInternalId(), "testevent", 0));
   }
 
   private Role getOrCreateRole(RoleType roleType) {
