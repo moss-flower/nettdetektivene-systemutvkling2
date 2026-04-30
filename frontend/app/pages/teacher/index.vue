@@ -70,10 +70,15 @@ const handleLogout = async () => {
 		  </div>
 		</aside>
 
-		<div class="topActionRow">
+      <div class="topActionRow">
 		  <NuxtLink class="panel settingsButton" :to="routePaths.teacherSettings">
 			<img src="https://placehold.co/64x64" alt="Innstillinger ikon" class="settingsIcon">
 			<span class="settingsButtonLabel">Innstillinger</span>
+		  </NuxtLink>
+
+		  <NuxtLink class="panel settingsButton" :to="routePaths.teacherNotes">
+			<img src="https://placehold.co/64x64" alt="Notater ikon" class="settingsIcon">
+			<span class="settingsButtonLabel">Notater</span>
 		  </NuxtLink>
 
 		  <NuxtLink class="panel settingsButton settingsButtonNotifications" :to="routePaths.teacherNotifications">
@@ -102,7 +107,7 @@ const handleLogout = async () => {
             <NuxtLink class="buttonLink buttonLinkSecondary" :to="{ path: routePaths.teacherFactoryExercise, query: { returnTo: routePaths.teacherOverview } }">
               + Oppgavesett
             </NuxtLink>
-            <NuxtLink class="buttonLink buttonLinkSecondary" :to="{ path: routePaths.teacherCreateNewNote, query: { returnTo: routePaths.teacherOverview } }">
+            <NuxtLink class="buttonLink buttonLinkSecondary" :to="{ path: routePaths.teacherNoteEditor, query: { returnTo: routePaths.teacherOverview } }">
               + Notat
             </NuxtLink>
           </div>

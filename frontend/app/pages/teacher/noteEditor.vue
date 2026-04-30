@@ -4,7 +4,7 @@ import { useNotepad } from "~/composables/useNotepad";
 import type { BackendNotepadEntryType } from "~/composables/types/NotepadTypes";
 
 const route = useRoute();
-const { createNote } = useNotepad();
+const { createNote, getMyNotes, updateNote } = useNotepad();
 
 type TeacherNoteForm = {
   title: string;
@@ -22,13 +22,46 @@ const form = ref<TeacherNoteForm>({
 
 const isSaving = ref(false);
 const errorMessage = ref("");
-const returnTo = computed(() => typeof route.query.returnTo === "string" ? route.query.returnTo : routePaths.teacherOverview);
+const returnTo = computed(() => typeof route.query.returnTo === "string" ? route.query.returnTo : routePaths.teacherNotes);
+const noteUuid = computed(() => typeof route.query.uid === "string" ? route.query.uid : "");
+const isEditing = computed(() => noteUuid.value.length > 0);
+const hasHydratedForm = ref(false);
 
 const noteTypes: Array<{ value: BackendNotepadEntryType; label: string }> = [
   { value: "TIP", label: "Tips" },
   { value: "INFO", label: "Info" },
   { value: "OBSERVATION", label: "Observasjon" },
 ];
+
+const { data: existingNotesPage } = await useAsyncData(
+  () => isEditing.value ? `teacher-note-edit-${noteUuid.value}` : "teacher-note-create",
+  async () => {
+    if (!isEditing.value) {
+      return null;
+    }
+
+    return await getMyNotes({ size: 100 });
+  },
+);
+
+const existingNote = computed(() => {
+  const notes = existingNotesPage.value?.content ?? [];
+  return notes.find((note) => note.publicUuid === noteUuid.value) ?? null;
+});
+
+watchEffect(() => {
+  if (!isEditing.value || hasHydratedForm.value || !existingNote.value) {
+    return;
+  }
+
+  form.value = {
+    title: existingNote.value.title,
+    source: existingNote.value.source ?? "",
+    type: existingNote.value.type,
+    content: existingNote.value.content,
+  };
+  hasHydratedForm.value = true;
+});
 
 const isFormValid = computed(() => {
   return Boolean(
@@ -49,16 +82,24 @@ async function handleSubmit() {
   isSaving.value = true;
 
   try {
-    await createNote({
+    const payload = {
       title: form.value.title.trim(),
       source: form.value.source.trim(),
       type: form.value.type,
       content: form.value.content.trim(),
-    });
+    };
+
+    if (isEditing.value) {
+      await updateNote(noteUuid.value, payload);
+    } else {
+      await createNote(payload);
+    }
 
     await navigateTo(returnTo.value);
   } catch {
-    errorMessage.value = "Kunne ikke lagre notatet akkurat nå.";
+    errorMessage.value = isEditing.value
+      ? "Kunne ikke oppdatere notatet akkurat nå."
+      : "Kunne ikke lagre notatet akkurat nå.";
   } finally {
     isSaving.value = false;
   }
@@ -74,9 +115,9 @@ function handleCancel() {
     <header class="teacherNoteHeader">
       <button class="backButton" type="button" @click="handleCancel">Tilbake</button>
       <p class="eyebrow">Lærerverktøy</p>
-      <h1>Lag nytt notat</h1>
+      <h1>{{ isEditing ? "Rediger notat" : "Lag nytt notat" }}</h1>
       <p class="intro">
-        Fyll inn feltene under. Dato settes automatisk når notatet lagres.
+        Fyll inn feltene under. Dato settes automatisk når notatet {{ isEditing ? "oppdateres" : "lagres" }}.
       </p>
     </header>
 
@@ -119,7 +160,7 @@ function handleCancel() {
           Avbryt
         </button>
         <button class="primaryButton" type="submit" :disabled="!isFormValid || isSaving">
-          {{ isSaving ? "Lagrer..." : "Lagre notat" }}
+          {{ isSaving ? (isEditing ? "Oppdaterer..." : "Lagrer...") : (isEditing ? "Oppdater notat" : "Lagre notat") }}
         </button>
       </div>
     </form>
