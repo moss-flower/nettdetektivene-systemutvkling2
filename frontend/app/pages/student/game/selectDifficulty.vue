@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import datatyvenSprite from "~/assets/images/datatyven.png";
 import PopupNotYetUnlocked from "~/components/shared/PopupNotYetUnlocked.vue";
+import PopupTips from "~/components/gameplay/shared/PopupTips.vue";
 import DifficultySelect from "~/components/station/difficultySelect.vue";
 import { useGamePreview } from "~/composables/useGamePreview";
 import { useStations } from "~/composables/useStations";
@@ -27,6 +28,7 @@ const route = useRoute();
 const { getStationDataByUid } = useStations();
 const { isPreview, classroomId } = useGamePreview();
 const showNotYetUnlockedPopup = ref(false);
+const showStationTipsPopup = ref(false);
 
 const stationUid = computed(() =>
   typeof route.query.uid === "string" ? route.query.uid : "",
@@ -77,6 +79,8 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
     },
   }));
 });
+
+const stationHint = computed(() => station.value?.hint ?? "");
 </script>
 
 <template>
@@ -88,6 +92,19 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
           <h1 class="difficultyTitle">{{ station.title }}</h1>
           <p class="difficultySummary">{{ station.description }}</p>
         </div>
+        <button
+          type="button"
+          class="tipsLetterButton"
+          aria-label="Åpne tipsbrev for stasjonen"
+          @click="showStationTipsPopup = true"
+        >
+          <img
+            src="https://placehold.co/160x110?text=Brev"
+            alt=""
+            aria-hidden="true"
+          >
+          <span>Tipsbrev</span>
+        </button>
         <img
           v-if="station.isBoss"
           :src="datatyvenSprite"
@@ -128,6 +145,14 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
       description="Fullfør oppgaven før denne for å låse opp neste vanskelighetsgrad."
       @close="showNotYetUnlockedPopup = false"
     />
+
+    <PopupTips
+      v-if="showStationTipsPopup"
+      :hint="stationHint"
+      title="Tips til stasjonen"
+      empty-text="Det finnes ikke noe tips for denne stasjonen ennå."
+      @close="showStationTipsPopup = false"
+    />
   </section>
 </template>
 
@@ -150,7 +175,7 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
 
 .difficultyHero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: var(--space-4);
   /* fluid inner padding, deliberate exception (token system) */
@@ -163,6 +188,32 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
       var(--difficulty-hero-bg-bottom) 100%
   );
   box-shadow: var(--shadow-2);
+}
+
+.tipsLetterButton {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.85rem;
+  border: 2px solid #92400e;
+  border-radius: 999px;
+  background: #fffbeb;
+  color: #78350f;
+  font-weight: 900;
+  box-shadow: 0 8px 18px rgba(120, 53, 15, 0.16);
+  cursor: pointer;
+}
+
+.tipsLetterButton img {
+  width: 3rem;
+  height: 2.25rem;
+  border-radius: 0.35rem;
+  object-fit: cover;
+}
+
+.tipsLetterButton:hover {
+  transform: translateY(-1px);
 }
 
 .difficultyHero__content {
@@ -227,6 +278,11 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
 @media (max-width: 900px) {
   .difficultyHero {
     grid-template-columns: 1fr;
+  }
+
+  .tipsLetterButton {
+    justify-self: stretch;
+    justify-content: center;
   }
 
   .difficultyHero__boss {

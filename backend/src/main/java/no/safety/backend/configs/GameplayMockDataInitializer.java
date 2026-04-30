@@ -978,36 +978,43 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   private void seedStations() {
     upsertStation(NEWSSTAND_STATION_UID, "Nyhetskvartalet",
         "Nyhetsartikler og kildekritikk for skoleelever.",
+        "Tips: Start med a sjekke hvem som er avsender, og om saken bruker sterke ord for a presse deg til a tro pa den.",
         PLACEHOLDER_IMAGE, "#cfe9ff",
         List.of(NEWSSTAND_EXERCISE_1_UID, NEWSSTAND_EXERCISE_2_UID), false);
 
     upsertStation(PHOTOGRAPH_STATION_UID, "Fotografen",
         "Normal, manipulert og KI-genererte bilder.",
+        "Tips: Se ekstra nøye pa detaljer som hender, tekst, skygger og bakgrunn nar du vurderer bilder.",
         PLACEHOLDER_IMAGE, "#5F5F5F",
         List.of(PHOTOGRAPH_EXERCISE_1_UID, PHOTOGRAPH_EXERCISE_2_UID), false);
 
     upsertStation(POSTOFFICE_STATION_UID, "Postkontoret",
         "Klikkbare e-posttester med avsendere, lenker og vedlegg.",
+        "Tips: Ikke klikk med en gang. Sjekk avsender, lenkeadresse og om meldingen prover a stresse deg.",
         PLACEHOLDER_IMAGE, "#fde68a",
         List.of(POSTOFFICE_EXERCISE_1_UID, POSTOFFICE_EXERCISE_2_UID), false);
 
     upsertStation(PASSWORDBANK_STATION_UID, "Passordbanken",
         "Passordsjekking og gode passordvaner.",
+        "Tips: Et sterkt passord er langt, unikt og vanskelig for andre a gjette, men fortsatt mulig for deg a huske.",
         PLACEHOLDER_IMAGE, "#1D5232",
         List.of(PASSWORDBANK_EXERCISE_1_UID, PASSWORDBANK_EXERCISE_2_UID), false);
 
     upsertStation(MARKETPLACE_STATION_UID, "Markedsplassen",
         "Reklame, tilbud og e-butikker som ma vurderes.",
+        "Tips: Hvis et tilbud virker for godt eller haster veldig, bor du stoppe opp og sjekke butikken forst.",
         PLACEHOLDER_IMAGE, "#962C2C",
         List.of(MARKETPLACE_EXERCISE_1_UID, MARKETPLACE_EXERCISE_2_UID), false);
 
     upsertStation(SOCIALMEDIA_STATION_UID, "Den sosiale moteplassen",
         "Deling av innlegg, vurderinger og gruppepress i sosiale medier.",
+        "Tips: Vent litt for du deler. Sjekk om innholdet har en tydelig kilde og om det prover a gjore deg sint eller redd.",
         PLACEHOLDER_IMAGE, "#fbcfe8",
         List.of(SOCIALMEDIA_EXERCISE_1_UID, SOCIALMEDIA_EXERCISE_2_UID), false);
 
     upsertStation(DATACENTER_STATION_UID, "Datasenteret",
         "Finalebanen der du bruker det du har laert for a bekjempe datatyven.",
+        "Tips: Bruk alt du har laert: stopp opp, sjekk kilden, vurder detaljer og velg trygge handlinger.",
         PLACEHOLDER_IMAGE, "#8A2A2A",
         List.of(DATACENTER_EXERCISE_UID), true);
   }
@@ -1079,13 +1086,14 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     return tasks;
   }
 
-  private void upsertStation(UUID uid, String title, String description, String image,
+  private void upsertStation(UUID uid, String title, String description, String hint, String image,
       String backgroundColor, List<UUID> exerciseUids, boolean isBoss) {
     Station station = stationRepository.findByUid(uid).orElseGet(Station::new);
 
     station.setUid(uid);
     station.setTitle(title);
     station.setDescription(description);
+    station.setHint(hint);
     station.setImage(image);
     station.setBackgroundColor(backgroundColor);
     station.setExerciseUids(new ArrayList<>(exerciseUids));

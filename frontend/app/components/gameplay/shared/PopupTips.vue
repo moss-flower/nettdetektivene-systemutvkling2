@@ -1,6 +1,8 @@
 <script setup lang="ts">
 defineProps<{
   hint: string;
+  title?: string;
+  emptyText?: string;
 }>();
 
 const emit = defineEmits<{
@@ -23,8 +25,8 @@ const emit = defineEmits<{
 
       <div class="tipsContent">
         <p class="tipsEyebrow">Tipsbrev</p>
-        <h2 id="tips-title">Tips til oppgaven</h2>
-        <p>{{ hint || 'Det finnes ikke noe tips for denne oppgaven ennå.' }}</p>
+        <h2 id="tips-title">{{ title ?? 'Tips til oppgaven' }}</h2>
+        <p>{{ hint || emptyText || 'Det finnes ikke noe tips for denne oppgaven ennå.' }}</p>
       </div>
     </article>
   </div>

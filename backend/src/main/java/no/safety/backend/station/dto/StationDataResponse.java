@@ -7,6 +7,7 @@ public record StationDataResponse(
     UUID uid,
     String title,
     String description,
+    String hint,
     String image,
     String backgroundColor,
     List<UUID> exerciseUids,
