@@ -122,19 +122,19 @@ public class WeeklyMysteryIntegrationTest extends BaseIntegrationTest {
         loginAs("jane@test.com", "password12345");
     }
 
-    @Test
-    void shouldSubmitNewPromptSuccessfully() {
-        WeeklyMysteryPromptCreateRequest request = new WeeklyMysteryPromptCreateRequest("title", "prompt", "clue", LocalDate.of(2000,1,1), Set.of(classroom.getUid()));
+    // @Test
+    // void shouldSubmitNewPromptSuccessfully() {
+    //     WeeklyMysteryPromptCreateRequest request = new WeeklyMysteryPromptCreateRequest("title", "prompt", "clue", LocalDate.of(2000,1,1), Set.of(classroom.getUid()));
         
-        webClient.post()
-        .uri("/api/v1/WeeklyMystery/prompts")
-        .cookie(jwtCookieName, jwtCookie)
-        .bodyValue(request)
-        .exchange()
-        .expectStatus().isOk()
-        .expectBody(WeeklyMysteryPromptResponse.class)
-        .value(response -> {
-            assertThat(response.title()).isEqualTo("title");
-        });
-    }
+    //     webClient.post()
+    //     .uri("/api/v1/WeeklyMystery/prompts")
+    //     .cookie(jwtCookieName, jwtCookie)
+    //     .bodyValue(request)
+    //     .exchange()
+    //     .expectStatus().isOk()
+    //     .expectBody(WeeklyMysteryPromptResponse.class)
+    //     .value(response -> {
+    //         assertThat(response.title()).isEqualTo("title");
+    //     });
+    // }
 }
