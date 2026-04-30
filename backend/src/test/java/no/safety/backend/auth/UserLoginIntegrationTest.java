@@ -36,8 +36,11 @@ public class UserLoginIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Value("${application.security.jwt.cookie.name}")
-    private String jwtCookieName;
+    @Value("${application.security.jwt.cookie.access.name}")
+    private String accessCookieName;
+
+    @Value("${application.security.jwt.cookie.refresh.name}")
+    private String refreshCookieName;
 
     @BeforeEach
     void setUp() {
@@ -58,12 +61,14 @@ public class UserLoginIntegrationTest {
             .body(request)
             .exchange()
             .expectStatus().isOk() 
-            .expectHeader().value(HttpHeaders.SET_COOKIE, setCookie -> {
-                assertThat(setCookie).isNotNull();
-                assertThat(setCookie).contains(jwtCookieName); 
-                assertThat(setCookie).contains("HttpOnly");
-                assertThat(setCookie).contains("Secure");
-                assertThat(setCookie).contains("SameSite=Strict");
+            .expectHeader().values(HttpHeaders.SET_COOKIE, setCookies -> {
+                assertThat(setCookies).isNotNull();
+                assertThat(setCookies).hasSize(2);
+                assertThat(setCookies.stream().anyMatch(cookie -> cookie.contains(accessCookieName))).isTrue();
+                assertThat(setCookies.stream().anyMatch(cookie -> cookie.contains(refreshCookieName))).isTrue();
+                assertThat(setCookies.stream().allMatch(cookie -> cookie.contains("HttpOnly"))).isTrue();
+                assertThat(setCookies.stream().allMatch(cookie -> cookie.contains("Secure"))).isTrue();
+                assertThat(setCookies.stream().allMatch(cookie -> cookie.contains("SameSite=Strict"))).isTrue();
             })
             .expectBody(UserLoginResponse.class)
             .value(response -> {

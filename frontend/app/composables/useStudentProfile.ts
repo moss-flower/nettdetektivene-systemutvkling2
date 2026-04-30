@@ -1,4 +1,4 @@
-import type { StudentProfileResponse } from "~/composables/types/StudentProfileTypes";
+import type { StudentProfileResponse, UsernameUpdateResponse } from "~/composables/types/StudentProfileTypes";
 
 export function useStudentProfile() {
   const { $api } = useNuxtApp();
@@ -9,7 +9,15 @@ export function useStudentProfile() {
     });
   };
 
+  const updateUsername = async (username: string): Promise<UsernameUpdateResponse> => {
+    return await $api("/users/username", {
+      method: "PATCH",
+      body: { username },
+    });
+  };
+
   return {
     getMyProfile,
+    updateUsername,
   };
 }

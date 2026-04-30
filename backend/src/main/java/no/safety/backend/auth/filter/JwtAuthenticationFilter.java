@@ -27,7 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
-    @Value("${application.security.jwt.cookie.name}")
+    @Value("${application.security.jwt.cookie.access.name}")
     private String cookieName;
 
     @Override
@@ -44,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         log.info("AUTHFILTER: Token not found");
 
-        if (token != null && jwtService.isTokenValid(token)) {
+        if (token != null && jwtService.isTokenValid(token) && jwtService.isAccessToken(token)) {
             String username = jwtService.extractUsername(token);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             
