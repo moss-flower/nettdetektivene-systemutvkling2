@@ -12,6 +12,7 @@ import no.safety.backend.notification.dto.NotificationEvent;
 import no.safety.backend.notification.model.Notification;
 import no.safety.backend.notification.repository.NotificationRepository;
 import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.model.User;
 import no.safety.backend.user.service.UserService;
 
@@ -32,8 +33,8 @@ public class NotificationService {
     @EventListener
     public void handleNotificationEvent(NotificationEvent event) {
         logger.debug("Notification event Triggered with event" + event);
-        StudentUser sender = (StudentUser) userService.findByPublicUuid(event.getSenderUserUuid()).get();
-        Set<User> targets = sender.getClassroom().getOwners();
+        StudentUser sender = userService.findStudentByInternalId(event.getSenderInternalId()).get();
+        Set<TeacherUser> targets = sender.getClassroom().getOwners();
 
         for (User user : targets) {
             Notification notification = new Notification();
