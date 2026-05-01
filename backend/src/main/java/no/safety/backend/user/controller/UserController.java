@@ -18,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import no.safety.backend.user.dto.UsernameUpdateResponse;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.auth.model.UserPrincipal;
+import no.safety.backend.user.dto.PasswordUpdateRequest;
+import no.safety.backend.user.dto.PasswordUpdateResponse;
 import no.safety.backend.user.dto.UsernameUpdateRequest;
 import no.safety.backend.user.service.UserService;
 
@@ -38,7 +40,7 @@ public class UserController {
      */
     @PatchMapping("/{uid}/username")
     @PreAuthorize("hasRole('TEACHER')")
-    @Operation(summary = "Endpoint for changing the username of a student.", description = "Updates the students username. Must be called from a teacher account.")
+    @Operation(summary = "Change a students username. (Requires teacher account)", description = "Endpoint for changing the username of a student. Must be called from a teacher account.")
     public ResponseEntity<UsernameUpdateResponse> updateStudentUsername(
             @PathVariable UUID uid,
             @Valid @RequestBody UsernameUpdateRequest request) {
@@ -48,18 +50,35 @@ public class UserController {
 
     /**
      * Endpoint for changing the username of a {@link User}
-     * Can be used by both teachers and users.
+     * Can be used by both teachers and students.
      * @param uid
      * @param request
      * @return
      */
     @PatchMapping("/username")
     @PreAuthorize("hasAnyRole('STUDENT', 'TEACHER')")
-    @Operation(summary = "Endpoint for changing the username of the logged in user.", description = "Updated the user's username.")
+    @Operation(summary = "Change my username", description = "Endpoint for changing the username of the logged in user.")
     public ResponseEntity<UsernameUpdateResponse> updateUsername(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @RequestBody UsernameUpdateRequest request) {
 
         return ResponseEntity.ok(userService.updateUsername(userPrincipal.getUserInternalId(), request.username()));
+    }
+
+    /**
+     * Endpoint for changing the password of a {@link User}
+     * Can be used by both teachers and students.
+     * @param uid
+     * @param request
+     * @return
+     */
+    @PatchMapping("/password")
+    @PreAuthorize("hasAnyRole('STUDENT', 'TEACHER')")
+    @Operation(summary = "Change my password", description = "Endpoint for changing the password of the logged in user.")
+    public ResponseEntity<PasswordUpdateResponse> updatePassword(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @Valid @RequestBody PasswordUpdateRequest request) {
+
+        return ResponseEntity.ok(userService.updatePassword(userPrincipal.getUserInternalId(), request.password()));
     }
 }

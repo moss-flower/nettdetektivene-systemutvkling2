@@ -2,33 +2,23 @@
 import PopupNotYetUnlocked from "~/components/shared/PopupNotYetUnlocked.vue";
 import StationCard from "~/components/station/station.vue";
 import { useGamePreview } from "~/composables/useGamePreview";
-import { World } from "~/composables/types/WorldTypes";
-import { useCompletedExerciseUids } from "~/composables/utils/gameProgress";
 import { useStations } from "~/composables/useStations";
 
 const { teacher } = useClassrooms();
-const { isPreview, classroomId, hasPreviewContext } = useGamePreview();
-const { getMyStations, getStationsByUids } = useStations();
-const { data: completedExerciseUids } = await useAsyncData(
-  "student-completed-exercises",
-  () => (isPreview.value ? [] : useCompletedExerciseUids()),
-  {
-    watch: [isPreview],
-  },
-);
+const { getMyStations } = useStations();
+const route = useRoute();
+const { isPreview, classroomId } = useGamePreview();
+const previewWorldUid = computed(() => typeof route.query.worldUid === "string" ? route.query.worldUid : undefined);
 
 const { data: stationData } = await useAsyncData(
   "student-world",
   async () => {
-    if (!isPreview.value) {
-      return await getMyStations();
+    if (previewWorldUid.value) {
+      return await getMyStations(previewWorldUid.value);
     }
 
-    if (!hasPreviewContext.value) {
-      return {
-        world: null,
-        stations: [],
-      };
+    if (!isPreview.value) {
+      return await getMyStations();
     }
 
     const classroom = await teacher.getClassroomById(classroomId.value).catch(() => null);
@@ -41,22 +31,10 @@ const { data: stationData } = await useAsyncData(
       };
     }
 
-    const world = await World.backendFetchWorldByUid(worldUid);
-
-    if (!world) {
-      return {
-        world: null,
-        stations: [],
-      };
-    }
-
-    return {
-      world,
-      stations: await getStationsByUids(world.stationUids),
-    };
+    return await getMyStations(worldUid);
   },
   {
-    watch: [isPreview, classroomId],
+    watch: [previewWorldUid, isPreview, classroomId],
   },
 );
 
@@ -76,31 +54,11 @@ const showNotYetUnlockedPopup = ref(false);
 let resizeObserver: ResizeObserver | null = null;
 
 const stationCards = computed(() => {
-  const completedUids = completedExerciseUids.value ?? [];
-
-  if (isPreview.value) {
-    return (stationData.value?.stations ?? []).map((station) => ({
-      station,
-      completedExercises: station.exerciseUids.map(() => false),
-      isUnlocked: true,
-    }));
-  }
-
-  let previousStationCompleted = true;
-
-  return (stationData.value?.stations ?? []).map((station) => {
-    const completedExercises = station.exerciseUids.map((exerciseUid) => completedUids.includes(exerciseUid));
-    const isUnlocked = previousStationCompleted;
-    const isCompleted = station.exerciseUids.length > 0 && completedExercises.every(Boolean);
-
-    previousStationCompleted = isCompleted;
-
-    return {
-      station,
-      completedExercises,
-      isUnlocked,
-    };
-  });
+  return (stationData.value?.stations ?? []).map((station) => ({
+    station,
+    completedExercises: station.completedExercises,
+    isUnlocked: station.isUnlocked,
+  }));
 });
 
 const hasStations = computed(() => stationCards.value.length > 0);

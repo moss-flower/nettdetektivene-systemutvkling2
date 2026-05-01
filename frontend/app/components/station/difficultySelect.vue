@@ -64,6 +64,7 @@ const handleClick = () => {
   border: var(--border-width-hairline) solid color-mix(in srgb, var(--color-border-default) 65%, transparent);
   border-radius: 1.25rem;
   text-decoration: none;
+  text-align: left;
   color: #1d2433;
   font: inherit;
   background: linear-gradient(180deg, #f9f5ea 0%, #efe2bf 100%);

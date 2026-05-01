@@ -21,24 +21,33 @@ const progressPercentDisplay = computed(() => Math.floor(progress.value.progress
 
 function startEditing() {
   pendingName.value = studentName.value
+  profileError.value = ''
   isEditing.value = true
 }
 
 function cancelEditing() {
   isEditing.value = false
   pendingName.value = ''
+  profileError.value = ''
 }
 
 async function saveEditing() {
   const newName = pendingName.value.trim()
   if (!newName) return
 
+  profileError.value = ''
+
   try {
     const response = await updateUsername(newName)
     studentName.value = response.username
     cancelEditing()
-  } catch {
-    profileError.value = 'Kunne ikke oppdatere navnet. Prøv igjen senere.'
+  } catch (error: any) {
+    profileError.value =
+        error?.data?.detail ||
+        error?.data?.message ||
+        error?.data?.error ||
+        error?.statusMessage ||
+        "Kunne ikke oppdatere navnet. Prøv igjen senere.";
   }
 }
 
@@ -76,8 +85,8 @@ onMounted(async () => {
       <div class="idCard__right">
         <h2 class="idCard__title">Detektiv</h2>
         <div class="idCard__field" v-if="!isEditing">
-          <p class="idCard__fieldValue">{{ studentName }}</p>
           <p class="idCard__fieldLabel">Navn</p>
+          <p class="idCard__fieldValue">{{ studentName }}</p>
         </div>
         <div class="idCard__field" v-else>
           <input
@@ -89,7 +98,7 @@ onMounted(async () => {
           <p class="idCard__fieldLabel">Navn</p>
         </div>
 
-        <p class="idCard__levelHeading">Nivå fullført: {{ progress.level }} </p>
+        <p class="idCard__levelHeading">Level: {{ progress.level }} </p>
 
         <div class="idCard__xpRow">
           <span class="idCard__xpText">{{ totalXp }} / {{ progress.nextLevelXp }} XP</span>
@@ -153,7 +162,7 @@ onMounted(async () => {
   --id-action-hover: var(--palette-overlay-cork-soft);
 
   position: relative;
-  min-height: 100dvh;
+  min-height: 100%;
   width: 100%;
   display: grid;
   gap: var(--space-6);

@@ -43,7 +43,7 @@ const layoutStyle = computed(() => {
 
 onMounted(async () => {
   if (isPreview.value) {
-    profileName.value = 'Laererpreview'
+    profileName.value = 'Lærer'
     profileLevelText.value = 'Forhandsvisning'
     return
   }
@@ -51,7 +51,7 @@ onMounted(async () => {
   try {
     const profile = await getMyProfile()
     profileName.value = profile.studentName
-    profileLevelText.value = `Level ${getLevel(profile.score).level}`
+    profileLevelText.value = `Level ${getLevel(profile.totalXp).level}`
   } catch (error) {
     console.error('Error fetching student profile:', error)
   }

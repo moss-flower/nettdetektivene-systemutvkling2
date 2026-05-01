@@ -8,6 +8,12 @@ import no.safety.backend.completedexercise.dto.CompletedExerciseResponse;
 import no.safety.backend.completedexercise.model.CompletedExercise;
 import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
 import no.safety.backend.exception.ForbiddenException;
+import no.safety.backend.exception.NotFoundException;
+import no.safety.backend.excercise.model.Exercise;
+import no.safety.backend.excercise.repository.ExerciseRepository;
+import no.safety.backend.notepad.dto.NotepadEntryCreateRequest;
+import no.safety.backend.notepad.model.NotepadEntry;
+import no.safety.backend.notepad.service.NotepadEntryService;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.repository.StudentUserRepository;
 import org.springframework.stereotype.Service;
@@ -20,6 +26,8 @@ public class CompletedExerciseService {
   private final CompletedExerciseRepository completedExerciseRepository;
   private final ProgressValidationService progressValidationService;
   private final StudentUserRepository studentUserRepository;
+  private final ExerciseRepository exerciseRepository;
+  private final NotepadEntryService notepadEntryService;
 
   @Transactional
   public CompletedExerciseResponse create(CompletedExerciseRequest request, StudentUser student) {
@@ -43,7 +51,10 @@ public class CompletedExerciseService {
     completedExercise.setStudentUid(studentUid);
     completedExercise.setExerciseUid(exerciseUid);
 
-    return CompletedExerciseResponse.from(completedExerciseRepository.save(completedExercise));
+    CompletedExercise savedExercise = completedExerciseRepository.save(completedExercise);
+    createExerciseNotepadEntryIfConfigured(student, exerciseUid);
+
+    return CompletedExerciseResponse.from(savedExercise);
   }
 
   @Transactional(readOnly = true)
@@ -60,5 +71,22 @@ public class CompletedExerciseService {
         .stream()
         .map(CompletedExerciseResponse::from)
         .toList();
+  }
+
+  private void createExerciseNotepadEntryIfConfigured(StudentUser student, UUID exerciseUid) {
+    Exercise exercise = exerciseRepository.findByPublicId(exerciseUid)
+        .orElseThrow(() -> new NotFoundException("Exercise not found"));
+
+    NotepadEntry notepadEntry = exercise.getNotepadEntry();
+    if (notepadEntry == null) {
+      return;
+    }
+
+    notepadEntryService.create(student.getInternalId(), new NotepadEntryCreateRequest(
+        notepadEntry.getTitle(),
+        notepadEntry.getType(),
+        notepadEntry.getContent(),
+        notepadEntry.getSource()
+    ));
   }
 }

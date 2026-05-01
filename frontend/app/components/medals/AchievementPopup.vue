@@ -23,7 +23,7 @@ const emit = defineEmits<{
       </div>
 
       <div class="popupBody">
-        <p class="popupEyebrow">Achievement</p>
+        <p class="popupEyebrow">Medalje</p>
         <h2 class="popupTitle">{{ props.achievement.title }}</h2>
         <p class="popupDescription">{{ props.achievement.description }}</p>
 

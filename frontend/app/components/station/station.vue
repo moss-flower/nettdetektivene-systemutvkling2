@@ -17,22 +17,24 @@ const props = defineProps<{
   completedExercises?: boolean[];
 }>();
 
+const route = useRoute();
 const stationIsUnlocked = computed(() => props.isUnlocked ?? true);
 const completedExercises = computed(() => props.completedExercises ?? []);
 const { isPreview, classroomId } = useGamePreview();
 
-const stationPath = computed(() => ({
-  path: routePaths.studentExerciseDifficultySelect,
-  query: {
-    uid: props.station.uid,
-    ...(isPreview.value && classroomId.value
-      ? {
-          preview: "1",
-          classroomId: classroomId.value,
-        }
-      : {}),
-  },
-}));
+const stationPath = computed(() => {
+  const worldUid = typeof route.query.worldUid === "string" ? route.query.worldUid : undefined;
+  const previewQuery = isPreview.value && classroomId.value
+    ? { preview: "1", classroomId: classroomId.value }
+    : worldUid
+      ? { worldUid }
+      : {};
+
+  return {
+    path: routePaths.studentExerciseDifficultySelect,
+    query: { uid: props.station.uid, ...previewQuery },
+  };
+});
 
 const totalExercises = computed(() => {
   if (props.station.exerciseUids.length > 0) {
@@ -69,6 +71,8 @@ const handleClick = () => {
     class="levelCard"
     :class="{ lockedCard: !stationIsUnlocked }"
     :to="stationIsUnlocked ? stationPath : undefined"
+    :type="stationIsUnlocked ? undefined : 'button'"
+    @click="handleClick"
   >
     <div class="levelImageWrap">
       <img
@@ -77,9 +81,7 @@ const handleClick = () => {
         alt=""
         aria-hidden="true"
         class="bossSprite"
-        :type="stationIsUnlocked ? undefined : 'button'"
-    @click="handleClick"
-  >
+      >
       <img :src="station.image" :alt="station.title" class="levelImage">
     </div>
 

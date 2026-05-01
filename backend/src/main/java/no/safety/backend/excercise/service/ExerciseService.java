@@ -9,6 +9,8 @@ import no.safety.backend.excercise.dto.ExerciseRequest;
 import no.safety.backend.excercise.dto.ExerciseResponse;
 import no.safety.backend.excercise.model.Exercise;
 import no.safety.backend.excercise.repository.ExerciseRepository;
+import no.safety.backend.notepad.dto.NotepadEntryCreateRequest;
+import no.safety.backend.notepad.model.NotepadEntry;
 import no.safety.backend.task.dto.TaskRequest;
 import no.safety.backend.task.model.Task;
 import org.springframework.data.domain.Page;
@@ -55,7 +57,7 @@ public class ExerciseService {
         .toList();
     e.getTasks().addAll(updatedTasks);
 
-    return ExerciseResponse.from(e);
+    return ExerciseResponse.from(exerciseRepo.save(e));
   }
 
   @Transactional
@@ -68,6 +70,25 @@ public class ExerciseService {
     e.setDifficultyName(req.difficultyName());
     e.setDescription(req.description());
     e.setHint(req.hint());
+    applyNotepadEntryFields(e, req.notepadEntry());
+  }
+
+  private void applyNotepadEntryFields(Exercise exercise, NotepadEntryCreateRequest request) {
+    if (request == null) {
+      exercise.setNotepadEntry(null);
+      return;
+    }
+
+    NotepadEntry notepadEntry = exercise.getNotepadEntry();
+    if (notepadEntry == null) {
+      notepadEntry = new NotepadEntry();
+      exercise.setNotepadEntry(notepadEntry);
+    }
+
+    notepadEntry.setTitle(request.title());
+    notepadEntry.setType(request.type());
+    notepadEntry.setContent(request.content());
+    notepadEntry.setSource(request.source());
   }
 
   private Task newTask(Exercise e, TaskRequest tr) {

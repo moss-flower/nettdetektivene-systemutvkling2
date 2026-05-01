@@ -50,26 +50,26 @@ function closeAchievement() {
   <section class="medalsPage">
     <template v-if="loading">
       <div class="achievementsSection">
-        <h1 class="sectionTitle">Achievements</h1>
-        <p>Laster achievements...</p>
+        <h1 class="sectionTitle">Medaljer</h1>
+        <p>Laster medaljer...</p>
       </div>
     </template>
 
     <template v-else-if="formError">
       <div class="achievementsSection">
-        <h1 class="sectionTitle">Achievements</h1>
+        <h1 class="sectionTitle">Medaljer</h1>
         <p>{{ formError }}</p>
       </div>
     </template>
 
     <template v-else>
       <div class="achievementsSection">
-        <h1 class="sectionTitle">Achievements</h1>
+        <h1 class="sectionTitle">Medaljer</h1>
         <MedalGrid :medals="regularMedals" @select="openAchievement" />
       </div>
 
       <div class="specialSection">
-        <h1 class="sectionTitle">Special achievement</h1>
+        <h1 class="sectionTitle">Spesialmedalje</h1>
         <MedalElement
           v-if="specialMedal"
           class="specialMedal"
