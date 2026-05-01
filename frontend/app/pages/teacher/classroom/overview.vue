@@ -3,6 +3,7 @@ import { World } from '~/composables/types/WorldTypes';
 import starEmpty from '~/assets/images/star/spStarEmpty.png';
 import starFilled from '~/assets/images/star/spStarFilled.png';
 import { getClassroomExercises } from '~/composables/useTeacherDashboard';
+import { Bell, Map, Play, Search } from 'lucide-vue-next';
 const route = useRoute();
 import { routePaths, routePathsWithString, routePathsWithUid } from '~/composables/utils/routePaths';
 
@@ -125,22 +126,22 @@ const renameStudent = async (studentId: string, currentName: string) => {
     <div v-if="classroom" class="actionGrid">
       <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomNotifications, `?classroomId=${classroom.uid}`)" class="actionCard">
         <span class="actionCardTitle">Varslingssenter</span>
-        <img src="https://placehold.co/128x128?text=VS" alt="Varslingssenter" class="actionCardImage">
+        <Bell :size="48" class="actionCardIcon" />
       </NuxtLink>
 
       <NuxtLink :to="routePathsWithUid(routePaths.teacherFactoryWorld, classroom.worldUid)" class="actionCard">
         <span class="actionCardTitle">Stasjonskart</span>
-        <img src="https://placehold.co/128x128?text=SK" alt="Stasjonskart" class="actionCardImage">
+        <Map :size="48" class="actionCardIcon" />
       </NuxtLink>
 
       <NuxtLink :to="{ path: routePaths.studentLevels, query: { preview: '1', classroomId: classroom.uid } }" class="actionCard">
         <span class="actionCardTitle">Test spillet</span>
-        <img src="https://placehold.co/128x128?text=TS" alt="Test spillet" class="actionCardImage">
+        <Play :size="48" class="actionCardIcon" />
       </NuxtLink>
 
       <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomMystery, `?classroomId=${classroom.uid}`)" class="actionCard">
         <span class="actionCardTitle">Ukens mysterium</span>
-        <img src="https://placehold.co/128x128?text=UM" alt="Ukens mysterium" class="actionCardImage">
+        <Search :size="48" class="actionCardIcon" />
       </NuxtLink>
     </div>
 
@@ -323,12 +324,8 @@ h1 {
   text-align: center;
 }
 
-.actionCardImage {
-  display: block;
-  width: 72px; /* deliberate: fixed placeholder icon */
-  height: 72px; /* deliberate: fixed placeholder icon */
-  border-radius: var(--radius-2);
-  object-fit: cover;
+.actionCardIcon {
+  color: var(--color-brand-primary);
 }
 
 .summaryCard {
@@ -414,7 +411,8 @@ td {
 }
 
 thead th {
-  background: var(--color-bg-canvas);
+  background: var(--color-brand-primary);
+  color: var(--color-text-onDark);
   font-weight: var(--font-weight-bold);
 }
 

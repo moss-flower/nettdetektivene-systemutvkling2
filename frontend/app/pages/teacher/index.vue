@@ -5,6 +5,7 @@ import {
 } from "~/composables/utils/routePaths";
 import { useAuth } from "~/composables/useAuth";
 import { toClassroomSummaries } from "~/composables/useTeacherDashboard";
+import { Settings, Bell } from 'lucide-vue-next';
 
 definePageMeta({ layout: 'teacher' });
 
@@ -105,11 +106,7 @@ const handleLogout = async () => {
               class="panel settingsButton"
               :to="routePaths.teacherSettings"
             >
-              <img
-                src="https://placehold.co/64x64"
-                alt="Innstillinger ikon"
-                class="settingsIcon"
-              />
+              <Settings :size="48" class="settingsIcon" />
               <span class="settingsButtonLabel">Innstillinger</span>
             </NuxtLink>
 
@@ -117,11 +114,7 @@ const handleLogout = async () => {
               class="panel settingsButton settingsButtonNotifications"
               :to="routePaths.teacherNotifications"
             >
-              <img
-                src="https://placehold.co/64x64"
-                alt="Varslinger ikon"
-                class="settingsIcon"
-              />
+              <Bell :size="48" class="settingsIcon" />
               <span class="settingsButtonLabel">Varslinger</span>
               <span class="notificationBadge">1</span>
             </NuxtLink>
@@ -364,24 +357,26 @@ h2 {
   border: var(--border-width-hairline) solid var(--color-border-default);
   border-radius: var(--radius-2);
   text-decoration: none;
-  background: var(--color-bg-surface);
+  /* deliberate, navy-family tint */
+  background: var(--palette-navy-600);
   transition: transform var(--transition-fast), border-color var(--transition-fast);
 }
 
 .classroomCard:hover {
   transform: translateY(-1px);
-  border-color: var(--color-border-strong);
+  border-color: var(--color-brand-primary);
 }
 
 .classroomName {
   font-weight: var(--font-weight-semibold);
-  color: var(--color-brand-primary);
+  color: var(--color-text-onDark);
   font-size: var(--font-size-16);
 }
 
 .classScore {
-  color: var(--color-text-secondary);
+  color: var(--color-text-onDark);
   font-size: var(--font-size-14);
+  opacity: 0.87;
   white-space: nowrap;
 }
 
