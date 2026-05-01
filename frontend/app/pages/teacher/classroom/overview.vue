@@ -237,6 +237,7 @@ const renameStudent = async (studentId: string, currentName: string) => {
   padding: var(--layout-page-padding);
   color: var(--color-text-primary);
 }
+
 .pageHeader {
   margin-bottom: var(--space-4);
   background: var(--color-bg-surface);
@@ -248,6 +249,7 @@ const renameStudent = async (studentId: string, currentName: string) => {
   display: grid;
   gap: var(--space-2);
 }
+
 .backLink {
   display: inline-block;
   margin-bottom: var(--space-3);
@@ -255,9 +257,11 @@ const renameStudent = async (studentId: string, currentName: string) => {
   font-weight: var(--font-weight-semibold);
   transition: var(--transition-fast);
 }
+
 .backLink:hover {
   text-decoration: underline;
 }
+
 .eyebrow {
   color: var(--color-brand-primary);
   font-weight: var(--font-weight-bold);
@@ -265,6 +269,7 @@ const renameStudent = async (studentId: string, currentName: string) => {
   letter-spacing: var(--font-tracking-wider);
   text-transform: uppercase;
 }
+
 h1 {
   font-family: var(--font-family-serif), sans-serif;
   font-size: var(--font-size-28);
@@ -272,22 +277,26 @@ h1 {
   margin: 0;
   color: var(--color-text-primary);
 }
+
 .subtitle {
   margin: 0;
   color: var(--color-text-secondary);
 }
+
 .summaryRow {
   display: grid;
   gap: var(--space-4);
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-bottom: var(--space-4);
 }
+
 .actionGrid {
   display: grid;
   gap: var(--space-4);
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   margin-bottom: var(--space-4);
 }
+
 .actionCard {
   display: grid;
   gap: var(--space-2);
@@ -297,12 +306,23 @@ h1 {
   border: var(--border-width-hairline) solid var(--color-border-default);
   border-radius: var(--radius-3);
   box-shadow: var(--shadow-1);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
 }
+
+.actionCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2);
+  border-color: var(--color-brand-primary);
+}
+
 .actionCardTitle {
   font-weight: var(--font-weight-bold);
   color: var(--color-brand-primary);
   text-align: center;
 }
+
 .actionCardImage {
   display: block;
   width: 72px; /* deliberate: fixed placeholder icon */
@@ -310,6 +330,7 @@ h1 {
   border-radius: var(--radius-2);
   object-fit: cover;
 }
+
 .summaryCard {
   display: grid;
   gap: var(--space-1);
@@ -319,14 +340,17 @@ h1 {
   border-radius: var(--radius-3);
   box-shadow: var(--shadow-1);
 }
+
 .summaryCardLabel {
   font-size: var(--font-size-14);
   color: var(--color-text-secondary);
 }
+
 .summaryCard strong {
   font-size: var(--font-size-22);
   color: var(--color-brand-primary);
 }
+
 .pendingCard {
   display: grid;
   gap: var(--space-4);
@@ -337,24 +361,29 @@ h1 {
   border-radius: var(--radius-3);
   box-shadow: var(--shadow-1);
 }
+
 .pendingCardHeader {
   display: grid;
   gap: var(--space-1);
 }
+
 .pendingCardHeader h2,
 .pendingStudent strong {
   margin: 0;
 }
+
 .pendingCardHeader p,
 .pendingEmpty,
 .pendingStudent span {
   margin: 0;
   color: var(--color-text-secondary);
 }
+
 .pendingList {
   display: grid;
   gap: var(--space-3);
 }
+
 .pendingStudent {
   display: grid;
   gap: var(--space-1);
@@ -362,6 +391,7 @@ h1 {
   background: var(--color-bg-canvas);
   border-radius: var(--radius-2);
 }
+
 .tableCard {
   background: var(--color-bg-surface);
   border: var(--border-width-hairline) solid var(--color-border-default);
@@ -369,48 +399,58 @@ h1 {
   box-shadow: var(--shadow-1);
   overflow: auto;
 }
+
 table {
   width: 100%;
   border-collapse: collapse;
   min-width: 650px; /* deliberate: minimum readable table width */
 }
+
 th,
 td {
   text-align: left;
   padding: var(--space-3) var(--space-4);
   border-bottom: var(--border-width-hairline) solid var(--color-border-default);
 }
+
 thead th {
   background: var(--color-bg-canvas);
   font-weight: var(--font-weight-bold);
 }
+
 .studentLink {
   color: var(--color-brand-primary);
   font-weight: var(--font-weight-bold);
   text-decoration: none;
 }
+
 .studentLink:hover {
   text-decoration: underline;
 }
+
 .progressCell {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
   font-weight: var(--font-weight-bold);
 }
+
 .starCount {
   line-height: 1;
 }
+
 .starIcon {
   width: var(--size-icon-sm);
   height: var(--size-icon-sm);
   object-fit: contain;
 }
+
 .actionColumn {
   width: 1%; /* deliberate: shrink-to-fit column */
   text-align: right;
   white-space: nowrap;
 }
+
 .removeButton {
   display: inline-grid;
   place-items: center;
@@ -423,13 +463,16 @@ thead th {
   cursor: pointer;
   font-weight: var(--font-weight-bold);
 }
+
 .removeButton:hover:not(:disabled) {
   background: var(--palette-overlay-red-soft);
 }
+
 .removeButton:disabled {
   cursor: wait;
   opacity: 0.55;
 }
+
 .emptyState {
   padding: var(--space-4);
   background: var(--color-bg-surface);
@@ -437,6 +480,7 @@ thead th {
   border-radius: var(--radius-3);
   box-shadow: var(--shadow-1);
 }
+
 @media (max-width: 800px) {
   .summaryRow {
     grid-template-columns: 1fr;

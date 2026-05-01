@@ -172,6 +172,7 @@ const createClassroom = async () => {
    padding: var(--layout-page-padding);
    color: var(--color-text-primary);
 }
+
 .pageHeader {
    display: grid;
    gap: var(--space-2);
@@ -183,6 +184,7 @@ const createClassroom = async () => {
    background: var(--color-bg-surface);
    box-shadow: var(--shadow-1);
 }
+
 h1 {
    margin: 0;
    font-family: var(--font-family-serif), sans-serif;
@@ -190,6 +192,7 @@ h1 {
    line-height: var(--font-leading-28);
    color: var(--color-text-primary);
 }
+
 .backButton {
    display: inline-flex;
    align-items: center;
@@ -203,68 +206,97 @@ h1 {
    cursor: pointer;
    transition: color var(--transition-fast);
 }
+
 .backButton:hover {
    text-decoration: underline;
 }
+
 .subtitle,
 .sectionHeading p,
 .lockedWorldCard p {
    margin: 0;
    color: var(--color-text-secondary);
 }
+
 .pageGrid {
    display: grid;
    grid-template-columns: minmax(0, 1fr);
    gap: var(--space-5);
    align-items: start;
 }
+
 .editorPanel {
+   --create-field-bg: var(--color-bg-canvas);
+   --create-field-border: var(--color-border-default);
+   --create-field-focus: var(--color-brand-primary);
+  /* palette direct exception */
+   --create-select-bg: var(--palette-ice-200);
+
    padding: var(--space-5);
    border: var(--border-width-hairline) solid var(--color-border-default);
    border-radius: var(--radius-3);
    background: var(--color-bg-surface);
    box-shadow: var(--shadow-1);
 }
+
 .panelSection + .panelSection {
    margin-top: var(--space-6);
 }
+
 .sectionHeading {
    display: grid;
    gap: var(--space-1);
    margin-bottom: var(--space-4);
 }
+
 .fieldGrid {
    display: grid;
    grid-template-columns: repeat(2, minmax(0, 1fr));
    gap: var(--space-4);
 }
+
 .field {
    display: grid;
    gap: var(--space-2);
 }
+
 .fieldFull {
    grid-column: 1 / -1;
 }
+
 .field span,
 .cardEyebrow {
    font-weight: var(--font-weight-bold);
 }
-.field input,
+
 .field select {
    width: 100%;
    padding: var(--space-3) var(--space-4);
-   border: var(--border-width-hairline) solid var(--color-border-default);
+   border: var(--border-width-hairline) solid var(--create-field-border);
    border-radius: var(--radius-1);
-   background: var(--color-bg-surface);
+   background: var(--create-select-bg);
    color: var(--color-text-primary);
    font: inherit;
    transition: border-color var(--transition-fast);
 }
-.field input:focus,
+
 .field select:focus {
    outline: none;
-   border-color: var(--color-brand-primary);
+   border-color: var(--create-field-focus);
 }
+
+.field :deep(input) {
+   border: var(--border-width-hairline) solid var(--create-field-border);
+   border-radius: var(--radius-1);
+   background: var(--create-field-bg);
+   transition: border-color var(--transition-fast);
+}
+
+.field :deep(input:focus) {
+   outline: none;
+   border-color: var(--create-field-focus);
+}
+
 .lockedWorldCard {
    display: grid;
    gap: var(--space-2);
@@ -273,6 +305,7 @@ h1 {
    border-radius: var(--radius-2);
    background: var(--color-bg-canvas);
 }
+
 .primaryButton {
    display: inline-flex;
    align-items: center;
@@ -288,44 +321,54 @@ h1 {
    cursor: pointer;
    transition: transform var(--transition-fast);
 }
+
 .primaryButton:hover:not(:disabled) {
-   transform: translateY(-1px);
+   transform: translateY(calc(-1 * var(--border-width-hairline)));
 }
+
 .primaryButton:disabled {
    opacity: 0.5;
    cursor: not-allowed;
    transform: none;
 }
+
 .actionRow {
    display: flex;
    justify-content: flex-end;
    margin-top: var(--space-6);
 }
+
 .formError {
    margin-top: var(--space-3);
    color: var(--color-semantic-error);
    font-weight: var(--font-weight-semibold);
 }
+
 .cardEyebrow {
    color: var(--color-text-secondary);
+   font-family: var(--font-family-mono), monospace;
    font-weight: var(--font-weight-bold);
    letter-spacing: var(--font-tracking-wider);
    text-transform: uppercase;
    font-size: var(--font-size-12);
 }
-@media (max-width: 900px) {
+
+@media (max-width: 900px) { /* deliberate: preserves existing tablet breakpoint */
    .pageGrid {
       grid-template-columns: 1fr;
    }
 }
-@media (max-width: 800px) {
+
+@media (max-width: 800px) { /* deliberate: preserves existing mobile breakpoint */
    .fieldGrid {
       grid-template-columns: 1fr;
    }
+
    .sectionHeadingInline,
    .actionRow {
       display: grid;
    }
+
    .actionRow {
       justify-content: stretch;
    }
