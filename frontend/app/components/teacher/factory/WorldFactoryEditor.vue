@@ -494,70 +494,71 @@ watch(payloadPreviewText, () => {
 
 <style scoped>
 .factoryGrid {
-   --factory-label-font: var(--font-family-mono);
-   --factory-label-size: var(--font-size-12);
-   --factory-label-tracking: var(--font-tracking-wider);
-   --factory-label-color: var(--color-text-primary);
-   --factory-field-bg: var(--color-bg-canvas);
-   --factory-field-border: var(--color-border-default);
-   --factory-field-focus: var(--color-brand-primary);
-   --factory-drop-accept: var(--palette-overlay-green-soft);
-   --factory-drop-reject: var(--palette-overlay-red-soft);
-   --factory-delete-border: var(--color-semantic-error);
-   --factory-delete-bg: var(--palette-overlay-red-soft);
-   --factory-delete-text: var(--color-semantic-error);
-   --factory-tag-blue: var(--palette-ice-200);
-   --factory-tag-gold: var(--palette-gold-400);
-   --factory-tag-pink: var(--palette-red-200);
-   --factory-tag-green: var(--palette-green-100);
-   --factory-payload-bg: var(--color-bg-canvas);
-   --factory-payload-text: var(--color-text-primary);
-   --factory-payload-font: var(--font-family-mono);
+  --factory-label-font: var(--font-family-mono);
+  --factory-label-size: var(--font-size-12);
+  --factory-label-tracking: var(--font-tracking-wider);
+  --factory-label-color: var(--color-text-primary);
+  --factory-field-bg: var(--color-bg-canvas);
+  --factory-field-border: var(--color-border-default);
+  --factory-field-focus: var(--color-brand-primary);
+  --factory-drop-accept: var(--palette-overlay-green-soft);
+  --factory-drop-reject: var(--palette-overlay-red-soft);
+  --factory-delete-border: var(--color-semantic-error);
+  --factory-delete-bg: var(--palette-overlay-red-soft);
+  --factory-delete-text: var(--color-semantic-error);
+  --factory-tag-blue: var(--palette-ice-200);
+  --factory-tag-gold: var(--palette-gold-400);
+  --factory-tag-pink: var(--palette-red-200);
+  --factory-tag-green: var(--palette-green-100);
+  --factory-payload-bg: var(--color-bg-canvas);
+  --factory-payload-text: var(--color-text-primary);
+  --factory-payload-font: var(--font-family-mono);
+  --factory-station-bg: var(--palette-ice-200);
 
-   display: grid;
-   grid-template-columns: 1fr;
-   gap: var(--space-5);
-   align-items: start;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  align-items: start;
 }
 
 .editorPanel,
 .previewPanel {
-   padding: var(--space-5);
-   border: var(--border-width-hairline) solid var(--color-border-default);
-   border-radius: var(--radius-3);
-   background: var(--color-bg-surface);
-   box-shadow: var(--shadow-folder);
+  padding: var(--space-5);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-3);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-folder);
 }
 
 .previewPanel {
-   border-style: dashed;
+  border-style: dashed;
 }
 
 .panelSection + .panelSection {
-   margin-top: var(--space-5);
+  margin-top: var(--space-5);
 }
 
 .sectionHeading {
-   display: grid;
-   gap: var(--space-1);
-   margin-bottom: var(--space-4);
+  display: grid;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
 }
 
 .sectionHeading--compact {
-   margin-bottom: var(--space-3);
+  margin-bottom: var(--space-3);
 }
 
 .sectionHeading--inline {
-   grid-template-columns: 1fr auto;
-   align-items: start;
-   gap: var(--space-3);
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: var(--space-3);
 }
 
 .sectionHeading h2,
 .summaryCard h3,
 .knownStationCard h3,
 .selectedCard h3 {
-   margin: 0;
+  margin: 0;
 }
 
 .sectionHeading p,
@@ -565,372 +566,372 @@ watch(payloadPreviewText, () => {
 .knownStationCard p,
 .selectedCard p,
 .emptyState {
-   margin: 0;
-   color: var(--color-text-secondary);
-   line-height: var(--font-leading-base);
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: var(--font-leading-base);
 }
 
 .statusStack,
 .knownStations,
 .selectedList {
-   display: grid;
-   gap: var(--space-3);
+  display: grid;
+  gap: var(--space-3);
 }
 
 .stationColumns {
-   display: grid;
-   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-   gap: var(--space-4);
-   align-items: start;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
 }
 
 .stationColumn {
-   display: grid;
-   gap: var(--space-3);
+  display: grid;
+  gap: var(--space-3);
 }
 
 .stationCardImage {
-   display: block;
+  display: block;
   /* deliberate: fixed thumbnail size */
-   width: 4rem;
-   height: 4rem;
-   border: var(--border-width-hairline) solid var(--color-border-default);
-   border-radius: var(--radius-1);
-   object-fit: cover;
+  width: 4rem;
+  height: 4rem;
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-1);
+  object-fit: cover;
 }
 
 .fieldGrid {
-   display: grid;
-   grid-template-columns: repeat(2, minmax(0, 1fr));
-   gap: var(--space-3);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
 }
 
 .field {
-   display: grid;
-   gap: var(--space-1);
+  display: grid;
+  gap: var(--space-1);
 }
 
 .field--full {
-   grid-column: 1 / -1;
+  grid-column: 1 / -1;
 }
 
 .field--grow {
-   flex: 1;
+  flex: 1;
 }
 
 .field span {
-   color: var(--factory-label-color);
-   font-family: var(--factory-label-font), sans-serif;
-   font-size: var(--factory-label-size);
-   font-weight: var(--font-weight-bold);
-   letter-spacing: var(--factory-label-tracking);
-   text-transform: uppercase;
+  color: var(--factory-label-color);
+  font-family: var(--factory-label-font), sans-serif;
+  font-size: var(--factory-label-size);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--factory-label-tracking);
+  text-transform: uppercase;
 }
 
 .field input,
 .field textarea {
-   width: 100%;
-   padding: var(--space-3) var(--space-4);
-   border: var(--border-width-hairline) solid var(--factory-field-border);
-   border-radius: var(--radius-1);
-   background: var(--factory-field-bg);
-   color: var(--color-text-primary);
-   font: inherit;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width-hairline) solid var(--factory-field-border);
+  border-radius: var(--radius-1);
+  background: var(--factory-field-bg);
+  color: var(--color-text-primary);
+  font: inherit;
 }
 
 .field textarea {
-   resize: vertical;
+  resize: vertical;
 }
 
 .field input:focus,
 .field textarea:focus {
-   outline: none;
-   border-color: var(--factory-field-focus);
+  outline: none;
+  border-color: var(--factory-field-focus);
 }
 
 .field input:disabled {
-   opacity: 0.5;
-   cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .summaryCard,
 .knownStationCard,
 .selectedCard {
-   display: flex;
-   justify-content: flex-start;
-   align-items: flex-start;
-   gap: var(--space-3);
-   padding: var(--space-4);
-   border: var(--border-width-hairline) solid var(--color-border-default);
-   border-radius: var(--radius-2);
-   background: var(--color-bg-surface);
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-2);
+  background: var(--color-bg-surface);
 }
 
 .summaryCard {
-   justify-content: space-between;
+  justify-content: space-between;
 }
 
 .knownStations,
 .selectedList {
-   margin-top: 0;
-   min-height: 5rem; /* deliberate: minimum drop zone height */
+  margin-top: 0;
+  min-height: 5rem; /* deliberate: minimum drop zone height */
 }
 
 .selectedCardContent {
-   flex: 1;
+  flex: 1;
 }
 
 .selectedCardActions {
-   display: flex;
-   gap: var(--space-2);
-   margin-left: auto;
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
 }
 
 .iconButton {
-   padding: 0;
-   border: 0;
-   background: transparent;
-   cursor: pointer;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
 .iconButton:disabled {
-   opacity: 0.5;
-   cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .selectedCardActionIcon {
-   display: block;
-   width: var(--space-8);
-   height: var(--space-8);
-   border-radius: var(--radius-1);
+  display: block;
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-1);
 }
 
 .orderBadge {
-   display: inline-grid;
-   place-items: center;
-   width: var(--space-7);
-   height: var(--space-7);
-   border: var(--border-width-hairline) solid var(--color-brand-primary);
-   border-radius: var(--radius-pill);
-   background: var(--factory-drop-accept);
-   color: var(--color-brand-primary);
-   font-weight: var(--font-weight-bold);
+  display: inline-grid;
+  place-items: center;
+  width: var(--space-7);
+  height: var(--space-7);
+  border: var(--border-width-hairline) solid var(--color-brand-primary);
+  border-radius: var(--radius-pill);
+  background: var(--factory-drop-accept);
+  color: var(--color-brand-primary);
+  font-weight: var(--font-weight-bold);
 }
 
 .dropHint {
-   padding: var(--space-4);
-   border: var(--border-width-hairline) dashed var(--color-border-default);
-   border-radius: var(--radius-2);
-   background: var(--factory-drop-accept);
+  padding: var(--space-4);
+  border: var(--border-width-hairline) dashed var(--color-border-default);
+  border-radius: var(--radius-2);
+  background: var(--factory-drop-accept);
 }
 
 .dragHandle {
-   display: inline-grid;
-   place-items: center;
-   min-width: var(--size-control-lg);
-   padding: var(--space-1) var(--space-2);
-   border: var(--border-width-hairline) dashed var(--color-border-default);
-   border-radius: var(--radius-pill);
-   color: var(--color-brand-primary);
-   font-size: var(--font-size-12);
-   font-weight: var(--font-weight-bold);
-   letter-spacing: var(--font-tracking-wider);
-   text-transform: uppercase;
-   cursor: grab;
-   user-select: none;
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--size-control-lg);
+  padding: var(--space-1) var(--space-2);
+  border: var(--border-width-hairline) dashed var(--color-border-default);
+  border-radius: var(--radius-pill);
+  color: var(--color-brand-primary);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--font-tracking-wider);
+  text-transform: uppercase;
+  cursor: grab;
+  user-select: none;
 }
 
 .dragHandle:active {
-   cursor: grabbing;
+  cursor: grabbing;
 }
 
 .actionRow {
-   display: flex;
-   gap: var(--space-3);
-   align-items: end;
-   flex-wrap: wrap;
+  display: flex;
+  gap: var(--space-3);
+  align-items: end;
+  flex-wrap: wrap;
 }
 
 .statusPill {
-   display: inline-flex;
-   margin-top: var(--space-3);
-   padding: var(--space-1) var(--space-3);
-   border-radius: var(--radius-1);
-   background: var(--factory-drop-accept);
-   color: var(--color-brand-primary);
-   font-size: var(--font-size-14);
-   font-weight: var(--font-weight-bold);
+  display: inline-flex;
+  margin-top: var(--space-3);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-1);
+  background: var(--factory-drop-accept);
+  color: var(--color-brand-primary);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
 }
 
 .statusPill--manual {
-   background: var(--color-bg-surface-hover);
-   color: var(--color-text-primary);
+  background: var(--color-bg-surface-hover);
+  color: var(--color-text-primary);
 }
 
 .usageTags {
-   display: flex;
-   flex-wrap: wrap;
-   gap: var(--space-1) var(--space-3);
-   margin-top: var(--space-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin-top: var(--space-2);
 }
 
 .usageTag {
-   display: inline-flex;
-   align-items: center;
-   gap: var(--space-1);
-   max-width: 100%;
-   color: var(--color-text-secondary);
-   font-size: var(--font-size-12);
-   font-weight: var(--font-weight-bold);
-   line-height: var(--font-leading-12);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  max-width: 100%;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--font-leading-12);
 }
 
 .usageTag::before {
-   content: "";
-   width: var(--space-1);
-   height: var(--space-1);
-   border-radius: var(--radius-pill);
-   background: var(--color-brand-primary);
-   box-shadow: 0 0 0 var(--border-width-thick) var(--factory-tag-green); /* deliberate: tokenized solid shadow because opacity cannot be expressed without raw rgba */
-   flex: 0 0 auto;
+  content: "";
+  width: var(--space-1);
+  height: var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-primary);
+  box-shadow: 0 0 0 var(--border-width-thick) var(--factory-tag-green); /* deliberate: tokenized solid shadow because opacity cannot be expressed without raw rgba */
+  flex: 0 0 auto;
 }
 
 .usageTag:nth-child(4n + 2)::before {
-   background: var(--factory-tag-blue);
-   box-shadow: 0 0 0 var(--border-width-thick) var(--factory-tag-blue); /* deliberate: tokenized solid shadow because opacity cannot be expressed without raw rgba */
+  background: var(--factory-tag-blue);
+  box-shadow: 0 0 0 var(--border-width-thick) var(--factory-tag-blue); /* deliberate: tokenized solid shadow because opacity cannot be expressed without raw rgba */
 }
 
 .usageTag:nth-child(4n + 3)::before {
-   background: var(--factory-tag-gold);
-   box-shadow: 0 0 0 var(--border-width-thick) var(--factory-tag-gold); /* deliberate: tokenized solid shadow because opacity cannot be expressed without raw rgba */
+  background: var(--factory-tag-gold);
+  box-shadow: 0 0 0 var(--border-width-thick) var(--factory-tag-gold); /* deliberate: tokenized solid shadow because opacity cannot be expressed without raw rgba */
 }
 
 .usageTag:nth-child(4n + 4)::before {
-   background: var(--factory-tag-pink);
-   box-shadow: 0 0 0 var(--border-width-thick) var(--factory-tag-pink); /* deliberate: tokenized solid shadow because opacity cannot be expressed without raw rgba */
+  background: var(--factory-tag-pink);
+  box-shadow: 0 0 0 var(--border-width-thick) var(--factory-tag-pink); /* deliberate: tokenized solid shadow because opacity cannot be expressed without raw rgba */
 }
 
 .ghostButton,
 .deleteButton,
 .primaryButton {
-   border: var(--border-width-hairline) solid var(--color-border-default);
-   border-radius: var(--radius-1);
-   padding: var(--space-3) var(--space-4);
-   font-weight: var(--font-weight-bold);
-   transition: transform var(--transition-base), border-color var(--transition-base), background var(--transition-base);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-1);
+  padding: var(--space-3) var(--space-4);
+  font-weight: var(--font-weight-bold);
+  transition: transform var(--transition-base), border-color var(--transition-base), background var(--transition-base);
 }
 
 .ghostButton,
 .deleteButton {
-   background: transparent;
-   color: var(--color-text-primary);
+  background: transparent;
+  color: var(--color-text-primary);
 }
 
 .ghostButton {
-   background: var(--color-bg-surface);
+  background: var(--color-bg-surface);
 }
 
 .primaryButton {
-   border-color: var(--color-brand-primary);
-   background: var(--color-brand-primary);
-   color: var(--color-text-onDark);
+  border-color: var(--color-brand-primary);
+  background: var(--color-brand-primary);
+  color: var(--color-text-onDark);
 }
 
 .deleteButton {
-   border-color: var(--factory-delete-border);
-   background: var(--factory-delete-bg);
-   color: var(--factory-delete-text);
+  border-color: var(--factory-delete-border);
+  background: var(--factory-delete-bg);
+  color: var(--factory-delete-text);
 }
 
 .ghostButton:hover,
 .deleteButton:hover,
 .primaryButton:hover {
-   transform: translateY(-1px);
+  transform: translateY(-1px);
 }
 
 .ghostButton:hover {
-   background: var(--color-bg-surface-hover);
+  background: var(--color-bg-surface-hover);
 }
 
 .deleteButton:hover {
-   background: var(--factory-delete-bg);
-   border-color: var(--factory-delete-border);
-   filter: brightness(0.85);
+  background: var(--factory-delete-bg);
+  border-color: var(--factory-delete-border);
+  filter: brightness(0.85);
 }
 
 .ghostButton:disabled,
 .deleteButton:disabled,
 .primaryButton:disabled {
-   opacity: 0.5;
-   cursor: not-allowed;
-   transform: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .actionRow {
-   justify-content: space-between;
-   margin-top: var(--space-5);
+  justify-content: space-between;
+  margin-top: var(--space-5);
 }
 
 .actionRow--reset {
-   justify-content: flex-start;
+  justify-content: flex-start;
 }
 
 .actionRow--save {
-   margin-top: var(--space-5);
-   justify-content: flex-end;
+  margin-top: var(--space-5);
+  justify-content: flex-end;
 }
 
 .payloadPreview {
-   overflow-x: auto;
-   padding: var(--space-4);
-   border: var(--border-width-hairline) dashed var(--color-border-default);
-   border-radius: var(--radius-2);
-   background: var(--factory-payload-bg);
-   color: var(--factory-payload-text);
-   font-family: var(--factory-payload-font);
-   font-size: var(--font-size-14);
-   line-height: var(--font-leading-base);
+  overflow-x: auto;
+  padding: var(--space-4);
+  border: var(--border-width-hairline) dashed var(--color-border-default);
+  border-radius: var(--radius-2);
+  background: var(--factory-payload-bg);
+  color: var(--factory-payload-text);
+  font-family: var(--factory-payload-font), monospace;
+  font-size: var(--font-size-14);
+  line-height: var(--font-leading-base);
 }
 
 .debugSection {
-   opacity: 0.9;
+  opacity: 0.9;
 }
 
 .debugSummary {
-   cursor: pointer;
-   font-weight: var(--font-weight-bold);
-   color: var(--color-text-secondary);
-   list-style: none;
+  cursor: pointer;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  list-style: none;
 }
 
 .debugSummary::-webkit-details-marker {
-   display: none;
+  display: none;
 }
 
 .debugContent {
-   margin-top: var(--space-4);
+  margin-top: var(--space-4);
 }
 
 @media (max-width: 800px) {
-   .fieldGrid {
-      grid-template-columns: 1fr;
-   }
+  .fieldGrid {
+    grid-template-columns: 1fr;
+  }
 
-   .stationColumns {
-      grid-template-columns: 1fr;
-   }
+  .stationColumns {
+    grid-template-columns: 1fr;
+  }
 
-   .sectionHeading--inline,
-   .summaryCard,
-   .knownStationCard,
-   .selectedCard,
-   .selectedCardActions,
-   .actionRow {
-      display: grid;
-   }
+  .sectionHeading--inline,
+  .summaryCard,
+  .knownStationCard,
+  .selectedCard,
+  .selectedCardActions,
+  .actionRow {
+    display: grid;
+  }
 
-   .actionRow {
-      justify-content: stretch;
-   }
+  .actionRow {
+    justify-content: stretch;
+  }
 }
 </style>

@@ -413,19 +413,19 @@ watch(payloadPreviewText, () => {
 					</div>
 
 					<div class="taskAddRow">
-						<button type="button" class="ghostButton" @click="addTask('multiple-choice')">
+						<button type="button" class="typeButton" data-task-type="multiple-choice" @click="addTask('multiple-choice')">
 							+ Flervalg
 						</button>
-						<button type="button" class="ghostButton" @click="addTask('x-or-y')">
+						<button type="button" class="typeButton" data-task-type="x-or-y" @click="addTask('x-or-y')">
 							+ X eller Y
 						</button>
-						<button type="button" class="ghostButton" @click="addTask('email-hotspots')">
+						<button type="button" class="typeButton" data-task-type="email-hotspots" @click="addTask('email-hotspots')">
 							+ E-post
 						</button>
-						<button type="button" class="ghostButton" @click="addTask('sort-into-buckets')">
+						<button type="button" class="typeButton" data-task-type="sort-into-buckets" @click="addTask('sort-into-buckets')">
 							+ Sortering
 						</button>
-						<button type="button" class="ghostButton" @click="addTask('password-strength')">
+						<button type="button" class="typeButton" data-task-type="password-strength" @click="addTask('password-strength')">
 							+ Passord
 						</button>
 					</div>
@@ -443,7 +443,7 @@ watch(payloadPreviewText, () => {
 					handle=".dragHandle"
 				>
 					<template #item="{ element: task, index: taskIndex }">
-						<article class="taskCard">
+						<article class="taskCard" :data-task-type="task.templateKind">
 							<div class="taskCardHeader">
 								<div class="taskCardTitle">
 									<span class="orderBadge" :aria-label="`Plass ${taskIndex + 1}`">{{ taskIndex + 1 }}</span>
