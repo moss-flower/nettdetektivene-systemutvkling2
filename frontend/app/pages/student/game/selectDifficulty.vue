@@ -16,12 +16,7 @@ type ExerciseOption = {
   isCompleted: boolean;
   to: {
     path: string;
-    query: {
-      exerciseUid: string;
-      preview?: string;
-      classroomId?: string;
-      worldUid?: string;
-    };
+    query: Record<string, string>;
   };
 };
 
