@@ -68,61 +68,61 @@ const commonPatternsText = computed({
 
 <style scoped>
 .templateSection {
-	margin-top: var(--space-4);
-	padding-top: var(--space-4);
-	border-top: var(--border-width-hairline) solid var(--color-border-default);
+   margin-top: var(--space-4);
+   padding-top: var(--space-4);
+   border-top: var(--border-width-hairline) solid var(--color-border-default);
 }
 
 .templateSection h4 {
-	margin: 0 0 0.8rem;
-	font-weight: 700;
+   margin: 0 0 0.8rem;
+   font-weight: 700;
 }
 
 .fieldGrid {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 0.9rem;
+   display: grid;
+   grid-template-columns: repeat(2, minmax(0, 1fr));
+   gap: 0.9rem;
 }
 
 .field {
-	display: grid;
-	gap: 0.45rem;
+   display: grid;
+   gap: 0.45rem;
 }
 
 .fieldFull {
-	grid-column: 1 / -1;
+   grid-column: 1 / -1;
 }
 
 .field span {
-	font-weight: 700;
+   font-weight: 700;
 }
 
 .field input,
 .field select,
 .field textarea {
-	width: 100%;
-	padding: 0.85rem var(--space-4);
-	border: var(--border-width-hairline) solid var(--color-border-default);
-	border-radius: 0.9rem;
-	background: rgba(0, 0, 0, 0.16);
-	color: var(--color-text-primary);
-	font: inherit;
+   width: 100%;
+   padding: 0.85rem var(--space-4);
+   border: var(--border-width-hairline) solid var(--color-border-default);
+   border-radius: 0.9rem;
+   background: rgba(0, 0, 0, 0.16);
+   color: var(--color-text-primary);
+   font: inherit;
 }
 
 .field textarea {
-	resize: vertical;
+   resize: vertical;
 }
 
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-	outline: none;
-	border-color: var(--color-brand-primary);
+   outline: none;
+   border-color: var(--color-brand-primary);
 }
 
 @media (max-width: 800px) {
-	.fieldGrid {
-		grid-template-columns: 1fr;
-	}
+   .fieldGrid {
+      grid-template-columns: 1fr;
+   }
 }
 </style>
