@@ -15,6 +15,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
+import no.safety.backend.auth.service.CompromisedPasswordService;
 import no.safety.backend.auth.service.JwtService;
 import no.safety.backend.exception.domain.RoleNotFoundException;
 import no.safety.backend.registration.dto.StudentUserRegistrationRequest;
@@ -48,6 +49,9 @@ public class UserRegistrationControllerTest {
     @MockitoBean
     private UserRegistrationService mockService;
 
+    @MockitoBean
+    private CompromisedPasswordService compromisedPasswordService;
+
     private StudentUserRegistrationRequest validRequest;
     private StudentUser savedStudent;
     private TeacherUserRegistrationRequest validTeacherRequest;
@@ -67,7 +71,7 @@ public class UserRegistrationControllerTest {
             .build();
         
         validTeacherRequest = new TeacherUserRegistrationRequest(
-            "jane", "jane@test.com", "secret_password");
+            "jane", "jane@test.com", "FtmDqt3A4Qk5WwcgmNtg");
         savedTeacher = TeacherUser.builder()
             .username("jane")
             .email("jane@test.com")

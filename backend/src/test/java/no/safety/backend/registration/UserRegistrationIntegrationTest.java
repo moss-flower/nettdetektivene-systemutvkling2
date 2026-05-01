@@ -64,7 +64,7 @@ public class UserRegistrationIntegrationTest {
 
     @Test
     void shouldRegisterTeacherUserSuccessfully() {
-        TeacherUserRegistrationRequest request = new TeacherUserRegistrationRequest("teacher", "teacher@email.no", "secret_password");
+        TeacherUserRegistrationRequest request = new TeacherUserRegistrationRequest("teacher", "teacher@email.no", "FtmDqt3A4Qk5WwcgmNtg");
 
         client.post()
             .uri("/api/v1/register/teacher")
