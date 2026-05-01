@@ -11,11 +11,15 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import no.safety.backend.achievements.service.AchievementService;
 import no.safety.backend.completedexercise.dto.CompletedExerciseRequest;
 import no.safety.backend.completedexercise.dto.CompletedExerciseResponse;
 import no.safety.backend.completedexercise.model.CompletedExercise;
 import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
 import no.safety.backend.exception.ForbiddenException;
+import no.safety.backend.station.model.Station;
+import no.safety.backend.station.repository.StationRepository;
 import no.safety.backend.excercise.model.Exercise;
 import no.safety.backend.excercise.repository.ExerciseRepository;
 import no.safety.backend.notepad.model.NotepadEntry;
@@ -41,6 +45,12 @@ class CompletedExerciseServiceTest {
   @Mock
   private StudentUserRepository studentUserRepository;
 
+  @Mock
+  private StationRepository stationRepository;
+
+  @Mock
+  private AchievementService achievementService;
+  
   @Mock
   private ExerciseRepository exerciseRepository;
 
