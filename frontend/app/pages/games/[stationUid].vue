@@ -10,16 +10,18 @@ import SortIntoBucketsTemplate from '~/components/gameplay/templates/SortIntoBuc
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoiceTemplate.vue'
 import UiStudentHomeBackButton from '~/components/ui/UiStudentHomeBackButton.vue'
+import { useGamePreview } from '~/composables/useGamePreview'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
-import { markExerciseCompleted, useCompletedExerciseUids } from '~/composables/utils/gameProgress'
+import { markExerciseCompleted } from '~/composables/utils/gameProgress'
 import { routePaths } from '~/composables/utils/routePaths'
 import { Exercise } from '~/composables/types/ExerciseType'
-import { Station } from '~/composables/types/StationType'
 import { useAudioSettings } from '~/composables/useAudioSettings'
 import { useEffectSound } from '~/composables/useEffectSound'
 import celebrationSfx from '~/assets/sound/celebration-sfx.mp3'
 import { useStudentProfile } from '~/composables/useStudentProfile'
+import { useStations } from '~/composables/useStations'
 import { getLevel } from '~/composables/utils/studentProgress'
+import envelopeIcon from '~/assets/ui-icons/Envelope.png'
 
 import type {
   EmailHotspotResult,
@@ -37,14 +39,19 @@ definePageMeta({
 })
 
 const route = useRoute()
+const { isPreview, buildPreviewRoute } = useGamePreview()
 const requestedStationUid = Array.isArray(route.params.stationUid)
     ? route.params.stationUid[0] ?? ''
     : route.params.stationUid ?? ''
 const requestedExerciseUid = typeof route.query.exerciseUid === 'string'
     ? route.query.exerciseUid
     : ''
+const previewWorldUid = typeof route.query.worldUid === 'string'
+    ? route.query.worldUid
+    : undefined
 
-const station = await Station.backendFetchStationByUid(requestedStationUid)
+const { getStationDataByUid } = useStations()
+const station = await getStationDataByUid(requestedStationUid, previewWorldUid)
 
 if (!station) {
   throw createError({
@@ -55,32 +62,59 @@ if (!station) {
 
 const { celebrateCorrectAnswer, celebrateLevelComplete, stop } = useGameConfetti()
 const { getMyProfile } = useStudentProfile()
-const completedExerciseUids = await useCompletedExerciseUids()
 const completionError = ref('')
+const shouldSkipProgress = computed(() => isPreview.value || station.isTeacherPreview)
+
+const stationMapRoute = computed(() => {
+  if (isPreview.value) {
+    return buildPreviewRoute(routePaths.studentLevels)
+  }
+
+  return {
+    path: routePaths.studentLevels,
+    query: previewWorldUid ? { worldUid: previewWorldUid } : undefined,
+  }
+})
+
+const stationDifficultyRoute = computed(() => {
+  if (isPreview.value) {
+    const previewRoute = buildPreviewRoute(routePaths.studentExerciseDifficultySelect)
+
+    return {
+      ...previewRoute,
+      query: {
+        ...previewRoute.query,
+        uid: station.uid,
+      },
+    }
+  }
+
+  return {
+    path: routePaths.studentExerciseDifficultySelect,
+    query: previewWorldUid ? { uid: station.uid, worldUid: previewWorldUid } : { uid: station.uid },
+  }
+})
+
+if (!station.isUnlocked) {
+  await navigateTo(stationMapRoute.value)
+}
 
 const activeExerciseUid = station.exerciseUids.includes(requestedExerciseUid)
     ? requestedExerciseUid
     : station.exerciseUids[0] ?? null
 
 if (activeExerciseUid) {
-  const activeExerciseIndex = station.exerciseUids.findIndex((exerciseUid) => exerciseUid === activeExerciseUid)
-  const previousExerciseUid = activeExerciseIndex > 0 ? station.exerciseUids[activeExerciseIndex - 1] : null
+  const activeExerciseStatus = station.exercises.find((exercise) => exercise.uid === activeExerciseUid)
 
-  if (previousExerciseUid && !completedExerciseUids.includes(previousExerciseUid)) {
-    await navigateTo({
-      path: routePaths.studentExerciseDifficultySelect,
-      query: {uid: station.uid},
-    })
+  if (activeExerciseStatus && !activeExerciseStatus.isUnlocked) {
+    await navigateTo(stationDifficultyRoute.value)
   }
 }
 
 const activeExercise = activeExerciseUid ? await Exercise.backendFetchExerciseByUid(activeExerciseUid) : null
 
 if (!activeExercise) {
-  await navigateTo({
-    path: routePaths.studentExerciseDifficultySelect,
-    query: {uid: station.uid},
-  })
+  await navigateTo(stationDifficultyRoute.value)
 
   throw createError({
     statusCode: 404,
@@ -204,20 +238,15 @@ const progressLabel = computed(() => {
   return `Sak ${currentIndex.value + 1} av ${tasks.length}`
 })
 
-const exerciseSelectRoute = computed(() => ({
-  path: routePaths.studentExerciseDifficultySelect,
-  query: {uid: station.uid},
-}))
+const exerciseSelectRoute = computed(() => stationDifficultyRoute.value)
 
-const bossVictoryRoute = computed(() => ({
-  path: routePaths.studentLevels,
-}))
+const bossVictoryRoute = computed(() => stationMapRoute.value)
 
 const showBossVictoryDialog = computed(() =>
     isBossStation && showExerciseResultDialog.value && isExerciseComplete.value
 )
 
-const exerciseHint = computed(() => activeExercise?.hint ?? '')
+const exerciseHint = computed(() => activeExercise?.notepadEntry?.content ?? '')
 
 const feedbackTitle = computed(() => {
   if (!currentTask.value) {
@@ -411,9 +440,13 @@ const onAnsweredPasswordStrength = (result: PasswordStrengthResult) => {
 }
 
 const fetchCurrentLevel = async () => {
+  if (shouldSkipProgress.value) {
+    return null
+  }
+
   const profile = await getMyProfile()
 
-  return getLevel(profile.score).level
+  return getLevel(profile.totalXp).level
 }
 
 const closeLevelupPopup = () => {
@@ -444,29 +477,27 @@ const next = async () => {
       let levelBeforeCompletion: number | null = null
 
       try {
-        try {
-          levelBeforeCompletion = await fetchCurrentLevel()
-        } catch (error) {
-          console.error('Error fetching student level before completion:', error)
-        }
-
-        await markExerciseCompleted(activeExercise.uid)
-
-        if (levelBeforeCompletion !== null) {
+        if (!shouldSkipProgress.value) {
           try {
-            const levelAfterCompletion = await fetchCurrentLevel()
-
-            if (levelAfterCompletion > levelBeforeCompletion) {
-              leveledUpTo.value = levelAfterCompletion
-              showLevelupPopup.value = true
-            }
+            levelBeforeCompletion = await fetchCurrentLevel()
           } catch (error) {
-            console.error('Error fetching student level after completion:', error)
+            console.error('Error fetching student level before completion:', error)
           }
-        }
 
-        if (!completedExerciseUids.includes(activeExercise.uid)) {
-          completedExerciseUids.push(activeExercise.uid)
+          await markExerciseCompleted(activeExercise.uid)
+
+          if (levelBeforeCompletion !== null) {
+            try {
+              const levelAfterCompletion = await fetchCurrentLevel()
+
+              if (levelAfterCompletion !== null && levelAfterCompletion > levelBeforeCompletion) {
+                leveledUpTo.value = levelAfterCompletion
+                showLevelupPopup.value = true
+              }
+            } catch (error) {
+              console.error('Error fetching student level after completion:', error)
+            }
+          }
         }
 
         celebrateLevelComplete()
@@ -514,13 +545,25 @@ const next = async () => {
               :images="bossTaskImages"
           />
           <div v-else class="stationPageMeta">
-            <p class="stationPageEyebrow">{{ station.title }}</p>
-            <p class="pageProgressPill">{{ progressLabel }}</p>
+            <div class="stationPageMeta__text">
+              <p class="stationPageEyebrow">{{ station.title }}</p>
+              <p class="pageProgressPill">{{ progressLabel }}</p>
+            </div>
           </div>
         </div>
       </header>
 
       <div class="stationPageBoard">
+        <button
+          v-if="exerciseHint"
+          class="tipsLetterButton"
+          type="button"
+          @click="showTipsPopup = true"
+        >
+          <img :src="envelopeIcon" alt="Tipsbrev" >
+          <span>Tips</span>
+        </button>
+
         <XOrYTemplate
             v-if="currentTask?.templateKind === 'x-or-y' && currentOptions"
             :key="`${currentTask.id}-xory`"
@@ -616,6 +659,7 @@ const next = async () => {
     <PopupTips
       v-if="showTipsPopup"
       :hint="exerciseHint"
+      :title="activeExercise?.notepadEntry?.title ?? ''"
       @close="showTipsPopup = false"
     />
 
@@ -670,6 +714,11 @@ const next = async () => {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
+}
+
+.stationPageMeta__text {
+  display: grid;
+  gap: 0.5rem;
 }
 
 .stationPageEyebrow {
@@ -767,12 +816,12 @@ const next = async () => {
     left: var(--space-4);
   }
 
-  .station-page__hero {
+  .stationPageHero {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .station-page__meta {
+  .stationPageMeta {
     align-items: flex-start;
     flex-direction: column;
   }

@@ -296,23 +296,103 @@ function sendMysterySubmission() {
 
 <style scoped>
 .studentMystery {
+  /* case-room wall */
+  --mystery-wall: var(--palette-wood-900);
+  --mystery-wall-seam: var(--palette-overlay-warm-glow);
+  --mystery-wall-glow: var(--palette-overlay-warm-glow);
+
+  /* Text on wall */
+  --mystery-eyebrow: var(--palette-gold-500);
+  --mystery-title: var(--palette-cream-100);
+  --mystery-title-depth: var(--palette-overlay-dark-strong);
+  --mystery-intro: var(--palette-cream-300);
+
+  /* Week badge, classified stamp */
+  --mystery-week-bg: var(--palette-navy-900);
+  --mystery-week-text: var(--palette-cream-100);
+
+  /* play card, active case file, gilt frame */
+  --mystery-play-bg-top: var(--palette-cream-100);
+  --mystery-play-bg-bottom: var(--palette-cream-200);
+  --mystery-play-border: var(--palette-gold-600);
+  --mystery-play-highlight: var(--palette-gold-400);
+  --mystery-play-liner: var(--palette-cork-900);
+  --mystery-play-shadow: var(--palette-overlay-dark-deep);
+  --mystery-play-text: var(--palette-cork-900);
+
+  /* Primary action */
+  --mystery-action-bg: var(--palette-navy-900);
+  --mystery-action-text: var(--palette-cream-100);
+  --mystery-action-hover: var(--palette-navy-700);
+
+  /* Secondary action */
+  --mystery-secondary-bg: var(--palette-cream-100);
+  --mystery-secondary-border: var(--palette-cork-900);
+  --mystery-secondary-text: var(--palette-cork-900);
+  --mystery-secondary-hover: var(--palette-overlay-cork-soft);
+
+  /* card surface (sections, dialog, form area) */
+  --mystery-card-bg-top: var(--palette-cream-100);
+  --mystery-card-bg-bottom: var(--palette-cream-200);
+  --mystery-card-border: var(--palette-overlay-cork-medium);
+  --mystery-card-shadow: var(--palette-overlay-dark-deep);
+  --mystery-card-text: var(--palette-cork-900);
+  --mystery-card-muted: var(--palette-cork-580);
+
+  /* form fields */
+  --mystery-field-label: var(--palette-cork-900);
+  --mystery-field-bg: var(--palette-cream-100);
+  --mystery-field-border: var(--palette-gray-200);
+  --mystery-field-text: var(--palette-cork-900);
+
+  /* upload zone */
+  --mystery-upload-bg: var(--palette-overlay-cork-soft);
+  --mystery-upload-border: var(--palette-cork-500);
+  --mystery-upload-text: var(--palette-cork-580);
+
+  /* divider */
+  --mystery-divider: var(--palette-overlay-cork-shadow);
+
+  /* feedback */
+  --mystery-error: var(--color-semantic-error);
+  --mystery-success: var(--color-semantic-success);
+  --mystery-meta: var(--palette-cork-580);
+
+  /* Dialog */
+  --mystery-dialog-overlay: var(--palette-overlay-dark-strong);
+
+  position: relative;
   min-height: 100%;
-  padding: clamp(1rem, 2.5vw, 2rem);
-  border-radius: 0;
-  background: transparent;
+  width: 100%;
+  display: grid;
+  gap: var(--space-6);
+  align-content: start;
+  padding: var(--layout-page-padding);
+  border-radius: var(--radius-2);
+  color: var(--mystery-title);
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 25%, var(--mystery-wall-glow), transparent 70%),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 180px,
+      var(--mystery-wall-seam) 180px,
+      var(--mystery-wall-seam) 181px
+    ),
+    var(--mystery-wall);
+  overflow-x: hidden;
 }
 
 .studentMysteryContent {
   width: min(820px, 100%);
   margin: 0 auto;
   display: grid;
-  gap: clamp(1.25rem, 2vw, 2rem);
+  gap: var(--space-6);
 }
 
 .studentMysteryHeader {
   display: grid;
   gap: var(--space-2);
-  padding: 0;
 }
 
 .mysteryTitleRow {
@@ -323,52 +403,81 @@ function sendMysterySubmission() {
 }
 
 .studentMysteryEyebrow {
-  color: var(--color-brand-primary);
+  margin: 0;
+  color: var(--mystery-eyebrow);
+  font-family: var(--font-family-body), sans-serif;
   font-size: var(--font-size-14);
+  line-height: var(--font-leading-14);
   font-weight: var(--font-weight-bold);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--font-tracking-wider);
   text-transform: uppercase;
 }
 
 .studentMysteryHeader h1 {
   margin: 0;
   max-width: 14ch;
+  font-family: var(--font-family-serif), sans-serif;
+  /* fluid hero scale, deliberate exception */
   font-size: clamp(1.7rem, 3vw, 2.4rem);
-  line-height: 1.02;
+  line-height: 1.05;
+  font-weight: var(--font-weight-regular);
+  color: var(--mystery-title);
+  text-shadow: 0 1px 2px var(--mystery-title-depth);
 }
 
 .studentMysteryIntro {
+  margin: 0;
   max-width: 58ch;
-  color: var(--color-text-secondary);
-  font-size: clamp(var(--font-size-16), 1.5vw, 1.15rem);
+  color: var(--mystery-intro);
+  font-family: var(--font-family-body), sans-serif;
+  font-size: var(--font-size-16);
+  line-height: var(--font-leading-16);
 }
 
 .mysterySecondaryAction {
   width: fit-content;
   min-height: var(--size-control-sm);
-  padding: 0.55rem 0.9rem;
-  border: 1px solid color-mix(in srgb, var(--color-brand-primary) 18%, var(--color-border-default));
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width-hairline) solid var(--mystery-secondary-border);
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-bg-surface) 88%, var(--color-semantic-info) 12%);
-  color: var(--color-brand-primary);
+  background: var(--mystery-secondary-bg);
+  color: var(--mystery-secondary-text);
   font: inherit;
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
+  transition: background var(--transition-fast);
 }
 
+.mysterySecondaryAction:hover {
+  background: var(--mystery-secondary-hover);
+}
+
+/* --- Play card: active case file with gilt frame --- */
 .mysteryPlayCard {
   display: grid;
   gap: var(--space-3);
-  padding: clamp(1rem, 2vw, 1.35rem);
-  border: 1px solid color-mix(in srgb, var(--color-brand-primary) 14%, var(--color-border-default));
-  border-radius: clamp(1rem, 2vw, 1.2rem);
-  background: color-mix(in srgb, var(--color-bg-surface) 90%, var(--color-semantic-info) 10%);
+  padding: var(--space-5);
+  border: var(--border-width-chunky) solid var(--mystery-play-border);
+  border-radius: var(--radius-2);
+  background: linear-gradient(
+    180deg,
+    var(--mystery-play-bg-top) 0%,
+    var(--mystery-play-bg-bottom) 100%
+  );
+  box-shadow:
+    inset 0 0 0 var(--border-width-thin) var(--mystery-play-liner),
+    inset 0 var(--border-width-thin) 0 var(--mystery-play-highlight),
+    var(--space-2) var(--space-4) var(--space-6) var(--mystery-play-shadow);
+  color: var(--mystery-play-text);
 }
 
 .mysteryPlayTitle {
   margin: 0;
-  font-size: clamp(1.35rem, 2vw, 1.65rem);
-  line-height: 1.05;
+  font-family: var(--font-family-serif), sans-serif;
+  font-size: var(--font-size-28);
+  line-height: var(--font-leading-28);
+  font-weight: var(--font-weight-semibold);
+  color: var(--mystery-play-text);
 }
 
 .mysteryActionsRow {
@@ -383,31 +492,44 @@ function sendMysterySubmission() {
   align-items: center;
   justify-content: center;
   min-height: var(--size-control-md);
-  padding: 0.7rem 1.1rem;
+  padding: var(--space-3) var(--space-4);
+  border: none;
   border-radius: var(--radius-2);
-  background: var(--color-brand-primary);
-  color: var(--color-text-onDark);
+  background: var(--mystery-action-bg);
+  color: var(--mystery-action-text);
+  font-family: var(--font-family-body), sans-serif;
   font-weight: var(--font-weight-semibold);
   text-decoration: none;
   cursor: pointer;
+  transition: background var(--transition-fast);
 }
 
+.mysteryPlayAction:hover {
+  background: var(--mystery-action-hover);
+}
+
+/* --- Sections: cream case-report cards on the wall --- */
 .studentMysterySection {
   display: grid;
-  gap: var(--space-3);
-  padding: var(--space-5) 0;
-  border-top: 1px solid var(--color-border-default);
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: var(--border-width-hairline) solid var(--mystery-card-border);
+  border-radius: var(--radius-2);
+  background: linear-gradient(
+    180deg,
+    var(--mystery-card-bg-top) 0%,
+    var(--mystery-card-bg-bottom) 100%
+  );
+  box-shadow: var(--space-2) var(--space-4) var(--space-6) var(--mystery-card-shadow);
+  color: var(--mystery-card-text);
 }
 
 .mysterySectionFeature {
   padding: 0;
-  border: 0;
+  border: none;
   border-radius: 0;
   background: transparent;
-}
-
-.studentMysterySection:first-of-type {
-  padding-top: 0;
+  box-shadow: none;
 }
 
 .mysterySectionHeader {
@@ -418,11 +540,14 @@ function sendMysterySubmission() {
 .studentMysterySection h2,
 .studentMysterySection h3 {
   margin: 0;
+  font-family: var(--font-family-display), sans-serif;
 }
 
 .studentMysterySection h2 {
-  font-size: clamp(1.5rem, 2.2vw, 2rem);
-  line-height: 1.05;
+  font-size: var(--font-size-28);
+  line-height: var(--font-leading-28);
+  font-weight: var(--font-weight-bold);
+  color: var(--mystery-card-text);
 }
 
 .mysterySectionCompact {
@@ -431,30 +556,37 @@ function sendMysterySubmission() {
 
 .studentMysteryWeek {
   width: fit-content;
-  padding: 0.3rem 0.65rem;
+  padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-brand-primary) 10%, white);
-  color: var(--color-brand-primary);
+  background: var(--mystery-week-bg);
+  color: var(--mystery-week-text);
   font-size: var(--font-size-12);
+  line-height: var(--font-leading-12);
   font-weight: var(--font-weight-bold);
 }
 
 .mysteryWeekHero {
-  margin-top: 0.2rem;
+  margin-top: var(--space-1);
   flex: 0 0 auto;
 }
 
 .studentMysteryHelper {
-  color: var(--color-text-secondary);
+  color: var(--mystery-card-muted);
+  font-family: var(--font-family-body), sans-serif;
+  font-size: var(--font-size-16);
+  line-height: var(--font-leading-16);
 }
 
+/* --- form fields --- */
 .studentMysteryField {
   display: grid;
   gap: var(--space-2);
 }
 
-.studentMysteryField span {
+.studentMysteryField > span {
+  font-family: var(--font-family-body), sans-serif;
   font-weight: var(--font-weight-semibold);
+  color: var(--mystery-field-label);
 }
 
 .mysteryFieldUpload {
@@ -467,10 +599,10 @@ function sendMysterySubmission() {
   align-items: center;
   gap: var(--space-3);
   justify-content: space-between;
-  padding: 0.9rem 1rem;
-  border: 1px dashed color-mix(in srgb, var(--color-brand-primary) 28%, var(--color-border-default));
+  padding: var(--space-4);
+  border: var(--border-width-hairline) dashed var(--mystery-upload-border);
   border-radius: var(--radius-2);
-  background: color-mix(in srgb, var(--color-bg-surface) 78%, var(--color-semantic-info) 22%);
+  background: var(--mystery-upload-bg);
 }
 
 .mysteryUploadMain {
@@ -492,17 +624,21 @@ function sendMysterySubmission() {
   align-items: center;
   justify-content: center;
   min-height: var(--size-control-sm);
-  padding: 0.55rem 0.9rem;
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-pill);
-  background: var(--color-brand-primary);
-  color: var(--color-text-onDark);
+  background: var(--mystery-action-bg);
+  color: var(--mystery-action-text);
+  font-family: var(--font-family-body), sans-serif;
   font-size: var(--font-size-14);
+  line-height: var(--font-leading-14);
   font-weight: var(--font-weight-semibold);
 }
 
 .mysteryUploadText {
-  color: var(--color-text-secondary);
+  color: var(--mystery-upload-text);
+  font-family: var(--font-family-body), sans-serif;
   font-size: var(--font-size-14);
+  line-height: var(--font-leading-14);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -511,32 +647,34 @@ function sendMysterySubmission() {
 .mysteryUploadPreview {
   width: auto;
   height: auto;
+  /* responsive image cap, deliberate fluid exception */
   max-width: clamp(7rem, 22vw, 10rem);
   max-height: clamp(7rem, 22vw, 10rem);
   flex: 1 1 9rem;
   object-fit: contain;
   border-radius: var(--radius-2);
-  border: var(--border-width-hairline) solid color-mix(in srgb, var(--color-brand-primary) 16%, var(--color-border-default));
-  background: var(--color-bg-surface);
+  border: var(--border-width-hairline) solid var(--mystery-field-border);
+  background: var(--mystery-field-bg);
 }
 
 .studentMysteryField input,
 .studentMysteryField textarea {
   width: 100%;
-  padding: 0.85rem 1rem;
-  border: 1px solid var(--color-border-default);
+  padding: var(--space-4);
+  border: var(--border-width-hairline) solid var(--mystery-field-border);
   border-radius: var(--radius-2);
-  background: color-mix(in srgb, var(--color-bg-surface) 92%, var(--color-bg-canvas));
-  color: var(--color-text-primary);
+  background: var(--mystery-field-bg);
+  color: var(--mystery-field-text);
   font: inherit;
 }
 
 .studentMysteryField textarea {
   resize: vertical;
-  min-height: 7rem;
-  line-height: 1.5;
+  min-height: var(--space-8);
+  line-height: var(--font-leading-16);
 }
 
+/* --- form footer --- */
 .mysteryFormFooter {
   display: flex;
   align-items: center;
@@ -546,27 +684,31 @@ function sendMysterySubmission() {
 }
 
 .studentMysteryMeta {
-  color: var(--color-text-secondary);
+  color: var(--mystery-meta);
+  font-family: var(--font-family-body), sans-serif;
   font-size: var(--font-size-14);
+  line-height: var(--font-leading-14);
 }
 
 .studentMysteryError {
-  color: var(--color-semantic-error);
+  color: var(--mystery-error);
+  font-family: var(--font-family-body), sans-serif;
   font-weight: var(--font-weight-semibold);
 }
 
 .studentMysterySuccess {
-  color: var(--color-semantic-success);
+  color: var(--mystery-success);
+  font-family: var(--font-family-body), sans-serif;
   font-weight: var(--font-weight-semibold);
 }
 
 .studentMysterySubmit {
   min-height: var(--size-control-md);
-  padding: 0.7rem 1.1rem;
-  border: 0;
+  padding: var(--space-3) var(--space-4);
+  border: none;
   border-radius: var(--radius-2);
-  background: var(--color-brand-primary);
-  color: var(--color-text-onDark);
+  background: var(--mystery-action-bg);
+  color: var(--mystery-action-text);
   font: inherit;
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
@@ -577,12 +719,14 @@ function sendMysterySubmission() {
   cursor: not-allowed;
   background: var(--color-disabled-bg);
   color: var(--color-disabled-text);
+  box-shadow: inset 0 0 0 var(--border-width-hairline) var(--mystery-divider);
 }
 
 .studentMysterySubmit:not(:disabled):hover {
-  background: color-mix(in srgb, var(--color-brand-primary) 92%, white);
+  background: var(--mystery-action-hover);
 }
 
+/* --- Suggestion list --- */
 .studentMysteryList {
   display: grid;
   gap: var(--space-3);
@@ -595,12 +739,12 @@ function sendMysterySubmission() {
   display: grid;
   gap: var(--space-2);
   padding-bottom: var(--space-3);
-  border-bottom: 1px solid var(--color-border-default);
+  border-bottom: var(--border-width-hairline) solid var(--mystery-divider);
 }
 
 .mysteryListItem:last-child {
   padding-bottom: 0;
-  border-bottom: 0;
+  border-bottom: none;
 }
 
 .mysteryListHeader,
@@ -611,15 +755,15 @@ function sendMysterySubmission() {
   gap: var(--space-3);
   flex-wrap: wrap;
 }
-
+/* --- Dialog: evidence review panel --- */
 .studentMysteryDialog {
   position: fixed;
   inset: 0;
   z-index: 50;
   display: grid;
   place-items: center;
-  padding: clamp(var(--space-4), 2.5vw, var(--space-8));
-  background: rgb(15 23 42 / 0.36);
+  padding: var(--space-4);
+  background: var(--mystery-dialog-overlay);
 }
 
 .mysteryDialogPanel {
@@ -628,9 +772,15 @@ function sendMysterySubmission() {
   overflow: auto;
   display: grid;
   gap: var(--space-4);
-  padding: clamp(1rem, 2vw, 1.5rem);
-  border-radius: clamp(1rem, 2vw, 1.25rem);
-  background: color-mix(in srgb, var(--color-bg-surface) 94%, var(--color-semantic-info) 6%);
+  padding: var(--space-5);
+  border-radius: var(--radius-3);
+  background: linear-gradient(
+    180deg,
+    var(--mystery-card-bg-top) 0%,
+    var(--mystery-card-bg-bottom) 100%
+  );
+  box-shadow: var(--space-2) var(--space-4) var(--space-6) var(--mystery-card-shadow);
+  color: var(--mystery-card-text);
 }
 
 .mysteryDialogHeader {
@@ -647,14 +797,19 @@ function sendMysterySubmission() {
 
 .mysteryDialogClose {
   min-height: var(--size-control-sm);
-  padding: 0.55rem 0.9rem;
-  border: 0;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width-hairline) solid var(--mystery-secondary-border);
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-brand-primary) 10%, white);
-  color: var(--color-brand-primary);
+  background: var(--mystery-secondary-bg);
+  color: var(--mystery-secondary-text);
   font: inherit;
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.mysteryDialogClose:hover {
+  background: var(--mystery-secondary-hover);
 }
 
 .mysteryDialogList {
@@ -668,10 +823,10 @@ function sendMysterySubmission() {
 .mysteryDialogCard {
   display: grid;
   gap: var(--space-2);
-  padding: 1rem;
-  border: 1px solid color-mix(in srgb, var(--color-brand-primary) 12%, var(--color-border-default));
+  padding: var(--space-4);
+  border: var(--border-width-hairline) solid var(--mystery-card-border);
   border-radius: var(--radius-2);
-  background: color-mix(in srgb, var(--color-bg-surface) 82%, var(--color-semantic-info) 18%);
+  background: var(--mystery-card-bg-top);
 }
 
 .dialogCardHeader {

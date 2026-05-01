@@ -4,13 +4,34 @@ const route = useRoute();
 const { teacher } = useClassrooms();
   
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
-const { data: classroom } = await useAsyncData(
+const { data: classroom, refresh: refreshClassroom } = await useAsyncData(
   'teacher-classroom-students',
   () => (classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : null),
   { watch: [classroomId] },
 );
 
 const students = computed(() => classroom.value?.members ?? []);
+const renamingStudentId = ref('');
+
+const renameStudent = async (studentId: string, currentName: string) => {
+  if (!classroom.value || renamingStudentId.value) return;
+
+  const nextName = window.prompt(`Endre navn fra "${currentName}"`, currentName)?.trim();
+  if (!nextName || nextName === currentName) return;
+
+  if (!window.confirm(`Endre navn fra "${currentName}" til "${nextName}"?`)) return;
+
+  renamingStudentId.value = studentId;
+  try {
+    await teacher.updateStudentUsername(studentId, nextName);
+    await refreshClassroom();
+  } catch (error) {
+    console.error('Failed to rename student', error);
+    window.alert('Kunne ikke endre navn. Prøv igjen.');
+  } finally {
+    renamingStudentId.value = '';
+  }
+};
 </script>
 
 <template>
@@ -28,6 +49,7 @@ const students = computed(() => classroom.value?.members ?? []);
           <tr>
             <th>Elev</th>
             <th>Bruker-ID</th>
+            <th class="actionColumn">Endre navn</th>
           </tr>
         </thead>
         <tbody>
@@ -36,6 +58,17 @@ const students = computed(() => classroom.value?.members ?? []);
               <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, `?classroomId=${classroomId}&studentId=${student.publicUuid}`)">{{ student.username }}</NuxtLink>
             </td>
             <td>{{ student.publicUuid }}</td>
+            <td class="actionColumn">
+              <button
+                class="renameButton"
+                type="button"
+                :aria-label="`Endre navn på ${student.username}`"
+                :disabled="renamingStudentId === student.publicUuid"
+                @click="renameStudent(student.publicUuid, student.username)"
+              >
+                Endre navn
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -113,5 +146,31 @@ thead th {
 tbody a {
   color: var(--color-brand-primary);
   font-weight: 700;
+}
+
+.actionColumn {
+  width: 1%;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.renameButton {
+  padding: 0.5rem 1rem;
+  border: var(--border-width-hairline) solid var(--color-brand-primary);
+  border-radius: var(--radius-2);
+  background: color-mix(in srgb, var(--color-bg-surface) 90%, var(--color-brand-primary) 10%);
+  color: var(--color-brand-primary);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.renameButton:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-bg-surface) 80%, var(--color-brand-primary) 20%);
+}
+
+.renameButton:disabled {
+  cursor: wait;
+  opacity: 0.55;
 }
 </style>

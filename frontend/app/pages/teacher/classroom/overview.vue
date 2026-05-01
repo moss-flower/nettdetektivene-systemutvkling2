@@ -69,6 +69,7 @@ const { data: progressByStudent, refresh: refreshProgress } = await useAsyncData
 );
 
 const removingStudentId = ref('');
+const renamingStudentId = ref('');
 
 const getStudentProgress = (studentId: string): StudentProgress => progressByStudent.value?.[studentId] ?? {
   completed: 0,
@@ -88,6 +89,26 @@ const removeStudent = async (studentId: string) => {
     await refreshProgress();
   } finally {
     removingStudentId.value = '';
+  }
+};
+
+const renameStudent = async (studentId: string, currentName: string) => {
+  if (!classroom.value || renamingStudentId.value) return;
+
+  const nextName = window.prompt(`Endre navn fra "${currentName}"`, currentName)?.trim();
+  if (!nextName || nextName === currentName) return;
+
+  if (!window.confirm(`Endre navn fra "${currentName}" til "${nextName}"?`)) return;
+
+  renamingStudentId.value = studentId;
+  try {
+    await teacher.updateStudentUsername(studentId, nextName);
+    await refreshClassroom();
+  } catch (error) {
+    console.error('Failed to rename student', error);
+    window.alert('Kunne ikke endre navn. Prøv igjen.');
+  } finally {
+    renamingStudentId.value = '';
   }
 };
 </script>
@@ -112,7 +133,7 @@ const removeStudent = async (studentId: string) => {
         <img src="https://placehold.co/128x128?text=SK" alt="Stasjonskart" class="actionCardImage">
       </NuxtLink>
 
-      <NuxtLink :to="routePaths.studentHome" class="actionCard">
+      <NuxtLink :to="{ path: routePaths.studentLevels, query: { preview: '1', classroomId: classroom.uid } }" class="actionCard">
         <span class="actionCardTitle">Test spillet</span>
         <img src="https://placehold.co/128x128?text=TS" alt="Test spillet" class="actionCardImage">
       </NuxtLink>
@@ -155,6 +176,7 @@ const removeStudent = async (studentId: string) => {
           <tr>
             <th>Elev</th>
             <th>Progresjon</th>
+            <th class="actionColumn">Endre navn</th>
             <th class="actionColumn">Fjern</th>
           </tr>
         </thead>
@@ -172,6 +194,17 @@ const removeStudent = async (studentId: string) => {
                 <span class="starCount">/x{{ getStudentProgress(student.publicUuid).remaining }}</span>
                 <img :src="starEmpty" alt="Gjenstår" class="starIcon">
               </div>
+            </td>
+            <td class="actionColumn">
+              <button
+                class="renameButton"
+                type="button"
+                :aria-label="`Endre navn på ${student.username}`"
+                :disabled="renamingStudentId === student.publicUuid"
+                @click="renameStudent(student.publicUuid, student.username)"
+              >
+                Endre navn
+              </button>
             </td>
             <td class="actionColumn">
               <button
@@ -418,6 +451,26 @@ thead th {
 }
 
 .removeButton:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.renameButton {
+  padding: 0.5rem 1rem;
+  border: var(--border-width-hairline) solid var(--color-brand-primary);
+  border-radius: var(--radius-2);
+  background: color-mix(in srgb, var(--color-bg-surface) 90%, var(--color-brand-primary) 10%);
+  color: var(--color-brand-primary);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.renameButton:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-bg-surface) 80%, var(--color-brand-primary) 20%);
+}
+
+.renameButton:disabled {
   cursor: wait;
   opacity: 0.55;
 }

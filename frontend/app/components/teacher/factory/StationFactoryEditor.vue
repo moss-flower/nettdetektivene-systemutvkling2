@@ -50,6 +50,7 @@ type StationExerciseCard = {
 const payloadPreview = computed<StationFactoryPayload>(() => ({
 	title: draft.title.trim(),
 	description: draft.description.trim(),
+	hint: draft.hint.trim(),
 	image: draft.image.trim() || stationFactoryDefaultImage,
 	exerciseUids: normalizeStationExerciseUids(draft.exerciseUids),
   isBoss : draft.isBoss,
@@ -59,6 +60,7 @@ const payloadPreviewText = computed(() => JSON.stringify(payloadPreview.value, n
 const canSave = computed(() => {
 	return payloadPreview.value.title.length > 0
 		&& payloadPreview.value.description.length > 0
+		&& payloadPreview.value.hint.length > 0
 		&& payloadPreview.value.image.length > 0
 		&& payloadPreview.value.exerciseUids.length > 0;
 });
@@ -146,6 +148,7 @@ const editorDescription = computed(() => {
 const applyDraft = (payload: StationFactoryPayload) => {
 	draft.title = payload.title;
 	draft.description = payload.description;
+	draft.hint = payload.hint;
 	draft.image = payload.image;
 	draft.exerciseUids.splice(0, draft.exerciseUids.length, ...payload.exerciseUids);
   draft.isBoss = Boolean(payload.isBoss);
@@ -155,6 +158,7 @@ const updateLoadedSnapshot = (payload: StationFactoryPayload) => {
 	loadedSnapshot.value = {
 		title: payload.title,
 		description: payload.description,
+		hint: payload.hint,
 		image: payload.image,
 		exerciseUids: [...payload.exerciseUids],
     isBoss: Boolean(payload.isBoss),
@@ -285,10 +289,20 @@ watch(payloadPreviewText, () => {
 						<textarea v-model="draft.description" rows="3" placeholder="Kort beskrivelse av hva eleven skal øve på i denne stasjonen." />
 					</label>
 
-          <label class="field field--checkbox">
-            <input v-model="draft.isBoss" type="checkbox" >
-            <span>Boss-stasjon</span>
-          </label>
+					<label class="field field--full">
+						<span>Tipsbrev</span>
+						<textarea v-model="draft.hint" rows="3" placeholder="Tips som eleven kan åpne fra brevet på stasjonen." />
+					</label>
+
+					<div class="bossToggleWrap">
+					<label
+						class="field field--checkbox field--checkbox-prominent"
+						title="Skurk-stasjon betyr at elevene moter en skurk de skal sla for ekstra mestringsfølelse. Legg gjerne inn et variert oppgavesett med lignende oppgaver fra det elevene har jobbet med fram til denne stasjonen."
+					>
+						<input v-model="draft.isBoss" type="checkbox" aria-label="Marker som skurk-stasjon" >
+						<span>Skurk-stasjon</span>
+					</label>
+				</div>
 				</div>
 
 				<div class="imagePreviewCard">
@@ -657,6 +671,9 @@ watch(payloadPreviewText, () => {
 .selectedList {
 	margin-top: 1rem;
 	min-height: 5rem;
+	max-height: 65vh;
+	overflow-y: auto;
+	padding: 0.25rem;
 }
 
 .knownExercises--columns,
@@ -866,6 +883,27 @@ watch(payloadPreviewText, () => {
   align-items: center;
   gap: 0.65rem;
   display: flex;
+}
+
+.bossToggleWrap {
+	grid-column: 1 / -1;
+	display: grid;
+	place-items: center;
+	margin-top: 0.25rem;
+}
+
+.field--checkbox-prominent {
+	padding: 0.8rem 1rem;
+	border: 2px solid #f59e0b;
+	border-radius: 0.9rem;
+	background: rgba(245, 158, 11, 0.14);
+	box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22);
+	font-weight: 800;
+	cursor: help;
+}
+
+.field--checkbox-prominent span {
+	color: var(--text);
 }
 
 .field--checkbox input {

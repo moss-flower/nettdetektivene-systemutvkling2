@@ -5,6 +5,8 @@ import { useClassrooms } from "~/composables/useClassrooms";
 import type { ClassroomRequest } from "~/composables/types/ClassroomTypes";
 import TextInput from "~/components/ui/TextInput.vue";
 
+definePageMeta({ layout: "teacher" });
+
 const route = useRoute();
 const router = useRouter();
 const { teacher } = useClassrooms();

@@ -48,8 +48,18 @@ class AuthenticationControllerTest {
         Set.of("ROLE_STUDENT"),
         "Login successful"
     );
-    UserLoginTokenResponse tokenResponse = new UserLoginTokenResponse(loginResponse, "jwt-token");
-    ResponseCookie cookie = ResponseCookie.from("JWT-Cookie", "jwt-token")
+      UserLoginTokenResponse tokenResponse = new UserLoginTokenResponse(
+        loginResponse,
+        "access-token",
+        "refresh-token"
+      );
+      ResponseCookie accessCookie = ResponseCookie.from("JWT-Cookie", "access-token")
+        .httpOnly(true)
+        .secure(true)
+        .path("/")
+        .sameSite("Strict")
+        .build();
+      ResponseCookie refreshCookie = ResponseCookie.from("JWT-Refresh-Cookie", "refresh-token")
         .httpOnly(true)
         .secure(true)
         .path("/")
@@ -57,15 +67,19 @@ class AuthenticationControllerTest {
         .build();
 
     when(authenticationService.authenticateLogin(request)).thenReturn(tokenResponse);
-    when(jwtCookieService.createCookie("jwt-token")).thenReturn(cookie);
+      when(jwtCookieService.createAccessCookie("access-token")).thenReturn(accessCookie);
+      when(jwtCookieService.createRefreshCookie("refresh-token")).thenReturn(refreshCookie);
 
     ResponseEntity<UserLoginResponse> response = authenticationController.login(request);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(cookie.toString(), response.getHeaders().getFirst(HttpHeaders.SET_COOKIE));
+      assertEquals(2, response.getHeaders().get(HttpHeaders.SET_COOKIE).size());
+      assertEquals(accessCookie.toString(), response.getHeaders().get(HttpHeaders.SET_COOKIE).get(0));
+      assertEquals(refreshCookie.toString(), response.getHeaders().get(HttpHeaders.SET_COOKIE).get(1));
     assertSame(loginResponse, response.getBody());
 
     verify(authenticationService).authenticateLogin(request);
-    verify(jwtCookieService).createCookie("jwt-token");
+      verify(jwtCookieService).createAccessCookie("access-token");
+      verify(jwtCookieService).createRefreshCookie("refresh-token");
   }
 }

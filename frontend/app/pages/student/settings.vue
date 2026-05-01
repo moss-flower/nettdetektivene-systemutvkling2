@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import UiStudentHomeBackButton from "~/components/ui/UiStudentHomeBackButton.vue";
 import {useAudioSettings} from "~/composables/useAudioSettings";
 
 const { musicVolume, effectsVolume } = useAudioSettings()
@@ -55,7 +54,6 @@ const onEffectsPointerDown = (event: PointerEvent) => startDialDrag(effectsVolum
 <template>
   <section class="student-settings">
     <header class="student-settings__header">
-      <UiStudentHomeBackButton class="student-settings__back" />
       <p class="student-settings__eyebrow">Innstillinger</p>
       <h2>Lyd-konsoll</h2>
       <p class="student-settings__intro">
@@ -103,10 +101,6 @@ const onEffectsPointerDown = (event: PointerEvent) => startDialDrag(effectsVolum
           <span class="student-settings__dialReadout" v-text="effectsLabel"></span>
         </label>
       </div>
-
-      <p class="student-settings__note">
-        bare en mal rn, vri ratt eller bruk pil-taster.
-      </p>
     </article>
   </section>
 </template>

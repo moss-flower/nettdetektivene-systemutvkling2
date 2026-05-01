@@ -50,26 +50,26 @@ function closeAchievement() {
   <section class="medalsPage">
     <template v-if="loading">
       <div class="achievementsSection">
-        <h1 class="sectionTitle">Achievements</h1>
-        <p>Laster achievements...</p>
+        <h1 class="sectionTitle">Medaljer</h1>
+        <p>Laster medaljer...</p>
       </div>
     </template>
 
     <template v-else-if="formError">
       <div class="achievementsSection">
-        <h1 class="sectionTitle">Achievements</h1>
+        <h1 class="sectionTitle">Medaljer</h1>
         <p>{{ formError }}</p>
       </div>
     </template>
 
     <template v-else>
       <div class="achievementsSection">
-        <h1 class="sectionTitle">Achievements</h1>
+        <h1 class="sectionTitle">Medaljer</h1>
         <MedalGrid :medals="regularMedals" @select="openAchievement" />
       </div>
 
       <div class="specialSection">
-        <h1 class="sectionTitle">Special achievement</h1>
+        <h1 class="sectionTitle">Spesialmedalje</h1>
         <MedalElement
           v-if="specialMedal"
           class="specialMedal"
@@ -125,15 +125,14 @@ function closeAchievement() {
     ),
     var(--trophy-wall);
   color: var(--trophy-text);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .achievementsSection {
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  align-items: stretch;
   gap: var(--space-5);
   padding: var(--space-6) var(--space-5);
   background:
@@ -142,8 +141,13 @@ function closeAchievement() {
     var(--trophy-canvas);
   border-radius: var(--radius-1);
   box-shadow: 0 var(--space-2) var(--space-5) var(--palette-overlay-dark-deep);
-  overflow: hidden;
   isolation: isolate;
+  min-height: 0;
+}
+
+.medalsPage :deep(.medalGrid) {
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .achievementsSection::before {
@@ -196,6 +200,7 @@ function closeAchievement() {
 }
 
 .sectionTitle {
+  flex-shrink: 0;
   margin: 0 0 var(--space-5);
   font-family: var(--font-family-serif), sans-serif;
   font-size: var(--font-size-36);

@@ -5,8 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import no.safety.backend.achievements.model.Achievement;
+import no.safety.backend.achievements.model.AchievementCategory;
+import no.safety.backend.achievements.repository.AchievementRepository;
 import no.safety.backend.excercise.model.Exercise;
 import no.safety.backend.excercise.repository.ExerciseRepository;
+import no.safety.backend.notepad.model.NotepadEntry;
+import no.safety.backend.notepad.model.NotepadEntryType;
 import no.safety.backend.station.model.Station;
 import no.safety.backend.station.repository.StationRepository;
 import no.safety.backend.task.content.EmailHotspotsContent;
@@ -58,6 +63,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   private final ExerciseRepository exerciseRepository;
   private final StationRepository stationRepository;
   private final WorldRepository worldRepository;
+  private final AchievementRepository achievementRepository;
 
   @Override
   @Transactional
@@ -69,14 +75,14 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
 
   private void seedExercises() {
     upsertExercise(NEWSSTAND_EXERCISE_1_UID, "Troverdige nyheter", "Lett",
-        "Undersok hvilke nyhetssaker som virker ekte og hvilke faresignaler du bor sjekke.",
+        "Undersøk hvilke nyhetssaker som virker ekte og hvilke faresignaler du bør sjekke.",
         List.of(
             multipleChoiceTask(
-                "Velg den forklaringen som best viser hvorfor saken virker trygg a stole pa.",
-                "Bra observert. En tydelig avsender gjor det lettere a sjekke hvem som star bak informasjonen.",
-                "Se etter tegn som hjelper deg a sjekke saken, som tydelig avsender og konkret informasjon.",
+                "Velg den forklaringen som best viser hvorfor saken virker trygg å stole på.",
+                "Bra observert. En tydelig avsender gjør det lettere å sjekke hvem som står bak informasjonen.",
+                "Se etter tegn som hjelper deg å sjekke saken, som tydelig avsender og konkret informasjon.",
                 "Hvilken forklaring passer best?",
-                "Se pa skjermbildet og velg det beste tegnet pa at saken virker troverdig.",
+                "Se på skjermbildet og velg det beste tegnet på at saken virker troverdig.",
                 "https://placehold.co/1200x720?text=NRK%3A+Skolen+endrer+rutiner",
                 "Skjermbilde av en rolig nyhetssak med tydelig avsender",
                 List.of(
@@ -87,15 +93,15 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
             ),
             xOrYTask(
                 "Sammenlign de to overskriftene og velg den som virker mest troverdig.",
-                "Bra. Den troverdige saken bruker rolig sprak og gir deg noe konkret a sjekke.",
-                "Se etter rolig sprak, tydelig avsender og konkrete opplysninger.",
+                "Bra. Den troverdige saken bruker rolig språk og gir deg noe konkret å sjekke.",
+                "Se etter rolig språk, tydelig avsender og konkrete opplysninger.",
                 "Hvilken overskrift virker tryggest?",
-                "Velg saken du ville stolt mest pa ved forste blikk.",
+                "Velg saken du ville stolt mest på ved første blikk.",
                 "https://placehold.co/1200x720?text=VG%3A+vinn+5+millioner+na",
                 "Dramatisk overskrift med sterke ord og uklar avsender",
                 "Sak X",
-                "Sjokkerende avsloring uten kilde",
-                "Overskriften prover a stresse deg, men forklarer ikke hvem som vet dette.",
+                "Sjokkerende avsløring uten kilde",
+                "Overskriften prøver å stresse deg, men forklarer ikke hvem som vet dette.",
                 "https://placehold.co/1200x720?text=Kommunen%3A+ny+regel+for+skoleveien",
                 "Rolig overskrift med tydelig avsender",
                 "Sak Y",
@@ -106,25 +112,25 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
             sortIntoBucketsTask(
                 "Sorter tegnene i riktig boks.",
                 "Riktig. Du skilte mellom gode tegn og faresignaler i en nyhetssak.",
-                "Se en gang til pa hvilke kort som hjelper deg a stole pa saken, og hvilke som gjor deg mer skeptisk.",
-                "Hva bor du stole pa?",
+                "Se en gang til på hvilke kort som hjelper deg a stole på saken, og hvilke som gjør deg mer skeptisk.",
+                "Hva bør du stole på?",
                 "Dra kortene til riktig kategori.",
                 "Kort som skal sorteres",
                 List.of(
                     new SortIntoBucketsContent.Bucket("safe", "Trygge tegn", "Tegn som styrker troverdigheten.", "#d9fbe6"),
-                    new SortIntoBucketsContent.Bucket("warn", "Faresignaler", "Tegn som bor sjekkes ekstra.", "#fee2e2")
+                    new SortIntoBucketsContent.Bucket("warn", "Faresignaler", "Tegn som bør sjekkes ekstra.", "#fee2e2")
                 ),
                 List.of(
-                    new SortIntoBucketsContent.Item("news-1", "Tydelig avsender", "safe", "Da kan du sjekke hvem som star bak."),
-                    new SortIntoBucketsContent.Item("news-2", "Konkret kilde", "safe", "Kilder gjor det lettere a kontrollere innholdet."),
-                    new SortIntoBucketsContent.Item("news-3", "Sjokk-overskrift", "warn", "Sterke ord kan brukes for a lure deg til a klikke."),
-                    new SortIntoBucketsContent.Item("news-4", "Ingen forklaring pa hvor informasjonen kommer fra", "warn", "Nar kilden mangler, bor du vaere ekstra skeptisk.")
+                    new SortIntoBucketsContent.Item("news-1", "Tydelig avsender", "safe", "Da kan du sjekke hvem som står bak."),
+                    new SortIntoBucketsContent.Item("news-2", "Konkret kilde", "safe", "Kilder gjør det lettere a kontrollere innholdet."),
+                    new SortIntoBucketsContent.Item("news-3", "Sjokk-overskrift", "warn", "Sterke ord kan brukes for å lure deg til å klikke."),
+                    new SortIntoBucketsContent.Item("news-4", "Ingen forklaring på hvor informasjonen kommer fra", "warn", "Når kilden mangler, bør du være ekstra skeptisk.")
                 )
             ),
             multipleChoiceTask(
-                "Se pa skjermbildet og velg den beste grunnen til at saken virker falsk.",
-                "Riktig. Nar en overskrift prover a sjokkere og du ikke kjenner avsenderen, bor du stoppe opp og sjekke mer.",
-                "Tenk pa hvilke tegn som faktisk svekker troverdigheten, ikke bare hvordan saken ser ut visuelt.",
+                "Se på skjermbildet og velg den beste grunnen til at saken virker falsk.",
+                "Riktig. Når en overskrift prøver å sjokkere og du ikke kjenner avsenderen, bør du stoppe opp og sjekke mer.",
+                "Tenk på hvilke tegn som faktisk svekker troverdigheten, ikke bare hvordan saken ser ut visuelt.",
                 "Hvorfor virker denne saken falsk?",
                 "Velg forklaringen som passer best til det du ser i skjermbildet.",
                 "https://placehold.co/1200x720?text=KlikkNytt%3A+sjokkfunn+i+kantina",
@@ -140,14 +146,14 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     );
 
     upsertExercise(NEWSSTAND_EXERCISE_2_UID, "Nyhetsdetektiv", "Middels",
-        "Sammenlign nyhetssaker og finn ut hva du bor sjekke for du tror eller deler.",
+        "Sammenlign nyhetssaker og finn ut hva du bør sjekke før du tror eller deler.",
         List.of(
             multipleChoiceTask(
-                "Velg saken som virker mest palitelig nar du ser pa sprak, avsender og forklaringer.",
+                "Velg saken som virker mest pålitelig når du ser på språk, avsender og forklaringer.",
                 "Riktig. Den gode saken forklarer hva som har skjedd og peker til en kjent avsender.",
                 "Se etter kjent avsender, konkret sprak og om saken forklarer hvor informasjonen kommer fra.",
                 "Hva er det tydeligste faresignalet?",
-                "Saken ser profesjonell ut, men ett tegn gjor at du bor vaere ekstra skeptisk.",
+                "Saken ser profesjonell ut, men ett tegn gjør at du bør være ekstra skeptisk.",
                 "https://placehold.co/1200x720?text=Nyhetsrask%3A+hemmelig+rapport+lekket",
                 "Skjermbilde av en nyhetsartikkel uten tydelige kilder",
                 List.of(
@@ -158,9 +164,9 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "b"
             ),
             xOrYTask(
-                "Velg den saken som virker mest troverdig nar du sammenligner avsender og forklaring.",
+                "Velg den saken som virker mest troverdig når du sammenligner avsender og forklaring.",
                 "Bra. Den beste saken gir deg nok informasjon til at du kan sjekke mer selv.",
-                "Se etter hvem som star bak og om saken forklarer hvor opplysningene kommer fra.",
+                "Se etter hvem som står bak og om saken forklarer hvor opplysningene kommer fra.",
                 "Hvilken sak ville du sjekket videre?",
                 "Velg den som virker mest ryddig og palitelig.",
                 "https://placehold.co/1200x720?text=TikTok%3A+hemmelig+tips+gar+viralt",
@@ -176,11 +182,11 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 XOrYContent.Choice.Y
             ),
             multipleChoiceTask(
-                "Velg det beste neste steget nar du blir usikker pa om en nyhet stemmer.",
-                "Ja. Det tryggeste er a sjekke kilden og se om andre troverdige steder skriver det samme.",
-                "Tenk pa hva som hjelper deg a undersoke saken, ikke hva som sprer den raskest.",
-                "Hva bor du gjore etterpa?",
-                "Du er usikker pa om saken stemmer. Velg det smarteste neste steget.",
+                "Velg det beste neste steget når du blir usikker på om en nyhet stemmer.",
+                "Ja. Det tryggeste er å sjekke kilden og se om andre troverdige steder skriver det samme.",
+                "Tenk på hva som hjelper deg å undersøke saken, ikke hva som sprer den raskest.",
+                "Hva bør du gjøre etterpå?",
+                "Du er usikker på om saken stemmer. Velg det smarteste neste steget.",
                 "https://placehold.co/1200x720?text=Faktisk%3A+slik+sjekker+du+kilder",
                 "Illustrasjon av et barn som sammenligner flere nyhetskilder",
                 List.of(
@@ -978,36 +984,43 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   private void seedStations() {
     upsertStation(NEWSSTAND_STATION_UID, "Nyhetskvartalet",
         "Nyhetsartikler og kildekritikk for skoleelever.",
+        "Start med a sjekke hvem som er avsender, og om saken bruker sterke ord for a presse deg til a tro pa den.",
         PLACEHOLDER_IMAGE, "#cfe9ff",
         List.of(NEWSSTAND_EXERCISE_1_UID, NEWSSTAND_EXERCISE_2_UID), false);
 
     upsertStation(PHOTOGRAPH_STATION_UID, "Fotografen",
         "Normal, manipulert og KI-genererte bilder.",
+        "Se ekstra nøye pa detaljer som hender, tekst, skygger og bakgrunn nar du vurderer bilder.",
         PLACEHOLDER_IMAGE, "#5F5F5F",
         List.of(PHOTOGRAPH_EXERCISE_1_UID, PHOTOGRAPH_EXERCISE_2_UID), false);
 
     upsertStation(POSTOFFICE_STATION_UID, "Postkontoret",
         "Klikkbare e-posttester med avsendere, lenker og vedlegg.",
+        "Ikke klikk med en gang. Sjekk avsender, lenkeadresse og om meldingen prover a stresse deg.",
         PLACEHOLDER_IMAGE, "#fde68a",
         List.of(POSTOFFICE_EXERCISE_1_UID, POSTOFFICE_EXERCISE_2_UID), false);
 
     upsertStation(PASSWORDBANK_STATION_UID, "Passordbanken",
         "Passordsjekking og gode passordvaner.",
+        "Et sterkt passord er langt, unikt og vanskelig for andre a gjette, men fortsatt mulig for deg a huske.",
         PLACEHOLDER_IMAGE, "#1D5232",
         List.of(PASSWORDBANK_EXERCISE_1_UID, PASSWORDBANK_EXERCISE_2_UID), false);
 
     upsertStation(MARKETPLACE_STATION_UID, "Markedsplassen",
         "Reklame, tilbud og e-butikker som ma vurderes.",
+        "Hvis et tilbud virker for godt eller haster veldig, bor du stoppe opp og sjekke butikken forst.",
         PLACEHOLDER_IMAGE, "#962C2C",
         List.of(MARKETPLACE_EXERCISE_1_UID, MARKETPLACE_EXERCISE_2_UID), false);
 
     upsertStation(SOCIALMEDIA_STATION_UID, "Den sosiale moteplassen",
         "Deling av innlegg, vurderinger og gruppepress i sosiale medier.",
+        "Vent litt for du deler. Sjekk om innholdet har en tydelig kilde og om det prover a gjore deg sint eller redd.",
         PLACEHOLDER_IMAGE, "#fbcfe8",
         List.of(SOCIALMEDIA_EXERCISE_1_UID, SOCIALMEDIA_EXERCISE_2_UID), false);
 
     upsertStation(DATACENTER_STATION_UID, "Datasenteret",
         "Finalebanen der du bruker det du har laert for a bekjempe datatyven.",
+        "Bruk alt du har laert: stopp opp, sjekk kilden, vurder detaljer og velg trygge handlinger.",
         PLACEHOLDER_IMAGE, "#8A2A2A",
         List.of(DATACENTER_EXERCISE_UID), true);
   }
@@ -1022,7 +1035,8 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
             POSTOFFICE_STATION_UID,
             PASSWORDBANK_STATION_UID,
             MARKETPLACE_STATION_UID,
-            SOCIALMEDIA_STATION_UID
+            SOCIALMEDIA_STATION_UID,
+            DATACENTER_STATION_UID
         ));
 
     upsertWorld(QUICKSTART_WORLD_UID, "7-trinn",
@@ -1034,7 +1048,8 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
             POSTOFFICE_STATION_UID,
             PASSWORDBANK_STATION_UID,
             MARKETPLACE_STATION_UID,
-            SOCIALMEDIA_STATION_UID
+            SOCIALMEDIA_STATION_UID,
+            DATACENTER_STATION_UID
         ));
 
     worldRepository.findByUid(CREATIVE_LAB_WORLD_UID).ifPresent(worldRepository::delete);
@@ -1043,7 +1058,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   private void upsertExercise(UUID publicId, String title, String difficultyName, String description,
       List<TaskRequest> taskRequests) {
     upsertExercise(publicId, title, difficultyName, description,
-        "Tips: Les oppgaven rolig og se etter detaljer som virker uvanlige eller vanskelige a kontrollere.",
+        "Les oppgaven rolig og se etter detaljer som virker uvanlige eller vanskelige a kontrollere.",
         taskRequests);
   }
 
@@ -1056,10 +1071,41 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     exercise.setDifficultyName(difficultyName);
     exercise.setDescription(description);
     exercise.setHint(hint);
+    exercise.setNotepadEntry(defaultNotepadEntry(publicId, title, description, hint));
     exercise.getTasks().clear();
     exercise.getTasks().addAll(newTasks(exercise, taskRequests));
 
     exerciseRepository.save(exercise);
+  }
+
+  private NotepadEntry defaultNotepadEntry(UUID publicId, String title, String description, String hint) {
+    NotepadEntry notepadEntry = new NotepadEntry();
+    notepadEntry.setSource(title);
+
+    int variant = Math.floorMod(publicId.hashCode(), 3);
+    switch (variant) {
+      case 0 -> {
+        notepadEntry.setTitle("Tips");
+        notepadEntry.setType(NotepadEntryType.TIP);
+        notepadEntry.setContent(limitTo256(hint));
+      }
+      case 1 -> {
+        notepadEntry.setTitle(title + " - fakta");
+        notepadEntry.setType(NotepadEntryType.INFO);
+        notepadEntry.setContent(limitTo256("Dette trener du pa: " + description));
+      }
+      default -> {
+        notepadEntry.setTitle(title + " - observasjon");
+        notepadEntry.setType(NotepadEntryType.OBSERVATION);
+        notepadEntry.setContent(limitTo256("Husk dette fra oppgaven: " + description + " Se etter: " + hint));
+      }
+    }
+
+    return notepadEntry;
+  }
+
+  private String limitTo256(String value) {
+    return value.length() <= 256 ? value : value.substring(0, 256);
   }
 
   private List<Task> newTasks(Exercise exercise, List<TaskRequest> taskRequests) {
@@ -1079,19 +1125,38 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     return tasks;
   }
 
-  private void upsertStation(UUID uid, String title, String description, String image,
+  private void upsertStation(UUID uid, String title, String description, String hint, String image,
       String backgroundColor, List<UUID> exerciseUids, boolean isBoss) {
     Station station = stationRepository.findByUid(uid).orElseGet(Station::new);
 
     station.setUid(uid);
     station.setTitle(title);
     station.setDescription(description);
+    station.setHint(hint);
     station.setImage(image);
     station.setBackgroundColor(backgroundColor);
     station.setExerciseUids(new ArrayList<>(exerciseUids));
     station.setBoss(isBoss);
 
     stationRepository.save(station);
+
+    createStationAchievement(title, description, isBoss);
+  }
+
+  private void createStationAchievement(String title, String description, boolean isBoss) {
+    if (achievementRepository.findByTitle(title).isPresent()) {
+      return;
+    }
+
+    Achievement achievement = new Achievement();
+    achievement.setUUID(UUID.randomUUID());
+    achievement.setTitle(title);
+    achievement.setDescription(description);
+    achievement.setCategory(isBoss ? AchievementCategory.SPECIAL : AchievementCategory.STOP);
+    achievement.setSource(title);
+    achievement.setReward(isBoss ? "Spesialmedalje for å ha slått bossen" : null);
+
+    achievementRepository.save(achievement);
   }
 
   private void upsertWorld(UUID uid, String title, String description, String image, List<UUID> stationUids) {

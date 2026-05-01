@@ -1,23 +1,18 @@
 import { createDraftId } from "~/composables/useExerciseFactory";
 import { Exercise } from "~/composables/types/ExerciseType";
-import { Station } from "~/composables/types/StationType";
+import type { Station, StationRequest } from "~/composables/types/StationTypes";
+import { useStations } from "~/composables/useStations";
 
 export type StationFactoryPayload = {
 	title: string;
 	description: string;
+	hint: string;
 	image: string;
 	exerciseUids: Exercise["uid"][];
 	isBoss: boolean;
 };
 
-type BackendStationRequestPayload = {
-	title: string;
-	description: string;
-	image: string;
-	backgroundColor: string | null;
-	exerciseUids: Exercise["uid"][];
-	isBoss: boolean;
-};
+type BackendStationRequestPayload = StationRequest;
 
 export type StationFactoryStoredRecord = {
 	localId: string;
@@ -51,6 +46,7 @@ export const stationFactoryDefaultImage = defaultImage;
 export const createStationDraft = (source?: Partial<StationFactoryPayload>): StationFactoryPayload => ({
 	title: source?.title ?? "",
 	description: source?.description ?? "",
+	hint: source?.hint ?? "",
 	image: source?.image?.trim() ? source.image : defaultImage,
 	exerciseUids: source?.exerciseUids ?? [],
 	isBoss: source?.isBoss ?? false,
@@ -76,6 +72,7 @@ export const normalizeStationExerciseUids = (uids: string[]) => {
 const normalizeStationPayload = (payload: Record<string, unknown>): StationFactoryPayload | null => {
 	const title = typeof payload.title === "string" ? payload.title : "";
 	const description = typeof payload.description === "string" ? payload.description : "";
+	const hint = typeof payload.hint === "string" ? payload.hint : "";
 	const image = typeof payload.image === "string" && payload.image.trim().length > 0
 		? payload.image
 		: defaultImage;
@@ -84,13 +81,14 @@ const normalizeStationPayload = (payload: Record<string, unknown>): StationFacto
 		: [];
 	const isBoss:boolean = typeof payload.isBoss == "boolean" ? payload.isBoss : false;
 
-	if (!title && !description && exerciseUids.length === 0) {
+	if (!title && !description && !hint && exerciseUids.length === 0) {
 		return null;
 	}
 
 	return {
 		title,
 		description,
+		hint,
 		image,
 		exerciseUids,
 		isBoss,
@@ -366,7 +364,10 @@ export const getStationFactorySelectionOptionsFromStations = (
 	return [...existingOptions, ...draftOptions];
 };
 
-export const fetchAllStationFactoryStations = () => Station.backendFetchAllStations();
+export const fetchAllStationFactoryStations = () => {
+	const { getAllStations } = useStations();
+	return getAllStations();
+};
 
 export const loadStationFactoryPayload = async (selectionKey: string): Promise<{
 	payload: StationFactoryPayload;
@@ -376,6 +377,7 @@ export const loadStationFactoryPayload = async (selectionKey: string): Promise<{
 	const store = readStationFactoryStore();
 
 	if (selection.kind === "existing") {
+		const { getStationByUid } = useStations();
 		const override = store.overrides[selection.uid] ?? null;
 
 		if (override) {
@@ -385,14 +387,16 @@ export const loadStationFactoryPayload = async (selectionKey: string): Promise<{
 			};
 		}
 
-		const backendStation = await Station.backendFetchStationByUid(selection.uid);
+		const backendStation = await getStationByUid(selection.uid);
 
 		return {
 			payload: createStationDraft({
 				title: backendStation?.title ?? "",
 				description: backendStation?.description ?? "",
+				hint: backendStation?.hint ?? "",
 				image: backendStation?.image ?? defaultImage,
 				exerciseUids: backendStation?.exerciseUids ?? [],
+				isBoss: backendStation?.isBoss ?? false,
 			}),
 			localId: "",
 		};
@@ -416,6 +420,7 @@ export const loadStationFactoryPayload = async (selectionKey: string): Promise<{
 const mapStationToBackendRequest = (payload: StationFactoryPayload): BackendStationRequestPayload => ({
 	title: payload.title.trim(),
 	description: payload.description.trim(),
+	hint: payload.hint.trim(),
 	image: payload.image.trim() || defaultImage,
 	backgroundColor: null,
 	exerciseUids: normalizeStationExerciseUids(payload.exerciseUids),
@@ -425,8 +430,10 @@ const mapStationToBackendRequest = (payload: StationFactoryPayload): BackendStat
 const toStationFactoryPayload = (station: Station): StationFactoryPayload => createStationDraft({
 	title: station.title,
 	description: station.description,
+	hint: station.hint,
 	image: station.image,
 	exerciseUids: station.exerciseUids,
+	isBoss: station.isBoss,
 });
 
 export const saveStationFactoryPayload = async (
@@ -435,16 +442,13 @@ export const saveStationFactoryPayload = async (
 ): Promise<{ selectionKey: string; payload: StationFactoryPayload }> => {
 	const selection = parseStationFactorySelectionKey(selectionKey);
 	const requestBody = mapStationToBackendRequest(payload);
-	const { $api } = useNuxtApp();
+	const { createStation, getStationByUid, updateStation } = useStations();
 
 	if (selection.kind === "existing") {
-		await $api<Station>(`/stations/${selection.uid}`, {
-			method: "PUT",
-			body: requestBody,
-		});
+		await updateStation(selection.uid, requestBody);
 
 		clearStationFactoryOverride(selection.uid);
-		const station = await Station.backendFetchStationByUid(selection.uid);
+		const station = await getStationByUid(selection.uid);
 
 		return {
 			selectionKey: makeStationFactoryExistingSelectionKey(selection.uid),
@@ -452,10 +456,7 @@ export const saveStationFactoryPayload = async (
 		};
 	}
 
-	const createdStation = await $api<Station>("/stations", {
-		method: "POST",
-		body: requestBody,
-	});
+	const createdStation = await createStation(requestBody);
 
 	if (selection.kind === "draft") {
 		removeStationFactoryDraft(selection.localId);
@@ -470,11 +471,8 @@ export const saveStationFactoryPayload = async (
 export const saveStationFactoryPayloadAsNew = async (
 	payload: StationFactoryPayload,
 ): Promise<{ selectionKey: string; payload: StationFactoryPayload }> => {
-	const { $api } = useNuxtApp();
-  const createdStation = await $api<Station>("/stations", {
-		method: "POST",
-		body: mapStationToBackendRequest(payload),
-	});
+	const { createStation } = useStations();
+	const createdStation = await createStation(mapStationToBackendRequest(payload));
 
 	return {
 		selectionKey: makeStationFactoryExistingSelectionKey(createdStation.uid),
@@ -486,11 +484,9 @@ export const deleteStationFactorySelection = async (selectionKey: string) => {
 	const selection = parseStationFactorySelectionKey(selectionKey);
 
 	if (selection.kind === "existing") {
-		const { $api } = useNuxtApp();
+		const { deleteStation } = useStations();
 
-		await $api(`/stations/${selection.uid}`, {
-			method: "DELETE",
-		});
+		await deleteStation(selection.uid);
 
 		clearStationFactoryOverride(selection.uid);
 		return;

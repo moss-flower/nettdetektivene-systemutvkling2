@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -48,7 +49,7 @@ public class SecurityConfig {
                 // header on requests (everything other than GETs responds 401). We do not want
                 // this in the final product.
                 //TODO: Remove eventually.
-                .ignoringRequestMatchers("/api/v1/auth/**", "/api/v1/register/**", "/api/v1/classrooms/**", "/api/v1/exercises/**", "/api/v1/stations/**", "/api/v1/worlds/**", "/api/v1/achievements/**", "/api/v1/completed-exercises/**", "/api/v1/leaderboard/**")
+                .ignoringRequestMatchers("/api/v1/auth/**", "/api/v1/register/**", "/api/v1/classrooms/**", "/api/v1/exercises/**", "/api/v1/stations/**", "/api/v1/worlds/**", "/api/v1/notepad/**", "/api/v1/avatar/**", "/api/v1/achievements/**", "/api/v1/completed-exercises/**", "/api/v1/leaderboard/**", "/api/v1/users/**")
             )
 
             .headers(headers -> headers
@@ -73,7 +74,6 @@ public class SecurityConfig {
             )
 
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     
     }

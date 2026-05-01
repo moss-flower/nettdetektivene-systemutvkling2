@@ -1,11 +1,16 @@
 <script setup lang="ts">
+import envelopeIcon from '~/assets/ui-icons/Envelope.png'
+
 defineProps<{
   hint: string;
+  title?: string;
+  emptyText?: string;
 }>();
 
 const emit = defineEmits<{
   (event: 'close'): void;
 }>();
+
 </script>
 
 <template>
@@ -17,14 +22,14 @@ const emit = defineEmits<{
 
       <img
         class="tipsImage"
-        src="https://placehold.co/720x360?text=Tipsbrev"
+        :src=envelopeIcon
         alt="Illustrasjon av et brev med tips"
       >
 
       <div class="tipsContent">
         <p class="tipsEyebrow">Tipsbrev</p>
-        <h2 id="tips-title">Tips til oppgaven</h2>
-        <p>{{ hint || 'Det finnes ikke noe tips for denne oppgaven ennå.' }}</p>
+        <h2 id="tips-title">{{ title ?? 'Tips til oppgaven' }}</h2>
+        <p>{{ hint || emptyText || 'Det finnes ikke noe tips for denne oppgaven ennå.' }}</p>
       </div>
     </article>
   </div>

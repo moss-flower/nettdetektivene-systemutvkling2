@@ -4,16 +4,6 @@ useHead({ htmlAttrs: { 'data-theme': 'game' } as any })
 
 <template>
   <div class="appShell">
-    <aside class="sidebar">
-      <div class="profile">
-        <!-- avatar +(?) detektiv navn -->
-      </div>
-
-      <button class="navHome" type="button" aria-label="Tilbake til hovedmeny">
-        <!-- map-pin icon -->
-      </button>
-    </aside>
-
     <main class="content">
       <slot />
     </main>
@@ -25,7 +15,7 @@ useHead({ htmlAttrs: { 'data-theme': 'game' } as any })
   min-height: 100dvh;
   width: 100%;
   display: grid;
-  grid-template-columns: var(--layout-sidebar-width) 1fr;
+  grid-template-columns: 1fr;
   background: var(--color-bg-canvas);
 }
 

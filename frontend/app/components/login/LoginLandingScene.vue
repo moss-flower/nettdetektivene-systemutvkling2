@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import loginBackgroundImage from '~/assets/images/login/spBackgroundImageLogin.png';
-import loginPlateImage from '~/assets/images/login/spBackgroundLoginButtonsDecor.png';
+import loginPlateImage from '~/assets/images/login/NamePlate.png';
 import loginLogoImage from '~/assets/images/login/spLogoGame.png';
 
 type LoginOption = {

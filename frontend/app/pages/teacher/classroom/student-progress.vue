@@ -109,6 +109,13 @@ const completedStations = computed(() => stationProgress.value.filter((station) 
         <span class="summaryLabel">Stasjoner gjort</span>
         <strong>{{ completedStations }} / {{ stationProgress.length }}</strong>
       </article>
+      <NuxtLink 
+        :to="routePathsWithString(routePaths.teacherClassroomStudentNotes, `?classroomId=${classroomId}&studentId=${studentId}`)" 
+        class="summaryCard summaryCard--link"
+      >
+        <span class="summaryLabel">Se notater</span>
+        <strong>→</strong>
+      </NuxtLink>
     </div>
 
     <div v-if="student" class="detailCard">
@@ -224,6 +231,57 @@ h1 {
 .stationRow small,
 .emptyText {
   color: var(--color-text-secondary);
+}
+
+.stationStatus {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: var(--palette-gray-100);
+  color: var(--color-text-secondary);
+  font-weight: 700;
+}
+
+.summaryCard--link {
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.summaryCard--link:hover {
+  transform: translateY(-1px);
+  border-color: var(--color-brand-primary);
+}
+
+.summaryCard--link strong {
+  color: var(--color-brand-primary);
+}
+
+.stationStatusComplete {
+  background: color-mix(in srgb, var(--color-semantic-success) 18%, var(--color-bg-surface));
+  color: var(--color-semantic-success);
+}
+
+.stationList {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  margin: var(--space-3) 0 0;
+  list-style: none;
+}
+
+.stationRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-2);
+  background: color-mix(in srgb, var(--color-bg-surface) 92%, var(--color-semantic-info) 8%);
+}
+
+.stationRow strong,
+.stationRow small {
+  display: block;
 }
 
 .stationStatus {

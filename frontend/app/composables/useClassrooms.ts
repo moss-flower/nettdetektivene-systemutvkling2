@@ -136,6 +136,22 @@ export function useClassrooms() {
         method: "DELETE",
       });
     },
+
+    /**
+     * Update a student's username (teacher-forced rename).
+     *
+     * @param studentUuid - Public UUID of the student
+     * @param newUsername - The new username
+     */
+    updateStudentUsername: async (
+      studentUuid: string,
+      newUsername: string,
+    ): Promise<{ username: string; message: string }> => {
+      return await $api(`/users/${studentUuid}/username`, {
+        method: "PATCH",
+        body: { username: newUsername },
+      });
+    },
   };
 
   /**

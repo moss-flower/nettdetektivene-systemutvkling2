@@ -46,7 +46,7 @@ const medalImage = (): string => {
 
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  height: 100%;
 
   display: flex;
   align-items: center;

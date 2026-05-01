@@ -1,46 +1,44 @@
 <script setup lang="ts">
+import PopupNotYetUnlocked from "~/components/shared/PopupNotYetUnlocked.vue";
 import StationCard from "~/components/station/station.vue";
-import { World } from "~/composables/types/WorldTypes";
-import { Station } from "~/composables/types/StationType";
-import { useCompletedExerciseUids } from "~/composables/utils/gameProgress";
+import { useGamePreview } from "~/composables/useGamePreview";
+import { useStations } from "~/composables/useStations";
 
-const { student } = useClassrooms();
-const { data: completedExerciseUids } = await useAsyncData(
-  "student-completed-exercises",
-  () => useCompletedExerciseUids(),
-);
+const { teacher } = useClassrooms();
+const { getMyStations } = useStations();
+const route = useRoute();
+const { isPreview, classroomId } = useGamePreview();
+const previewWorldUid = computed(() => typeof route.query.worldUid === "string" ? route.query.worldUid : undefined);
 
-const { data: classroom } = await useAsyncData("student-classroom", () => student.getMyClassroom().catch(() => null));
-
-const worldUid = computed(() => classroom.value?.worldUid?.trim() ?? "");
-
-const { data: world } = await useAsyncData(
+const { data: stationData } = await useAsyncData(
   "student-world",
-  () => (worldUid.value ? World.backendFetchWorldByUid(worldUid.value) : null),
-  {
-    watch: [worldUid],
-  },
-);
-
-const { data: stations } = await useAsyncData(
-  "student-stations",
   async () => {
-    const stationUids = world.value?.stationUids ?? [];
-
-    if (stationUids.length === 0) {
-      return [];
+    if (previewWorldUid.value) {
+      return await getMyStations(previewWorldUid.value);
     }
 
-    const loadedStations = await Promise.all(stationUids.map((stationUid) => Station.backendFetchStationByUid(stationUid)));
+    if (!isPreview.value) {
+      return await getMyStations();
+    }
 
-    return loadedStations.filter((station): station is Station => station !== null);
+    const classroom = await teacher.getClassroomById(classroomId.value).catch(() => null);
+    const worldUid = classroom?.worldUid?.trim() ?? "";
+
+    if (!worldUid) {
+      return {
+        world: null,
+        stations: [],
+      };
+    }
+
+    return await getMyStations(worldUid);
   },
   {
-    watch: [world],
+    watch: [previewWorldUid, isPreview, classroomId],
   },
 );
 
-const pageTitle = computed(() => world.value?.title || "Stasjonskart");
+const pageTitle = computed(() => stationData.value?.world?.title || "Stasjonskart");
 
 type ConnectorPath = {
   id: string;
@@ -51,26 +49,16 @@ const stationPathElement = ref<HTMLElement | null>(null);
 const stationNodeElements = ref<HTMLElement[]>([]);
 const connectorPaths = ref<ConnectorPath[]>([]);
 const connectorCanvas = ref({ width: 0, height: 0 });
+const showNotYetUnlockedPopup = ref(false);
 
 let resizeObserver: ResizeObserver | null = null;
 
 const stationCards = computed(() => {
-  const completedUids = completedExerciseUids.value ?? [];
-  let previousStationCompleted = true;
-
-  return (stations.value ?? []).map((station) => {
-    const completedExercises = station.exerciseUids.map((exerciseUid) => completedUids.includes(exerciseUid));
-    const isUnlocked = previousStationCompleted;
-    const isCompleted = station.exerciseUids.length > 0 && completedExercises.every(Boolean);
-
-    previousStationCompleted = isCompleted;
-
-    return {
-      station,
-      completedExercises,
-      isUnlocked,
-    };
-  });
+  return (stationData.value?.stations ?? []).map((station) => ({
+    station,
+    completedExercises: station.completedExercises,
+    isUnlocked: station.isUnlocked,
+  }));
 });
 
 const hasStations = computed(() => stationCards.value.length > 0);
@@ -245,6 +233,7 @@ watch(stationCards, () => {
             :station="entry.station"
             :is-unlocked="entry.isUnlocked"
             :completed-exercises="entry.completedExercises"
+            @locked-click="showNotYetUnlockedPopup = true"
           />
         </div>
       </template>
@@ -254,6 +243,13 @@ watch(stationCards, () => {
       <h2>Ingen stasjoner tilgjengelig</h2>
       <p>Dette stasjonskartet har ingen stasjoner ennå, eller du er ikke koblet til et klasserom.</p>
     </section>
+
+    <PopupNotYetUnlocked
+      v-if="showNotYetUnlockedPopup"
+      title="Denne stasjonen er fortsatt låst"
+      description="Fullfør stasjonen før denne for å låse opp neste stopp på kartet."
+      @close="showNotYetUnlockedPopup = false"
+    />
   </section>
 </template>
 

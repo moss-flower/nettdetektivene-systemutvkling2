@@ -3,22 +3,49 @@ package no.safety.backend.registration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
-import no.safety.backend.BaseIntegrationTest;
 import no.safety.backend.registration.dto.StudentUserRegistrationRequest;
 import no.safety.backend.registration.dto.TeacherUserRegistrationRequest;
+import no.safety.backend.role.model.Role;
+import no.safety.backend.role.model.RoleType;
+import no.safety.backend.role.repository.RoleRepository;
 import no.safety.backend.user.repository.StudentUserRepository;
 import no.safety.backend.user.repository.TeacherUserRepository;
 
-public class UserRegistrationIntegrationTest extends BaseIntegrationTest {
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureRestTestClient
+@ActiveProfiles("test")
+public class UserRegistrationIntegrationTest {
+
+    @Autowired
+    private RestTestClient client;
 
     @Autowired
     private StudentUserRepository studentUserRepository;
 
     @Autowired
     private TeacherUserRepository teacherUserRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @BeforeEach
+    void ensureRoles() {
+        for (RoleType type : RoleType.values()) {
+            if (roleRepository.findByType(type).isEmpty()) {
+                Role role = new Role();
+                role.setType(type);
+                roleRepository.save(role);
+            }
+        }
+    }
 
     @Test
     void shouldRegisterStudentUserSuccessfully() {
@@ -37,7 +64,7 @@ public class UserRegistrationIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void shouldRegisterTeacherUserSuccessfully() {
-        TeacherUserRegistrationRequest request = new TeacherUserRegistrationRequest("teacher", "teacher@email.no", "secret_password");
+        TeacherUserRegistrationRequest request = new TeacherUserRegistrationRequest("teacher", "teacher@email.no", "FtmDqt3A4Qk5WwcgmNtg");
 
         client.post()
             .uri("/api/v1/register/teacher")

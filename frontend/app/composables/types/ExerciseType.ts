@@ -1,4 +1,5 @@
 import type { ExerciseTask } from "~/composables/types/TaskTypes";
+import type { NotepadEntryResponse } from "~/composables/types/NotepadTypes";
 
 type BackendTaskContent = Partial<Omit<ExerciseTask, "id" | "templateKind" | "introText" | "feedbackCorrect" | "feedbackIncorrect">>;
 
@@ -19,6 +20,7 @@ export type ExerciseData = {
   difficultyName: string;
   description?: string;
   hint: string;
+  notepadEntry?: NotepadEntryResponse | null;
   tasks: BackendTask[];
 };
 
@@ -28,6 +30,7 @@ export class Exercise {
   difficultyName: string;
   description?: string;
   hint: string;
+  notepadEntry?: NotepadEntryResponse | null;
   tasks: ExerciseTask[];
 
   constructor(data: {
@@ -35,15 +38,17 @@ export class Exercise {
     title: string;
     difficultyName?: string;
     entryName?: string;
-    description?: string;
-    hint?: string;
-    tasks: ExerciseTask[];
+      description?: string;
+      hint?: string;
+      notepadEntry?: NotepadEntryResponse | null;
+      tasks: ExerciseTask[];
   }) {
     this.uid = data.uid ?? "";
     this.title = data.title;
     this.difficultyName = data.difficultyName ?? data.entryName ?? "";
     this.description = data.description;
     this.hint = data.hint ?? "";
+    this.notepadEntry = data.notepadEntry ?? null;
     this.tasks = data.tasks;
   }
 
@@ -58,6 +63,7 @@ export class Exercise {
       entryName: data.difficultyName,
       description: data.description,
       hint: data.hint,
+      notepadEntry: data.notepadEntry ?? null,
       tasks: data.tasks.map((task, index) => {
         const { content, ...taskBase } = task;
 
