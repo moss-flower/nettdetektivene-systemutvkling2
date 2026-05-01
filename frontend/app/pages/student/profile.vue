@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { routePaths } from '~/composables/utils/routePaths'
 import { useStudentProfile } from '~/composables/useStudentProfile'
+import { useAvatar } from '~/composables/useAvatar'
 import { getLevel } from '~/composables/utils/studentProgress'
+import type { AvatarConfig } from '~/composables/types/AvatarTypes'
 
 const { getMyProfile, updateUsername } = useStudentProfile()
+const { getMyAvatar, updateMyAvatar } = useAvatar()
 
 const studentName = ref('Laster...')
 const score = ref(0)
@@ -13,6 +16,10 @@ const isLoading = ref(true)
 const profileError = ref('')
 const isEditing = ref(false)
 const pendingName = ref('')
+
+const avatar = ref<AvatarConfig | null>(null)
+const avatarOptions = ref<AvatarConfig[]>([])
+const isEditingAvatar = ref(false)
 
 const initial = computed(() => studentName.value.charAt(0).toUpperCase())
 const progress = computed(() => getLevel(totalXp.value))
@@ -51,6 +58,24 @@ async function saveEditing() {
   }
 }
 
+function startAvatarEditing() {
+  isEditingAvatar.value = true
+}
+
+function cancelAvatarEditing() {
+  isEditingAvatar.value = false
+}
+
+async function saveAvatar(avatarConfig: AvatarConfig) {
+  try {
+    await updateMyAvatar(avatarConfig)
+    avatar.value = avatarConfig
+    isEditingAvatar.value = false
+  } catch {
+    profileError.value = 'Kunne ikke oppdatere avatar. Prøv igjen senere.'
+  }
+}
+
 onMounted(async () => {
   isLoading.value = true
   profileError.value = ''
@@ -77,9 +102,9 @@ onMounted(async () => {
 
     <article class="idCard">
       <div class="idCard__left">
-        <div class="idCard__avatar">
-          <span class="idCard__initial">{{ initial }}</span>
-        </div>
+        <NuxtLink :to="routePaths.editAvatar" aria-label="Endre avatar">
+          <AvatarElement />
+        </NuxtLink>
       </div>
 
       <div class="idCard__right">
