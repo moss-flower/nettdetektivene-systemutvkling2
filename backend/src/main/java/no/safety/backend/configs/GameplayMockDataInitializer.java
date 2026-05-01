@@ -5,8 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import no.safety.backend.achievements.model.Achievement;
+import no.safety.backend.achievements.model.AchievementCategory;
+import no.safety.backend.achievements.repository.AchievementRepository;
 import no.safety.backend.excercise.model.Exercise;
 import no.safety.backend.excercise.repository.ExerciseRepository;
+import no.safety.backend.notepad.model.NotepadEntry;
+import no.safety.backend.notepad.model.NotepadEntryType;
 import no.safety.backend.station.model.Station;
 import no.safety.backend.station.repository.StationRepository;
 import no.safety.backend.task.content.EmailHotspotsContent;
@@ -58,6 +63,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   private final ExerciseRepository exerciseRepository;
   private final StationRepository stationRepository;
   private final WorldRepository worldRepository;
+  private final AchievementRepository achievementRepository;
 
   @Override
   @Transactional
@@ -1056,10 +1062,41 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     exercise.setDifficultyName(difficultyName);
     exercise.setDescription(description);
     exercise.setHint(hint);
+    exercise.setNotepadEntry(defaultNotepadEntry(publicId, title, description, hint));
     exercise.getTasks().clear();
     exercise.getTasks().addAll(newTasks(exercise, taskRequests));
 
     exerciseRepository.save(exercise);
+  }
+
+  private NotepadEntry defaultNotepadEntry(UUID publicId, String title, String description, String hint) {
+    NotepadEntry notepadEntry = new NotepadEntry();
+    notepadEntry.setSource(title);
+
+    int variant = Math.floorMod(publicId.hashCode(), 3);
+    switch (variant) {
+      case 0 -> {
+        notepadEntry.setTitle(title + " - huskelapp");
+        notepadEntry.setType(NotepadEntryType.TIP);
+        notepadEntry.setContent(limitTo256("Tips: " + hint));
+      }
+      case 1 -> {
+        notepadEntry.setTitle(title + " - fakta");
+        notepadEntry.setType(NotepadEntryType.INFO);
+        notepadEntry.setContent(limitTo256("Dette trener du pa: " + description));
+      }
+      default -> {
+        notepadEntry.setTitle(title + " - observasjon");
+        notepadEntry.setType(NotepadEntryType.OBSERVATION);
+        notepadEntry.setContent(limitTo256("Husk dette fra oppgaven: " + description + " Se etter: " + hint));
+      }
+    }
+
+    return notepadEntry;
+  }
+
+  private String limitTo256(String value) {
+    return value.length() <= 256 ? value : value.substring(0, 256);
   }
 
   private List<Task> newTasks(Exercise exercise, List<TaskRequest> taskRequests) {
@@ -1092,6 +1129,24 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     station.setBoss(isBoss);
 
     stationRepository.save(station);
+
+    createStationAchievement(title, description, isBoss);
+  }
+
+  private void createStationAchievement(String title, String description, boolean isBoss) {
+    if (achievementRepository.findByTitle(title).isPresent()) {
+      return;
+    }
+
+    Achievement achievement = new Achievement();
+    achievement.setUUID(UUID.randomUUID());
+    achievement.setTitle(title);
+    achievement.setDescription(description);
+    achievement.setCategory(isBoss ? AchievementCategory.SPECIAL : AchievementCategory.STOP);
+    achievement.setSource(title);
+    achievement.setReward(isBoss ? "Spesialmedalje for å ha slått bossen" : null);
+
+    achievementRepository.save(achievement);
   }
 
   private void upsertWorld(UUID uid, String title, String description, String image, List<UUID> stationUids) {

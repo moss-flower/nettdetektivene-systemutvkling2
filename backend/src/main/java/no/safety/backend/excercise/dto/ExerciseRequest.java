@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import java.util.List;
+import no.safety.backend.notepad.dto.NotepadEntryCreateRequest;
 import no.safety.backend.task.dto.TaskRequest;
 
 public record ExerciseRequest(
@@ -22,6 +23,9 @@ public record ExerciseRequest(
     @NotBlank(message = "hint is required.")
     @Size(max = 2000, message = "hint cannot exceed 2000 characters.")
     String hint,
+
+    @Valid
+    NotepadEntryCreateRequest notepadEntry,
 
     @NotEmpty(message = "An exercise must contain at least one task.")
     @Valid
