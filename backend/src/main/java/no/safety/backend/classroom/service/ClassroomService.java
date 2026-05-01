@@ -63,6 +63,12 @@ public class ClassroomService {
   @Transactional
   public void delete(UUID classroomUid, UUID callerUuid) {
     Classroom c = requireOwned(classroomUid, callerUuid);
+
+    c.getMembers().forEach(member -> member.setClassroom(null));
+    c.getMembers().clear();
+    c.getOwners().clear();
+    classroomWeeklyMysteryRepository.deleteByClassroom_InternalId(c.getInternalId());
+
     classroomRepo.delete(c);
   }
 

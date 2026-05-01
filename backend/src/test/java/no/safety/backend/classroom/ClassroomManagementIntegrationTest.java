@@ -189,6 +189,26 @@ class ClassroomManagementIntegrationTest {
   }
 
   @Test
+  void deleteClassroom_withMember_removesClassroomAndKeepsStudent() {
+    TeacherUser teacher = saveTeacher("teacher1");
+    StudentUser student = saveStudent("student1");
+    ClassroomResponse created = createClassroom(teacher, "Klasse 5B");
+
+    client.post().uri("/api/v1/classrooms/join/{code}", created.code())
+        .header("X-Test-User", student.getPublicUuid().toString())
+        .exchange()
+        .expectStatus().isOk();
+
+    client.delete().uri("/api/v1/classrooms/{id}", created.uid())
+        .header("X-Test-User", teacher.getPublicUuid().toString())
+        .exchange()
+        .expectStatus().isNoContent();
+
+    assertThat(classroomRepository.findByUid(created.uid())).isEmpty();
+    assertThat(studentRepo.findByPublicUuid(student.getPublicUuid()).orElseThrow().getClassroom()).isNull();
+  }
+
+  @Test
   void deleteClassroom_asNonOwner_returnsForbidden() {
     TeacherUser owner = saveTeacher("teacher1");
     TeacherUser other = saveTeacher("teacher2");
