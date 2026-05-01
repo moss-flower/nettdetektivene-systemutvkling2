@@ -177,11 +177,10 @@ async function sendMysterySubmission() {
         <div class="mysteryDialogHeader">
           <div class="mysterySectionHeader">
             <p class="studentMysteryEyebrow">Neste uke</p>
-            <h2 id="suggestion-dialog-title">Tips læreren om et nytt mysterium</h2>
-            <p class="studentMysteryHelper">{{ currentMystery?.prompt ?? 'Beskriv et innlegg eller bilde som kan passe til et senere mysterium.' }}</p>
-            <p class="studentMysteryHelper">Send inn et bilde og en kort forklaring. Læreren kan bruke det i et senere mysterium.</p>
+            <h2 id="suggestion-dialog-title">{{ currentMystery?.title ?? 'Ingen oppdrag publisert ennå' }}</h2>
+            <p v-if="currentMystery" class="studentMysteryHelper">{{ currentMystery.prompt }}</p>
             <p v-if="currentMystery?.clue" class="studentMysteryMeta"><strong>Tips:</strong> {{ currentMystery.clue }}</p>
-            <p v-if="!currentMystery" class="studentMysteryError">Klassen har ikke et aktivt ukens mysterium ennå. Læreren må velge en sak før du kan sende inn forslag.</p>
+            <p v-if="!currentMystery" class="studentMysteryError">Læreren har ikke publisert et oppdrag for klassen ennå. Når oppdraget er klart, kan du sende inn bilde og forklaring her.</p>
           </div>
 
           <button
@@ -194,7 +193,7 @@ async function sendMysterySubmission() {
           </button>
         </div>
 
-        <div class="mysteryDialogBody">
+        <div v-if="currentMystery" class="mysteryDialogBody">
           <label class="studentMysteryField mysteryFieldUpload">
             <span>Bilde</span>
             <span class="mysteryUploadControl">
@@ -246,7 +245,7 @@ async function sendMysterySubmission() {
         </div>
 
         <section
-          v-if="submissionHistory.length > 0"
+          v-if="currentMystery && submissionHistory.length > 0"
           class="studentMysterySection mysterySectionCompact"
           aria-labelledby="submissions-heading"
         >
