@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { useStudentProfile } from '~/composables/useStudentProfile'
+import { useAvatar } from '~/composables/useAvatar'
 import { getLevel } from '~/composables/utils/studentProgress'
+import { routePaths } from '~/composables/utils/routePaths'
+import { useAvatarProfilePopup } from '~/composables/useAvatarProfilePopup'
 
 defineProps<{
   closable?: boolean
@@ -11,14 +14,16 @@ const emit = defineEmits<{
 }>()
 
 const { getMyProfile, updateUsername } = useStudentProfile()
+const { getMyAvatar } = useAvatar()
+const { closeAvatarProfile } = useAvatarProfilePopup()
 
 const studentName = ref('Laster...')
 const totalXp = ref(0)
-
 const isLoading = ref(true)
 const profileError = ref('')
 const isEditing = ref(false)
 const pendingName = ref('')
+const avatar = ref()
 
 const initial = computed(() => studentName.value.charAt(0).toUpperCase())
 const progress = computed(() => getLevel(totalXp.value))
@@ -59,12 +64,14 @@ onMounted(async () => {
     const profile = await getMyProfile()
     studentName.value = profile.studentName
     totalXp.value = profile.totalXp
+    avatar.value = await getMyAvatar();
   } catch {
     profileError.value = 'Kunne ikke laste profildata akkurat nå.'
   } finally {
     isLoading.value = false
   }
 })
+
 </script>
 
 <template>
@@ -86,9 +93,13 @@ onMounted(async () => {
 
     <article class="idCard">
       <div class="idCard__left">
-        <div class="idCard__avatar">
-          <span class="idCard__initial">{{ initial }}</span>
-        </div>
+        <NuxtLink 
+          :to="routePaths.studentEditAvatar" 
+          class="idCard__avatarLink"
+          @click="closeAvatarProfile()"
+        >
+          <AvatarImage :avatar="avatar" :alt="studentName" />
+        </NuxtLink>
       </div>
 
       <div class="idCard__right">
@@ -241,9 +252,22 @@ onMounted(async () => {
   justify-items: center;
 }
 
-.idCard__avatar {
+.idCard__avatarLink {
+  display: block;
   width: 100%;
   aspect-ratio: 3 / 4;
+  border-radius: var(--radius-1);
+  overflow: hidden;
+  transition: opacity var(--transition-fast);
+}
+
+.idCard__avatarLink:hover {
+  opacity: 0.85;
+}
+
+.idCard__avatar {
+  width: 100%;
+  height: 100%;
   display: grid;
   place-items: center;
   border: var(--border-width-thick) solid var(--id-avatar-border);
