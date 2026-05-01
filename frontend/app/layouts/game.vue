@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { NuxtLink } from '#components'
 import { useGamePreview } from '~/composables/useGamePreview'
 import { useStudentProfile } from '~/composables/useStudentProfile'
 import { useStations } from '~/composables/useStations'
@@ -10,6 +9,7 @@ provideGameConfetti()
 useThemeAttributes('game')
 const { getMyProfile } = useStudentProfile()
 const { getStationByUid } = useStations()
+const { openAvatarProfile } = useAvatarProfilePopup()
 
 const route = useRoute()
 const { isPreview } = useGamePreview()
@@ -44,7 +44,7 @@ const layoutStyle = computed(() => {
 onMounted(async () => {
   if (isPreview.value) {
     profileName.value = 'Lærer'
-    profileLevelText.value = 'Forhandsvisning'
+    profileLevelText.value = 'Forhåndsvisning'
     return
   }
 
@@ -62,11 +62,13 @@ onMounted(async () => {
   <div class="game-layout" :style="layoutStyle">
     <aside class="game-layout__rail game-layout__rail--left" aria-label="Spillerpanel">
       <component
-        :is="isPreview ? 'div' : NuxtLink"
-        :to="isPreview ? undefined : '/student/profile'"
+        :is="isPreview ? 'div' : 'button'"
+        type="button"
+        :disabled="isPreview"
         class="game-layout__rail-card game-layout__rail-card--avatar"
         :class="{ 'game-layout__rail-link': !isPreview }"
-        :aria-label="isPreview ? 'Larerforhandsvisning' : 'Gå til elevprofil'"
+        :aria-label="isPreview ? 'Lærerforhåndsvisning' : 'Åpne elevprofil'"
+        @click="!isPreview && openAvatarProfile()"
       >
         <AvatarElement v-if="!isPreview" />
         <div v-else class="game-layout__avatar-placeholder" aria-hidden="true">
@@ -138,6 +140,7 @@ onMounted(async () => {
 }
 
 .game-layout__rail-card {
+  appearance: none;
   width: min(100%, 10rem);
   padding: 1rem 0.9rem;
   border-radius: 1.25rem;
@@ -146,6 +149,7 @@ onMounted(async () => {
   text-align: center;
   color: #183153;
   box-shadow: 0 10px 24px rgba(34, 74, 126, 0.12);
+  font: inherit;
 }
 
 .game-layout__rail-link {
