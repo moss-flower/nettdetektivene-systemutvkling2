@@ -21,10 +21,12 @@ import no.safety.backend.world.model.World;
 import no.safety.backend.world.repository.WorldRepository;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
+@Order(5)
 @RequiredArgsConstructor
 public class GameplayMockDataInitializer implements ApplicationRunner {
 
