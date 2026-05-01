@@ -6,6 +6,7 @@ import { useStations } from "~/composables/useStations";
 export type StationFactoryPayload = {
 	title: string;
 	description: string;
+	hint: string;
 	image: string;
 	exerciseUids: Exercise["uid"][];
 	isBoss: boolean;
@@ -45,6 +46,7 @@ export const stationFactoryDefaultImage = defaultImage;
 export const createStationDraft = (source?: Partial<StationFactoryPayload>): StationFactoryPayload => ({
 	title: source?.title ?? "",
 	description: source?.description ?? "",
+	hint: source?.hint ?? "",
 	image: source?.image?.trim() ? source.image : defaultImage,
 	exerciseUids: source?.exerciseUids ?? [],
 	isBoss: source?.isBoss ?? false,
@@ -70,6 +72,7 @@ export const normalizeStationExerciseUids = (uids: string[]) => {
 const normalizeStationPayload = (payload: Record<string, unknown>): StationFactoryPayload | null => {
 	const title = typeof payload.title === "string" ? payload.title : "";
 	const description = typeof payload.description === "string" ? payload.description : "";
+	const hint = typeof payload.hint === "string" ? payload.hint : "";
 	const image = typeof payload.image === "string" && payload.image.trim().length > 0
 		? payload.image
 		: defaultImage;
@@ -78,13 +81,14 @@ const normalizeStationPayload = (payload: Record<string, unknown>): StationFacto
 		: [];
 	const isBoss:boolean = typeof payload.isBoss == "boolean" ? payload.isBoss : false;
 
-	if (!title && !description && exerciseUids.length === 0) {
+	if (!title && !description && !hint && exerciseUids.length === 0) {
 		return null;
 	}
 
 	return {
 		title,
 		description,
+		hint,
 		image,
 		exerciseUids,
 		isBoss,
@@ -389,6 +393,7 @@ export const loadStationFactoryPayload = async (selectionKey: string): Promise<{
 			payload: createStationDraft({
 				title: backendStation?.title ?? "",
 				description: backendStation?.description ?? "",
+				hint: backendStation?.hint ?? "",
 				image: backendStation?.image ?? defaultImage,
 				exerciseUids: backendStation?.exerciseUids ?? [],
 				isBoss: backendStation?.isBoss ?? false,
@@ -415,6 +420,7 @@ export const loadStationFactoryPayload = async (selectionKey: string): Promise<{
 const mapStationToBackendRequest = (payload: StationFactoryPayload): BackendStationRequestPayload => ({
 	title: payload.title.trim(),
 	description: payload.description.trim(),
+	hint: payload.hint.trim(),
 	image: payload.image.trim() || defaultImage,
 	backgroundColor: null,
 	exerciseUids: normalizeStationExerciseUids(payload.exerciseUids),
@@ -424,6 +430,7 @@ const mapStationToBackendRequest = (payload: StationFactoryPayload): BackendStat
 const toStationFactoryPayload = (station: Station): StationFactoryPayload => createStationDraft({
 	title: station.title,
 	description: station.description,
+	hint: station.hint,
 	image: station.image,
 	exerciseUids: station.exerciseUids,
 	isBoss: station.isBoss,

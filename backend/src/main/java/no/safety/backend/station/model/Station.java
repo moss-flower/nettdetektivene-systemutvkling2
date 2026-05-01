@@ -40,6 +40,9 @@ public class Station {
   @Column(nullable = false, columnDefinition = "TEXT")
   private String description;
 
+  @Column(columnDefinition = "TEXT")
+  private String hint;
+
   @Column(nullable = false)
   private String image;
 

@@ -153,6 +153,7 @@ public class StationService {
   private void applyFields(Station station, StationRequest request) {
     station.setTitle(request.title());
     station.setDescription(request.description());
+    station.setHint(request.hint());
     station.setImage(request.image());
     station.setBackgroundColor(request.backgroundColor());
     station.setExerciseUids(request.exerciseUids());
@@ -179,6 +180,7 @@ public class StationService {
         station.getUid(),
         station.getTitle(),
         station.getDescription(),
+        station.getHint(),
         station.getImage(),
         station.getBackgroundColor(),
         exerciseUids,

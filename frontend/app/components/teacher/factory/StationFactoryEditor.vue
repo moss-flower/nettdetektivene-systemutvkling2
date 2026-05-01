@@ -50,6 +50,7 @@ type StationExerciseCard = {
 const payloadPreview = computed<StationFactoryPayload>(() => ({
 	title: draft.title.trim(),
 	description: draft.description.trim(),
+	hint: draft.hint.trim(),
 	image: draft.image.trim() || stationFactoryDefaultImage,
 	exerciseUids: normalizeStationExerciseUids(draft.exerciseUids),
   isBoss : draft.isBoss,
@@ -59,6 +60,7 @@ const payloadPreviewText = computed(() => JSON.stringify(payloadPreview.value, n
 const canSave = computed(() => {
 	return payloadPreview.value.title.length > 0
 		&& payloadPreview.value.description.length > 0
+		&& payloadPreview.value.hint.length > 0
 		&& payloadPreview.value.image.length > 0
 		&& payloadPreview.value.exerciseUids.length > 0;
 });
@@ -146,6 +148,7 @@ const editorDescription = computed(() => {
 const applyDraft = (payload: StationFactoryPayload) => {
 	draft.title = payload.title;
 	draft.description = payload.description;
+	draft.hint = payload.hint;
 	draft.image = payload.image;
 	draft.exerciseUids.splice(0, draft.exerciseUids.length, ...payload.exerciseUids);
   draft.isBoss = Boolean(payload.isBoss);
@@ -155,6 +158,7 @@ const updateLoadedSnapshot = (payload: StationFactoryPayload) => {
 	loadedSnapshot.value = {
 		title: payload.title,
 		description: payload.description,
+		hint: payload.hint,
 		image: payload.image,
 		exerciseUids: [...payload.exerciseUids],
     isBoss: Boolean(payload.isBoss),
@@ -283,6 +287,11 @@ watch(payloadPreviewText, () => {
 					<label class="field field--full">
 						<span>Beskrivelse</span>
 						<textarea v-model="draft.description" rows="3" placeholder="Kort beskrivelse av hva eleven skal øve på i denne stasjonen." />
+					</label>
+
+					<label class="field field--full">
+						<span>Tipsbrev</span>
+						<textarea v-model="draft.hint" rows="3" placeholder="Tips som eleven kan åpne fra brevet på stasjonen." />
 					</label>
 
 					<div class="bossToggleWrap">

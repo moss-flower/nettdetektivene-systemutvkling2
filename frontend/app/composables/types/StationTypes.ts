@@ -6,6 +6,7 @@ export type Station = {
   uid: string;
   title: string;
   description: string;
+  hint: string;
   image: string;
   backgroundColor: string;
   exerciseUids: string[];
@@ -36,6 +37,7 @@ export type StationData = {
   title: string;
   description: string;
   image: string;
+  hint?: string;
   backgroundColor?: string;
   exerciseUids?: string[];
   isBoss?: boolean;
@@ -54,6 +56,7 @@ export type StationProgressResponse = StationData & {
 export type StationRequest = {
   title: string;
   description: string;
+  hint: string;
   image: string;
   backgroundColor: string | null;
   exerciseUids: string[];
@@ -64,6 +67,7 @@ export const mapStationFromResponse = (data: StationData): Station => ({
   uid: data.uid,
   title: data.title,
   description: data.description,
+  hint: data.hint ?? "",
   image: data.image,
   backgroundColor: data.backgroundColor ?? "#cfe9ff",
   exerciseUids: data.exerciseUids ?? [],
