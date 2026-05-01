@@ -66,7 +66,7 @@ public class CompletedExerciseService {
     checkAndUnlockStationAchievement(student, exerciseUid);
     createExerciseNotepadEntryIfConfigured(student, exerciseUid);
 
-    return CompletedExerciseResponse.from(savedExercise);
+    return CompletedExerciseResponse.from(saved);
   }
 
   @Transactional(readOnly = true)
