@@ -44,6 +44,7 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
   public static final UUID EMIL_ELEV_UID = stableUuid("87229500-189e-4823-8874-0a6014430d1d");
   public static final UUID MIA_ELEV_UID = stableUuid("54550c30-f4ac-44f0-96e6-fcfe4d9d9bd5");
   public static final UUID LUKAS_ELEV_UID = stableUuid("ae7780a8-f017-4956-9468-d72d3617baa0");
+  public static final UUID ODA_NO_CLASSROOM_ELEV_UID = stableUuid("student:oda-no-classroom");
   public static final UUID THEO_PENDING_ELEV_UID = stableUuid("student:theo-pending");
   public static final UUID AMALIE_PENDING_ELEV_UID = stableUuid("student:amalie-pending");
   public static final UUID HENRIK_PENDING_ELEV_UID = stableUuid("student:henrik-pending");
@@ -100,6 +101,7 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     StudentUser emilElev = upsertStudent(EMIL_ELEV_UID, "Emil Elev", "emil.elev@test.com", studentRole);
     StudentUser miaElev = upsertStudent(MIA_ELEV_UID, "Mia Elev", "mia.elev@test.com", studentRole);
     StudentUser lukasElev = upsertStudent(LUKAS_ELEV_UID, "Lukas Elev", "lukas.elev@test.com", studentRole);
+    StudentUser odaNoClassroomElev = upsertStudent(ODA_NO_CLASSROOM_ELEV_UID, "Oda Uten Klasse", "oda.utenklasse@test.com", studentRole);
     StudentUser theoPendingElev = upsertStudent(THEO_PENDING_ELEV_UID, "Theo Venter", "theo.venter@test.com", studentRole);
     StudentUser amaliePendingElev = upsertStudent(AMALIE_PENDING_ELEV_UID, "Amalie Venter", "amalie.venter@test.com", studentRole);
     StudentUser henrikPendingElev = upsertStudent(HENRIK_PENDING_ELEV_UID, "Henrik Venter", "henrik.venter@test.com", studentRole);
@@ -108,8 +110,8 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     StudentUser vildePendingElev = upsertStudent(VILDE_PENDING_ELEV_UID, "Vilde Venter", "vilde.venter@test.com", studentRole);
 
     clearSeededMemberships(List.of(adaElev, eliasElev, saraElev, noahElev, ingridElev, emilElev, miaElev,
-        lukasElev, theoPendingElev, amaliePendingElev, henrikPendingElev, noraPendingElev, akselPendingElev,
-        vildePendingElev));
+        lukasElev, odaNoClassroomElev, theoPendingElev, amaliePendingElev, henrikPendingElev, noraPendingElev,
+        akselPendingElev, vildePendingElev));
 
     Classroom klasse3a = upsertClassroom(
         KLASSE_3A_UID,

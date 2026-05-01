@@ -133,6 +133,9 @@ Pending student accounts:
 - `aksel.venter@test.com` (`Aksel Venter`)
 - `vilde.venter@test.com` (`Vilde Venter`)
 
+Student without classroom:
+- `oda.utenklasse@test.com` (`Oda Uten Klasse`)
+
 ### Classrooms
 
 - `3-trinn A` with code `SUPER-SKOG-KOPP`
@@ -150,6 +153,7 @@ Pending student accounts:
 - `Ingrid Elev` and `Emil Elev` belong to `7-trinn A`; `Nora Venter` is pending
 - `Mia Elev` belongs to `7-trinn B`; `Aksel Venter` is pending
 - `Lukas Elev` belongs to `7-trinn C`; `Vilde Venter` is pending
+- `Oda Uten Klasse` is not in a classroom yet
 
 Teachers can log in directly to test teacher views. Active students can log in and test student flows without joining first. Pending students log in to the pending classroom page, and can be approved from the teacher classroom overview.
 
