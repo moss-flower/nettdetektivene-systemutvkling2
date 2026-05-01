@@ -1028,7 +1028,8 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
             POSTOFFICE_STATION_UID,
             PASSWORDBANK_STATION_UID,
             MARKETPLACE_STATION_UID,
-            SOCIALMEDIA_STATION_UID
+            SOCIALMEDIA_STATION_UID,
+            DATACENTER_STATION_UID
         ));
 
     upsertWorld(QUICKSTART_WORLD_UID, "7-trinn",
@@ -1040,7 +1041,8 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
             POSTOFFICE_STATION_UID,
             PASSWORDBANK_STATION_UID,
             MARKETPLACE_STATION_UID,
-            SOCIALMEDIA_STATION_UID
+            SOCIALMEDIA_STATION_UID,
+            DATACENTER_STATION_UID
         ));
 
     worldRepository.findByUid(CREATIVE_LAB_WORLD_UID).ifPresent(worldRepository::delete);
