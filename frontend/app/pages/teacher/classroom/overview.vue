@@ -266,7 +266,7 @@ const renameStudent = async (studentId: string, currentName: string) => {
   text-transform: uppercase;
 }
 h1 {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family-serif), sans-serif;
   font-size: var(--font-size-28);
   line-height: var(--font-leading-28);
   margin: 0;

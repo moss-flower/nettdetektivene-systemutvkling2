@@ -199,9 +199,10 @@ const handleLogout = async () => {
   margin-bottom: var(--space-4);
   padding: var(--space-5);
   border: var(--border-width-hairline) solid var(--color-border-default);
+  border-top: var(--border-width-thick) solid var(--color-accent-reward);
   border-radius: var(--radius-3);
   background: var(--color-bg-surface);
-  box-shadow: var(--shadow-1);
+  box-shadow: var(--shadow-folder);
 }
 
 .overviewHeader__content {
@@ -386,7 +387,9 @@ h2 {
 
 .panelHighlight {
   background: var(--color-bg-surface);
-  border-top: var(--border-width-thick) solid var(--color-accent-reward);
+  border: var(--border-width-thick) solid var(--color-accent-reward);
+  border-radius: var(--radius-4);
+  box-shadow: var(--shadow-folder);
 }
 
 .factoryActions {
@@ -427,12 +430,28 @@ h2 {
   font-size: var(--font-size-16);
   font-weight: var(--font-weight-bold);
   text-decoration: none;
+  box-shadow: var(--shadow-1);
+  transition: tansform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.buttonLink:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2);
+}
+
+.buttonLink:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-pressed);
 }
 
 .buttonLinkSecondary {
   background: var(--color-bg-surface);
   border-color: var(--color-border-default);
   color: var(--color-brand-primary);
+}
+
+.buttonLinkSecondary:hover {
+  border-color: var(--color-brand-primary);
 }
 
 .joinClassroomButton {
