@@ -1,10 +1,19 @@
 <script setup lang="ts">
-import type { WeeklyMysteryPrompt } from '~/composables/types/WeeklyMysteryTypes';
+import type { WeeklyMysteryPrompt, WeeklyMysterySubmissionResponse } from '~/composables/types/WeeklyMysteryTypes';
+import type { MultipleChoiceTaskData } from '~/composables/types/TaskTypes';
 import { routePaths, routePathsWithString } from '~/composables/utils/routePaths';
+import {
+	createDraftId,
+	exerciseFactoryNewSelectionKey,
+	type ExerciseFactoryPayload,
+} from '~/composables/useExerciseFactory';
+import { useFactorySessionCache } from '~/composables/useFactorySessionCache';
 
 const route = useRoute();
+const router = useRouter();
 const { teacher } = useClassrooms();
 const { $api } = useNuxtApp();
+const factorySessionCache = useFactorySessionCache();
 
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
 const today = new Date().toISOString().slice(0, 10);
@@ -47,6 +56,16 @@ const { data: savedPrompts, refresh: refreshSavedPrompts } = await useAsyncData<
 	() => $api<WeeklyMysteryPrompt[]>('/weekly-mystery/prompts', { method: 'GET' }).catch(() => []),
 );
 
+const currentMysteryId = computed(() => currentMystery.value?.publicId ?? '');
+
+const { data: currentSubmissions, refresh: refreshCurrentSubmissions } = await useAsyncData<WeeklyMysterySubmissionResponse[]>(
+	'teacher-weekly-mystery-submissions',
+	() => (currentMysteryId.value ? $api<WeeklyMysterySubmissionResponse[]>(`/weekly-mystery/${currentMysteryId.value}/submissions`, {
+		method: 'GET',
+	}).catch(() => []) : []),
+	{ watch: [currentMysteryId] },
+);
+
 const canSavePrompt = computed(() =>
 	Boolean(classroomId.value)
 	&& promptDraft.title.trim().length > 0
@@ -65,7 +84,109 @@ const refreshMysteryState = async () => {
 		refreshCurrentMystery(),
 		refreshMysteryHistory(),
 		refreshSavedPrompts(),
+		refreshCurrentSubmissions(),
 	]);
+};
+
+const getStudentName = (studentPublicUid: string) => {
+	return classroom.value?.members.find((member) => member.publicUuid === studentPublicUid)?.username ?? 'Ukjent elev';
+};
+
+const buildReturnTo = () => {
+	const query = new URLSearchParams();
+	query.set('classroomId', classroomId.value);
+
+	if (currentMysteryId.value) {
+		query.set('linkPromptId', currentMysteryId.value);
+	}
+
+	return `${routePaths.teacherClassroomMystery}?${query.toString()}`;
+};
+
+const buildExercisePayloadFromSubmission = (submission: WeeklyMysterySubmissionResponse): ExerciseFactoryPayload => {
+	const studentName = getStudentName(submission.studentPublicUid);
+	const mysteryTitle = currentMystery.value?.title ?? 'Ukens mysterium';
+	const task: MultipleChoiceTaskData = {
+		id: createDraftId('weekly-mystery-task'),
+		templateKind: 'multiple-choice',
+		introText: 'Se nøye på bildet og forklar hva som virker trygt eller mistenkelig.',
+		feedbackCorrect: 'Bra detektivarbeid. Du la merke til et viktig spor i saken.',
+		feedbackIncorrect: 'Se en gang til etter avsender, språk, bildebruk og andre spor som kan hjelpe deg.',
+		prompt: {
+			title: submission.fileName || mysteryTitle,
+			text: submission.message,
+			imageUrl: submission.fileUrl,
+			imageAlt: `Innsendt bilde fra ${studentName}`,
+		},
+		options: [
+			{ key: 'a', title: 'Dette er det viktigste sporet i saken' },
+			{ key: 'b', title: 'Bildet alene beviser at saken stemmer' },
+			{ key: 'c', title: 'Det er smartest å dele videre med en gang' },
+		],
+		correctChoice: 'a',
+	};
+
+	return {
+		title: `Ukens mysterium: ${mysteryTitle}`,
+		difficultyName: 'Ukens mysterium',
+		description: [
+			currentMystery.value?.prompt,
+			`Elevforslag fra ${studentName}: ${submission.message}`,
+		].filter(Boolean).join('\n\n'),
+		hint: currentMystery.value?.clue || 'Se nøye på bildet og forklar hvilke spor du finner.',
+		tasks: [task],
+	};
+};
+
+const createGameFromSubmission = async (submission: WeeklyMysterySubmissionResponse) => {
+	if (!currentMysteryId.value) {
+		errorMessage.value = 'Velg et aktivt mysterium før du lager spillet.';
+		return;
+	}
+
+	resetMessages();
+	factorySessionCache.setDraft('exercise', exerciseFactoryNewSelectionKey, buildExercisePayloadFromSubmission(submission));
+	await navigateTo({
+		path: routePaths.teacherFactoryExercise,
+		query: {
+			returnTo: buildReturnTo(),
+		},
+	});
+};
+
+const clearFactoryReturnQuery = async () => {
+	const nextQuery = { ...route.query };
+	delete nextQuery.exerciseUid;
+	delete nextQuery.linkPromptId;
+
+	await router.replace({
+		path: route.path,
+		query: nextQuery,
+	});
+};
+
+const linkReturnedExercise = async () => {
+	const exerciseUid = typeof route.query.exerciseUid === 'string' ? route.query.exerciseUid : '';
+	const promptId = typeof route.query.linkPromptId === 'string' ? route.query.linkPromptId : '';
+
+	if (!exerciseUid || !promptId) {
+		return;
+	}
+
+	resetMessages();
+
+	try {
+		await $api(`/weekly-mystery/${promptId}/exercise`, {
+			method: 'PATCH',
+			body: { exerciseUid },
+		});
+		await refreshMysteryState();
+		statusMessage.value = 'Spillet er koblet til ukens mysterium.';
+	} catch {
+		errorMessage.value = 'Spillet ble lagret, men kunne ikke kobles til mysteriet. Prøv igjen.';
+	} finally {
+		await clearFactoryReturnQuery();
+	}
 };
 
 const assignPrompt = async (promptId: string) => {
@@ -128,6 +249,10 @@ const createAndActivatePrompt = async () => {
 		isSavingPrompt.value = false;
 	}
 };
+
+onMounted(() => {
+	void linkReturnedExercise();
+});
 </script>
 
 <template>
@@ -150,6 +275,10 @@ const createAndActivatePrompt = async () => {
 					<h3>{{ currentMystery.title }}</h3>
 					<p>{{ currentMystery.prompt }}</p>
 					<p class="mysteryMeta"><strong>Tips:</strong> {{ currentMystery.clue }}</p>
+					<p class="mysteryMeta">
+						<strong>Spill:</strong>
+						{{ currentMystery.exerciseUid ? 'Klart for elevene' : 'Ikke laget ennå' }}
+					</p>
 				</template>
 
 				<p v-else>Det er ikke valgt noe aktivt mysterium for dette klasserommet ennå.</p>
@@ -190,6 +319,31 @@ const createAndActivatePrompt = async () => {
 
 				<p v-if="statusMessage" class="successMessage">{{ statusMessage }}</p>
 				<p v-if="errorMessage" class="errorMessage">{{ errorMessage }}</p>
+			</section>
+
+			<section class="card submissionsCard">
+				<div class="mysteryHeader">
+					<h2>Elevforslag</h2>
+					<p class="mysteryMeta">Forslagene elevene har sendt inn til det aktive mysteriet. Bruk et forslag som startpunkt for det spillbare mysteriet.</p>
+				</div>
+
+				<ul v-if="currentSubmissions && currentSubmissions.length > 0" class="submissionList">
+					<li v-for="submission in currentSubmissions" :key="submission.publicUid" class="submissionItem">
+						<img :src="submission.fileUrl" :alt="`Innsendt bilde fra ${getStudentName(submission.studentPublicUid)}`" class="submissionImage">
+
+						<div class="submissionContent">
+							<p class="weekLabel">{{ getStudentName(submission.studentPublicUid) }}</p>
+							<h3>{{ submission.fileName }}</h3>
+							<p>{{ submission.message }}</p>
+						</div>
+
+						<button class="secondaryButton" type="button" @click="createGameFromSubmission(submission)">
+							Lag spill av forslag
+						</button>
+					</li>
+				</ul>
+
+				<p v-else>Ingen elever har sendt inn forslag til det aktive mysteriet ennå.</p>
 			</section>
 
 			<section class="card">
@@ -298,6 +452,11 @@ const createAndActivatePrompt = async () => {
 	background:
 		radial-gradient(circle at top right, rgba(245, 202, 46, 0.2), transparent 30%),
 		var(--color-bg-surface);
+}
+
+.submissionsCard {
+	background:
+		linear-gradient(90deg, color-mix(in srgb, var(--color-bg-surface) 94%, var(--color-semantic-success) 6%), var(--color-bg-surface));
 }
 
 .mysteryHeader {
@@ -420,6 +579,49 @@ const createAndActivatePrompt = async () => {
 	border-top: none;
 }
 
+.submissionList {
+	display: grid;
+	gap: 1rem;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+
+.submissionItem {
+	display: grid;
+	grid-template-columns: 8rem minmax(0, 1fr) auto;
+	gap: 1rem;
+	align-items: start;
+	padding-top: 1rem;
+	border-top: 1px solid var(--color-border-subtle);
+}
+
+.submissionItem:first-child {
+	padding-top: 0;
+	border-top: none;
+}
+
+.submissionImage {
+	width: 8rem;
+	aspect-ratio: 4 / 3;
+	border: 1px solid var(--color-border-default);
+	border-radius: var(--radius-2);
+	background: color-mix(in srgb, var(--color-bg-surface) 90%, var(--color-brand-primary) 10%);
+	object-fit: cover;
+}
+
+.submissionContent {
+	min-width: 0;
+}
+
+.submissionContent h3 {
+	margin: 0 0 0.45rem;
+}
+
+.submissionContent p {
+	overflow-wrap: anywhere;
+}
+
 .historyList {
 	display: grid;
 	gap: 0.9rem;
@@ -445,6 +647,15 @@ const createAndActivatePrompt = async () => {
 
 	.promptItem {
 		display: grid;
+	}
+
+	.submissionItem {
+		grid-template-columns: 1fr;
+	}
+
+	.submissionImage {
+		width: 100%;
+		max-height: 16rem;
 	}
 }
 </style>

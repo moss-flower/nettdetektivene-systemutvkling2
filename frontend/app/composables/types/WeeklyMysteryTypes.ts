@@ -4,6 +4,7 @@ export type WeeklyMysteryPrompt = {
 	title: string;
 	prompt: string;
 	clue: string;
+	exerciseUid?: string | null;
 };
 
 export type WeeklyMysterySubmissionResponse = {

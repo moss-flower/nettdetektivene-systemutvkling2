@@ -17,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.exception.AccessDeniedException;
 import no.safety.backend.exception.domain.FilePersistenceException;
+import no.safety.backend.excercise.model.Exercise;
+import no.safety.backend.excercise.repository.ExerciseRepository;
 import no.safety.backend.media.dto.MediaUploadResponse;
 import no.safety.backend.media.service.MediaStorageService;
 import no.safety.backend.notification.dto.NotificationEvent;
@@ -44,6 +46,7 @@ public class WeeklyMysteryService {
     private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
     private final ClassroomWeeklyMysteryRepository classroomWeeklyMysteryRepository;
+    private final ExerciseRepository exerciseRepository;
 
     /**
      * Saves a student's submission for a Weekly Mystery prompt.
@@ -190,6 +193,32 @@ public class WeeklyMysteryService {
      */
     public WeeklyMysteryPrompt fetch(UUID promptId) {
         return promptRepository.findByPublicUuid(promptId);
+    }
+
+    /**
+     * Links a saved exercise to a Weekly Mystery prompt owned by the requesting teacher.
+     *
+     * @param promptId   the public UUID of the prompt
+     * @param exerciseId the public UUID of the exercise
+     * @param teacherId  the internal ID of the requesting teacher
+     * @return the updated prompt response
+     */
+    @Transactional
+    public WeeklyMysteryPromptResponse linkExercise(UUID promptId, UUID exerciseId, Long teacherId) {
+        WeeklyMysteryPrompt prompt = promptRepository.findByPublicUuid(promptId);
+        if (prompt == null) {
+            throw new EntityNotFoundException("Weekly mystery prompt not found: " + promptId);
+        }
+
+        if (!prompt.getTeacherUser().getInternalId().equals(teacherId)) {
+            throw new AccessDeniedException("User does not have permission to update this prompt.");
+        }
+
+        Exercise exercise = exerciseRepository.findByPublicId(exerciseId)
+                .orElseThrow(() -> new EntityNotFoundException("Exercise not found: " + exerciseId));
+
+        prompt.setExercise(exercise);
+        return WeeklyMysteryPromptResponse.fromEntity(promptRepository.save(prompt));
     }
 
     /**

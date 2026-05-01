@@ -231,6 +231,19 @@ const finishSave = (selectionKey: string) => {
 	emit("saved");
 };
 
+const withSavedExerciseUid = (fullPath: string, selectionKey: string) => {
+	const selection = parseExerciseFactorySelectionKey(selectionKey);
+
+	if (selection.kind !== "existing") {
+		return fullPath;
+	}
+
+	const url = new URL(fullPath, "http://factory-return.local");
+	url.searchParams.set("exerciseUid", selection.uid);
+
+	return `${url.pathname}${url.search}${url.hash}`;
+};
+
 const savePayload = async () => {
 	if (!canSave.value) {
 		return;
@@ -249,7 +262,7 @@ const savePayload = async () => {
 	const returnTarget = returnTo ? { fullPath: returnTo } : factorySessionCache.popReturnTarget();
 
 	if (returnTarget) {
-		await navigateTo(returnTarget.fullPath);
+		await navigateTo(withSavedExerciseUid(returnTarget.fullPath, saved.selectionKey));
 		return;
 	}
 

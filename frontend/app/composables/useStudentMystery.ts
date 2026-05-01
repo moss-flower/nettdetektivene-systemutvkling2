@@ -19,6 +19,7 @@ const normalizePrompt = (prompt: WeeklyMysteryPrompt): WeeklyMysteryPrompt => ({
 	title: prompt.title,
 	prompt: prompt.prompt,
 	clue: prompt.clue,
+	exerciseUid: prompt.exerciseUid ?? null,
 });
 
 export function useStudentMystery() {

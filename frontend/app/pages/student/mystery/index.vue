@@ -38,6 +38,8 @@ const canSubmit = computed(() => {
   return currentMystery.value !== null && selectedFile.value !== null && studentMessage.value.trim().length >= 8;
 });
 
+const hasPlayableMystery = computed(() => Boolean(currentMystery.value?.exerciseUid));
+
 const anyDialogOpen = computed(() => showPreviousMysteries.value || showSuggestionDialog.value);
 
 watch(selectedFile, (file, previousFile) => {
@@ -124,7 +126,7 @@ async function sendMysterySubmission() {
           <p class="studentMysteryWeek mysteryWeekHero">{{ currentMystery?.weekLabel ?? 'Ingen sak valgt' }}</p>
         </div>
         <p class="studentMysteryIntro">
-          {{ currentMystery ? 'Spill ukens mysterium, eller tips læreren om en senere sak.' : 'Læreren har ikke valgt et mysterium for klassen ennå.' }}
+          {{ hasPlayableMystery ? 'Spill ukens mysterium, eller tips læreren om en senere sak.' : currentMystery ? 'Læreren samler forslag før spillet blir klart.' : 'Læreren har ikke valgt et mysterium for klassen ennå.' }}
         </p>
       </header>
 
@@ -134,9 +136,10 @@ async function sendMysterySubmission() {
           <p v-if="isLoading" class="studentMysteryHelper">Laster mysteriet...</p>
           <p class="studentMysteryHelper">{{ currentMystery?.prompt ?? 'Det er ikke publisert noen aktiv sak ennå.' }}</p>
           <p v-if="currentMystery?.clue" class="studentMysteryMeta"><strong>Tips:</strong> {{ currentMystery.clue }}</p>
+          <p v-if="currentMystery && !hasPlayableMystery" class="studentMysteryMeta">Spillet blir tilgjengelig når læreren har valgt et elevforslag og laget saken ferdig.</p>
 
           <div class="mysteryActionsRow">
-            <NuxtLink :to="routePaths.studentMysteryPlay" class="mysteryPlayAction" :aria-disabled="!currentMystery" :tabindex="currentMystery ? 0 : -1" :class="{ mysteryPlayActionDisabled: !currentMystery }">
+            <NuxtLink :to="routePaths.studentMysteryPlay" class="mysteryPlayAction" :aria-disabled="!hasPlayableMystery" :tabindex="hasPlayableMystery ? 0 : -1" :class="{ mysteryPlayActionDisabled: !hasPlayableMystery }">
               Spill ukens mysterium
             </NuxtLink>
 

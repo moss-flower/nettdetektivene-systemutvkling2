@@ -1,8 +1,6 @@
-import type {
-  ExerciseTask,
-  MultipleChoiceTaskData,
-  XOrYTaskData,
-} from '~/composables/types/TaskTypes'
+import { Exercise } from '~/composables/types/ExerciseType'
+import type { ExerciseTask } from '~/composables/types/TaskTypes'
+import type { WeeklyMysteryPrompt } from '~/composables/types/WeeklyMysteryTypes'
 
 export type WeeklyMysteryPlaySession = {
   id: string
@@ -11,88 +9,43 @@ export type WeeklyMysteryPlaySession = {
   summary: string
   outroSuccess: string
   outroRetry: string
+  exerciseUid: string
   tasks: ExerciseTask[]
 }
 
-const mysteryPlaySession: WeeklyMysteryPlaySession = {
-  id: 'm-2026-17-play',
-  weekLabel: 'Uke 17',
-  title: 'Mysteriet om den ville overskriften',
-  summary: 'Bruk detektivblikket ditt og finn tegn på at en overskrift prøver å styre følelsene dine.',
-  outroSuccess: 'Saken er løst. Du oppdaget flere tegn på at sterke overskrifter kan lure deg.',
-  outroRetry: 'Du er på sporet, men noen ledetråder glapp. Prøv en gang til og se ekstra etter sterke ord og uklare kilder.',
-  tasks: [
-    {
-      id: 'weekly-mystery-task-1',
-      templateKind: 'multiple-choice',
-      introText: 'Start med å finne det tydeligste varselsignalet i overskriften.',
-      feedbackCorrect: 'Riktig. Når en sak prøver å gjøre deg redd med en gang, bør du stoppe opp og sjekke mer.',
-      feedbackIncorrect: 'Se etter om overskriften prøver å trigge følelser i stedet for å forklare rolig hva som har skjedd.',
-      prompt: {
-        title: 'Hva er det første varselsignalet?',
-        text: 'Se på overskriften og velg det som gjør den mest mistenkelig.',
-        imageUrl: '/images/placeholders/mystery-shock.svg',
-        imageAlt: 'Skjermbilde av en dramatisk overskrift som prøver å skape frykt',
-      },
-      options: [
-        { key: 'a', title: 'Den bruker ord som prøver å gjøre deg redd med en gang' },
-        { key: 'b', title: 'Den har et stort bilde ved siden av teksten' },
-        { key: 'c', title: 'Den handler om noe mange bryr seg om' },
-      ],
-      correctChoice: 'a',
-    } satisfies MultipleChoiceTaskData,
-    {
-      id: 'weekly-mystery-task-2',
-      templateKind: 'x-or-y',
-      introText: 'Sammenlign de to sakene og velg den som virker mest troverdig.',
-      feedbackCorrect: 'Bra. Den troverdige saken forklarer konkret hva som har skjedd og hvem som sier det.',
-      feedbackIncorrect: 'Se etter rolig språk, tydelig avsender og konkrete opplysninger om saken.',
-      prompt: {
-        title: 'Hvilken overskrift virker mest troverdig?',
-        text: 'Velg saken du ville stolt mest på etter første blikk.',
-      },
-      options: {
-        x: {
-          imageUrl: '/images/placeholders/mystery-vague.svg',
-          imageAlt: 'Skjermbilde av en dramatisk og vag overskrift',
-          eyebrow: 'Sak X',
-          title: 'Du vil ikke tro hva som skjedde i skolegaarden',
-          text: 'Overskriften er dramatisk, men sier lite om hvem som står bak eller hva som faktisk skjedde.',
-        },
-        y: {
-          imageUrl: '/images/placeholders/mystery-calm.svg',
-          imageAlt: 'Skjermbilde av en rolig overskrift med tydelig avsender',
-          eyebrow: 'Sak Y',
-          title: 'Skolen forklarer ny regel for mobilbruk',
-          text: 'Overskriften sier hva saken handler om og virker lettere å sjekke videre.',
-        },
-      },
-      correctChoice: 'y',
-    } satisfies XOrYTaskData,
-    {
-      id: 'weekly-mystery-task-3',
-      templateKind: 'multiple-choice',
-      introText: 'Velg det smarteste neste steget når en sak virker mistenkelig.',
-      feedbackCorrect: 'Ja. Det smarteste er å sjekke avsender og kilde før du tror på eller deler saken.',
-      feedbackIncorrect: 'Tenk på hva som hjelper deg å undersøke saken, ikke hva som sprer den raskest videre.',
-      prompt: {
-        title: 'Hva bør du gjøre nå?',
-        text: 'Du blir usikker på om saken stemmer. Velg det beste neste steget.',
-        imageUrl: '/images/placeholders/mystery-check.svg',
-        imageAlt: 'Skjermbilde av en nyhetssak som bør sjekkes nærmere',
-      },
-      options: [
-        { key: 'a', title: 'Sjekke hvem som har laget saken og om kilden virker ekte' },
-        { key: 'b', title: 'Dele saken videre og høre hva andre tror' },
-        { key: 'c', title: 'Tro på saken hvis bildet ser ekte ut' },
-      ],
-      correctChoice: 'a',
-    } satisfies MultipleChoiceTaskData,
-  ],
-}
-
 export function useStudentMysteryPlay() {
+  const { $api } = useNuxtApp()
+  const { student } = useClassrooms()
+
+  const loadMysteryPlaySession = async (): Promise<WeeklyMysteryPlaySession | null> => {
+    const classroom = await student.getMyClassroom()
+    const mystery = await $api<WeeklyMysteryPrompt | null>(`/classrooms/${classroom.uid}/weekly-mystery`, {
+      method: 'GET',
+    })
+
+    if (!mystery?.exerciseUid) {
+      return null
+    }
+
+    const exercise = await Exercise.backendFetchExerciseByUid(mystery.exerciseUid)
+
+    if (!exercise) {
+      return null
+    }
+
+    return {
+      id: mystery.publicId,
+      weekLabel: mystery.weekLabel?.trim() || 'Ukens mysterium',
+      title: mystery.title || exercise.title,
+      summary: exercise.description || mystery.prompt,
+      outroSuccess: 'Saken er løst. Du fullførte ukens mysterium.',
+      outroRetry: 'Du er på sporet. Prøv igjen og se ekstra nøye på ledetrådene.',
+      exerciseUid: exercise.uid,
+      tasks: exercise.tasks,
+    }
+  }
+
   return {
-    mysteryPlaySession,
+    loadMysteryPlaySession,
   }
 }

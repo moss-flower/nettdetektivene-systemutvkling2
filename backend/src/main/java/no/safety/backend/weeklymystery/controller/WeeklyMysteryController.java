@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +22,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.auth.model.UserPrincipal;
+import no.safety.backend.weeklymystery.dto.WeeklyMysteryExerciseLinkRequest;
 import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptCreateRequest;
 import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptResponse;
 import no.safety.backend.weeklymystery.dto.WeeklyMysterySubmissionCreateRequest;
@@ -85,6 +87,23 @@ public class WeeklyMysteryController {
         ) {
             return ResponseEntity.ok(weeklyMysteryService.getWeeklyMysterySubmissionResponses(promptId));
     
+    }
+
+    @Operation(
+        summary = "Link exercise to prompt",
+        description = "Connect a saved exercise to a Weekly Mystery prompt so students can play it."
+    )
+    @PreAuthorize("hasRole('TEACHER')")
+    @PatchMapping("/{promptId}/exercise")
+    public ResponseEntity<WeeklyMysteryPromptResponse> linkExercise(
+            @PathVariable UUID promptId,
+            @Valid @RequestBody WeeklyMysteryExerciseLinkRequest request,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return ResponseEntity.ok(weeklyMysteryService.linkExercise(
+                promptId,
+                request.exerciseUid(),
+                principal.getUserInternalId()));
     }
 
 
