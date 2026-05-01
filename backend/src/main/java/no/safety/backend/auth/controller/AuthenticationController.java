@@ -1,11 +1,13 @@
 package no.safety.backend.auth.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,7 +36,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
     private final JwtCookieService jwtCookieService;
 
-    @org.springframework.beans.factory.annotation.Value("${application.security.jwt.cookie.refresh.name}")
+    @Value("${application.security.jwt.cookie.refresh.name}")
     private String refreshCookieName;
 
     /**
@@ -56,7 +58,8 @@ public class AuthenticationController {
     }
 
     /**
-     * API endpoint for getting a refresh token and access token pair.
+     * API endpoint for refresh tokens.
+     * Sends an access and refresh token pair in a cookie.
      * @return
      */
     @PostMapping(value = "/refresh")
@@ -92,7 +95,7 @@ public class AuthenticationController {
      * @param userPrincipal
      * @return
      */
-    @PostMapping(value = "/me")
+    @GetMapping(value = "/me")
     public ResponseEntity<UserLoginResponse> getActiveUserDetails(@AuthenticationPrincipal UserPrincipal userPrincipal){
         if (userPrincipal == null) {
             throw new AccessDeniedException("No active session found.");
@@ -101,6 +104,12 @@ public class AuthenticationController {
         return ResponseEntity.ok(UserLoginResponse.fromEntity(userPrincipal.user(), "User details of logged in user."));
     }
 
+    /**
+     * Extracts the cookie value from a request.
+     * @param request
+     * @param cookieName
+     * @return
+     */
     private String extractCookieValue(HttpServletRequest request, String cookieName) {
         if (request.getCookies() == null) {
             return null;
