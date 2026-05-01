@@ -71,18 +71,18 @@ const { data: progressByStudent, refresh: refreshProgress } = await useAsyncData
 const removingStudentId = ref('');
 const renamingStudentId = ref('');
 const deletingClassroom = ref(false);
-const confirmingClassroomDelete = ref(false);
-const deleteClassroomError = ref('');
 
 const getStudentProgress = (studentId: string): StudentProgress => progressByStudent.value?.[studentId] ?? {
   completed: 0,
   remaining: totalExercises.value,
 };
 
-const removeStudent = async (studentId: string) => {
+const removeStudent = async (studentId: string, studentName: string) => {
   if (!classroom.value || removingStudentId.value) {
     return;
   }
+
+  if (!window.confirm(`Fjerne ${studentName} fra klasserommet?`)) return;
 
   removingStudentId.value = studentId;
 
@@ -118,11 +118,7 @@ const renameStudent = async (studentId: string, currentName: string) => {
 const deleteClassroom = async () => {
   if (!classroom.value || deletingClassroom.value) return;
 
-  if (!confirmingClassroomDelete.value) {
-    confirmingClassroomDelete.value = true;
-    deleteClassroomError.value = '';
-    return;
-  }
+  if (!window.confirm(`Slette klasserommet "${classroom.value.name}"? Dette kan ikke angres.`)) return;
 
   deletingClassroom.value = true;
   try {
@@ -130,15 +126,10 @@ const deleteClassroom = async () => {
     await navigateTo(routePaths.teacherOverview);
   } catch (error) {
     console.error('Failed to delete classroom', error);
-    deleteClassroomError.value = 'Kunne ikke slette klasserommet. Prøv igjen.';
+    window.alert('Kunne ikke slette klasserommet. Prøv igjen.');
   } finally {
     deletingClassroom.value = false;
   }
-};
-
-const cancelClassroomDelete = () => {
-  confirmingClassroomDelete.value = false;
-  deleteClassroomError.value = '';
 };
 </script>
 
@@ -147,26 +138,15 @@ const cancelClassroomDelete = () => {
     <header class="pageHeader">
       <div class="headerActions">
         <NuxtLink class="backLink" :to="routePaths.teacherOverview">Tilbake til hjemskjerm</NuxtLink>
-        <div v-if="classroom" class="deleteClassroomActions">
-          <span v-if="deleteClassroomError" class="deleteClassroomError">{{ deleteClassroomError }}</span>
-          <button
-            v-if="confirmingClassroomDelete"
-            class="cancelDeleteClassroomButton"
-            type="button"
-            :disabled="deletingClassroom"
-            @click="cancelClassroomDelete"
-          >
-            Avbryt
-          </button>
-          <button
-            class="deleteClassroomButton"
-            type="button"
-            :disabled="deletingClassroom"
-            @click="deleteClassroom"
-          >
-            {{ confirmingClassroomDelete ? 'Bekreft sletting' : 'Slett klasserom' }}
-          </button>
-        </div>
+        <button
+          v-if="classroom"
+          class="deleteClassroomButton"
+          type="button"
+          :disabled="deletingClassroom"
+          @click="deleteClassroom"
+        >
+          Slett klasserom
+        </button>
       </div>
       <p class="eyebrow">Klasseromsdetaljer</p>
       <h1>{{ classroom?.name ?? 'Ukjent klasserom' }}</h1>
@@ -263,7 +243,7 @@ const cancelClassroomDelete = () => {
                 type="button"
                 :aria-label="`Fjern ${student.username} fra klasserommet`"
                 :disabled="removingStudentId === student.publicUuid"
-                @click="removeStudent(student.publicUuid)"
+                @click="removeStudent(student.publicUuid, student.username)"
               >
                 X
               </button>
@@ -319,39 +299,6 @@ const cancelClassroomDelete = () => {
   color: var(--color-semantic-danger, #b42318);
   cursor: pointer;
   font-weight: 700;
-}
-
-.deleteClassroomActions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.cancelDeleteClassroomButton {
-  padding: 0.55rem 1rem;
-  border: var(--border-width-hairline) solid var(--color-border-default);
-  border-radius: var(--radius-2);
-  background: var(--color-bg-surface);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.cancelDeleteClassroomButton:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-bg-surface) 85%, var(--color-text-secondary) 15%);
-}
-
-.cancelDeleteClassroomButton:disabled {
-  cursor: wait;
-  opacity: 0.55;
-}
-
-.deleteClassroomError {
-  color: var(--color-semantic-danger, #b42318);
-  font-size: 0.9rem;
-  font-weight: 600;
 }
 
 .deleteClassroomButton:hover:not(:disabled) {
@@ -597,10 +544,6 @@ thead th {
   .headerActions {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .deleteClassroomActions {
-    justify-content: flex-start;
   }
 
   .summaryRow {
