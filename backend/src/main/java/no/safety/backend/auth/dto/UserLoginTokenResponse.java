@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record UserLoginTokenResponse(
     @NotNull UserLoginResponse userLoginResponse,
-    @NotNull String jwtToken
+    @NotNull String accessToken,
+    @NotNull String refreshToken
 ) {
 } 

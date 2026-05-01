@@ -354,7 +354,7 @@ watch(payloadPreviewText, () => {
 										<p class="cardEyebrow">Plass {{ station.order }}</p>
 										<h3>{{ station.title }}</h3>
 										<span :class="['statusPill', { 'statusPill--manual': !station.isKnown }]">
-											{{ station.isKnown ? station.uid : 'Ikke tilgjengelig' }}
+											{{ station.isKnown ? "Tilgjengelig" : 'Ikke tilgjengelig' }}
 										</span>
 										<div v-if="station.usageTags.length > 0" class="usageTags" aria-label="Brukt i stasjonskart">
 											<span v-for="tag in station.usageTags" :key="tag" class="usageTag">{{ tag }}</span>
@@ -400,6 +400,7 @@ watch(payloadPreviewText, () => {
 										<p class="cardEyebrow">{{ station.uid }}</p>
 										<h3>{{ station.title }}</h3>
 										<div v-if="station.usageTags.length > 0" class="usageTags" aria-label="Brukt i stasjonskart">
+                      <p class="small">Brukt i:</p>
 											<span v-for="tag in station.usageTags" :key="tag" class="usageTag">{{ tag }}</span>
 										</div>
 									</div>
