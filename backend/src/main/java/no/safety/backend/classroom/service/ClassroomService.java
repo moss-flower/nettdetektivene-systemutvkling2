@@ -125,8 +125,9 @@ public class ClassroomService {
     }
 
     member.setClassroom(c);
+    member.setClassroomPending(true);
     c.getMembers().add(member);
-    return ClassroomResponse.from(c);
+    return ClassroomResponse.from(c, true);
   }
 
   @Transactional
@@ -145,8 +146,22 @@ public class ClassroomService {
       throw new StudentNotInClassException("Student is not a member of this classroom");
     }
     member.setClassroom(null);
+    member.setClassroomPending(false);
     c.getMembers().remove(member);
 
+    return ClassroomResponse.from(c);
+  }
+
+  @Transactional
+  public ClassroomResponse approveMember(UUID classroomUid, UUID memberUuid, UUID callerUuid) {
+    Classroom c = requireOwned(classroomUid, callerUuid);
+    StudentUser member = requireStudent(memberUuid);
+
+    if (member.getClassroom() == null || !member.getClassroom().getUid().equals(classroomUid)) {
+      throw new StudentNotInClassException("Student is not a member of this classroom");
+    }
+
+    member.setClassroomPending(false);
     return ClassroomResponse.from(c);
   }
 
@@ -163,6 +178,7 @@ public class ClassroomService {
     }
 
     member.setClassroom(null);
+    member.setClassroomPending(false);
     studentRepo.save(member);
   }
 
@@ -197,7 +213,7 @@ public class ClassroomService {
       throw new StudentNotInClassException("Student is not in a classroom");
     }
 
-    return ClassroomResponse.from(student.getClassroom());
+    return ClassroomResponse.from(student.getClassroom(), student.isClassroomPending());
   }
 
   /**
