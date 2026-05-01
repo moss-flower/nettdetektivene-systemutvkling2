@@ -74,19 +74,19 @@ const commonPatternsText = computed({
 }
 
 .templateSection h4 {
-   margin: 0 0 0.8rem;
-   font-weight: 700;
+   margin: 0 0 var(--space-3);
+   font-weight: var(--font-weight-bold);
 }
 
 .fieldGrid {
    display: grid;
    grid-template-columns: repeat(2, minmax(0, 1fr));
-   gap: 0.9rem;
+   gap: var(--space-3);
 }
 
 .field {
    display: grid;
-   gap: 0.45rem;
+   gap: var(--space-1);
 }
 
 .fieldFull {
@@ -94,17 +94,22 @@ const commonPatternsText = computed({
 }
 
 .field span {
-   font-weight: 700;
+   color: var(--factory-label-color);
+   font-family: var(--factory-label-font), monospace;
+   font-size: var(--factory-label-size);
+   font-weight: var(--font-weight-bold);
+   letter-spacing: var(--factory-label-tracking);
+   text-transform: uppercase;
 }
 
 .field input,
 .field select,
 .field textarea {
    width: 100%;
-   padding: 0.85rem var(--space-4);
-   border: var(--border-width-hairline) solid var(--color-border-default);
-   border-radius: 0.9rem;
-   background: rgba(0, 0, 0, 0.16);
+   padding: var(--space-3) var(--space-4);
+   border: var(--border-width-hairline) solid var(--factory-field-border);
+   border-radius: var(--radius-1);
+   background: var(--factory-field-bg);
    color: var(--color-text-primary);
    font: inherit;
 }
@@ -117,10 +122,10 @@ const commonPatternsText = computed({
 .field select:focus,
 .field textarea:focus {
    outline: none;
-   border-color: var(--color-brand-primary);
+   border-color: var(--factory-field-focus);
 }
 
-@media (max-width: 800px) {
+@media (max-width: 800px) { /* deliberate: matches factory editor mobile breakpoint */
    .fieldGrid {
       grid-template-columns: 1fr;
    }

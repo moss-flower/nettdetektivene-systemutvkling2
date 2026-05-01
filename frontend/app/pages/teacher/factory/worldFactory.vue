@@ -124,31 +124,6 @@ h1 {
   color: var(--color-text-primary);
 }
 
-.selectorPanel {
-   display: grid;
-   gap: var(--space-4);
-   margin-bottom: var(--space-5);
-   padding: var(--space-5);
-   border: var(--border-width-hairline) solid var(--color-border-default);
-   border-radius: var(--radius-4);
-   background: var(--color-bg-surface);
-   box-shadow: var(--shadow-folder);
-}
-.selectorControls {
-   display: flex;
-}
-
-.field {
-   display: grid;
-   gap: var(--space-2);
-  /* deliberate: reading-measure cap for form fields */
-   max-width: 32rem;
-}
-
-.fieldGrow {
-   flex: 1;
-}
-
 .field select {
    width: 100%;
    padding: var(--space-4);
