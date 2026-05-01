@@ -549,19 +549,6 @@ const next = async () => {
               <p class="stationPageEyebrow">{{ station.title }}</p>
               <p class="pageProgressPill">{{ progressLabel }}</p>
             </div>
-            <button
-              type="button"
-              class="tipsLetterButton"
-              aria-label="Åpne tipsbrev for oppgaven"
-              @click="showTipsPopup = true"
-            >
-              <img
-                src="https://placehold.co/160x110?text=Brev"
-                alt=""
-                aria-hidden="true"
-              >
-              <span>Tipsbrev</span>
-            </button>
           </div>
         </div>
       </header>
@@ -574,7 +561,7 @@ const next = async () => {
           @click="showTipsPopup = true"
         >
           <img :src="envelopeIcon" alt="Tipsbrev" >
-          <span>Åpne tipsbrev</span>
+          <span>Tips</span>
         </button>
 
         <XOrYTemplate
@@ -673,7 +660,6 @@ const next = async () => {
       v-if="showTipsPopup"
       :hint="exerciseHint"
       :title="activeExercise?.notepadEntry?.title ?? ''"
-      :type="activeExercise?.notepadEntry?.type ?? 'TIP'"
       @close="showTipsPopup = false"
     />
 

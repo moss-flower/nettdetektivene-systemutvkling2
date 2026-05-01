@@ -5,6 +5,7 @@ import PopupTips from "~/components/gameplay/shared/PopupTips.vue";
 import DifficultySelect from "~/components/station/difficultySelect.vue";
 import { useGamePreview } from "~/composables/useGamePreview";
 import { useStations } from "~/composables/useStations";
+import envelopeIcon from "~/assets/ui-icons/Envelope.png";
 
 type ExerciseOption = {
   uid: string;
@@ -98,12 +99,8 @@ const stationHint = computed(() => station.value?.hint ?? "");
           aria-label="Åpne tipsbrev for stasjonen"
           @click="showStationTipsPopup = true"
         >
-          <img
-            src="https://placehold.co/160x110?text=Brev"
-            alt=""
-            aria-hidden="true"
-          >
-          <span>Tipsbrev</span>
+          <img :src="envelopeIcon" alt="Tipsbrev" >
+          <span>Tips</span>
         </button>
         <img
           v-if="station.isBoss"
