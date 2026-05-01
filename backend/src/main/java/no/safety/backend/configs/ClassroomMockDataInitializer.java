@@ -10,6 +10,7 @@ import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.classroom.repository.ClassroomRepository;
 import no.safety.backend.completedexercise.model.CompletedExercise;
 import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
+import no.safety.backend.notification.dto.NotificationEvent;
 import no.safety.backend.role.model.Role;
 import no.safety.backend.role.model.RoleType;
 import no.safety.backend.role.repository.RoleRepository;
@@ -19,6 +20,7 @@ import no.safety.backend.user.repository.StudentUserRepository;
 import no.safety.backend.user.repository.TeacherUserRepository;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -63,6 +65,7 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
   private final RoleRepository roleRepository;
   private final CompletedExerciseRepository completedExerciseRepository;
   private final PasswordEncoder passwordEncoder;
+
 
   @Override
   @Transactional

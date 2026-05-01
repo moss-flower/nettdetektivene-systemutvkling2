@@ -3,6 +3,8 @@ import { routePaths } from "~/composables/utils/routePaths";
 
 const router = useRouter();
 
+definePageMeta({ layout: "teacher" });
+
 const goBack = () => {
 	if (import.meta.client && window.history.length > 1) {
 		router.back();

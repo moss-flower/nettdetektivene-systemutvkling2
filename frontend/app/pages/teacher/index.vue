@@ -1,16 +1,23 @@
 <script setup lang="ts">
-import { routePaths, routePathsWithString } from '~/composables/utils/routePaths';
-import { useAuth } from '~/composables/useAuth';
-import { toClassroomSummaries } from '~/composables/useTeacherDashboard';
+import {
+  routePaths,
+  routePathsWithString,
+} from "~/composables/utils/routePaths";
+import { useAuth } from "~/composables/useAuth";
+import { toClassroomSummaries } from "~/composables/useTeacherDashboard";
+
+definePageMeta({ layout: 'teacher' });
 
 const { teacher } = useClassrooms();
 
-const { data: ownedClassrooms, pending: classroomsPending } = await useAsyncData(
-  'teacher-owned-classrooms',
-  () => teacher.getOwnedClassrooms().catch(() => []),
-);
+const { data: ownedClassrooms, pending: classroomsPending } =
+  await useAsyncData("teacher-owned-classrooms", () =>
+    teacher.getOwnedClassrooms().catch(() => []),
+  );
 
-const classroomSummaries = computed(() => toClassroomSummaries(ownedClassrooms.value ?? []));
+const classroomSummaries = computed(() =>
+  toClassroomSummaries(ownedClassrooms.value ?? []),
+);
 const { logout } = useAuth();
 const isLoggingOut = ref(false);
 
@@ -39,15 +46,150 @@ const handleLogout = async () => {
           <h1>Hjemskjerm</h1>
           <p class="subtitle">Administrer klasserom og følg aktivitet.</p>
         </div>
-        <button class="logoutButton" type="button" :disabled="isLoggingOut" @click="handleLogout">
-          {{ isLoggingOut ? 'Logger ut...' : 'Logg ut' }}
+        <button
+          class="logoutButton"
+          type="button"
+          :disabled="isLoggingOut"
+          @click="handleLogout"
+        >
+          {{ isLoggingOut ? "Logger ut..." : "Logg ut" }}
         </button>
       </header>
 
-		<div class="dashboardGrid">
-		  <aside class="panel classesPanel">
+      <div class="dashboardGrid">
+        <aside class="panel classesPanel">
+          <h2>Dine klasserom</h2>
+          <NuxtLink
+            class="buttonLink createClassroomButton"
+            :to="routePaths.teacherClassroomCreate"
+          >
+            + Lag klasserom
+          </NuxtLink>
+          <NuxtLink
+            class="buttonLink joinClassroomButton"
+            :to="routePaths.join"
+          >
+            Bli med i klasserom
+          </NuxtLink>
+
+          <div class="classroomCards">
+            <p v-if="classroomsPending" class="panelMessage">
+              Laster klasserom...
+            </p>
+            <p v-else-if="classroomSummaries.length === 0" class="panelMessage">
+              Du har ingen klasserom ennå.
+            </p>
+            <NuxtLink
+              v-for="(classroom, index) in classroomSummaries"
+              :key="classroom.id"
+              class="classroomCard"
+              :class="`classroomCard${(index % 3) + 1}`"
+              :to="
+                routePathsWithString(
+                  routePaths.teacherClassroomOverview,
+                  `?classroomId=${classroom.id}`,
+                )
+              "
+            >
+              <span class="classroomName">{{ classroom.name }}</span>
+              <span class="classScore"
+                >{{ classroom.studentCount }} elever</span
+              >
+            </NuxtLink>
+          </div>
+        </aside>
+
+        <div class="topActionRow">
+          <NuxtLink
+            class="panel settingsButton"
+            :to="routePaths.teacherSettings"
+          >
+            <img
+              src="https://placehold.co/64x64"
+              alt="Innstillinger ikon"
+              class="settingsIcon"
+            />
+            <span class="settingsButtonLabel">Innstillinger</span>
+          </NuxtLink>
+
+          <NuxtLink
+            class="panel settingsButton settingsButtonNotifications"
+            :to="routePaths.teacherNotifications"
+          >
+            <img
+              src="https://placehold.co/64x64"
+              alt="Varslinger ikon"
+              class="settingsIcon"
+            />
+            <span class="settingsButtonLabel">Varslinger</span>
+            <span class="notificationBadge">1</span>
+          </NuxtLink>
+        </div>
+
+        <article class="panel panelHighlight managementPanel">
+          <details class="advancedDetails">
+            <summary class="advancedSummary">
+              <h2>Avanserte funksjoner</h2>
+            </summary>
+            <p>Lag nye ressurser som kan brukes i klasserom og stasjonskart.</p>
+
+            <h3 class="advancedSubheading">Lag ny</h3>
+
+            <div class="factoryActions factoryActionsGrid">
+              <NuxtLink
+                class="buttonLink buttonLinkSecondary"
+                :to="{
+                  path: routePaths.teacherFactoryWorld,
+                  query: {
+                    returnTo: routePaths.teacherOverview,
+                  },
+                }"
+              >
+                + Stasjonskart
+              </NuxtLink>
+              <NuxtLink
+                class="buttonLink buttonLinkSecondary"
+                :to="{
+                  path: routePaths.teacherFactoryStation,
+                  query: {
+                    returnTo: routePaths.teacherOverview,
+                  },
+                }"
+              >
+                + Stasjon
+              </NuxtLink>
+              <NuxtLink
+                class="buttonLink buttonLinkSecondary"
+                :to="{
+                  path: routePaths.teacherFactoryExercise,
+                  query: {
+                    returnTo: routePaths.teacherOverview,
+                  },
+                }"
+              >
+                + Oppgavesett
+              </NuxtLink>
+            </div>
+          </details>
+        </article>
+      </div>
+    </div>
+    <button
+      class="logoutButton"
+      type="button"
+      :disabled="isLoggingOut"
+      @click="handleLogout"
+    >
+      {{ isLoggingOut ? "Logger ut..." : "Logg ut" }}
+    </button>
+
+    <div class="dashboardGrid">
+      <aside class="panel classesPanel">
         <h2>Dine klasserom</h2>
-        <NuxtLink class="buttonLink createClassroomButton" :to="routePaths.teacherClassroomCreate">
+        <NuxtLink
+          class="buttonLink createClassroomButton"
+          :to="routePaths.teacherClassroomCreate"
+        >
           + Lag klasserom
         </NuxtLink>
         <NuxtLink class="buttonLink joinClassroomButton" :to="routePaths.join">
@@ -55,33 +197,53 @@ const handleLogout = async () => {
         </NuxtLink>
 
         <div class="classroomCards">
-          <p v-if="classroomsPending" class="panelMessage">Laster klasserom...</p>
-          <p v-else-if="classroomSummaries.length === 0" class="panelMessage">Du har ingen klasserom ennå.</p>
+          <p v-if="classroomsPending" class="panelMessage">
+            Laster klasserom...
+          </p>
+          <p v-else-if="classroomSummaries.length === 0" class="panelMessage">
+            Du har ingen klasserom ennå.
+          </p>
           <NuxtLink
             v-for="(classroom, index) in classroomSummaries"
             :key="classroom.id"
             class="classroomCard"
             :class="`classroomCard${(index % 3) + 1}`"
-            :to="routePathsWithString(routePaths.teacherClassroomOverview, `?classroomId=${classroom.id}`)"
+            :to="
+              routePathsWithString(
+                routePaths.teacherClassroomOverview,
+                `?classroomId=${classroom.id}`,
+              )
+            "
           >
             <span class="classroomName">{{ classroom.name }}</span>
             <span class="classScore">{{ classroom.studentCount }} elever</span>
           </NuxtLink>
-		  </div>
-		</aside>
+        </div>
+      </aside>
 
       <div class="topActionRow">
-		  <NuxtLink class="panel settingsButton" :to="routePaths.teacherSettings">
-			<img src="https://placehold.co/64x64" alt="Innstillinger ikon" class="settingsIcon">
-			<span class="settingsButtonLabel">Innstillinger</span>
-		  </NuxtLink>
+        <NuxtLink class="panel settingsButton" :to="routePaths.teacherSettings">
+          <img
+            src="https://placehold.co/64x64"
+            alt="Innstillinger ikon"
+            class="settingsIcon"
+          />
+          <span class="settingsButtonLabel">Innstillinger</span>
+        </NuxtLink>
 
-		  <NuxtLink class="panel settingsButton settingsButtonNotifications" :to="routePaths.teacherNotifications">
-			<img src="https://placehold.co/64x64" alt="Varslinger ikon" class="settingsIcon">
-			<span class="settingsButtonLabel">Varslinger</span>
-			<span class="notificationBadge">1</span>
-		  </NuxtLink>
-		</div>
+        <NuxtLink
+          class="panel settingsButton settingsButtonNotifications"
+          :to="routePaths.teacherNotifications"
+        >
+          <img
+            src="https://placehold.co/64x64"
+            alt="Varslinger ikon"
+            class="settingsIcon"
+          />
+          <span class="settingsButtonLabel">Varslinger</span>
+          <span class="notificationBadge">1</span>
+        </NuxtLink>
+      </div>
 
       <article class="panel panelHighlight managementPanel">
         <details class="advancedDetails">
@@ -93,20 +255,36 @@ const handleLogout = async () => {
           <h3 class="advancedSubheading">Lag ny</h3>
 
           <div class="factoryActions factoryActionsGrid">
-            <NuxtLink class="buttonLink buttonLinkSecondary" :to="{ path: routePaths.teacherFactoryWorld, query: { returnTo: routePaths.teacherOverview } }">
+            <NuxtLink
+              class="buttonLink buttonLinkSecondary"
+              :to="{
+                path: routePaths.teacherFactoryWorld,
+                query: { returnTo: routePaths.teacherOverview },
+              }"
+            >
               + Stasjonskart
             </NuxtLink>
-            <NuxtLink class="buttonLink buttonLinkSecondary" :to="{ path: routePaths.teacherFactoryStation, query: { returnTo: routePaths.teacherOverview } }">
+            <NuxtLink
+              class="buttonLink buttonLinkSecondary"
+              :to="{
+                path: routePaths.teacherFactoryStation,
+                query: { returnTo: routePaths.teacherOverview },
+              }"
+            >
               + Stasjon
             </NuxtLink>
-            <NuxtLink class="buttonLink buttonLinkSecondary" :to="{ path: routePaths.teacherFactoryExercise, query: { returnTo: routePaths.teacherOverview } }">
+            <NuxtLink
+              class="buttonLink buttonLinkSecondary"
+              :to="{
+                path: routePaths.teacherFactoryExercise,
+                query: { returnTo: routePaths.teacherOverview },
+              }"
+            >
               + Oppgavesett
             </NuxtLink>
           </div>
         </details>
       </article>
-
-      </div>
     </div>
   </section>
 </template>
@@ -125,9 +303,21 @@ const handleLogout = async () => {
   max-width: 1180px;
   padding: clamp(1.25rem, 3vw, 2rem);
   background:
-    radial-gradient(circle at top left, rgba(245, 202, 46, 0.22), transparent 28%),
-    radial-gradient(circle at 85% 18%, rgba(42, 63, 106, 0.14), transparent 30%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 239, 226, 0.97));
+    radial-gradient(
+      circle at top left,
+      rgba(245, 202, 46, 0.22),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 85% 18%,
+      rgba(42, 63, 106, 0.14),
+      transparent 30%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.94),
+      rgba(245, 239, 226, 0.97)
+    );
   border: var(--border-width-thin) solid rgba(255, 255, 255, 0.68);
   border-radius: var(--radius-4);
   box-shadow:
@@ -201,7 +391,10 @@ h1 {
   font: inherit;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .logoutButton:hover:not(:disabled) {
@@ -244,7 +437,9 @@ h1 {
   gap: var(--space-4);
   color: inherit;
   text-decoration: none;
-  transition: transform var(--transition-fast) ease, border-color var(--transition-fast) ease;
+  transition:
+    transform var(--transition-fast) ease,
+    border-color var(--transition-fast) ease;
 }
 
 .settingsButton:hover {
@@ -308,7 +503,9 @@ h2 {
   border: var(--border-width-hairline) solid var(--color-border-default);
   border-radius: var(--radius-2);
   text-decoration: none;
-  transition: transform var(--transition-fast) ease, border-color var(--transition-fast) ease;
+  transition:
+    transform var(--transition-fast) ease,
+    border-color var(--transition-fast) ease;
 }
 
 .classroomCard1 {
@@ -341,7 +538,11 @@ h2 {
 }
 
 .panelHighlight {
-  background: color-mix(in srgb, var(--color-bg-surface) 90%, var(--color-semantic-info) 10%);
+  background: color-mix(
+    in srgb,
+    var(--color-bg-surface) 90%,
+    var(--color-semantic-info) 10%
+  );
 }
 
 .managementPanel {
@@ -395,7 +596,11 @@ h2 {
 }
 
 .buttonLinkSecondary {
-  background: color-mix(in srgb, var(--color-bg-surface) 92%, var(--color-semantic-info) 8%);
+  background: color-mix(
+    in srgb,
+    var(--color-bg-surface) 92%,
+    var(--color-semantic-info) 8%
+  );
   color: var(--color-brand-primary);
 }
 
@@ -426,5 +631,4 @@ h2 {
     grid-template-columns: 1fr;
   }
 }
-
 </style>
