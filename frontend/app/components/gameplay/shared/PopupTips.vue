@@ -1,13 +1,19 @@
 <script setup lang="ts">
+import envelopeIcon from '~/assets/ui-icons/Envelope.png'
+import type { BackendNotepadEntryType } from '~/composables/types/NotepadTypes'
+
 defineProps<{
   hint: string;
   title?: string;
   emptyText?: string;
+  type?: BackendNotepadEntryType;
 }>();
 
 const emit = defineEmits<{
   (event: 'close'): void;
 }>();
+
+const typeLabel = (type?: BackendNotepadEntryType) => type === 'INFO' ? 'Info' : 'Tips'
 </script>
 
 <template>
@@ -19,13 +25,13 @@ const emit = defineEmits<{
 
       <img
         class="tipsImage"
-        src="https://placehold.co/720x360?text=Tipsbrev"
+        :src=envelopeIcon
         alt="Illustrasjon av et brev med tips"
       >
 
       <div class="tipsContent">
         <p class="tipsEyebrow">Tipsbrev</p>
-        <h2 id="tips-title">{{ title ?? 'Tips til oppgaven' }}</h2>
+        <h2 id="tips-title">{{ type ? `${typeLabel(type)}: ${title ?? 'Tips til oppgaven'}` : (title ?? 'Tips til oppgaven') }}</h2>
         <p>{{ hint || emptyText || 'Det finnes ikke noe tips for denne oppgaven ennå.' }}</p>
       </div>
     </article>

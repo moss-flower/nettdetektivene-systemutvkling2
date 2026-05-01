@@ -4,15 +4,20 @@ import lombok.RequiredArgsConstructor;
 import no.safety.backend.achievements.dto.AchievementRequest;
 import no.safety.backend.achievements.dto.AchievementResponse;
 import no.safety.backend.achievements.model.Achievement;
+import no.safety.backend.achievements.model.AchievementCategory;
 import no.safety.backend.achievements.model.UserAchievement;
 import no.safety.backend.achievements.repository.AchievementRepository;
 import no.safety.backend.achievements.repository.UserAchievementRepository;
+import no.safety.backend.exception.NotFoundException;
+import no.safety.backend.notification.service.NotificationService;
 import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.repository.StudentUserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -24,6 +29,7 @@ public class AchievementService {
 
   private final AchievementRepository achievementRepository;
   private final UserAchievementRepository userAchievementRepository;
+  private final StudentUserRepository studentUserRepository;
 
   @Transactional(readOnly = true)
   public List<AchievementResponse> getAchievementsForStudent(StudentUser student) {
@@ -106,6 +112,28 @@ public class AchievementService {
         ));
 
     achievementRepository.delete(achievement);
+  }
+
+  @Transactional
+  public AchievementResponse unlockAchievementForStudent(StudentUser student, String source, AchievementCategory category) {
+    Achievement achievement = achievementRepository.findBySourceAndCategory(source, category)
+        .orElseThrow(() -> new NotFoundException("Achievement not found for source: " + source));
+
+    boolean alreadyUnlocked = userAchievementRepository.existsByStudentAndAchievement(student, achievement);
+    if (alreadyUnlocked) {
+      return achievementToResponse(achievement, true);
+    }
+
+    UserAchievement userAchievement = new UserAchievement();
+    userAchievement.setStudent(student);
+    userAchievement.setAchievement(achievement);
+    userAchievement.setUnlockedAt(Instant.now());
+    userAchievementRepository.save(userAchievement);
+
+    student.addScore(50);
+    studentUserRepository.save(student);
+
+    return achievementToResponse(achievement, true);
   }
 
   private AchievementResponse achievementToResponse(Achievement achievement, boolean unlocked) {

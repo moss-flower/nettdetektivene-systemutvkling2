@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import no.safety.backend.achievements.model.Achievement;
+import no.safety.backend.achievements.model.AchievementCategory;
+import no.safety.backend.achievements.repository.AchievementRepository;
 import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
 import no.safety.backend.excercise.model.Exercise;
 import no.safety.backend.excercise.repository.ExerciseRepository;
@@ -30,13 +33,30 @@ public class StationService {
   private final WorldRepository worldRepository;
   private final ExerciseRepository exerciseRepository;
   private final CompletedExerciseRepository completedExerciseRepository;
+  private final AchievementRepository achievementRepository;
 
   @Transactional
   public StationResponse create(StationRequest request) {
     Station station = new Station();
 
     applyFields(station, request);
-    return StationResponse.from(stationRepository.save(station));
+    Station saved = stationRepository.save(station);
+
+    createStationAchievement(saved);
+
+    return StationResponse.from(saved);
+  }
+
+  private void createStationAchievement(Station station) {
+    Achievement achievement = new Achievement();
+    achievement.setUUID(UUID.randomUUID());
+    achievement.setTitle(station.getTitle());
+    achievement.setDescription("Fullførte " + station.getTitle() + ".");
+    achievement.setCategory(station.isBoss() ? AchievementCategory.SPECIAL : AchievementCategory.STOP);
+    achievement.setSource(station.getTitle());
+    achievement.setReward(station.isBoss() ? "Spesialmedalje for å ha slått bossen" : null);
+
+    achievementRepository.save(achievement);
   }
 
   @Transactional(readOnly = true)
