@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - cicd/228-setup-gh-pages-with-test-coverage-reports
     paths:
       - "backend/**"
       - "frontend/**"
