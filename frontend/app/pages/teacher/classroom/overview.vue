@@ -70,6 +70,9 @@ const { data: progressByStudent, refresh: refreshProgress } = await useAsyncData
 
 const removingStudentId = ref('');
 const renamingStudentId = ref('');
+const deletingClassroom = ref(false);
+const confirmingClassroomDelete = ref(false);
+const deleteClassroomError = ref('');
 
 const getStudentProgress = (studentId: string): StudentProgress => progressByStudent.value?.[studentId] ?? {
   completed: 0,
@@ -111,12 +114,60 @@ const renameStudent = async (studentId: string, currentName: string) => {
     renamingStudentId.value = '';
   }
 };
+
+const deleteClassroom = async () => {
+  if (!classroom.value || deletingClassroom.value) return;
+
+  if (!confirmingClassroomDelete.value) {
+    confirmingClassroomDelete.value = true;
+    deleteClassroomError.value = '';
+    return;
+  }
+
+  deletingClassroom.value = true;
+  try {
+    await teacher.deleteClassroom(classroom.value.uid);
+    await navigateTo(routePaths.teacherOverview);
+  } catch (error) {
+    console.error('Failed to delete classroom', error);
+    deleteClassroomError.value = 'Kunne ikke slette klasserommet. Prøv igjen.';
+  } finally {
+    deletingClassroom.value = false;
+  }
+};
+
+const cancelClassroomDelete = () => {
+  confirmingClassroomDelete.value = false;
+  deleteClassroomError.value = '';
+};
 </script>
 
 <template>
   <section class="classroomPage">
     <header class="pageHeader">
-      <NuxtLink class="backLink" :to="routePaths.teacherOverview">Tilbake til hjemskjerm</NuxtLink>
+      <div class="headerActions">
+        <NuxtLink class="backLink" :to="routePaths.teacherOverview">Tilbake til hjemskjerm</NuxtLink>
+        <div v-if="classroom" class="deleteClassroomActions">
+          <span v-if="deleteClassroomError" class="deleteClassroomError">{{ deleteClassroomError }}</span>
+          <button
+            v-if="confirmingClassroomDelete"
+            class="cancelDeleteClassroomButton"
+            type="button"
+            :disabled="deletingClassroom"
+            @click="cancelClassroomDelete"
+          >
+            Avbryt
+          </button>
+          <button
+            class="deleteClassroomButton"
+            type="button"
+            :disabled="deletingClassroom"
+            @click="deleteClassroom"
+          >
+            {{ confirmingClassroomDelete ? 'Bekreft sletting' : 'Slett klasserom' }}
+          </button>
+        </div>
+      </div>
       <p class="eyebrow">Klasseromsdetaljer</p>
       <h1>{{ classroom?.name ?? 'Ukjent klasserom' }}</h1>
       <p class="subtitle">Viser klasserommet slik det ligger i backend akkurat nå.</p>
@@ -246,11 +297,70 @@ const renameStudent = async (studentId: string, currentName: string) => {
   margin-bottom: var(--space-4);
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
 .backLink {
   display: inline-block;
-  margin-bottom: var(--space-3);
   color: var(--color-brand-primary);
   font-weight: 600;
+}
+
+.deleteClassroomButton {
+  padding: 0.55rem 1rem;
+  border: var(--border-width-hairline) solid color-mix(in srgb, var(--color-semantic-danger, #b42318) 70%, var(--color-border-default));
+  border-radius: var(--radius-2);
+  background: color-mix(in srgb, var(--color-bg-surface) 88%, var(--color-semantic-danger, #b42318) 12%);
+  color: var(--color-semantic-danger, #b42318);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.deleteClassroomActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.cancelDeleteClassroomButton {
+  padding: 0.55rem 1rem;
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-2);
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.cancelDeleteClassroomButton:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-bg-surface) 85%, var(--color-text-secondary) 15%);
+}
+
+.cancelDeleteClassroomButton:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.deleteClassroomError {
+  color: var(--color-semantic-danger, #b42318);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.deleteClassroomButton:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-bg-surface) 76%, var(--color-semantic-danger, #b42318) 24%);
+}
+
+.deleteClassroomButton:disabled {
+  cursor: wait;
+  opacity: 0.55;
 }
 
 .eyebrow {
@@ -484,6 +594,15 @@ thead th {
 }
 
 @media (max-width: 800px) {
+  .headerActions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .deleteClassroomActions {
+    justify-content: flex-start;
+  }
+
   .summaryRow {
     grid-template-columns: 1fr;
   }
