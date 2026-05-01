@@ -3,17 +3,24 @@ package no.safety.backend.completedexercise.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import no.safety.backend.completedexercise.dto.CompletedExerciseRequest;
 import no.safety.backend.completedexercise.dto.CompletedExerciseResponse;
 import no.safety.backend.completedexercise.model.CompletedExercise;
 import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
 import no.safety.backend.exception.ForbiddenException;
+import no.safety.backend.excercise.model.Exercise;
+import no.safety.backend.excercise.repository.ExerciseRepository;
+import no.safety.backend.notepad.model.NotepadEntry;
+import no.safety.backend.notepad.model.NotepadEntryType;
+import no.safety.backend.notepad.service.NotepadEntryService;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.repository.StudentUserRepository;
 import org.junit.jupiter.api.Test;
@@ -33,6 +40,12 @@ class CompletedExerciseServiceTest {
 
   @Mock
   private StudentUserRepository studentUserRepository;
+
+  @Mock
+  private ExerciseRepository exerciseRepository;
+
+  @Mock
+  private NotepadEntryService notepadEntryService;
 
   @InjectMocks
   private CompletedExerciseService completedExerciseService;
@@ -75,20 +88,24 @@ class CompletedExerciseServiceTest {
     verify(progressValidationService).isLocked(student, exerciseUid);
     verify(completedExerciseRepository).existsByStudentUidAndExerciseUid(studentUid, exerciseUid);
     verify(studentUserRepository).save(student);
+    verifyNoInteractions(exerciseRepository, notepadEntryService);
   }
 
   @Test
-  void create_whenValid_savesAndReturnsResponse() {
+  void create_whenValidWithoutNotepadEntry_savesAndReturnsResponse() {
     UUID studentUid = UUID.randomUUID();
     UUID exerciseUid = UUID.randomUUID();
     StudentUser student = StudentUser.builder().publicUuid(studentUid).build();
     CompletedExerciseRequest request = new CompletedExerciseRequest(exerciseUid);
+    Exercise exercise = new Exercise();
+    exercise.setPublicId(exerciseUid);
 
     when(progressValidationService.isLocked(student, exerciseUid)).thenReturn(false);
     when(completedExerciseRepository.existsByStudentUidAndExerciseUid(studentUid, exerciseUid))
         .thenReturn(false);
     when(completedExerciseRepository.save(any(CompletedExercise.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
+    when(exerciseRepository.findByPublicId(exerciseUid)).thenReturn(Optional.of(exercise));
 
     CompletedExerciseResponse response = completedExerciseService.create(request, student);
 
@@ -96,6 +113,36 @@ class CompletedExerciseServiceTest {
     assertEquals(exerciseUid, response.exerciseUid());
     verify(completedExerciseRepository).save(any(CompletedExercise.class));
     verify(studentUserRepository).save(student);
+    verify(exerciseRepository).findByPublicId(exerciseUid);
+    verify(notepadEntryService, never()).create(any(), any());
+  }
+
+  @Test
+  void create_whenValidWithNotepadEntry_createsNotepadEntry() {
+    UUID studentUid = UUID.randomUUID();
+    UUID exerciseUid = UUID.randomUUID();
+    StudentUser student = StudentUser.builder().publicUuid(studentUid).build();
+    CompletedExerciseRequest request = new CompletedExerciseRequest(exerciseUid);
+    Exercise exercise = new Exercise();
+    exercise.setPublicId(exerciseUid);
+    NotepadEntry notepadEntry = new NotepadEntry();
+    notepadEntry.setTitle("Tip title");
+    notepadEntry.setType(NotepadEntryType.TIP);
+    notepadEntry.setContent("Tip content");
+    notepadEntry.setSource("Exercise source");
+    exercise.setNotepadEntry(notepadEntry);
+    student.setInternalId(12L);
+
+    when(progressValidationService.isLocked(student, exerciseUid)).thenReturn(false);
+    when(completedExerciseRepository.existsByStudentUidAndExerciseUid(studentUid, exerciseUid))
+        .thenReturn(false);
+    when(completedExerciseRepository.save(any(CompletedExercise.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    when(exerciseRepository.findByPublicId(exerciseUid)).thenReturn(Optional.of(exercise));
+
+    completedExerciseService.create(request, student);
+
+    verify(notepadEntryService).create(any(), any());
   }
 
   @Test

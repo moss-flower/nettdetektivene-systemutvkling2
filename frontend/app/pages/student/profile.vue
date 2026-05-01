@@ -21,24 +21,33 @@ const progressPercentDisplay = computed(() => Math.floor(progress.value.progress
 
 function startEditing() {
   pendingName.value = studentName.value
+  profileError.value = ''
   isEditing.value = true
 }
 
 function cancelEditing() {
   isEditing.value = false
   pendingName.value = ''
+  profileError.value = ''
 }
 
 async function saveEditing() {
   const newName = pendingName.value.trim()
   if (!newName) return
 
+  profileError.value = ''
+
   try {
     const response = await updateUsername(newName)
     studentName.value = response.username
     cancelEditing()
-  } catch {
-    profileError.value = 'Kunne ikke oppdatere navnet. Prøv igjen senere.'
+  } catch (error: any) {
+    profileError.value =
+        error?.data?.detail ||
+        error?.data?.message ||
+        error?.data?.error ||
+        error?.statusMessage ||
+        "Kunne ikke oppdatere navnet. Prøv igjen senere.";
   }
 }
 
@@ -153,7 +162,7 @@ onMounted(async () => {
   --id-action-hover: var(--palette-overlay-cork-soft);
 
   position: relative;
-  min-height: 100dvh;
+  min-height: 100%;
   width: 100%;
   display: grid;
   gap: var(--space-6);

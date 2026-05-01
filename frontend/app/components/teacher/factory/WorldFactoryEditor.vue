@@ -646,6 +646,9 @@ watch(payloadPreviewText, () => {
 .selectedList {
 	margin-top: 0;
 	min-height: 5rem;
+	max-height: 65vh;
+	overflow-y: auto;
+	padding: 0.25rem;
 }
 
 .selectedCardContent {

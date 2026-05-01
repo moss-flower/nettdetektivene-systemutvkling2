@@ -3,14 +3,23 @@ import type { AvatarConfig } from '~/composables/types/AvatarTypes'
 import { DEFAULT_AVATAR_CONFIG } from '~/composables/types/AvatarTypes'
 import AvatarImage from '~/components/avatar/avatarImage.vue'
 import { useAvatar } from '~/composables/useAvatar'
+import type { StudentProfileResponse } from '~/composables/types/StudentProfileTypes'
 import { getLevel } from '~/composables/utils/studentProgress'
 
 const { getMyAvatar } = useAvatar()
 const { getMyProfile} = useStudentProfile()
 
+const fallbackStats: StudentProfileResponse = {
+  studentUid: '',
+  studentName: 'Forhåndsvisning',
+  score: 0,
+  totalXp: 0,
+  completedExercises: 0,
+  unlockedAchievements: 0,
+}
 
-const avatar = ref(await getMyAvatar());
-const userStats = ref(await getMyProfile());
+const avatar = ref(await getMyAvatar().catch(() => null));
+const userStats = ref((await getMyProfile().catch(() => null)) ?? fallbackStats);
 
 const resolvedAvatar = computed(() => avatar.value ?? DEFAULT_AVATAR_CONFIG)
 const level = computed(() => getLevel(userStats.value.totalXp).level)

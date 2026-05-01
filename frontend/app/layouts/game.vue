@@ -43,7 +43,7 @@ const layoutStyle = computed(() => {
 
 onMounted(async () => {
   if (isPreview.value) {
-    profileName.value = 'Laererpreview'
+    profileName.value = 'Lærer'
     profileLevelText.value = 'Forhandsvisning'
     return
   }

@@ -3,9 +3,6 @@ import datatyvenSprite from "~/assets/images/datatyven.png";
 import PopupNotYetUnlocked from "~/components/shared/PopupNotYetUnlocked.vue";
 import DifficultySelect from "~/components/station/difficultySelect.vue";
 import { useGamePreview } from "~/composables/useGamePreview";
-import { useCompletedExerciseUids } from "~/composables/utils/gameProgress";
-import { routePaths } from "~/composables/utils/routePaths";
-import { Exercise } from "~/composables/types/ExerciseType";
 import { useStations } from "~/composables/useStations";
 
 type ExerciseOption = {
@@ -21,18 +18,32 @@ type ExerciseOption = {
       exerciseUid: string;
       preview?: string;
       classroomId?: string;
+      worldUid?: string;
     };
   };
 };
 
 const route = useRoute();
-const { isPreview, classroomId, buildPreviewRoute } = useGamePreview();
-const { getStationByUid } = useStations();
+const { getStationDataByUid } = useStations();
+const { isPreview, classroomId } = useGamePreview();
 const showNotYetUnlockedPopup = ref(false);
 
 const stationUid = computed(() =>
   typeof route.query.uid === "string" ? route.query.uid : "",
 );
+const previewWorldUid = computed(() => typeof route.query.worldUid === "string" ? route.query.worldUid : undefined);
+
+const previewQuery = computed(() => {
+  if (isPreview.value && classroomId.value) {
+    return { preview: "1", classroomId: classroomId.value };
+  }
+
+  if (previewWorldUid.value) {
+    return { worldUid: previewWorldUid.value };
+  }
+
+  return {};
+});
 
 const { data: station } = await useAsyncData(
   () => `station-${stationUid.value}`,
@@ -41,40 +52,11 @@ const { data: station } = await useAsyncData(
       return null;
     }
 
-    return await getStationByUid(stationUid.value);
+    return await getStationDataByUid(stationUid.value, previewWorldUid.value);
   },
-  { watch: [stationUid] },
+  { watch: [stationUid, previewWorldUid] },
 );
 
-const { data: completedExerciseUids } = await useAsyncData(
-  "completed-exercises",
-  () => (isPreview.value ? [] : useCompletedExerciseUids()),
-  {
-    watch: [isPreview],
-  },
-);
-
-const { data: stationExercises } = await useAsyncData(
-  () => `station-exercises-${stationUid.value}`,
-  async () => {
-    if (!station.value) {
-      return [];
-    }
-
-    return await Exercise.backendFetchExercisesByUids(station.value.exerciseUids);
-  },
-  { watch: [station] },
-);
-
-const stationStatus = computed(() => ({
-  completedExercises: (station.value?.exerciseUids ?? []).map((exerciseUid) =>
-    (completedExerciseUids.value ?? []).includes(exerciseUid),
-  ),
-}));
-
-const backRoute = computed(() =>
-  isPreview.value ? buildPreviewRoute(routePaths.studentLevels) : routePaths.studentLevels,
-);
 const exerciseOptions = computed<ExerciseOption[]>(() => {
   if (!station.value) {
     return [];
@@ -82,26 +64,16 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
 
   const currentStation = station.value;
 
-  const currentExercises = stationExercises.value ?? [];
-
-  return currentExercises.map((exercise, index) => ({
+  return currentStation.exercises.map((exercise) => ({
     uid: exercise.uid,
     title: exercise.title,
-    difficultyText: exercise.entryName,
+    difficultyText: exercise.difficultyText,
     description: exercise.description ?? currentStation.description ?? "",
-    isCompleted: stationStatus.value.completedExercises[index] ?? false,
-    isUnlocked: isPreview.value || index === 0 || Boolean(stationStatus.value.completedExercises[index - 1]),
+    isCompleted: exercise.isCompleted,
+    isUnlocked: exercise.isUnlocked,
     to: {
       path: `/games/${currentStation.uid}`,
-      query: {
-        exerciseUid: exercise.uid,
-        ...(isPreview.value
-          ? {
-              preview: "1",
-              classroomId: classroomId.value,
-            }
-          : {}),
-      },
+      query: { exerciseUid: exercise.uid, ...previewQuery.value },
     },
   }));
 });
@@ -109,10 +81,6 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
 
 <template>
   <section class="difficultyPage">
-    <NuxtLink class="backLink" :to="backRoute">
-      Tilbake til stasjoner
-    </NuxtLink>
-
     <template v-if="station">
       <header class="difficultyHero">
         <div class="difficultyHero__content">
@@ -139,7 +107,7 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
           :is-unlocked="option.isUnlocked"
           :to="option.to"
           @locked-click="showNotYetUnlockedPopup = true"
-          :show-star="!isPreview"
+          :show-star="!station.isTeacherPreview"
         />
       </div>
 
@@ -178,17 +146,6 @@ const exerciseOptions = computed<ExerciseOption[]>(() => {
   gap: var(--space-5);
   /* fluid outer padding, deliberate exception (token system)*/
   padding: var(--layout-page-padding-comfortable);
-}
-
-.backLink {
-  width: fit-content;
-  padding: var(--space-3) var(--space-4);
-  border: var(--border-width-hairline) solid var(--palette-gray-200);
-  border-radius: var(--radius-pill);
-  background: var(--palette-white);
-  font-weight: var(--font-weight-bold);
-  color: var(--palette-navy-900);
-  text-decoration: none;
 }
 
 .difficultyHero {
