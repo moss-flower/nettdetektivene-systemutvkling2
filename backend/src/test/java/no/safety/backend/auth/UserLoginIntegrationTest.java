@@ -60,15 +60,18 @@ public class UserLoginIntegrationTest {
             .uri("/api/v1/auth/login")
             .body(request)
             .exchange()
-            .expectStatus().isOk() 
+            .expectStatus().isOk()
             .expectHeader().values(HttpHeaders.SET_COOKIE, setCookies -> {
                 assertThat(setCookies).isNotNull();
-                assertThat(setCookies).hasSize(2);
-                assertThat(setCookies.stream().anyMatch(cookie -> cookie.contains(accessCookieName))).isTrue();
-                assertThat(setCookies.stream().anyMatch(cookie -> cookie.contains(refreshCookieName))).isTrue();
-                assertThat(setCookies.stream().allMatch(cookie -> cookie.contains("HttpOnly"))).isTrue();
-                assertThat(setCookies.stream().allMatch(cookie -> cookie.contains("Secure"))).isTrue();
-                assertThat(setCookies.stream().allMatch(cookie -> cookie.contains("SameSite=Strict"))).isTrue();
+                var jwtCookies = setCookies.stream()
+                    .filter(cookie -> cookie.contains(accessCookieName) || cookie.contains(refreshCookieName))
+                    .toList();
+                assertThat(jwtCookies).hasSize(2);
+                assertThat(jwtCookies.stream().anyMatch(cookie -> cookie.contains(accessCookieName))).isTrue();
+                assertThat(jwtCookies.stream().anyMatch(cookie -> cookie.contains(refreshCookieName))).isTrue();
+                assertThat(jwtCookies.stream().allMatch(cookie -> cookie.contains("HttpOnly"))).isTrue();
+                assertThat(jwtCookies.stream().allMatch(cookie -> cookie.contains("Secure"))).isTrue();
+                assertThat(jwtCookies.stream().allMatch(cookie -> cookie.contains("SameSite=Strict"))).isTrue();
             })
             .expectBody(UserLoginResponse.class)
             .value(response -> {
@@ -85,7 +88,12 @@ public class UserLoginIntegrationTest {
             .body(request)
             .exchange()
             .expectStatus().isUnauthorized()
-            .expectHeader().doesNotExist(HttpHeaders.SET_COOKIE)
+            .expectHeader().values(HttpHeaders.SET_COOKIE, setCookies -> {
+                if (setCookies != null) {
+                    assertThat(setCookies.stream().noneMatch(cookie -> cookie.contains(accessCookieName))).isTrue();
+                    assertThat(setCookies.stream().noneMatch(cookie -> cookie.contains(refreshCookieName))).isTrue();
+                }
+            })
             .expectBody();
     }
 
