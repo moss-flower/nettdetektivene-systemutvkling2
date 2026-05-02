@@ -33,7 +33,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	(event: "selection-updated", selectionKey: string): void;
-	(event: "saved"): void;
+	(event: "saved", payload: { returnTarget?: string | null }): void;
 	(event: "deleted"): void;
 }>();
 
@@ -219,6 +219,11 @@ const handleRemovedTaskChange = (event: { added?: { element?: ExerciseTask } }) 
 		return;
 	}
 
+	if (!window.confirm("Er du sikker på at du vil slette dette elementet?")) {
+		draft.tasks.push(removedTask);
+		return;
+	}
+
 	if (draft.tasks.length === 0) {
 		draft.tasks.push(removedTask);
 		return;
@@ -266,7 +271,7 @@ const removeOption = (taskIndex: number, optionIndex: number) => {
 
 const finishSave = (selectionKey: string) => {
 	emit("selection-updated", selectionKey);
-	emit("saved");
+	emit("saved", { returnTarget: null });
 };
 
 const savePayload = async () => {
@@ -287,7 +292,8 @@ const savePayload = async () => {
 	const returnTarget = returnTo ? { fullPath: returnTo } : factorySessionCache.popReturnTarget();
 
 	if (returnTarget) {
-		await navigateTo(returnTarget.fullPath);
+		emit("selection-updated", saved.selectionKey);
+		emit("saved", { returnTarget: returnTarget.fullPath });
 		return;
 	}
 
@@ -295,6 +301,10 @@ const savePayload = async () => {
 };
 
 const deleteSelection = async () => {
+	if (!window.confirm("Er du sikker på at du vil slette dette elementet?")) {
+		return;
+	}
+
 	await deleteExerciseFactorySelection(props.selectionKey);
 	emit("deleted");
 };
