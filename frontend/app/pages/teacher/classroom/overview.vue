@@ -75,6 +75,7 @@ const { data: progressByStudent, refresh: refreshProgress } = await useAsyncData
 const removingStudentId = ref('');
 const renamingStudentId = ref('');
 const approvingStudentId = ref('');
+const decliningStudentId = ref('');
 const deletingClassroom = ref(false);
 
 const getStudentProgress = (studentId: string): StudentProgress => progressByStudent.value?.[studentId] ?? {
@@ -113,6 +114,26 @@ const approveStudent = async (studentId: string) => {
     await refreshProgress();
   } finally {
     approvingStudentId.value = '';
+  }
+};
+
+const declineStudent = async (studentId: string, studentName: string) => {
+  if (!classroom.value || decliningStudentId.value) {
+    return;
+  }
+
+  if (!window.confirm(`Avslå forespørselen fra ${studentName}?`)) {
+    return;
+  }
+
+  decliningStudentId.value = studentId;
+
+  try {
+    await teacher.declineMember(classroom.value.uid, studentId);
+    await refreshClassroom();
+    await refreshProgress();
+  } finally {
+    decliningStudentId.value = '';
   }
 };
 
@@ -235,17 +256,27 @@ const deleteClassroom = async () => {
 
       <div v-if="pendingMembers.length" class="pendingList">
         <article v-for="student in pendingMembers" :key="student.publicUuid" class="pendingStudent">
-          <div>
+          <div class="pendingStudentInfo">
             <strong>{{ student.username }}</strong>
           </div>
-          <button
-            class="approveButton"
-            type="button"
-            :disabled="approvingStudentId === student.publicUuid"
-            @click="approveStudent(student.publicUuid)"
-          >
-            Godkjenn
-          </button>
+          <div class="pendingActions">
+            <button
+              class="declineButton"
+              type="button"
+              :disabled="decliningStudentId === student.publicUuid || approvingStudentId === student.publicUuid"
+              @click="declineStudent(student.publicUuid, student.username)"
+            >
+              Avslå
+            </button>
+            <button
+              class="approveButton"
+              type="button"
+              :disabled="approvingStudentId === student.publicUuid || decliningStudentId === student.publicUuid"
+              @click="approveStudent(student.publicUuid)"
+            >
+              Godkjenn
+            </button>
+          </div>
         </article>
       </div>
 
@@ -493,15 +524,24 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-1);
+  gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   background: var(--color-bg-canvas);
   border-radius: var(--radius-2);
+  flex-wrap: nowrap;
 }
 
-.pendingStudent div {
+.pendingStudentInfo {
   display: grid;
   gap: var(--space-1);
+}
+
+.pendingActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 
 .approveButton {
@@ -514,7 +554,22 @@ h1 {
   font-weight: 700;
 }
 
+.declineButton {
+  padding: 0.55rem 1rem;
+  border: var(--border-width-hairline) solid var(--color-semantic-error);
+  border-radius: var(--radius-2);
+  background: var(--palette-overlay-red-soft);
+  color: var(--color-semantic-error);
+  cursor: pointer;
+  font-weight: 700;
+}
+
 .approveButton:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.declineButton:disabled {
   cursor: wait;
   opacity: 0.55;
 }
