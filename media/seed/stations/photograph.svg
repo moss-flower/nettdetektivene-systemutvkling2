@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#eefcf8"/>
+  <rect x="180" y="140" width="840" height="440" rx="34" fill="#ffffff" stroke="#4ab7a1" stroke-width="18"/>
+  <rect x="300" y="250" width="600" height="230" rx="24" fill="#daf7ef"/>
+  <circle cx="600" cy="365" r="90" fill="#7adcc7"/>
+  <circle cx="600" cy="365" r="48" fill="#ffffff"/>
+  <circle cx="825" cy="250" r="26" fill="#ffc857"/>
+  <text x="600" y="120" text-anchor="middle" font-size="54" font-family="Arial, sans-serif" fill="#1e6b5d">Fotolaben</text>
+</svg>

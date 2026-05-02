@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#eef7ff"/>
+  <rect x="150" y="110" width="900" height="500" rx="40" fill="#ffffff"/>
+  <rect x="220" y="190" width="720" height="80" rx="22" fill="#93c5fd"/>
+  <text x="600" y="245" text-anchor="middle" font-size="62" font-family="Arial, sans-serif" fill="#1f4f7a">Skolen forklarer ny regel</text>
+</svg>

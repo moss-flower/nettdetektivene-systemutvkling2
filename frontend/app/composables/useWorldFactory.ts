@@ -42,7 +42,7 @@ export const worldFactoryNewSelectionKey = "__new_world__";
 
 const storageKey = "teacher.worldFactory.records";
 const previousStorageKey = "teacher.worldFactory.payloadsByClassroom";
-const defaultImage = "https://placehold.co/1200x720?text=Stasjonskart";
+const defaultImage = "/images/placeholders/world.svg";
 
 export const worldFactoryDefaultImage = defaultImage;
 

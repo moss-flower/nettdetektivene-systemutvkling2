@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#fff1f1"/>
+  <rect x="150" y="110" width="900" height="500" rx="40" fill="#ffffff"/>
+  <rect x="220" y="190" width="720" height="80" rx="22" fill="#ff7b7b"/>
+  <text x="600" y="245" text-anchor="middle" font-size="68" font-family="Arial, sans-serif" fill="#7a1f1f">SJOKK: Dette ma foreldre vite na</text>
+</svg>

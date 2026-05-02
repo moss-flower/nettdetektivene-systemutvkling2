@@ -13,6 +13,7 @@ import {
 	type StationFactoryPayload,
 } from "~/composables/useStationFactory";
 import { Exercise } from "~/composables/types/ExerciseType";
+import { useFactoryImageUpload } from "~/composables/useFactoryImageUpload";
 import { useFactorySessionCache } from "~/composables/useFactorySessionCache";
 
 const props = defineProps<{
@@ -26,6 +27,7 @@ const emit = defineEmits<{
 }>();
 
 const draft = reactive<StationFactoryPayload>(createStationDraft());
+const { uploadImage } = useFactoryImageUpload();
 const route = useRoute();
 const factorySessionCache = useFactorySessionCache();
 const loadedSnapshot = ref<StationFactoryPayload>(createStationDraft());
@@ -33,6 +35,8 @@ const copyState = ref<"idle" | "copied" | "failed">("idle");
 const loadedLocalId = ref("");
 const availableExercises = ref<Exercise[]>([]);
 const availableStations = ref<Station[]>([]);
+const imageUploadState = ref<"idle" | "uploading">("idle");
+const imageUploadError = ref("");
 
 const knownExerciseMap = computed(() => new Map(availableExercises.value.map((exercise) => [exercise.uid, exercise])));
 const parsedSelection = computed(() => parseStationFactorySelectionKey(props.selectionKey));
@@ -146,22 +150,24 @@ const editorDescription = computed(() => {
 	});
 
 const applyDraft = (payload: StationFactoryPayload) => {
-	draft.title = payload.title;
-	draft.description = payload.description;
-	draft.hint = payload.hint;
-	draft.image = payload.image;
-	draft.exerciseUids.splice(0, draft.exerciseUids.length, ...payload.exerciseUids);
-  draft.isBoss = Boolean(payload.isBoss);
+	const normalizedPayload = createStationDraft(payload);
+	draft.title = normalizedPayload.title;
+	draft.description = normalizedPayload.description;
+	draft.hint = normalizedPayload.hint;
+	draft.image = normalizedPayload.image;
+	draft.exerciseUids.splice(0, draft.exerciseUids.length, ...normalizedPayload.exerciseUids);
+  draft.isBoss = Boolean(normalizedPayload.isBoss);
 };
 
 const updateLoadedSnapshot = (payload: StationFactoryPayload) => {
+	const normalizedPayload = createStationDraft(payload);
 	loadedSnapshot.value = {
-		title: payload.title,
-		description: payload.description,
-		hint: payload.hint,
-		image: payload.image,
-		exerciseUids: [...payload.exerciseUids],
-    isBoss: Boolean(payload.isBoss),
+		title: normalizedPayload.title,
+		description: normalizedPayload.description,
+		hint: normalizedPayload.hint,
+		image: normalizedPayload.image,
+		exerciseUids: [...normalizedPayload.exerciseUids],
+		isBoss: Boolean(normalizedPayload.isBoss),
 	};
 };
 
@@ -242,6 +248,30 @@ const copyPayload = async () => {
 	}
 };
 
+const handleImageSelected = async (event: Event) => {
+	const input = event.target as HTMLInputElement | null;
+	const file = input?.files?.[0];
+
+	if (!file) {
+		return;
+	}
+
+	imageUploadState.value = "uploading";
+	imageUploadError.value = "";
+
+	try {
+		const uploaded = await uploadImage(file, "uploads/factory/stations");
+		draft.image = uploaded.url;
+	} catch (error) {
+		imageUploadError.value = error instanceof Error ? error.message : "Bildet kunne ikke lastes opp.";
+	} finally {
+		imageUploadState.value = "idle";
+		if (input) {
+			input.value = "";
+		}
+	}
+};
+
 watch(
 	() => props.selectionKey,
 	async (selectionKey) => {
@@ -285,8 +315,10 @@ watch(payloadPreviewText, () => {
 					</label>
 
 					<label class="field">
-						<span>Bilde-URL</span>
-						<input v-model="draft.image" type="url" placeholder="https://..." >
+						<span>Bilde</span>
+						<input type="file" accept="image/*" :disabled="imageUploadState === 'uploading'" @change="handleImageSelected" >
+						<small class="fieldHint">{{ imageUploadState === "uploading" ? "Laster opp..." : "Velg et bilde til stasjonen." }}</small>
+						<p v-if="imageUploadError" class="fieldError">{{ imageUploadError }}</p>
 					</label>
 
 					<label class="field field--full">
@@ -349,7 +381,7 @@ watch(payloadPreviewText, () => {
 									</div>
 									<div class="selectedCardActions">
 										<button type="button" class="iconButton" :disabled="!exercise.isKnown" @click="editExercise(exercise.uid)">
-											<img src="https://placehold.co/80x80?text=E&color=6b7280" alt="Rediger oppgavesett" class="selectedCardActionIcon" >
+											<img :src="'/images/placeholders/action-edit.svg'" alt="Rediger oppgavesett" class="selectedCardActionIcon" >
 										</button>
 									</div>
 								</article>
@@ -391,7 +423,7 @@ watch(payloadPreviewText, () => {
 									</div>
 									<div class="selectedCardActions">
 										<button type="button" class="iconButton" :disabled="!exercise.isKnown" @click="editExercise(exercise.uid)">
-											<img src="https://placehold.co/80x80?text=E&color=6b7280" alt="Rediger oppgavesett" class="selectedCardActionIcon" >
+											<img :src="'/images/placeholders/action-edit.svg'" alt="Rediger oppgavesett" class="selectedCardActionIcon" >
 										</button>
 									</div>
 								</article>
@@ -584,6 +616,16 @@ watch(payloadPreviewText, () => {
    font-weight: var(--font-weight-bold);
    letter-spacing: var(--factory-label-tracking);
    text-transform: uppercase;
+}
+.fieldHint {
+	color: var(--color-text-secondary);
+	font-size: var(--font-size-14);
+}
+
+.fieldError {
+	margin: 0;
+	color: var(--color-semantic-error);
+	font-size: var(--font-size-14);
 }
 .field input,
 .field textarea {
