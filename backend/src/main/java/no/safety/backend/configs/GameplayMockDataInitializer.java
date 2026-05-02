@@ -803,8 +803,8 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
         )
     );
 
-    upsertExercise(DATACENTER_EXERCISE_UID, "Datatyven", "Hoy",
-        "Bruk alt du har laert for a bekjempe datatyven.",
+    upsertExercise(DATACENTER_EXERCISE_UID, "Datatyven", "Høy",
+        "Bruk alt du har lært for å bekjempe datatyven.",
         List.of(
             multipleChoiceTask(
                 "Datatyven sender en falsk nyhet. Velg det tydeligste faresignalet.",
@@ -1035,8 +1035,8 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
         List.of(SOCIALMEDIA_EXERCISE_1_UID, SOCIALMEDIA_EXERCISE_2_UID), false);
 
     upsertStation(DATACENTER_STATION_UID, "Datasenteret",
-        "Finalebanen der du bruker det du har laert for a bekjempe datatyven.",
-        "Bruk alt du har laert: stopp opp, sjekk kilden, vurder detaljer og velg trygge handlinger.",
+        "Finalebanen der du bruker alt du har lært for å bekjempe datatyven.",
+        "Bruk alt du har lært: stopp opp, sjekk kilden, vurder detaljer og velg trygge handlinger.",
         media("seed/stations/datacenter.svg"), "#8A2A2A",
         List.of(DATACENTER_EXERCISE_UID), true);
   }
