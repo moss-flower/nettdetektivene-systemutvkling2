@@ -6,10 +6,13 @@ import java.util.UUID;
 import no.safety.backend.achievements.model.Achievement;
 import no.safety.backend.achievements.model.AchievementCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
 
 public interface AchievementRepository extends JpaRepository<Achievement, Long> {
 
   Optional<Achievement> findByUUID(UUID UUID);
   Optional<Achievement> findByTitle(String title);
+  List<Achievement> findAllByTitle(String title);
+  Optional<Achievement> findBySource(String source);
   Optional<Achievement> findBySourceAndCategory(String source, AchievementCategory category);
 }

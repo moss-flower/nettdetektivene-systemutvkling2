@@ -1156,11 +1156,11 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
 
     stationRepository.save(station);
 
-    createStationAchievement(title, description, isBoss);
+    createStationAchievement(uid, title, description, isBoss);
   }
 
-  private void createStationAchievement(String title, String description, boolean isBoss) {
-    if (achievementRepository.findByTitle(title).isPresent()) {
+  private void createStationAchievement(UUID stationUid, String title, String description, boolean isBoss) {
+    if (achievementRepository.findBySource(stationUid.toString()).isPresent()) {
       return;
     }
 
@@ -1169,7 +1169,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     achievement.setTitle(title);
     achievement.setDescription(description);
     achievement.setCategory(isBoss ? AchievementCategory.SPECIAL : AchievementCategory.STOP);
-    achievement.setSource(title);
+    achievement.setSource(stationUid.toString());
     achievement.setReward(isBoss ? "Spesialmedalje for å ha slått bossen" : null);
 
     achievementRepository.save(achievement);

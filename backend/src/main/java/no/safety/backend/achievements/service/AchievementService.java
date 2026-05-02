@@ -19,9 +19,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import no.safety.backend.station.model.Station;
 
 @Service
 @RequiredArgsConstructor
@@ -118,6 +120,50 @@ public class AchievementService {
   public AchievementResponse unlockAchievementForStudent(StudentUser student, String source, AchievementCategory category) {
     Achievement achievement = achievementRepository.findBySourceAndCategory(source, category)
         .orElseThrow(() -> new NotFoundException("Achievement not found for source: " + source));
+
+    return unlockAchievementForStudent(student, achievement);
+  }
+
+  @Transactional
+  public AchievementResponse unlockStationAchievement(StudentUser student, Station station) {
+    Achievement achievement = syncStationAchievement(station, null);
+    return unlockAchievementForStudent(student, achievement);
+  }
+
+  @Transactional
+  public Achievement syncStationAchievement(Station station, String previousTitle) {
+    Achievement achievement = findStationAchievement(station, previousTitle)
+        .orElseGet(Achievement::new);
+
+    if (achievement.getUUID() == null) {
+      achievement.setUUID(UUID.randomUUID());
+    }
+
+    achievement.setTitle(station.getTitle());
+    achievement.setDescription("Fullførte " + station.getTitle() + ".");
+    achievement.setCategory(station.isBoss() ? AchievementCategory.SPECIAL : AchievementCategory.STOP);
+    achievement.setSource(station.getUid().toString());
+    achievement.setReward(station.isBoss() ? "Spesialmedalje for å ha slått bossen" : null);
+
+    return achievementRepository.save(achievement);
+  }
+
+  private Optional<Achievement> findStationAchievement(Station station, String previousTitle) {
+    return achievementRepository.findBySource(station.getUid().toString())
+        .or(() -> findLegacyStationAchievement(previousTitle))
+        .or(() -> findLegacyStationAchievement(station.getTitle()));
+  }
+
+  private Optional<Achievement> findLegacyStationAchievement(String legacyKey) {
+    if (legacyKey == null || legacyKey.isBlank()) {
+      return Optional.empty();
+    }
+
+    return achievementRepository.findBySource(legacyKey)
+        .or(() -> achievementRepository.findAllByTitle(legacyKey).stream().findFirst());
+  }
+
+  private AchievementResponse unlockAchievementForStudent(StudentUser student, Achievement achievement) {
 
     boolean alreadyUnlocked = userAchievementRepository.existsByStudentAndAchievement(student, achievement);
     if (alreadyUnlocked) {
