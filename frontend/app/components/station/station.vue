@@ -79,8 +79,6 @@ const handleClick = () => {
       <div class="levelImageWrap">
         <img :src="station.image" :alt="station.title" class="levelImage">
       </div>
-
-      <h4 class="levelName">{{ station.title }}</h4>
     </div>
 
     <div class="starTray" :class="{ 'starTray--boss': station.isBoss }" aria-label="Oppgavestjerner">
@@ -196,17 +194,6 @@ const handleClick = () => {
   transform: translateX(-50%);
   pointer-events: none;
   filter: drop-shadow(0 0.35rem 0.5rem rgba(42, 26, 11, 0.2));
-}
-
-.levelName {
-  margin: -0.25rem 0 0;
-  max-width: 9.8rem;
-  text-align: center;
-  font-size: clamp(0.9rem, 2.6vw, 1.08rem);
-  line-height: 1.05;
-  font-weight: var(--font-weight-bold);
-  color: var(--palette-navy-900);
-  text-shadow: 0 0.08rem 0 rgba(255, 255, 255, 0.5);
 }
 
 .starTray {

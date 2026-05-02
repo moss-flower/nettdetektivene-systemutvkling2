@@ -73,49 +73,89 @@ const choose = (choice: MultipleChoiceOptionKey) => {
 
 <style scoped>
 .multipleChoiceTemplate {
+  /* card surface */
+  --mc-card-bg-top: var(--palette-cream-100);
+  --mc-card-border: var(--palette-overlay-cork-medium);
+  --mc-card-shadow: var(--palette-overlay-dark-soft);
+  --mc-card-text: var(--palette-cork-900);
+  --mc-card-muted: var(--palette-cork-580);
+
+  /* image frame */
+  --mc-frame-bg: var(--palette-cream-100);
+  --mc-frame-border: var(--palette-overlay-cork-medium);
+  --mc-frame-shadow: var(--palette-overlay-dark-soft);
+
+  /* option pill, idle */
+  --mc-option-bg: var(--palette-white);
+  --mc-option-bg-hover: var(--palette-cream-100);
+  --mc-option-border: var(--palette-cork-700);
+  --mc-option-text: var(--palette-cork-900);
+  --mc-option-shadow: var(--palette-overlay-dark-soft);
+
+  /* option pill, selected */
+  --mc-option-bg-active: var(--palette-navy-900);
+  --mc-option-border-active: var(--palette-gold-500);
+  --mc-option-text-active: var(--palette-cream-100);
+
+  /* badge (A/B/C/D) */
+  --mc-badge-bg: var(--palette-navy-900);
+  --mc-badge-text: var(--palette-cream-100);
+  --mc-badge-bg-active: var(--palette-gold-500);
+  --mc-badge-text-active: var(--palette-navy-900);
+
+  /* locked state */
+  --mc-option-locked-opacity: 0.6;
+
   display: grid;
-  gap: clamp(var(--space-4), 2vw, var(--space-6));
-  color: var(--palette-gray-900);
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border: var(--border-width-thin) solid var(--mc-card-border);
+  border-radius: var(--radius-2);
+  background: var(--mc-card-bg-top);
+  box-shadow: var(--space-2) var(--space-4) var(--space-6) var(--mc-card-shadow);
+  color: var(--mc-card-text);
 }
 
 .choiceTemplateHeader {
   display: grid;
-  gap: 0.45rem;
+  gap: var(--space-1);
 }
 
 .choiceTemplateTitle {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-family-serif), sans-serif;
+  /* fluid hero scale, deliberate exception */
   font-size: clamp(1.5rem, 3vw, 2.4rem);
   line-height: 1;
-  color: var(--palette-cork-900);
+  color: var(--mc-card-text);
 }
 
 .choiceTemplateText {
-  max-width: 58rem;
+  max-width: 58ch;
   font-size: var(--font-size-16);
-  line-height: 1.5;
-  color: var(--color-text-secondary);
+  line-height: var(--font-leading-16);
+  color: var(--mc-card-muted);
 }
 
 .templateImageFrame {
-  padding: 0.85rem;
-  border-radius: 1.6rem;
-  background: var(--color-bg-surface);
-  border: var(--border-width-thin) solid var(--color-border-default);
-  box-shadow: 0 14px 26px rgba(47, 39, 28, 0.08);
+  padding: var(--space-3);
+  border-radius: var(--radius-3);
+  background: var(--mc-frame-bg);
+  border: var(--border-width-thin) solid var(--mc-frame-border);
+  box-shadow: 0 var(--space-4) var(--space-5) var(--mc-frame-shadow);
 }
 
 .choiceTemplateImage {
   width: 100%;
   max-height: min(48dvh, 34rem);
-  object-fit: cover;
+  object-fit: contain;
+  background: #fff;
   display: block;
   border-radius: var(--radius-2);
 }
 
 .choiceTemplateOptions {
   display: grid;
-  gap: 0.9rem;
+  gap: var(--space-2);
 }
 
 .choiceTemplateOption {
@@ -124,34 +164,35 @@ const choose = (choice: MultipleChoiceOptionKey) => {
   gap: var(--space-4);
   align-items: center;
   width: 100%;
-  padding: var(--space-4) 1.15rem;
-  border: var(--border-width-thin) solid var(--color-border-default);
-  border-radius: 1.2rem;
-  background: var(--color-bg-surface);
-  color: var(--palette-gray-900);
+  padding: var(--space-4) var(--space-3);
+  border: var(--border-width-thin) solid var(--mc-option-border);
+  border-radius: var(--radius-2);
+  background: var(--mc-option-bg);
+  color: var(--mc-option-text);
   text-align: left;
-  box-shadow: 0 10px 18px rgba(53, 75, 108, 0.07);
-  transition: transform var(--transition-base) ease, border-color var(--transition-base) ease, box-shadow var(--transition-base) ease, background-color var(--transition-base) ease;
+  box-shadow: 0 var(--space-2) var(--space-4) var(--mc-option-shadow);
+  transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base), background-color var(--transition-base);
 }
 
 .choiceTemplateOption:hover:not(:disabled),
 .choiceTemplateOption:focus-visible {
-  transform: translateY(-2px);
-  border-color: #9db7d6;
-  box-shadow: 0 14px 24px rgba(53, 75, 108, 0.12);
+  transform: translateY(calc(var(--border-width-thin) * -1));
+  border-color: var(--palette-navy-200);
+  background: var(--mc-option-bg-hover);
+  box-shadow: 0 var(--space-3) var(--space-5) var(--palette-overlay-dark-soft);
   outline: none;
 }
 
 .templateOptionBadge {
   display: grid;
   place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: var(--size-control-sm);
+  height: var(--size-control-sm);
   border-radius: var(--radius-pill);
-  background: var(--color-semantic-info);
-  color: var(--palette-navy-700);
-  font-weight: 800;
-  font-size: 0.95rem;
+  background: var(--mc-badge-bg);
+  color: var(--mc-badge-text);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-14);
 }
 
 .templateOptionCopy {
@@ -160,28 +201,28 @@ const choose = (choice: MultipleChoiceOptionKey) => {
 }
 
 .templateOptionTitle {
-  font-size: 1.05rem;
-  font-weight: 700;
-  line-height: 1.35;
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--font-leading-16);
 }
 
 .templateOptionSelected {
-  border-color: #4c7bb0;
-  background: var(--color-semantic-info);
-  box-shadow: 0 16px 28px rgba(65, 104, 150, 0.16);
+  border-color: var(--mc-option-border-active);
+  background: var(--mc-option-bg-active);
+  color: var(--mc-option-text-active);
+  box-shadow: 0 var(--space-4) var(--space-6) var(--palette-overlay-dark-medium);
 }
 
 .templateOptionSelected .templateOptionBadge {
-  background: #4c7bb0;
-  color: var(--palette-white);
+  background: var(--mc-badge-bg-active);
+  color: var(--mc-badge-text-active);
 }
 
 .templateOptionLocked {
-  opacity: 0.82;
+  opacity: var(--mc-option-locked-opacity);
 }
 
 .choiceTemplateOption:disabled {
   cursor: default;
 }
-
 </style>

@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import no.safety.backend.exception.BadRequestException;
 import no.safety.backend.media.config.MediaProperties;
 import no.safety.backend.media.dto.MediaUploadResponse;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,19 +29,27 @@ public class MediaStorageService {
 		String objectKey = buildObjectKey(folder, file.getOriginalFilename(), file.getContentType());
 
 		try (InputStream inputStream = file.getInputStream()) {
-			minioClient.putObject(
-				PutObjectArgs.builder()
-					.bucket(mediaProperties.getPublicBucket())
-					.object(objectKey)
-					.stream(inputStream, file.getSize(), -1)
-					.contentType(file.getContentType())
-					.build()
-			);
+			uploadPublicObject(objectKey, inputStream, file.getSize(), file.getContentType());
 		} catch (Exception ex) {
 			throw new IllegalStateException("Could not upload media file.", ex);
 		}
 
 		return new MediaUploadResponse(objectKey, publicUrl(objectKey), file.getContentType(), file.getSize());
+	}
+
+	public String uploadPublicClasspathImage(String objectKey, String classpathResourcePath, String contentType) {
+		ClassPathResource resource = new ClassPathResource(classpathResourcePath);
+		if (!resource.exists()) {
+			throw new IllegalStateException("Could not find seed media file: " + classpathResourcePath);
+		}
+
+		try (InputStream inputStream = resource.getInputStream()) {
+			uploadPublicObject(objectKey, inputStream, resource.contentLength(), contentType);
+		} catch (Exception ex) {
+			throw new IllegalStateException("Could not upload media file.", ex);
+		}
+
+		return publicUrl(objectKey);
 	}
 
 	public String publicUrl(String objectKey) {
@@ -60,6 +69,18 @@ public class MediaStorageService {
 		} catch (Exception ex) {
 			throw new IllegalStateException("Could not delete media file.", ex);
 		}
+	}
+
+	private void uploadPublicObject(String objectKey, InputStream inputStream, long size, String contentType)
+		throws Exception {
+		minioClient.putObject(
+			PutObjectArgs.builder()
+				.bucket(mediaProperties.getPublicBucket())
+				.object(objectKey)
+				.stream(inputStream, size, -1)
+				.contentType(contentType)
+				.build()
+		);
 	}
 
 	private void validateFile(MultipartFile file) {
