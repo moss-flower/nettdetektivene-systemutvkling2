@@ -54,7 +54,7 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 				<input v-model="props.task.prompt!.title" type="text" >
 			</label>
 
-			<label class="field field--full">
+			<label class="field fieldFull">
 				<span>Prompt-tekst</span>
 				<textarea v-model="props.task.prompt!.text" rows="2"></textarea>
 			</label>
@@ -122,7 +122,7 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 				</label>
 			</div>
 
-			<div class="hotspotCard hotspotCard--full">
+			<div class="hotspotCard hotspotCardFull">
 				<div class="hotspotCardHeader">
 					<span class="hotspotCardTitle">Emne-hotspot</span>
 					<div class="hotspotToggleRow">
@@ -137,13 +137,13 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 					</div>
 				</div>
 
-				<label class="field field--full">
+				<label class="field fieldFull">
 					<span>Emne</span>
 					<input v-model="props.task.email.subject" type="text" >
 				</label>
 			</div>
 
-			<div class="hotspotCard hotspotCard--full">
+			<div class="hotspotCard hotspotCardFull">
 				<div class="hotspotCardHeader">
 					<span class="hotspotCardTitle">Hilsen-hotspot</span>
 					<div class="hotspotToggleRow">
@@ -158,13 +158,13 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 					</div>
 				</div>
 
-				<label class="field field--full">
+				<label class="field fieldFull">
 					<span>Hilsen</span>
 					<input v-model="props.task.email.greeting" type="text" >
 				</label>
 			</div>
 
-			<div class="hotspotCard hotspotCard--full">
+			<div class="hotspotCard hotspotCardFull">
 				<div class="hotspotCardHeader">
 					<span class="hotspotCardTitle">Tekst-hotspot</span>
 					<div class="hotspotToggleRow">
@@ -179,13 +179,13 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 					</div>
 				</div>
 
-				<label class="field field--full">
+				<label class="field fieldFull">
 					<span>Brødtekst</span>
 					<textarea v-model="emailTextBlock().text" rows="3"></textarea>
 				</label>
 			</div>
 
-			<div class="hotspotCard hotspotCard--full">
+			<div class="hotspotCard hotspotCardFull">
 				<div class="hotspotCardHeader">
 					<span class="hotspotCardTitle">Lenke-hotspot</span>
 					<div class="hotspotToggleRow">
@@ -213,7 +213,7 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 				</div>
 			</div>
 
-			<div class="hotspotCard hotspotCard--full">
+			<div class="hotspotCard hotspotCardFull">
 				<div class="hotspotCardHeader">
 					<span class="hotspotCardTitle">Knapp-hotspot</span>
 					<div class="hotspotToggleRow">
@@ -241,7 +241,7 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 				</div>
 			</div>
 
-			<div class="hotspotCard hotspotCard--full">
+			<div class="hotspotCard hotspotCardFull">
 				<div class="hotspotCardHeader">
 					<span class="hotspotCardTitle">Vedlegg-hotspot</span>
 					<div class="hotspotToggleRow">
@@ -269,7 +269,7 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 				</div>
 			</div>
 
-			<div class="hotspotCard hotspotCard--full">
+			<div class="hotspotCard hotspotCardFull">
 				<div class="hotspotCardHeader">
 					<span class="hotspotCardTitle">Avslutning-hotspot</span>
 					<div class="hotspotToggleRow">
@@ -284,7 +284,7 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 					</div>
 				</div>
 
-				<label class="field field--full">
+				<label class="field fieldFull">
 					<span>Avslutning</span>
 					<input v-model="props.task.email.closing" type="text" >
 				</label>
@@ -295,115 +295,134 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 
 <style scoped>
 .templateSection {
-	margin-top: 1rem;
-	padding-top: 1rem;
-	border-top: 1px solid var(--border);
+   margin-top: var(--space-4);
+   padding-top: var(--space-4);
+   border-top: var(--border-width-hairline) solid var(--color-border-default);
 }
 
 .templateSection h4 {
-	margin: 0 0 0.8rem;
-	font-weight: 700;
+   margin: 0 0 var(--space-3);
 }
 
 .fieldGrid,
 .hotspotCardFields {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 0.9rem;
+   display: grid;
+   grid-template-columns: repeat(2, minmax(0, 1fr));
+   gap: var(--space-3);
 }
 
 .field {
-	display: grid;
-	gap: 0.45rem;
+   display: grid;
+   gap: var(--space-1);
 }
 
-.field--full,
-.hotspotCard--full {
-	grid-column: 1 / -1;
+.fieldFull,
+.hotspotCardFull {
+   grid-column: 1 / -1;
 }
 
 .field span {
-	font-weight: 700;
+   color: var(--factory-label-color);
+   font-family: var(--factory-label-font), monospace;
+   font-size: var(--factory-label-size);
+   font-weight: var(--font-weight-bold);
+   letter-spacing: var(--factory-label-tracking);
+   text-transform: uppercase;
 }
 
 .field input,
+.field select,
 .field textarea {
-	width: 100%;
-	padding: 0.85rem 1rem;
-	border: 1px solid var(--border);
-	border-radius: 0.9rem;
-	background: rgba(0, 0, 0, 0.16);
-	color: var(--text);
-	font: inherit;
+   width: 100%;
+   padding: var(--space-3) var(--space-4);
+   border: var(--border-width-hairline) solid var(--factory-field-border);
+   border-radius: var(--radius-1);
+   background: var(--factory-field-bg);
+   color: var(--color-text-primary);
+   font: inherit;
 }
 
 .field textarea {
-	resize: vertical;
+   resize: vertical;
 }
 
 .field input:focus,
+.field select:focus,
 .field textarea:focus {
-	outline: none;
-	border-color: var(--primary);
+   outline: none;
+   border-color: var(--factory-field-focus);
 }
 
 .hotspotCard {
-	display: grid;
-	gap: 0.85rem;
-	padding: 0.85rem;
-	border: 1px solid var(--border);
-	border-radius: 0.9rem;
-	background: rgba(255, 255, 255, 0.03);
+   display: grid;
+   gap: var(--space-3);
+   padding: var(--space-3);
+   border: var(--border-width-hairline) solid var(--color-border-default);
+   border-radius: var(--radius-2);
+   background: var(--color-bg-canvas);
 }
 
 .hotspotCardHeader {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 0.75rem;
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: var(--space-3);
 }
 
 .hotspotToggleRow {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: flex-end;
-	gap: 0.5rem;
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: flex-end;
+   gap: var(--space-2);
 }
 
 .hotspotCardTitle {
-	font-weight: 700;
-	color: var(--text);
+   color: var(--factory-label-color);
+   font-family: var(--factory-label-font), monospace;
+   font-size: var(--factory-label-size);
+   font-weight: var(--font-weight-bold);
+   letter-spacing: var(--factory-label-tracking);
+   text-transform: uppercase;
 }
 
 .hotspotToggle {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.5rem;
-	padding: 0.45rem 0.75rem;
-	border: 1px solid var(--border);
-	border-radius: 999px;
-	background: rgba(255, 255, 255, 0.03);
-	font-weight: 700;
-	color: var(--text);
+   display: inline-flex;
+   align-items: center;
+   gap: var(--space-2);
+   padding: var(--space-1) var(--space-3);
+   border: var(--border-width-hairline) solid var(--color-border-default);
+   border-radius: var(--radius-pill);
+   background: var(--color-bg-surface-hover);
+   color: var(--factory-label-color);
+   font-family: var(--factory-label-font), monospace;
+   font-size: var(--factory-label-size);
+   font-weight: var(--font-weight-bold);
+   letter-spacing: var(--factory-label-tracking);
+   text-transform: uppercase;
 }
 
 .hotspotToggle input {
-	margin: 0;
+   margin: 0;
 }
 
-@media (max-width: 800px) {
-	.fieldGrid,
-	.hotspotCardFields {
-		grid-template-columns: 1fr;
-	}
+.hotspotToggle:has(input:checked) {
+  border-color: var(--color-brand-primary);
+  background: var(--factory-drop-accept);
+}
 
-	.hotspotCardHeader {
-		flex-direction: column;
-		align-items: flex-start;
-	}
+@media (max-width: 800px) { /* deliberate: matches factory editor mobile breakpoint */
+   .fieldGrid,
+   .hotspotCardFields {
+      grid-template-columns: 1fr;
+   }
 
-	.hotspotToggleRow {
-		justify-content: flex-start;
-	}
+   .hotspotCardHeader {
+      flex-direction: column;
+      align-items: flex-start;
+   }
+
+   .hotspotToggleRow {
+      justify-content: flex-start;
+   }
 }
 </style>

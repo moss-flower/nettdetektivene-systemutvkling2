@@ -77,12 +77,14 @@ class GameplayCrudIntegrationTest extends BaseIntegrationTest {
     StationRequest request = new StationRequest(
         "Teststasjon",
         "Beskrivelse av teststasjonen.",
+        "Tips til teststasjonen.",
         "https://example.com/station.png",
         "#abcdef",
         List.of(
             GameplayMockDataInitializer.NEWSSTAND_EXERCISE_1_UID,
             GameplayMockDataInitializer.POSTOFFICE_EXERCISE_1_UID
-        )
+        ),
+        false
     );
 
     client.post().uri("/api/v1/stations")
@@ -96,6 +98,7 @@ class GameplayCrudIntegrationTest extends BaseIntegrationTest {
           assertThat(response).isNotNull();
           assertThat(response.title()).isEqualTo(request.title());
           assertThat(response.description()).isEqualTo(request.description());
+          assertThat(response.hint()).isEqualTo(request.hint());
           assertThat(response.image()).isEqualTo(request.image());
           assertThat(response.backgroundColor()).isEqualTo(request.backgroundColor());
           assertThat(response.exerciseUids()).containsExactlyElementsOf(request.exerciseUids());
@@ -109,9 +112,11 @@ class GameplayCrudIntegrationTest extends BaseIntegrationTest {
     StationRequest request = new StationRequest(
         "Oppdatert stasjon",
         "Ny beskrivelse.",
+        "Nytt tips.",
         "https://example.com/updated-station.png",
         "#123456",
-        List.of(GameplayMockDataInitializer.PHOTOGRAPH_EXERCISE_1_UID)
+        List.of(GameplayMockDataInitializer.PHOTOGRAPH_EXERCISE_1_UID),
+        false
     );
 
     client.put().uri("/api/v1/stations/{uid}", stationUid)
@@ -228,9 +233,11 @@ class GameplayCrudIntegrationTest extends BaseIntegrationTest {
     StationRequest request = new StationRequest(
         "Startstasjon",
         "En stasjon som brukes i test.",
+        "Tips til startstasjonen.",
         "https://example.com/start-station.png",
         "#cfe9ff",
-        List.of(GameplayMockDataInitializer.NEWSSTAND_EXERCISE_1_UID)
+        List.of(GameplayMockDataInitializer.NEWSSTAND_EXERCISE_1_UID),
+        false
     );
 
     return client.post().uri("/api/v1/stations")

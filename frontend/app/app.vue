@@ -1,5 +1,26 @@
+<script setup lang="ts">
+import BackgroundMusic from '~/components/audio/BackgroundMusic.vue'
+import AvatarProfilePopup from '~/components/avatar/AvatarProfilePopup.vue'
+
+const route = useRoute()
+const isInGame = computed(() =>
+  route.path.startsWith('/student') || route.path.startsWith('/games')
+)
+</script>
+
 <template>
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
+  <ClientOnly>
+    <BackgroundMusic v-if="isInGame" />
+    <AvatarProfilePopup v-if="isInGame" />
+  </ClientOnly>
 </template>
+
+<style>
+#confetti-canvas {
+  inset: 0;
+  z-index: 30;
+}
+</style>

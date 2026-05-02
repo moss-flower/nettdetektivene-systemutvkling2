@@ -121,19 +121,19 @@ watch(
 </script>
 
 <template>
-  <section class="sort-template">
-    <header v-if="props.prompt?.title || props.prompt?.text" class="sort-template__header">
-      <h2 v-if="props.prompt?.title" class="sort-template__title">
+  <section class="sortTemplate">
+    <header v-if="props.prompt?.title || props.prompt?.text" class="sortTemplateHeader">
+      <h2 v-if="props.prompt?.title" class="sortTemplateTitle">
         {{ props.prompt.title }}
       </h2>
-      <p v-if="props.prompt?.text" class="sort-template__text">
+      <p v-if="props.prompt?.text" class="sortTemplateText">
         {{ props.prompt.text }}
       </p>
     </header>
 
-    <div class="sort-template__workspace">
-      <section class="sort-template__tray">
-        <div class="sort-template__section-head">
+    <div class="sortTemplateWorkspace">
+      <section class="sortTemplateTray">
+        <div class="templateSectionHead">
           <div>
             <h3>{{ props.unplacedLabel ?? 'Elementer som skal sorteres' }}</h3>
             <p>Dra kortene, eller trykk pa et kort og plasser det i riktig boks.</p>
@@ -141,7 +141,7 @@ watch(
 
           <button
             v-if="selectedItemId"
-            class="sort-template__ghost-button"
+            class="templateGhostButton"
             type="button"
             :disabled="props.disabled"
             @click="moveSelectedTo(null)"
@@ -152,15 +152,15 @@ watch(
 
         <draggable
           v-model="unplacedItems"
-          class="sort-template__item-list"
+          class="templateItemList"
           item-key="id"
-          :group="'sort-buckets'"
+          :group="'sortBuckets'"
           :disabled="props.disabled"
         >
           <template #item="{ element }">
             <button
-              class="sort-template__item"
-              :class="{ 'sort-template__item--selected': selectedItemId === element.id }"
+              class="sortTemplateItem"
+              :class="{ 'templateItemSelected': selectedItemId === element.id }"
               type="button"
               :disabled="props.disabled"
               @click="selectItem(element.id)"
@@ -171,14 +171,14 @@ watch(
         </draggable>
       </section>
 
-      <div class="sort-template__bucket-grid">
+      <div class="bucketGrid">
         <article
           v-for="bucket in props.buckets"
           :key="bucket.key"
-          class="sort-template__bucket-card"
+          class="bucketCard"
           :style="getBucketStyle(bucket)"
         >
-          <div class="sort-template__section-head sort-template__section-head--bucket">
+          <div class="templateSectionHead bucketHead">
             <div>
               <h3>{{ bucket.title }}</h3>
               <p>{{ bucket.description }}</p>
@@ -186,7 +186,7 @@ watch(
 
             <button
               v-if="selectedItemId"
-              class="sort-template__ghost-button"
+              class="ghostButton"
               type="button"
               :disabled="props.disabled"
               @click="moveSelectedTo(bucket.key)"
@@ -197,15 +197,15 @@ watch(
 
           <draggable
             v-model="bucketItems[bucket.key]"
-            class="sort-template__bucket-dropzone"
+            class="bucketDropzone"
             item-key="id"
-            :group="'sort-buckets'"
+            :group="'sortBuckets'"
             :disabled="props.disabled"
           >
             <template #item="{ element }">
               <button
-                class="sort-template__item"
-                :class="{ 'sort-template__item--selected': selectedItemId === element.id }"
+                class="sortTemplateItem"
+                :class="{ itemSelected: selectedItemId === element.id }"
                 type="button"
                 :disabled="props.disabled"
                 @click="selectItem(element.id)"
@@ -215,7 +215,7 @@ watch(
             </template>
 
             <template #footer>
-              <p v-if="(bucketItems[bucket.key] ?? []).length === 0" class="sort-template__empty-state">
+              <p v-if="(bucketItems[bucket.key] ?? []).length === 0" class="emptyState">
                 Slipp kort her
               </p>
             </template>
@@ -224,9 +224,9 @@ watch(
       </div>
     </div>
 
-    <div class="sort-template__actions">
+    <div class="sortTemplateActions">
       <button
-        class="sort-template__submit"
+        class="sortTemplateSubmit"
         type="button"
         :disabled="props.disabled || !allItemsPlaced"
         @click="submit"
@@ -238,175 +238,154 @@ watch(
 </template>
 
 <style scoped>
-.sort-template {
+.sortTemplate {
   display: grid;
-  gap: 1rem;
-  color: #1f2937;
+  gap: var(--space-4);
+  color: var(--palette-gray-900);
 }
 
-.sort-template__header {
+.sortTemplateHeader {
   display: grid;
   gap: 0.45rem;
 }
 
-.sort-template__workspace {
+.sortTemplateWorkspace {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.9fr);
   align-items: stretch;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
-.sort-template__title {
+.sortTemplateTitle {
   font-size: clamp(1.35rem, 2.5vw, 2rem);
   line-height: 1.1;
-  color: #172033;
+  color: var(--color-text-primary);
 }
 
-.sort-template__text {
+.sortTemplateText {
   max-width: 56rem;
   line-height: 1.5;
-  color: #4b5563;
+  color: var(--color-text-secondary);
 }
 
-.sort-template__tray,
-.sort-template__bucket-card {
-  padding: 1rem;
+.sortTemplateTray,
+.bucketCard {
+  padding: var(--space-4);
   border-radius: 1.5rem;
-  border: 2px solid #d7dfeb;
-  background: #fbfdff;
+  border: var(--border-width-thin) solid var(--color-border-default);
+  background: var(--color-bg-surface);
   box-shadow: 0 12px 24px rgba(52, 77, 115, 0.08);
 }
 
-.sort-template__tray {
+.sortTemplateTray {
   display: flex;
   flex-direction: column;
   min-height: 100%;
 }
 
-.sort-template__section-head {
+.templateSectionHead {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--space-4);
   margin-bottom: 0.85rem;
 }
 
-.sort-template__section-head h3 {
+.templateSectionHead h3 {
   margin: 0;
   font-size: 1.05rem;
 }
 
-.sort-template__section-head p {
-  margin: 0.25rem 0 0;
-  color: #5b6576;
+.templateSectionHead p {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-secondary);
   line-height: 1.45;
 }
 
-.sort-template__section-head--bucket {
+.bucketHead {
   align-items: center;
 }
 
-.sort-template__item-list,
-.sort-template__bucket-dropzone {
+.templateItemList,
+.bucketDropzone {
   min-height: 6rem;
   display: grid;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
-.sort-template__item-list {
+.templateItemList {
   flex: 1;
   align-content: start;
 }
 
-.sort-template__bucket-grid {
+.bucketGrid {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
-.sort-template__item {
+.sortTemplateItem {
   width: 100%;
-  padding: 0.9rem 1rem;
-  border: 2px solid #cfd9e6;
-  border-radius: 1rem;
-  background: #fff;
-  color: #1f2937;
+  padding: 0.9rem var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  border-radius: var(--radius-2);
+  background: var(--palette-white);
+  color: var(--palette-gray-900);
   font-weight: 700;
   text-align: left;
   box-shadow: 0 8px 14px rgba(71, 94, 128, 0.08);
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform var(--transition-base) ease, border-color var(--transition-base) ease, box-shadow var(--transition-base) ease;
 }
 
-.sort-template__item:hover:not(:disabled),
-.sort-template__item:focus-visible {
+.sortTemplateItem:hover:not(:disabled),
+.sortTemplateItem:focus-visible {
   transform: translateY(-1px);
   border-color: #7ea0c9;
   box-shadow: 0 12px 20px rgba(71, 94, 128, 0.14);
   outline: none;
 }
 
-.sort-template__item--selected {
+.itemSelected {
   border-color: #3568a8;
-  background: #eef5ff;
+  background: var(--color-semantic-info);
 }
 
-.sort-template__empty-state {
+.emptyState {
   margin: 0;
-  padding: 1rem;
-  border: 2px dashed #c7d3e3;
-  border-radius: 1rem;
-  color: #64748b;
+  padding: var(--space-4);
+  border: var(--border-width-thin) dashed var(--color-border-default);
+  border-radius: var(--radius-2);
+  color: var(--color-text-secondary);
   text-align: center;
 }
 
-.sort-template__ghost-button,
-.sort-template__submit {
-  padding: 0.8rem 1rem;
+.ghostButton,
+.sortTemplateSubmit {
+  padding: 0.8rem var(--space-4);
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-weight: 700;
 }
 
-.sort-template__ghost-button {
+.ghostButton {
   background: #e8f0fb;
-  color: #27456f;
+  color: var(--palette-navy-700);
 }
 
-.sort-template__submit {
-  background: #1f3657;
+.sortTemplateSubmit {
+  background: var(--color-brand-primary);
   color: #f9fbff;
 }
 
-.sort-template__actions {
+.sortTemplateActions {
   display: flex;
   justify-content: flex-end;
 }
 
-.sort-template__ghost-button:disabled,
-.sort-template__submit:disabled,
-.sort-template__item:disabled {
+.ghostButton:disabled,
+.sortTemplateSubmit:disabled,
+.sortTemplateItem:disabled {
   cursor: default;
   opacity: 0.72;
 }
 
-@media (max-width: 760px) {
-  .sort-template__workspace,
-  .sort-template__bucket-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .sort-template__section-head,
-  .sort-template__section-head--bucket {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .sort-template__actions {
-    justify-content: stretch;
-  }
-
-  .sort-template__submit,
-  .sort-template__ghost-button {
-    width: 100%;
-  }
-}
 </style>

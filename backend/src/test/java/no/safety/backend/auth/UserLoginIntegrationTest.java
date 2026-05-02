@@ -6,16 +6,29 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
-import no.safety.backend.BaseIntegrationTest;
 import no.safety.backend.auth.dto.UserLoginRequest;
 import no.safety.backend.auth.dto.UserLoginResponse;
+import no.safety.backend.leaderboard.repository.ClassroomLeaderboardRepository;
 import no.safety.backend.user.model.User;
 import no.safety.backend.user.repository.UserRepository;
 
-public class UserLoginIntegrationTest extends BaseIntegrationTest {
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureRestTestClient
+@ActiveProfiles("test")
+public class UserLoginIntegrationTest {
+    @MockitoBean
+    private ClassroomLeaderboardRepository classroomLeaderboardRepository;
+
+    @Autowired
+    private RestTestClient client;
 
     @Autowired
     private UserRepository userRepository;
@@ -23,8 +36,11 @@ public class UserLoginIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Value("${application.security.jwt.cookie.name}")
-    private String jwtCookieName;
+    @Value("${application.security.jwt.cookie.access.name}")
+    private String accessCookieName;
+
+    @Value("${application.security.jwt.cookie.refresh.name}")
+    private String refreshCookieName;
 
     @BeforeEach
     void setUp() {
@@ -32,25 +48,30 @@ public class UserLoginIntegrationTest extends BaseIntegrationTest {
         User user = new User();
         user.setUsername("user");
         user.setEmail("user@email.no");
-        user.setPassword(passwordEncoder.encode("password"));
+        user.setPassword(passwordEncoder.encode("password123"));
         userRepository.saveAndFlush(user);
     }
     
     @Test
     void shouldLoginUserSuccessfully() {
-        UserLoginRequest request = new UserLoginRequest("user@email.no", "password");
+        UserLoginRequest request = new UserLoginRequest("user@email.no", "password123");
 
         client.post()
             .uri("/api/v1/auth/login")
             .body(request)
             .exchange()
-            .expectStatus().isOk() 
-            .expectHeader().value(HttpHeaders.SET_COOKIE, setCookie -> {
-                assertThat(setCookie).isNotNull();
-                assertThat(setCookie).contains(jwtCookieName); 
-                assertThat(setCookie).contains("HttpOnly");
-                assertThat(setCookie).contains("Secure");
-                assertThat(setCookie).contains("SameSite=Strict");
+            .expectStatus().isOk()
+            .expectHeader().values(HttpHeaders.SET_COOKIE, setCookies -> {
+                assertThat(setCookies).isNotNull();
+                var jwtCookies = setCookies.stream()
+                    .filter(cookie -> cookie.contains(accessCookieName) || cookie.contains(refreshCookieName))
+                    .toList();
+                assertThat(jwtCookies).hasSize(2);
+                assertThat(jwtCookies.stream().anyMatch(cookie -> cookie.contains(accessCookieName))).isTrue();
+                assertThat(jwtCookies.stream().anyMatch(cookie -> cookie.contains(refreshCookieName))).isTrue();
+                assertThat(jwtCookies.stream().allMatch(cookie -> cookie.contains("HttpOnly"))).isTrue();
+                assertThat(jwtCookies.stream().allMatch(cookie -> cookie.contains("Secure"))).isTrue();
+                assertThat(jwtCookies.stream().allMatch(cookie -> cookie.contains("SameSite=Strict"))).isTrue();
             })
             .expectBody(UserLoginResponse.class)
             .value(response -> {
@@ -67,7 +88,12 @@ public class UserLoginIntegrationTest extends BaseIntegrationTest {
             .body(request)
             .exchange()
             .expectStatus().isUnauthorized()
-            .expectHeader().doesNotExist(HttpHeaders.SET_COOKIE)
+            .expectHeader().values(HttpHeaders.SET_COOKIE, setCookies -> {
+                if (setCookies != null) {
+                    assertThat(setCookies.stream().noneMatch(cookie -> cookie.contains(accessCookieName))).isTrue();
+                    assertThat(setCookies.stream().noneMatch(cookie -> cookie.contains(refreshCookieName))).isTrue();
+                }
+            })
             .expectBody();
     }
 

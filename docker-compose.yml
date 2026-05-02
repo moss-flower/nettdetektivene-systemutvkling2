@@ -35,6 +35,11 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_PUBLIC_BUCKET: ${MINIO_PUBLIC_BUCKET:-nettdetektivene-public}
+      MINIO_PUBLIC_BASE_URL: http://localhost:9000
     ports:
       - "8080:8080"
 
@@ -50,5 +55,35 @@ services:
     ports:
       - "3000:3000"
 
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: always
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  minio-seed:
+    image: minio/mc:latest
+    container_name: minio-seed
+    restart: "no"
+    depends_on:
+      - minio
+    entrypoint: ["/bin/sh", "/seed.sh"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_PUBLIC_BUCKET: ${MINIO_PUBLIC_BUCKET:-nettdetektivene-public}
+    volumes:
+      - ./media/seed:/seed-data:ro
+      - ./docker/minio/seed.sh:/seed.sh:ro
+
 volumes:
   mysql_data:
+  minio_data:

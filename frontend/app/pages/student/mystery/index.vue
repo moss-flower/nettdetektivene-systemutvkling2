@@ -14,6 +14,7 @@ const successMessage = ref('');
 const previewUrl = ref('');
 const showPreviousMysteries = ref(false);
 const showSuggestionDialog = ref(false);
+const isSubmitting = ref(false);
 
 function handleDialogKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
@@ -26,12 +27,18 @@ const {
   currentMystery,
   previousMysteries,
   submissionHistory,
+  isLoading,
+  loadMysteryData,
   submitMysteryExample,
 } = useStudentMystery();
 
+await useAsyncData('student-mystery-data', loadMysteryData);
+
 const canSubmit = computed(() => {
-  return selectedFile.value !== null && studentMessage.value.trim().length >= 8;
+  return currentMystery.value !== null && selectedFile.value !== null && studentMessage.value.trim().length >= 8;
 });
+
+const hasPlayableMystery = computed(() => Boolean(currentMystery.value?.exerciseUid));
 
 const anyDialogOpen = computed(() => showPreviousMysteries.value || showSuggestionDialog.value);
 
@@ -81,7 +88,7 @@ function clearForm() {
   fileInputKey.value += 1;
 }
 
-function sendMysterySubmission() {
+async function sendMysterySubmission() {
   errorMessage.value = '';
   successMessage.value = '';
 
@@ -95,39 +102,50 @@ function sendMysterySubmission() {
     return;
   }
 
-  submitMysteryExample(studentMessage.value, selectedFile.value.name);
-  successMessage.value = 'Innleveringen er sendt til lærer for verifisering.';
-  clearForm();
+  isSubmitting.value = true;
+
+  try {
+    await submitMysteryExample(studentMessage.value, selectedFile.value);
+    successMessage.value = 'Innleveringen er sendt til lærer for vurdering.';
+    clearForm();
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Kunne ikke sende inn bidraget akkurat nå.';
+  } finally {
+    isSubmitting.value = false;
+  }
 }
 </script>
 
 <template>
-  <section class="student-mystery">
-    <div class="student-mystery__content">
-      <header class="student-mystery__header">
-        <UiStudentHomeBackButton class="student-mystery__back" />
-        <p class="student-mystery__eyebrow">Ukens mysterium</p>
-        <div class="student-mystery__titleRow">
-          <h1>{{ currentMystery.title }}</h1>
-          <p class="student-mystery__week student-mystery__week--hero">{{ currentMystery.weekLabel }}</p>
+  <section class="studentMystery">
+    <div class="studentMysteryContent">
+      <header class="studentMysteryHeader">
+        <p class="studentMysteryEyebrow">Ukens mysterium</p>
+        <div class="mysteryTitleRow">
+          <h1>{{ currentMystery?.title ?? 'Ukens mysterium' }}</h1>
+          <p class="studentMysteryWeek mysteryWeekHero">{{ currentMystery?.weekLabel ?? 'Ingen sak valgt' }}</p>
         </div>
-        <p class="student-mystery__intro">
-          Spill ukens mysterium, eller tips læreren om en senere sak.
+        <p class="studentMysteryIntro">
+          {{ hasPlayableMystery ? 'Spill ukens mysterium, eller tips læreren om en senere sak.' : currentMystery ? 'Læreren samler forslag før spillet blir klart.' : 'Læreren har ikke valgt et mysterium for klassen ennå.' }}
         </p>
       </header>
 
-      <section class="student-mystery__section student-mystery__section--feature" aria-labelledby="current-mystery-heading">
-        <div class="student-mystery__playCard">
-          <h2 id="current-mystery-heading" class="student-mystery__playTitle">Denne ukens sak</h2>
+      <section class="studentMysterySection mysterySectionFeature" aria-labelledby="current-mystery-heading">
+        <div class="mysteryPlayCard">
+          <h2 id="current-mystery-heading" class="mysteryPlayTitle">Denne ukens sak</h2>
+          <p v-if="isLoading" class="studentMysteryHelper">Laster mysteriet...</p>
+          <p class="studentMysteryHelper">{{ currentMystery?.prompt ?? 'Det er ikke publisert noen aktiv sak ennå.' }}</p>
+          <p v-if="currentMystery?.clue" class="studentMysteryMeta"><strong>Tips:</strong> {{ currentMystery.clue }}</p>
+          <p v-if="currentMystery && !hasPlayableMystery" class="studentMysteryMeta">Spillet blir tilgjengelig når læreren har valgt et elevforslag og laget saken ferdig.</p>
 
-          <div class="student-mystery__actionsRow">
-            <NuxtLink :to="routePaths.studentMysteryPlay" class="student-mystery__playAction">
+          <div class="mysteryActionsRow">
+            <NuxtLink :to="routePaths.studentMysteryPlay" class="mysteryPlayAction" :aria-disabled="!hasPlayableMystery" :tabindex="hasPlayableMystery ? 0 : -1" :class="{ mysteryPlayActionDisabled: !hasPlayableMystery }">
               Spill ukens mysterium
             </NuxtLink>
 
             <button
               type="button"
-              class="student-mystery__secondaryAction"
+              class="mysterySecondaryAction"
               @click="showPreviousMysteries = true"
             >
               Se tidligere mysterier
@@ -135,7 +153,7 @@ function sendMysterySubmission() {
 
             <button
               type="button"
-              class="student-mystery__secondaryAction"
+              class="mysterySecondaryAction"
               @click="showSuggestionDialog = true"
             >
               Tips læreren om neste uke
@@ -147,27 +165,27 @@ function sendMysterySubmission() {
 
     <div
       v-if="showSuggestionDialog"
-      class="student-mystery__dialog"
+      class="studentMysteryDialog"
       @click.self="showSuggestionDialog = false"
     >
       <div
-        class="student-mystery__dialogPanel"
+        class="mysteryDialogPanel"
         role="dialog"
         aria-modal="true"
         aria-labelledby="suggestion-dialog-title"
       >
-        <div class="student-mystery__dialogHeader">
-          <div class="student-mystery__sectionHeader">
-            <p class="student-mystery__eyebrow">Neste uke</p>
-            <h2 id="suggestion-dialog-title">Tips læreren om et nytt mysterium</h2>
-            <p class="student-mystery__helper">{{ currentMystery.prompt }}</p>
-            <p class="student-mystery__helper">Send inn et bilde og en kort forklaring. Læreren kan bruke det i et senere mysterium.</p>
-            <p class="student-mystery__meta"><strong>Tips:</strong> {{ currentMystery.clue }}</p>
+        <div class="mysteryDialogHeader">
+          <div class="mysterySectionHeader">
+            <p class="studentMysteryEyebrow">Neste uke</p>
+            <h2 id="suggestion-dialog-title">{{ currentMystery?.title ?? 'Ingen oppdrag publisert ennå' }}</h2>
+            <p v-if="currentMystery" class="studentMysteryHelper">{{ currentMystery.prompt }}</p>
+            <p v-if="currentMystery?.clue" class="studentMysteryMeta"><strong>Tips:</strong> {{ currentMystery.clue }}</p>
+            <p v-if="!currentMystery" class="studentMysteryError">Læreren har ikke publisert et oppdrag for klassen ennå. Når oppdraget er klart, kan du sende inn bilde og forklaring her.</p>
           </div>
 
           <button
             type="button"
-            class="student-mystery__dialogClose"
+            class="mysteryDialogClose"
             aria-label="Lukk dialog"
             @click="showSuggestionDialog = false"
           >
@@ -175,31 +193,32 @@ function sendMysterySubmission() {
           </button>
         </div>
 
-        <div class="student-mystery__dialogBody">
-          <label class="student-mystery__field student-mystery__field--upload">
+        <div v-if="currentMystery" class="mysteryDialogBody">
+          <label class="studentMysteryField mysteryFieldUpload">
             <span>Bilde</span>
-            <span class="student-mystery__uploadControl">
+            <span class="mysteryUploadControl">
               <input
                 :key="fileInputKey"
-                class="student-mystery__fileInput"
+                class="mysteryFileInput"
                 type="file"
                 accept="image/*"
+                :disabled="!currentMystery || isSubmitting"
                 @change="handleFileChange"
               >
-              <span class="student-mystery__uploadMain">
-                <span class="student-mystery__uploadButton">Velg bilde</span>
-                <span class="student-mystery__uploadText">{{ selectedFile ? selectedFile.name : 'Ingen fil valgt ennå' }}</span>
+              <span class="mysteryUploadMain">
+                <span class="mysteryUploadButton">Velg bilde</span>
+                <span class="mysteryUploadText">{{ selectedFile ? selectedFile.name : 'Ingen fil valgt ennå' }}</span>
               </span>
               <img
                 v-if="previewUrl"
                 :src="previewUrl"
                 alt="Forhåndsvisning av valgt bilde"
-                class="student-mystery__uploadPreview"
+                class="mysteryUploadPreview"
               >
             </span>
           </label>
 
-          <label class="student-mystery__field">
+          <label class="studentMysteryField">
             <span>Kort melding</span>
             <textarea
               v-model="studentMessage"
@@ -209,39 +228,39 @@ function sendMysterySubmission() {
             />
           </label>
 
-          <div class="student-mystery__formFooter">
-            <p class="student-mystery__meta">{{ studentMessage.length }} / 280</p>
+          <div class="mysteryFormFooter">
+            <p class="studentMysteryMeta">{{ studentMessage.length }} / 280</p>
             <button
               type="button"
-              class="student-mystery__submit"
-              :disabled="!canSubmit"
+              class="studentMysterySubmit"
+              :disabled="!canSubmit || isSubmitting"
               @click="sendMysterySubmission"
             >
-              Send til lærer
+              {{ isSubmitting ? 'Sender...' : 'Send til lærer' }}
             </button>
           </div>
 
-          <p v-if="errorMessage" class="student-mystery__error">{{ errorMessage }}</p>
-          <p v-if="successMessage" class="student-mystery__success">{{ successMessage }}</p>
+          <p v-if="errorMessage" class="studentMysteryError">{{ errorMessage }}</p>
+          <p v-if="successMessage" class="studentMysterySuccess">{{ successMessage }}</p>
         </div>
 
         <section
-          v-if="submissionHistory.length > 0"
-          class="student-mystery__section student-mystery__section--compact"
+          v-if="currentMystery && submissionHistory.length > 0"
+          class="studentMysterySection mysterySectionCompact"
           aria-labelledby="submissions-heading"
         >
-          <div class="student-mystery__sectionHeader">
+          <div class="mysterySectionHeader">
             <h2 id="submissions-heading">Siste innsendinger</h2>
           </div>
 
-          <ul class="student-mystery__list">
-            <li v-for="submission in submissionHistory.slice(0, 3)" :key="submission.id" class="student-mystery__listItem">
-              <div class="student-mystery__statusRow">
+          <ul class="studentMysteryList">
+            <li v-for="submission in submissionHistory.slice(0, 3)" :key="submission.id" class="mysteryListItem">
+              <div class="mysteryStatusRow">
                 <strong>{{ submission.status }}</strong>
-                <span>{{ submission.submittedAt }}</span>
+                <span>{{ submission.screenshotName }}</span>
               </div>
               <p>{{ submission.message }}</p>
-              <p class="student-mystery__meta">{{ submission.screenshotName }}</p>
+              <a :href="submission.screenshotUrl" target="_blank" rel="noreferrer" class="studentMysteryMeta">Vis bildet</a>
             </li>
           </ul>
         </section>
@@ -250,25 +269,25 @@ function sendMysterySubmission() {
 
     <div
       v-if="showPreviousMysteries"
-      class="student-mystery__dialog"
+      class="studentMysteryDialog"
       @click.self="showPreviousMysteries = false"
     >
       <div
-        class="student-mystery__dialogPanel"
+        class="mysteryDialogPanel"
         role="dialog"
         aria-modal="true"
         aria-labelledby="previous-mysteries-dialog-title"
       >
-        <div class="student-mystery__dialogHeader">
-          <div class="student-mystery__sectionHeader">
-            <p class="student-mystery__eyebrow">Tidligere mysterier</p>
+        <div class="mysteryDialogHeader">
+          <div class="mysterySectionHeader">
+            <p class="studentMysteryEyebrow">Tidligere mysterier</p>
             <h2 id="previous-mysteries-dialog-title">Tidligere ukers saker</h2>
-            <p class="student-mystery__helper">Gamle mysterier du kan bla tilbake til senere.</p>
+            <p class="studentMysteryHelper">Gamle mysterier du kan bla tilbake til senere.</p>
           </div>
 
           <button
             type="button"
-            class="student-mystery__dialogClose"
+            class="mysteryDialogClose"
             aria-label="Lukk dialog"
             @click="showPreviousMysteries = false"
           >
@@ -276,18 +295,21 @@ function sendMysterySubmission() {
           </button>
         </div>
 
-        <ul class="student-mystery__dialogList">
+        <ul class="mysteryDialogList">
+          <li v-if="previousMysteries.length === 0" class="mysteryDialogCard">
+            <p>Ingen tidligere mysterier er registrert for klasserommet ennå.</p>
+          </li>
           <li
             v-for="mystery in previousMysteries"
-            :key="mystery.id"
-            class="student-mystery__dialogCard"
+            :key="mystery.publicId"
+            class="mysteryDialogCard"
           >
-            <div class="student-mystery__dialogCardHeader">
-              <p class="student-mystery__week">{{ mystery.weekLabel }}</p>
+            <div class="dialogCardHeader">
+              <p class="studentMysteryWeek">{{ mystery.weekLabel }}</p>
               <h3>{{ mystery.title }}</h3>
             </div>
             <p>{{ mystery.prompt }}</p>
-            <p class="student-mystery__meta"><strong>Tips:</strong> {{ mystery.clue }}</p>
+            <p class="studentMysteryMeta"><strong>Tips:</strong> {{ mystery.clue }}</p>
           </li>
         </ul>
       </div>
@@ -296,254 +318,392 @@ function sendMysterySubmission() {
 </template>
 
 <style scoped>
-.student-mystery {
+.studentMystery {
+  /* case-room wall */
+  --mystery-wall: var(--palette-wood-900);
+  --mystery-wall-seam: var(--palette-overlay-warm-glow);
+  --mystery-wall-glow: var(--palette-overlay-warm-glow);
+
+  /* Text on wall */
+  --mystery-eyebrow: var(--palette-gold-500);
+  --mystery-title: var(--palette-cream-100);
+  --mystery-title-depth: var(--palette-overlay-dark-strong);
+  --mystery-intro: var(--palette-cream-300);
+
+  /* Week badge, classified stamp */
+  --mystery-week-bg: var(--palette-navy-900);
+  --mystery-week-text: var(--palette-cream-100);
+
+  /* play card, active case file, gilt frame */
+  --mystery-play-bg-top: var(--palette-cream-100);
+  --mystery-play-bg-bottom: var(--palette-cream-200);
+  --mystery-play-border: var(--palette-gold-600);
+  --mystery-play-highlight: var(--palette-gold-400);
+  --mystery-play-liner: var(--palette-cork-900);
+  --mystery-play-shadow: var(--palette-overlay-dark-deep);
+  --mystery-play-text: var(--palette-cork-900);
+
+  /* Primary action */
+  --mystery-action-bg: var(--palette-navy-900);
+  --mystery-action-text: var(--palette-cream-100);
+  --mystery-action-hover: var(--palette-navy-700);
+
+  /* Secondary action */
+  --mystery-secondary-bg: var(--palette-cream-100);
+  --mystery-secondary-border: var(--palette-cork-900);
+  --mystery-secondary-text: var(--palette-cork-900);
+  --mystery-secondary-hover: var(--palette-overlay-cork-soft);
+
+  /* card surface (sections, dialog, form area) */
+  --mystery-card-bg-top: var(--palette-cream-100);
+  --mystery-card-bg-bottom: var(--palette-cream-200);
+  --mystery-card-border: var(--palette-overlay-cork-medium);
+  --mystery-card-shadow: var(--palette-overlay-dark-deep);
+  --mystery-card-text: var(--palette-cork-900);
+  --mystery-card-muted: var(--palette-cork-580);
+
+  /* form fields */
+  --mystery-field-label: var(--palette-cork-900);
+  --mystery-field-bg: var(--palette-cream-100);
+  --mystery-field-border: var(--palette-gray-200);
+  --mystery-field-text: var(--palette-cork-900);
+
+  /* upload zone */
+  --mystery-upload-bg: var(--palette-overlay-cork-soft);
+  --mystery-upload-border: var(--palette-cork-500);
+  --mystery-upload-text: var(--palette-cork-580);
+
+  /* divider */
+  --mystery-divider: var(--palette-overlay-cork-shadow);
+
+  /* feedback */
+  --mystery-error: var(--color-semantic-error);
+  --mystery-success: var(--color-semantic-success);
+  --mystery-meta: var(--palette-cork-580);
+
+  /* Dialog */
+  --mystery-dialog-overlay: var(--palette-overlay-dark-strong);
+
+  position: relative;
   min-height: 100%;
-  padding: clamp(1rem, 2.5vw, 2rem);
-  border-radius: 0;
-  background: transparent;
+  width: 100%;
+  display: grid;
+  gap: var(--space-6);
+  align-content: start;
+  padding: var(--layout-page-padding);
+  border-radius: var(--radius-2);
+  color: var(--mystery-title);
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 25%, var(--mystery-wall-glow), transparent 70%),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 180px,
+      var(--mystery-wall-seam) 180px,
+      var(--mystery-wall-seam) 181px
+    ),
+    var(--mystery-wall);
+  overflow-x: hidden;
 }
 
-.student-mystery__content {
+.studentMysteryContent {
   width: min(820px, 100%);
   margin: 0 auto;
   display: grid;
-  gap: clamp(1.25rem, 2vw, 2rem);
+  gap: var(--space-6);
 }
 
-.student-mystery__header {
+.studentMysteryHeader {
   display: grid;
   gap: var(--space-2);
-  padding: 0;
 }
 
-.student-mystery__titleRow {
+.mysteryTitleRow {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
 }
 
-.student-mystery__back {
-  width: fit-content;
-}
-
-.student-mystery__eyebrow {
-  color: var(--color-brand-primary);
+.studentMysteryEyebrow {
+  margin: 0;
+  color: var(--mystery-eyebrow);
+  font-family: var(--font-family-body), sans-serif;
   font-size: var(--font-size-14);
+  line-height: var(--font-leading-14);
   font-weight: var(--font-weight-bold);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--font-tracking-wider);
   text-transform: uppercase;
 }
 
-.student-mystery__header h1 {
+.studentMysteryHeader h1 {
   margin: 0;
   max-width: 14ch;
+  font-family: var(--font-family-serif), sans-serif;
+  /* fluid hero scale, deliberate exception */
   font-size: clamp(1.7rem, 3vw, 2.4rem);
-  line-height: 1.02;
+  line-height: 1.05;
+  font-weight: var(--font-weight-regular);
+  color: var(--mystery-title);
+  text-shadow: 0 1px 2px var(--mystery-title-depth);
 }
 
-.student-mystery__intro {
+.studentMysteryIntro {
+  margin: 0;
   max-width: 58ch;
-  color: var(--color-text-secondary);
-  font-size: clamp(1rem, 1.5vw, 1.15rem);
+  color: var(--mystery-intro);
+  font-family: var(--font-family-body), sans-serif;
+  font-size: var(--font-size-16);
+  line-height: var(--font-leading-16);
 }
 
-.student-mystery__secondaryAction {
+.mysterySecondaryAction {
   width: fit-content;
   min-height: var(--size-control-sm);
-  padding: 0.55rem 0.9rem;
-  border: 1px solid color-mix(in srgb, var(--color-brand-primary) 18%, var(--color-border-default));
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width-hairline) solid var(--mystery-secondary-border);
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-bg-surface) 88%, var(--color-semantic-info) 12%);
-  color: var(--color-brand-primary);
+  background: var(--mystery-secondary-bg);
+  color: var(--mystery-secondary-text);
   font: inherit;
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
+  transition: background var(--transition-fast);
 }
 
-.student-mystery__playCard {
+.mysterySecondaryAction:hover {
+  background: var(--mystery-secondary-hover);
+}
+
+/* --- Play card: active case file with gilt frame --- */
+.mysteryPlayCard {
   display: grid;
   gap: var(--space-3);
-  padding: clamp(1rem, 2vw, 1.35rem);
-  border: 1px solid color-mix(in srgb, var(--color-brand-primary) 14%, var(--color-border-default));
-  border-radius: clamp(1rem, 2vw, 1.2rem);
-  background: color-mix(in srgb, var(--color-bg-surface) 90%, var(--color-semantic-info) 10%);
+  padding: var(--space-5);
+  border: var(--border-width-chunky) solid var(--mystery-play-border);
+  border-radius: var(--radius-2);
+  background: linear-gradient(
+    180deg,
+    var(--mystery-play-bg-top) 0%,
+    var(--mystery-play-bg-bottom) 100%
+  );
+  box-shadow:
+    inset 0 0 0 var(--border-width-thin) var(--mystery-play-liner),
+    inset 0 var(--border-width-thin) 0 var(--mystery-play-highlight),
+    var(--space-2) var(--space-4) var(--space-6) var(--mystery-play-shadow);
+  color: var(--mystery-play-text);
 }
 
-.student-mystery__playTitle {
+.mysteryPlayTitle {
   margin: 0;
-  font-size: clamp(1.35rem, 2vw, 1.65rem);
-  line-height: 1.05;
+  font-family: var(--font-family-serif), sans-serif;
+  font-size: var(--font-size-28);
+  line-height: var(--font-leading-28);
+  font-weight: var(--font-weight-semibold);
+  color: var(--mystery-play-text);
 }
 
-.student-mystery__actionsRow {
+.mysteryActionsRow {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   flex-wrap: wrap;
 }
 
-.student-mystery__playAction {
+.mysteryPlayAction {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: var(--size-control-md);
-  padding: 0.7rem 1.1rem;
+  padding: var(--space-3) var(--space-4);
+  border: none;
   border-radius: var(--radius-2);
-  background: var(--color-brand-primary);
-  color: var(--color-text-onDark);
+  background: var(--mystery-action-bg);
+  color: var(--mystery-action-text);
+  font-family: var(--font-family-body), sans-serif;
   font-weight: var(--font-weight-semibold);
   text-decoration: none;
   cursor: pointer;
+  transition: background var(--transition-fast);
 }
 
-.student-mystery__section {
+.mysteryPlayActionDisabled {
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+.mysteryPlayAction:hover {
+  background: var(--mystery-action-hover);
+}
+
+/* --- Sections: cream case-report cards on the wall --- */
+.studentMysterySection {
   display: grid;
-  gap: var(--space-3);
-  padding: var(--space-5) 0;
-  border-top: 1px solid var(--color-border-default);
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: var(--border-width-hairline) solid var(--mystery-card-border);
+  border-radius: var(--radius-2);
+  background: linear-gradient(
+    180deg,
+    var(--mystery-card-bg-top) 0%,
+    var(--mystery-card-bg-bottom) 100%
+  );
+  box-shadow: var(--space-2) var(--space-4) var(--space-6) var(--mystery-card-shadow);
+  color: var(--mystery-card-text);
 }
 
-.student-mystery__section--feature {
+.mysterySectionFeature {
   padding: 0;
-  border: 0;
+  border: none;
   border-radius: 0;
   background: transparent;
+  box-shadow: none;
 }
 
-.student-mystery__section:first-of-type {
-  border-top: 0;
-  padding-top: 0;
-}
-
-.student-mystery__sectionHeader {
+.mysterySectionHeader {
   display: grid;
   gap: var(--space-1);
 }
 
-.student-mystery__section h2,
-.student-mystery__section h3 {
+.studentMysterySection h2,
+.studentMysterySection h3 {
   margin: 0;
+  font-family: var(--font-family-display), sans-serif;
 }
 
-.student-mystery__section h2 {
-  font-size: clamp(1.5rem, 2.2vw, 2rem);
-  line-height: 1.05;
+.studentMysterySection h2 {
+  font-size: var(--font-size-28);
+  line-height: var(--font-leading-28);
+  font-weight: var(--font-weight-bold);
+  color: var(--mystery-card-text);
 }
 
-.student-mystery__section--compact {
+.mysterySectionCompact {
   gap: var(--space-2);
 }
 
-.student-mystery__week {
+.studentMysteryWeek {
   width: fit-content;
-  padding: 0.3rem 0.65rem;
+  padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-brand-primary) 10%, white);
-  color: var(--color-brand-primary);
+  background: var(--mystery-week-bg);
+  color: var(--mystery-week-text);
   font-size: var(--font-size-12);
+  line-height: var(--font-leading-12);
   font-weight: var(--font-weight-bold);
 }
 
-.student-mystery__week--hero {
-  margin-top: 0.2rem;
+.mysteryWeekHero {
+  margin-top: var(--space-1);
   flex: 0 0 auto;
 }
 
-.student-mystery__helper {
-  color: var(--color-text-secondary);
+.studentMysteryHelper {
+  color: var(--mystery-card-muted);
+  font-family: var(--font-family-body), sans-serif;
+  font-size: var(--font-size-16);
+  line-height: var(--font-leading-16);
 }
 
-.student-mystery__field {
+/* --- form fields --- */
+.studentMysteryField {
   display: grid;
   gap: var(--space-2);
 }
 
-.student-mystery__field span {
+.studentMysteryField > span {
+  font-family: var(--font-family-body), sans-serif;
   font-weight: var(--font-weight-semibold);
+  color: var(--mystery-field-label);
 }
 
-.student-mystery__field--upload {
+.mysteryFieldUpload {
   gap: var(--space-3);
 }
 
-.student-mystery__uploadControl {
+.mysteryUploadControl {
   position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-3);
   justify-content: space-between;
-  padding: 0.9rem 1rem;
-  border: 1px dashed color-mix(in srgb, var(--color-brand-primary) 28%, var(--color-border-default));
+  padding: var(--space-4);
+  border: var(--border-width-hairline) dashed var(--mystery-upload-border);
   border-radius: var(--radius-2);
-  background: color-mix(in srgb, var(--color-bg-surface) 78%, var(--color-semantic-info) 22%);
+  background: var(--mystery-upload-bg);
 }
 
-.student-mystery__uploadMain {
+.mysteryUploadMain {
   display: grid;
   gap: var(--space-2);
   min-width: 0;
   flex: 0 1 15rem;
 }
 
-.student-mystery__fileInput {
+.mysteryFileInput {
   position: absolute;
   inset: 0;
   opacity: 0;
   cursor: pointer;
 }
 
-.student-mystery__uploadButton {
+.mysteryUploadButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: var(--size-control-sm);
-  padding: 0.55rem 0.9rem;
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-pill);
-  background: var(--color-brand-primary);
-  color: var(--color-text-onDark);
+  background: var(--mystery-action-bg);
+  color: var(--mystery-action-text);
+  font-family: var(--font-family-body), sans-serif;
   font-size: var(--font-size-14);
+  line-height: var(--font-leading-14);
   font-weight: var(--font-weight-semibold);
 }
 
-.student-mystery__uploadText {
-  color: var(--color-text-secondary);
+.mysteryUploadText {
+  color: var(--mystery-upload-text);
+  font-family: var(--font-family-body), sans-serif;
   font-size: var(--font-size-14);
+  line-height: var(--font-leading-14);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.student-mystery__uploadPreview {
+.mysteryUploadPreview {
   width: auto;
   height: auto;
+  /* responsive image cap, deliberate fluid exception */
   max-width: clamp(7rem, 22vw, 10rem);
   max-height: clamp(7rem, 22vw, 10rem);
   flex: 1 1 9rem;
   object-fit: contain;
   border-radius: var(--radius-2);
-  border: 1px solid color-mix(in srgb, var(--color-brand-primary) 16%, var(--color-border-default));
-  background: var(--color-bg-surface);
+  border: var(--border-width-hairline) solid var(--mystery-field-border);
+  background: var(--mystery-field-bg);
 }
 
-.student-mystery__field input,
-.student-mystery__field textarea {
+.studentMysteryField input,
+.studentMysteryField textarea {
   width: 100%;
-  padding: 0.85rem 1rem;
-  border: 1px solid var(--color-border-default);
+  padding: var(--space-4);
+  border: var(--border-width-hairline) solid var(--mystery-field-border);
   border-radius: var(--radius-2);
-  background: color-mix(in srgb, var(--color-bg-surface) 92%, var(--color-bg-canvas));
-  color: var(--color-text-primary);
+  background: var(--mystery-field-bg);
+  color: var(--mystery-field-text);
   font: inherit;
 }
 
-.student-mystery__field textarea {
+.studentMysteryField textarea {
   resize: vertical;
-  min-height: 7rem;
-  line-height: 1.5;
+  min-height: var(--space-8);
+  line-height: var(--font-leading-16);
 }
 
-.student-mystery__formFooter {
+/* --- form footer --- */
+.mysteryFormFooter {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -551,45 +711,51 @@ function sendMysterySubmission() {
   flex-wrap: wrap;
 }
 
-.student-mystery__meta {
-  color: var(--color-text-secondary);
+.studentMysteryMeta {
+  color: var(--mystery-meta);
+  font-family: var(--font-family-body), sans-serif;
   font-size: var(--font-size-14);
+  line-height: var(--font-leading-14);
 }
 
-.student-mystery__error {
-  color: var(--color-semantic-error);
+.studentMysteryError {
+  color: var(--mystery-error);
+  font-family: var(--font-family-body), sans-serif;
   font-weight: var(--font-weight-semibold);
 }
 
-.student-mystery__success {
-  color: var(--color-semantic-success);
+.studentMysterySuccess {
+  color: var(--mystery-success);
+  font-family: var(--font-family-body), sans-serif;
   font-weight: var(--font-weight-semibold);
 }
 
-.student-mystery__submit {
+.studentMysterySubmit {
   min-height: var(--size-control-md);
-  padding: 0.7rem 1.1rem;
-  border: 0;
+  padding: var(--space-3) var(--space-4);
+  border: none;
   border-radius: var(--radius-2);
-  background: var(--color-brand-primary);
-  color: var(--color-text-onDark);
+  background: var(--mystery-action-bg);
+  color: var(--mystery-action-text);
   font: inherit;
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: background-color var(--transition-fast);
 }
 
-.student-mystery__submit:disabled {
+.studentMysterySubmit:disabled {
   cursor: not-allowed;
   background: var(--color-disabled-bg);
   color: var(--color-disabled-text);
+  box-shadow: inset 0 0 0 var(--border-width-hairline) var(--mystery-divider);
 }
 
-.student-mystery__submit:not(:disabled):hover {
-  background: color-mix(in srgb, var(--color-brand-primary) 92%, white);
+.studentMysterySubmit:not(:disabled):hover {
+  background: var(--mystery-action-hover);
 }
 
-.student-mystery__list {
+/* --- Suggestion list --- */
+.studentMysteryList {
   display: grid;
   gap: var(--space-3);
   list-style: none;
@@ -597,73 +763,84 @@ function sendMysterySubmission() {
   margin: 0;
 }
 
-.student-mystery__listItem {
+.mysteryListItem {
   display: grid;
   gap: var(--space-2);
   padding-bottom: var(--space-3);
-  border-bottom: 1px solid var(--color-border-default);
+  border-bottom: var(--border-width-hairline) solid var(--mystery-divider);
 }
 
-.student-mystery__listItem:last-child {
+.mysteryListItem:last-child {
   padding-bottom: 0;
-  border-bottom: 0;
+  border-bottom: none;
 }
 
-.student-mystery__listHeader,
-.student-mystery__statusRow {
+.mysteryListHeader,
+.mysteryStatusRow {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
   flex-wrap: wrap;
 }
-
-.student-mystery__dialog {
+/* --- Dialog: evidence review panel --- */
+.studentMysteryDialog {
   position: fixed;
   inset: 0;
   z-index: 50;
   display: grid;
   place-items: center;
-  padding: clamp(1rem, 2.5vw, 2rem);
-  background: rgb(15 23 42 / 0.36);
+  padding: var(--space-4);
+  background: var(--mystery-dialog-overlay);
 }
 
-.student-mystery__dialogPanel {
+.mysteryDialogPanel {
   width: min(820px, 100%);
   max-height: 80vh;
   overflow: auto;
   display: grid;
   gap: var(--space-4);
-  padding: clamp(1rem, 2vw, 1.5rem);
-  border-radius: clamp(1rem, 2vw, 1.25rem);
-  background: color-mix(in srgb, var(--color-bg-surface) 94%, var(--color-semantic-info) 6%);
+  padding: var(--space-5);
+  border-radius: var(--radius-3);
+  background: linear-gradient(
+    180deg,
+    var(--mystery-card-bg-top) 0%,
+    var(--mystery-card-bg-bottom) 100%
+  );
+  box-shadow: var(--space-2) var(--space-4) var(--space-6) var(--mystery-card-shadow);
+  color: var(--mystery-card-text);
 }
 
-.student-mystery__dialogHeader {
+.mysteryDialogHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
 }
 
-.student-mystery__dialogBody {
+.mysteryDialogBody {
   display: grid;
   gap: var(--space-3);
 }
 
-.student-mystery__dialogClose {
+.mysteryDialogClose {
   min-height: var(--size-control-sm);
-  padding: 0.55rem 0.9rem;
-  border: 0;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width-hairline) solid var(--mystery-secondary-border);
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-brand-primary) 10%, white);
-  color: var(--color-brand-primary);
+  background: var(--mystery-secondary-bg);
+  color: var(--mystery-secondary-text);
   font: inherit;
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
+  transition: background var(--transition-fast);
 }
 
-.student-mystery__dialogList {
+.mysteryDialogClose:hover {
+  background: var(--mystery-secondary-hover);
+}
+
+.mysteryDialogList {
   display: grid;
   gap: var(--space-3);
   list-style: none;
@@ -671,16 +848,16 @@ function sendMysterySubmission() {
   margin: 0;
 }
 
-.student-mystery__dialogCard {
+.mysteryDialogCard {
   display: grid;
   gap: var(--space-2);
-  padding: 1rem;
-  border: 1px solid color-mix(in srgb, var(--color-brand-primary) 12%, var(--color-border-default));
+  padding: var(--space-4);
+  border: var(--border-width-hairline) solid var(--mystery-card-border);
   border-radius: var(--radius-2);
-  background: color-mix(in srgb, var(--color-bg-surface) 82%, var(--color-semantic-info) 18%);
+  background: var(--mystery-card-bg-top);
 }
 
-.student-mystery__dialogCardHeader {
+.dialogCardHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -688,63 +865,8 @@ function sendMysterySubmission() {
   flex-wrap: wrap;
 }
 
-.student-mystery__dialogCardHeader h3 {
+.dialogCardHeader h3 {
   max-width: 22ch;
 }
 
-@media (max-width: 560px) {
-  .student-mystery {
-    padding: 0.75rem;
-    border-radius: 1rem;
-  }
-
-  .student-mystery__content {
-    gap: var(--space-4);
-  }
-
-  .student-mystery__titleRow {
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .student-mystery__dialog {
-    padding: 0.75rem;
-  }
-
-  .student-mystery__dialogHeader,
-  .student-mystery__dialogCardHeader {
-    flex-direction: column;
-  }
-
-  .student-mystery__dialogClose {
-    width: 100%;
-  }
-
-  .student-mystery__header,
-  .student-mystery__section--feature {
-    padding: 0;
-  }
-
-  .student-mystery__section {
-    padding: var(--space-4) 0;
-  }
-
-  .student-mystery__uploadControl {
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .student-mystery__uploadPreview {
-    max-width: 10rem;
-    max-height: 10rem;
-  }
-
-  .student-mystery__formFooter {
-    align-items: stretch;
-  }
-
-  .student-mystery__submit {
-    width: 100%;
-  }
-}
 </style>

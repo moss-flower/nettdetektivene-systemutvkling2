@@ -15,21 +15,75 @@ const password = ref(props.task.startingPassword ?? '')
 const minimumLength = computed(() => props.task.minLength ?? 10)
 const commonPatterns = computed(() => (props.task.commonPatterns ?? []).map((pattern) => pattern.toLowerCase()))
 const normalizedPassword = computed(() => password.value.trim())
-const loweredPassword = computed(() => normalizedPassword.value.toLowerCase())
+const startingPassword = computed(() => props.task.startingPassword ?? '')
+const requiresStartingPassword = computed(() => props.task.mode === 'improve' && startingPassword.value.length > 0)
+const startingPasswordIndex = computed(() => {
+  if (!requiresStartingPassword.value) {
+    return -1
+  }
+
+  return normalizedPassword.value.indexOf(startingPassword.value)
+})
+const includesStartingPassword = computed(() => !requiresStartingPassword.value || startingPasswordIndex.value >= 0)
+const addedCharacters = computed(() => {
+  if (!requiresStartingPassword.value) {
+    return normalizedPassword.value
+  }
+
+  if (startingPasswordIndex.value < 0) {
+    return ''
+  }
+
+  const start = startingPasswordIndex.value
+  const end = start + startingPassword.value.length
+  return `${normalizedPassword.value.slice(0, start)}${normalizedPassword.value.slice(end)}`
+})
+const loweredStrengthSubject = computed(() => addedCharacters.value.toLowerCase())
 const hasUppercase = computed(() => /[A-Z]/.test(normalizedPassword.value))
 const hasLowercase = computed(() => /[a-z]/.test(normalizedPassword.value))
 const hasDigit = computed(() => /\d/.test(normalizedPassword.value))
 const hasSymbol = computed(() => /[^A-Za-z0-9]/.test(normalizedPassword.value))
+const addedHasUppercase = computed(() => /[A-Z]/.test(addedCharacters.value))
+const addedHasLowercase = computed(() => /[a-z]/.test(addedCharacters.value))
+const addedHasDigit = computed(() => /\d/.test(addedCharacters.value))
+const addedHasSymbol = computed(() => /[^A-Za-z0-9]/.test(addedCharacters.value))
 
 const checks = computed(() => {
-  const containsCommonPattern = commonPatterns.value.some((pattern) => pattern.length > 0 && loweredPassword.value.includes(pattern))
-  const containsBirthYear = /(?:^|\D)(?:19\d{2}|20(?:0\d|1\d|2\d))(?!\d)/.test(normalizedPassword.value)
-  const containsRepeatingPattern = /(.{2,})\1+/.test(loweredPassword.value) || /(.)\1{2,}/.test(loweredPassword.value)
-  const startingPassword = props.task.startingPassword ?? ''
-  const requiresStartingPassword = startingPassword.length > 0
-  const includesStartingPassword = !requiresStartingPassword || normalizedPassword.value.includes(startingPassword)
-  const changedFromStart = !requiresStartingPassword || normalizedPassword.value !== startingPassword
+  const containsCommonPattern = commonPatterns.value.some((pattern) => pattern.length > 0 && loweredStrengthSubject.value.includes(pattern))
+  const containsBirthYear = /(?:^|\D)(?:19\d{2}|20(?:0\d|1\d|2\d))(?!\d)/.test(addedCharacters.value)
+  const containsRepeatingPattern = /(.{2,})\1+/.test(loweredStrengthSubject.value) || /(.)\1{2,}/.test(loweredStrengthSubject.value)
+  const changedFromStart = !requiresStartingPassword.value || normalizedPassword.value !== startingPassword.value
   const hasMixedCharacters = [hasUppercase.value, hasLowercase.value, hasDigit.value, hasSymbol.value].filter(Boolean).length >= 3
+  const improveModeChecks = requiresStartingPassword.value
+    ? [
+        {
+          id: 'added-uppercase',
+          label: 'Legg til minst en stor bokstav',
+          passed: addedHasUppercase.value,
+        },
+        {
+          id: 'added-lowercase',
+          label: 'Legg til minst en liten bokstav',
+          passed: addedHasLowercase.value,
+        },
+        {
+          id: 'added-digit',
+          label: 'Legg til minst ett tall',
+          passed: addedHasDigit.value,
+        },
+        {
+          id: 'added-symbol',
+          label: 'Legg til minst ett symbol',
+          passed: addedHasSymbol.value,
+        },
+      ]
+    : [
+        {
+          id: 'mix',
+          label: 'Bland bokstaver, tall eller symbol',
+          passed: hasMixedCharacters,
+        },
+      ]
 
   return [
     {
@@ -37,37 +91,39 @@ const checks = computed(() => {
       label: `Minst ${minimumLength.value} tegn`,
       passed: normalizedPassword.value.length >= minimumLength.value,
     },
-    {
-      id: 'mix',
-      label: 'Bland bokstaver, tall eller symbol',
-      passed: hasMixedCharacters,
-    },
+    ...improveModeChecks,
     {
       id: 'birth-year',
-      label: 'Unnga fodselsar og andre lette arstall',
+      label: requiresStartingPassword.value
+        ? 'Ikke legg til fodselsar eller andre lette arstall'
+        : 'Unnga fodselsar og andre lette arstall',
       passed: !containsBirthYear,
     },
     {
       id: 'common',
-      label: 'Unnga vanlige monster som 123 eller qwerty',
+      label: requiresStartingPassword.value
+        ? 'Ikke legg til vanlige monster som 123 eller qwerty'
+        : 'Unnga vanlige monster som 123 eller qwerty',
       passed: !containsCommonPattern,
     },
     {
       id: 'repeating',
-      label: 'Unnga gjentakende monster som abab eller 1111',
+      label: requiresStartingPassword.value
+        ? 'Ikke legg til gjentakende monster som abab eller 1111'
+        : 'Unnga gjentakende monster som abab eller 1111',
       passed: !containsRepeatingPattern,
     },
     {
       id: 'includes-start',
       label: 'Behold startpassordet som en del av det nye passordet',
-      passed: includesStartingPassword,
-      required: requiresStartingPassword,
+      passed: includesStartingPassword.value,
+      required: requiresStartingPassword.value,
     },
     {
       id: 'changed',
       label: 'Gjor passordet annerledes enn det svake du startet med',
       passed: changedFromStart,
-      required: requiresStartingPassword,
+      required: requiresStartingPassword.value,
     },
   ].filter((check) => check.required !== false)
 })
@@ -94,39 +150,39 @@ const submit = () => {
 </script>
 
 <template>
-  <section class="password-strength-template">
-    <header v-if="props.task.prompt?.title || props.task.prompt?.text" class="password-strength-template__header">
-      <h2 v-if="props.task.prompt?.title" class="password-strength-template__title">
+  <section class="passwordStrengthTemplate">
+    <header v-if="props.task.prompt?.title || props.task.prompt?.text" class="strengthTemplateHeader">
+      <h2 v-if="props.task.prompt?.title" class="strengthTemplateTitle">
         {{ props.task.prompt.title }}
       </h2>
-      <p v-if="props.task.prompt?.text" class="password-strength-template__text">
+      <p v-if="props.task.prompt?.text" class="strengthTemplateText">
         {{ props.task.prompt.text }}
       </p>
     </header>
 
-    <div class="password-strength-template__panel">
-      <p v-if="props.task.mode === 'improve' && props.task.startingPassword" class="password-strength-template__starting-password">
+    <div class="strengthTemplatePanel">
+      <p v-if="props.task.mode === 'improve' && props.task.startingPassword" class="templateStartingPassword">
         Startpassord: <strong>{{ props.task.startingPassword }}</strong>
       </p>
 
-      <label class="password-strength-template__field">
+      <label class="strengthTemplateField">
         <span>{{ props.task.mode === 'improve' ? 'Skriv et tryggere passord' : 'Skriv et nytt passord' }}</span>
         <input
           v-model="password"
-          class="password-strength-template__input"
+          class="strengthTemplateInput"
           type="text"
           :placeholder="props.task.placeholder ?? 'Skriv passordet ditt her'"
           :disabled="props.disabled"
         >
       </label>
 
-      <p v-if="props.task.prompt?.helperText" class="password-strength-template__helper">
+      <p v-if="props.task.prompt?.helperText" class="strengthTemplateHelper">
         {{ props.task.prompt.helperText }}
       </p>
 
-      <div class="password-strength-template__actions">
+      <div class="strengthTemplateActions">
         <button
-          class="password-strength-template__submit"
+          class="strengthTemplateSubmit"
           type="button"
           :disabled="props.disabled || normalizedPassword.length === 0"
           @click="submit"
@@ -139,106 +195,97 @@ const submit = () => {
 </template>
 
 <style scoped>
-.password-strength-template {
+.passwordStrengthTemplate {
   display: grid;
-  gap: 1rem;
-  color: #1f2937;
+  gap: var(--space-4);
+  color: var(--palette-gray-900);
 }
 
-.password-strength-template__header {
+.strengthTemplateHeader {
   display: grid;
   gap: 0.45rem;
 }
 
-.password-strength-template__title {
+.strengthTemplateTitle {
   font-size: clamp(1.35rem, 2.4vw, 2rem);
   line-height: 1.1;
-  color: #172033;
+  color: var(--color-text-primary);
 }
 
-.password-strength-template__text {
+.strengthTemplateText {
   max-width: 58rem;
   line-height: 1.5;
-  color: #4b5563;
+  color: var(--color-text-secondary);
 }
 
-.password-strength-template__panel {
+.strengthTemplatePanel {
   display: grid;
-  gap: 1rem;
-  padding: clamp(1rem, 2vw, 1.5rem);
+  gap: var(--space-4);
+  padding: clamp(var(--space-4), 2vw, var(--space-6));
   border-radius: 1.6rem;
-  border: 2px solid #d7dfeb;
-  background: linear-gradient(180deg, #fffdfa 0%, #f8fbff 100%);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  background: linear-gradient(180deg, var(--color-bg-surface) 0%, var(--palette-white) 100%);
   box-shadow: 0 14px 26px rgba(52, 77, 115, 0.08);
 }
 
-.password-strength-template__starting-password,
-.password-strength-template__helper {
+.templateStartingPassword,
+.strengthTemplateHelper {
   margin: 0;
 }
 
-.password-strength-template__starting-password {
-  padding: 0.85rem 1rem;
-  border-radius: 1rem;
-  background: #fff5df;
-  color: #744210;
+.templateStartingPassword {
+  padding: 0.85rem var(--space-4);
+  border-radius: var(--radius-2);
+  background: var(--palette-cream-200);
+  color: var(--palette-cork-700);
 }
 
-.password-strength-template__field {
+.strengthTemplateField {
   display: grid;
   gap: 0.45rem;
 }
 
-.password-strength-template__field span {
+.strengthTemplateField span {
   font-weight: 700;
 }
 
-.password-strength-template__input {
+.strengthTemplateInput {
   width: 100%;
-  padding: 1rem 1.1rem;
-  border: 2px solid #cfd9e6;
-  border-radius: 1rem;
-  background: #fff;
-  color: #172033;
+  padding: var(--space-4) 1.1rem;
+  border: var(--border-width-thin) solid var(--color-border-default);
+  border-radius: var(--radius-2);
+  background: var(--palette-white);
+  color: var(--color-text-primary);
   font: inherit;
 }
 
-.password-strength-template__input:focus {
+.strengthTemplateInput:focus {
   outline: none;
   border-color: #4c7bb0;
 }
 
-.password-strength-template__helper {
-  color: #576273;
+.strengthTemplateHelper {
+  color: var(--color-text-secondary);
 }
 
-.password-strength-template__actions {
+.strengthTemplateActions {
   display: flex;
   justify-content: flex-end;
 }
 
-.password-strength-template__submit {
+.strengthTemplateSubmit {
   padding: 0.9rem 1.15rem;
   border: 0;
-  border-radius: 999px;
-  background: #1f3657;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-primary);
   color: #f9fbff;
   font-weight: 700;
 }
 
-.password-strength-template__submit:disabled,
-.password-strength-template__input:disabled {
+.strengthTemplateSubmit:disabled,
+.strengthTemplateInput:disabled {
   cursor: default;
   opacity: 0.72;
 }
 
-@media (max-width: 760px) {
-  .password-strength-template__actions {
-    flex-direction: column;
-  }
-
-  .password-strength-template__submit {
-    width: 100%;
-  }
-}
 </style>

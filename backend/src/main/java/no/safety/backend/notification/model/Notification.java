@@ -1,8 +1,6 @@
 package no.safety.backend.notification.model;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -11,7 +9,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -22,6 +19,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import no.safety.backend.user.model.User;
 
+/**
+ * Represents a notification in the system.
+ * Contains message, priority, sender information, and target user.
+ * Notifications are created when events are triggered and sent to users via SSE.
+ */
 @Entity
 @Table(name = "notifications")
 @Getter
@@ -46,10 +48,19 @@ public class Notification {
     @Column
     private UUID publicId;
 
+    @Column
+    private String senderName;
+
+    @Column
+    private UUID senderId;
+
     @ManyToOne
     @JoinColumn(name = "target_id", nullable = false)
     private User target;
 
+    /**
+     * Sets creation timestamp and generates a public UUID before persisting.
+     */
     @PrePersist
     protected void onCreate(){
         this.createdAt = LocalDateTime.now();

@@ -18,7 +18,8 @@ import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.model.TeacherUser;
 
 /**
- * Registration controller that defines user registration API endpoints.
+ * REST controller for user registration endpoints.
+ * Provides endpoints for registering new student and teacher accounts.
  */
 @RestController
 @RequestMapping("/api/v1/register")
@@ -27,9 +28,10 @@ public class UserRegistrationController {
     private final UserRegistrationService userRegistrationService;
 
     /**
-     * API endpoint for student user registration.
-     * @param request
-     * @return
+     * Registers a new student user account.
+     *
+     * @param request the student registration request containing username, email, and password
+     * @return a response containing the created student user details and success message
      */
     @PostMapping(value = "/student")
     public ResponseEntity<StudentUserRegistrationResponse> RegisterStudentUser(@Valid @RequestBody StudentUserRegistrationRequest request){
@@ -43,9 +45,10 @@ public class UserRegistrationController {
     }
 
     /**
-     * API endpoint for teacher user registration.
-     * @param request
-     * @return
+     * Registers a new teacher user account.
+     *
+     * @param request the teacher registration request containing username, email, and password
+     * @return a response containing the created teacher user details and success message
      */
     @PostMapping(value = "/teacher")
     public ResponseEntity<TeacherUserRegistrationResponse> RegisterTeacherUser(@Valid @RequestBody TeacherUserRegistrationRequest request){

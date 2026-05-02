@@ -1,30 +1,49 @@
 <script setup lang="ts">
+import EmailHotspotsTemplate from '~/components/gameplay/templates/EmailHotspotsTemplate.vue'
 import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoiceTemplate.vue'
+import PasswordStrengthTemplate from '~/components/gameplay/templates/PasswordStrengthTemplate.vue'
+import SortIntoBucketsTemplate from '~/components/gameplay/templates/SortIntoBucketsTemplate.vue'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
 import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDialog.vue'
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
 import { useStudentMysteryPlay } from '~/composables/useStudentMysteryPlay'
 import { routePaths } from '~/composables/utils/routePaths'
 
-import type {
-  MultipleChoiceOptionKey,
-  MultipleChoiceResult,
-  XOrYChoice,
-  XOrYResult,
-} from '~/composables/types/TaskTypes'
-
 definePageMeta({
   layout: 'game',
 })
 
-const { mysteryPlaySession } = useStudentMysteryPlay()
-const { celebrateCorrectAnswer, stop } = useGameConfetti()
+import type {
+  EmailHotspotResult,
+  MultipleChoiceOptionKey,
+  MultipleChoiceResult,
+  PasswordStrengthResult,
+  SortIntoBucketsResult,
+  XOrYChoice,
+  XOrYResult,
+} from '~/composables/types/TaskTypes'
+
+const { loadMysteryPlaySession } = useStudentMysteryPlay()
+const mysteryPlaySession = await loadMysteryPlaySession()
+
+if (!mysteryPlaySession) {
+  throw createError({
+    statusCode: 404,
+    statusMessage: 'Ukens mysterium er ikke klart for spilling ennå.',
+  })
+}
+
+const { celebrateCorrectAnswer, celebrateLevelComplete, stop } = useGameConfetti()
 
 const tasks = mysteryPlaySession.tasks
 const currentIndex = ref(0)
 const correctCount = ref(0)
 const showMysteryResultDialog = ref(false)
-const answerState = ref<{ correct: boolean, choice: string } | null>(null)
+const answerState = ref<{
+  correct: boolean
+  choice: string
+  missingStartingPassword?: boolean
+} | null>(null)
 
 const currentTask = computed(() => tasks[currentIndex.value] ?? null)
 const currentOptions = computed(() => {
@@ -36,6 +55,7 @@ const currentOptions = computed(() => {
 })
 
 const progressLabel = computed(() => `Ledetråd ${currentIndex.value + 1} av ${tasks.length}`)
+const isMysteryComplete = computed(() => tasks.length > 0 && correctCount.value === tasks.length)
 
 const selectedChoice = computed<XOrYChoice | null>(() => {
   if (answerState.value?.choice === 'x') {
@@ -76,6 +96,8 @@ const feedbackText = computed(() => {
 
   return answerState.value.correct
     ? currentTask.value.feedbackCorrect
+    : currentTask.value.templateKind === 'password-strength' && answerState.value.missingStartingPassword
+      ? 'Det nye passordet må inneholde startpassordet som en del av svaret ditt.'
     : currentTask.value.feedbackIncorrect
 })
 
@@ -109,6 +131,43 @@ function onAnsweredMultipleChoice(result: MultipleChoiceResult) {
   }
 }
 
+function onAnsweredEmailHotspots(result: EmailHotspotResult) {
+  answerState.value = {
+    correct: result.correct,
+    choice: result.selectedTargetIds.join(','),
+  }
+
+  if (result.correct) {
+    correctCount.value += 1
+    celebrateCorrectAnswer()
+  }
+}
+
+function onAnsweredSortIntoBuckets(result: SortIntoBucketsResult) {
+  answerState.value = {
+    correct: result.correct,
+    choice: Object.values(result.placements).flat().join(','),
+  }
+
+  if (result.correct) {
+    correctCount.value += 1
+    celebrateCorrectAnswer()
+  }
+}
+
+function onAnsweredPasswordStrength(result: PasswordStrengthResult) {
+  answerState.value = {
+    correct: result.correct,
+    choice: result.password,
+    missingStartingPassword: result.missingStartingPassword,
+  }
+
+  if (result.correct) {
+    correctCount.value += 1
+    celebrateCorrectAnswer()
+  }
+}
+
 function next() {
   stop()
   answerState.value = null
@@ -118,27 +177,31 @@ function next() {
     return
   }
 
+  if (isMysteryComplete.value) {
+    celebrateLevelComplete()
+  }
+
   showMysteryResultDialog.value = true
 }
 </script>
 
 <template>
-  <section class="mystery-play-page">
-    <header class="mystery-play-page__hero">
-      <NuxtLink class="mystery-play-page__back" :to="routePaths.studentMystery">
+  <section class="mysteryPlayPage">
+    <header class="playPageHero">
+      <NuxtLink class="playPageBack" :to="routePaths.studentMystery">
         Tilbake til mysteriet
       </NuxtLink>
 
-      <div class="mystery-play-page__meta">
-        <p class="mystery-play-page__eyebrow">{{ mysteryPlaySession.weekLabel }}</p>
-        <p class="mystery-play-page__progress">{{ progressLabel }}</p>
+      <div class="playPageMeta">
+        <p class="playPageEyebrow">{{ mysteryPlaySession.weekLabel }}</p>
+        <p class="playPageProgress">{{ progressLabel }}</p>
       </div>
 
       <h1>{{ mysteryPlaySession.title }}</h1>
-      <p class="mystery-play-page__summary">{{ mysteryPlaySession.summary }}</p>
+      <p class="playPageSummary">{{ mysteryPlaySession.summary }}</p>
     </header>
 
-    <div class="mystery-play-page__board">
+    <div class="playPageBoard">
       <XOrYTemplate
         v-if="currentTask?.templateKind === 'x-or-y' && currentOptions"
         :key="`${currentTask.id}-xory`"
@@ -159,6 +222,35 @@ function next() {
         :disabled="Boolean(answerState)"
         :selected-choice="selectedMultipleChoiceOption"
         @answered="onAnsweredMultipleChoice"
+      />
+
+      <EmailHotspotsTemplate
+        v-else-if="currentTask?.templateKind === 'email-hotspots'"
+        :key="`${currentTask.id}-email-hotspots`"
+        :prompt="currentTask.prompt"
+        :email="currentTask.email"
+        :targets="currentTask.targets"
+        :disabled="Boolean(answerState)"
+        @answered="onAnsweredEmailHotspots"
+      />
+
+      <SortIntoBucketsTemplate
+        v-else-if="currentTask?.templateKind === 'sort-into-buckets'"
+        :key="`${currentTask.id}-sort-into-buckets`"
+        :prompt="currentTask.prompt"
+        :items="currentTask.items"
+        :buckets="currentTask.buckets"
+        :unplaced-label="currentTask.unplacedLabel"
+        :disabled="Boolean(answerState)"
+        @answered="onAnsweredSortIntoBuckets"
+      />
+
+      <PasswordStrengthTemplate
+        v-else-if="currentTask?.templateKind === 'password-strength'"
+        :key="`${currentTask.id}-password-strength`"
+        :task="currentTask"
+        :disabled="Boolean(answerState)"
+        @answered="onAnsweredPasswordStrength"
       />
     </div>
 
@@ -183,36 +275,36 @@ function next() {
 </template>
 
 <style scoped>
-.mystery-play-page {
+.mysteryPlayPage {
   max-width: 72rem;
   margin: 0 auto;
   display: grid;
-  gap: 1rem;
+  gap: var(--space-4);
   color: #111827;
 }
 
-.mystery-play-page__hero {
+.playPageHero {
   display: grid;
   gap: 0.85rem;
 }
 
-.mystery-play-page__back {
+.playPageBack {
   width: fit-content;
   color: var(--color-brand-primary);
   font-weight: var(--font-weight-semibold);
   text-decoration: none;
 }
 
-.mystery-play-page__meta {
+.playPageMeta {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--space-4);
   flex-wrap: wrap;
 }
 
-.mystery-play-page__eyebrow,
-.mystery-play-page__progress {
+.playPageEyebrow,
+.playPageProgress {
   margin: 0;
   font-size: 0.9rem;
   font-weight: 700;
@@ -220,22 +312,22 @@ function next() {
   text-transform: uppercase;
 }
 
-.mystery-play-page__eyebrow {
+.playPageEyebrow {
   color: #6f4c2f;
 }
 
-.mystery-play-page__progress {
+.playPageProgress {
   color: var(--color-brand-primary);
 }
 
-.mystery-play-page h1 {
+.mysteryPlayPage h1 {
   margin: 0;
   font-size: clamp(1.9rem, 4vw, 3rem);
   line-height: 0.98;
   color: #1b2b4f;
 }
 
-.mystery-play-page__summary {
+.playPageSummary {
   margin: 0;
   max-width: 54ch;
   color: #52607a;
@@ -243,17 +335,8 @@ function next() {
   line-height: 1.45;
 }
 
-.mystery-play-page__board {
+.playPageBoard {
   display: grid;
 }
 
-@media (max-width: 640px) {
-  .mystery-play-page {
-    gap: 0.85rem;
-  }
-
-  .mystery-play-page__summary {
-    font-size: 1rem;
-  }
-}
 </style>

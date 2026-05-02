@@ -7,7 +7,9 @@ import no.safety.backend.achievements.model.AchievementCategory;
 import no.safety.backend.achievements.model.UserAchievement;
 import no.safety.backend.achievements.repository.AchievementRepository;
 import no.safety.backend.achievements.repository.UserAchievementRepository;
+import no.safety.backend.station.model.Station;
 import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.repository.StudentUserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +35,9 @@ class AchievementServiceTest {
   @Mock
   private UserAchievementRepository userAchievementRepository;
 
+  @Mock
+  private StudentUserRepository studentUserRepository;
+
   @InjectMocks
   private AchievementService achievementService;
 
@@ -51,7 +56,6 @@ class AchievementServiceTest {
     stopAchievement.setDescription("Fullførte Passordbanken.");
     stopAchievement.setCategory(AchievementCategory.STOP);
     stopAchievement.setSource("Passordbanken");
-    stopAchievement.setImageUrl("/images/medals/password-bank.png");
     stopAchievement.setReward(null);
 
     specialAchievement = new Achievement();
@@ -61,7 +65,6 @@ class AchievementServiceTest {
     specialAchievement.setDescription("Beseiret hovedbossen i Datasenteret.");
     specialAchievement.setCategory(AchievementCategory.SPECIAL);
     specialAchievement.setSource("Datasenteret");
-    specialAchievement.setImageUrl("/images/medals/final-boss.png");
     specialAchievement.setReward("Spesialmedalje");
   }
 
@@ -145,7 +148,6 @@ class AchievementServiceTest {
     request.setDescription("Beskrivelse");
     request.setCategory(AchievementCategory.STOP);
     request.setSource("Testverden");
-    request.setImageUrl("/images/test.png");
     request.setReward("Test reward");
 
     Achievement savedAchievement = new Achievement();
@@ -155,7 +157,6 @@ class AchievementServiceTest {
     savedAchievement.setDescription(request.getDescription());
     savedAchievement.setCategory(request.getCategory());
     savedAchievement.setSource(request.getSource());
-    savedAchievement.setImageUrl(request.getImageUrl());
     savedAchievement.setReward(request.getReward());
 
     when(achievementRepository.save(any(Achievement.class))).thenReturn(savedAchievement);
@@ -171,7 +172,6 @@ class AchievementServiceTest {
     assertEquals("Beskrivelse", captured.getDescription());
     assertEquals(AchievementCategory.STOP, captured.getCategory());
     assertEquals("Testverden", captured.getSource());
-    assertEquals("/images/test.png", captured.getImageUrl());
     assertEquals("Test reward", captured.getReward());
 
     assertEquals(savedAchievement.getUUID(), result.getUUID());
@@ -188,7 +188,6 @@ class AchievementServiceTest {
     request.setDescription("Oppdatert beskrivelse");
     request.setCategory(AchievementCategory.SPECIAL);
     request.setSource("Oppdatert kilde");
-    request.setImageUrl("/images/updated.png");
     request.setReward("Ny reward");
 
     when(achievementRepository.findByUUID(uuid)).thenReturn(Optional.of(stopAchievement));
@@ -200,7 +199,6 @@ class AchievementServiceTest {
     assertEquals("Oppdatert beskrivelse", stopAchievement.getDescription());
     assertEquals(AchievementCategory.SPECIAL, stopAchievement.getCategory());
     assertEquals("Oppdatert kilde", stopAchievement.getSource());
-    assertEquals("/images/updated.png", stopAchievement.getImageUrl());
     assertEquals("Ny reward", stopAchievement.getReward());
 
     assertEquals(uuid, result.getUUID());
@@ -259,5 +257,52 @@ class AchievementServiceTest {
 
     verify(achievementRepository).findByUUID(uuid);
     verify(achievementRepository, never()).delete(any());
+  }
+
+  @Test
+  void syncStationAchievement_shouldUpgradeLegacyTitleBasedAchievement() {
+    UUID stationUid = UUID.randomUUID();
+    Station station = new Station();
+    station.setUid(stationUid);
+    station.setTitle("Datasenteret");
+    station.setBoss(true);
+
+    when(achievementRepository.findBySource(stationUid.toString())).thenReturn(Optional.empty());
+    when(achievementRepository.findBySource("Datasenteret")).thenReturn(Optional.of(stopAchievement));
+    when(achievementRepository.save(any(Achievement.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+    Achievement result = achievementService.syncStationAchievement(station, null);
+
+    assertSame(stopAchievement, result);
+    assertEquals("Datasenteret", result.getTitle());
+    assertEquals("Fullførte Datasenteret.", result.getDescription());
+    assertEquals(AchievementCategory.SPECIAL, result.getCategory());
+    assertEquals(stationUid.toString(), result.getSource());
+    assertEquals("Spesialmedalje for å ha slått bossen", result.getReward());
+    verify(achievementRepository).save(stopAchievement);
+  }
+
+  @Test
+  void unlockStationAchievement_shouldCreateAndUnlockMissingAchievement() {
+    UUID stationUid = UUID.randomUUID();
+    Station station = new Station();
+    station.setUid(stationUid);
+    station.setTitle("Bossrommet");
+    station.setBoss(true);
+
+    when(achievementRepository.findBySource(stationUid.toString())).thenReturn(Optional.empty());
+    when(achievementRepository.findBySource("Bossrommet")).thenReturn(Optional.empty());
+    when(achievementRepository.findAllByTitle("Bossrommet")).thenReturn(List.of());
+    when(achievementRepository.save(any(Achievement.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(userAchievementRepository.existsByStudentAndAchievement(eq(student), any(Achievement.class))).thenReturn(false);
+
+    AchievementResponse result = achievementService.unlockStationAchievement(student, station);
+
+    assertTrue(result.isUnlocked());
+    assertEquals("special", result.getCategory());
+    assertEquals(stationUid.toString(), result.getSource());
+    verify(achievementRepository).save(any(Achievement.class));
+    verify(userAchievementRepository).save(any(UserAchievement.class));
+    verify(studentUserRepository).save(student);
   }
 }

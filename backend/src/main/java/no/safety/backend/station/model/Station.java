@@ -40,6 +40,9 @@ public class Station {
   @Column(nullable = false, columnDefinition = "TEXT")
   private String description;
 
+  @Column(columnDefinition = "TEXT")
+  private String hint;
+
   @Column(nullable = false)
   private String image;
 
@@ -54,6 +57,9 @@ public class Station {
   @Column(name = "exercise_uid", columnDefinition = "BINARY(16)")
   @OrderColumn(name = "sort_order")
   private List<UUID> exerciseUids = new ArrayList<>();
+
+  @Column(nullable = false)
+  private boolean isBoss;
 
   @PrePersist
   private void onCreate() {

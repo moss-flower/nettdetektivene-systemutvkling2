@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import draggable from "vuedraggable";
 import { routePaths } from "~/composables/utils/routePaths";
 import {
 	createWorldDraft,
@@ -9,35 +10,56 @@ import {
 	parseWorldFactorySelectionKey,
 	readWorldFactoryStore,
 	saveWorldFactoryPayload,
-	saveWorldFactoryPayloadAsNew,
 	worldFactoryDefaultImage,
 	type WorldFactoryPayload,
 	type WorldFactoryStoredRecord,
 } from "~/composables/useWorldFactory";
-import { Station } from "~/composables/types/StationType";
+
+import type { Station } from "~/composables/types/StationTypes";
+import { useFactoryImageUpload } from "~/composables/useFactoryImageUpload";
+import { useStations } from "~/composables/useStations";
+import type { World } from "~/composables/types/WorldTypes";
+import { useFactorySessionCache } from "~/composables/useFactorySessionCache";
 
 const props = defineProps<{
 	selectionKey: string;
 }>();
 
+const { getAllStations } = useStations();
+const { uploadImage } = useFactoryImageUpload();
+
 const emit = defineEmits<{
 	(event: "selection-updated", selectionKey: string): void;
-	(event: "saved"): void;
+	(event: "saved", payload: { returnTarget?: string | null }): void;
 	(event: "deleted"): void;
 }>();
 
 const draft = reactive<WorldFactoryPayload>(createWorldDraft());
+const route = useRoute();
+const factorySessionCache = useFactorySessionCache();
 const loadedSnapshot = ref<WorldFactoryPayload>(createWorldDraft());
 const storedDrafts = ref<WorldFactoryStoredRecord[]>([]);
 const copyState = ref<"idle" | "copied" | "failed">("idle");
 const loadedLocalId = ref("");
-const showStationPicker = ref(false);
 const availableStations = ref<Station[]>([]);
+const availableWorlds = ref<World[]>([]);
 const knownExistingUids = ref<Set<string>>(new Set());
+const imageUploadState = ref<"idle" | "uploading">("idle");
+const imageUploadError = ref("");
 
 const knownStationMap = computed(() => new Map(availableStations.value.map((station) => [station.uid, station])));
-const unselectedStations = computed(() => availableStations.value.filter((station) => !draft.stationUids.includes(station.uid)));
 const parsedSelection = computed(() => parseWorldFactorySelectionKey(props.selectionKey));
+
+type WorldStationCard = {
+	uid: string;
+	order: number;
+	title: string;
+	image: string;
+	backgroundColor: string;
+	description: string;
+	isKnown: boolean;
+	usageTags: string[];
+};
 
 const payloadPreview = computed<WorldFactoryPayload>(() => ({
 	title: draft.title.trim(),
@@ -72,7 +94,21 @@ const canSave = computed(() => payloadPreview.value.title.length > 0
 	&& payloadPreview.value.image.length > 0);
 const hasChanges = computed(() => JSON.stringify(payloadPreview.value) !== JSON.stringify(loadedSnapshot.value));
 
-const selectedStations = computed(() => payloadPreview.value.stationUids.map((uid, index) => {
+const stationUsageTags = computed(() => {
+	const tagsByStationUid = new Map<string, string[]>();
+
+	for (const world of availableWorlds.value) {
+		for (const stationUid of world.stationUids) {
+			const tags = tagsByStationUid.get(stationUid) ?? [];
+			tags.push(world.title || world.uid);
+			tagsByStationUid.set(stationUid, tags);
+		}
+	}
+
+	return tagsByStationUid;
+});
+
+const selectedStations = computed<WorldStationCard[]>(() => payloadPreview.value.stationUids.map((uid, index) => {
 	const station = knownStationMap.value.get(uid);
 
 	return {
@@ -83,31 +119,59 @@ const selectedStations = computed(() => payloadPreview.value.stationUids.map((ui
 		backgroundColor: station?.backgroundColor ?? "rgba(255, 255, 255, 0.04)",
 		description: station?.description ?? "Denne stasjonen finnes ikke i oversikten akkurat na.",
 		isKnown: Boolean(station),
+		usageTags: stationUsageTags.value.get(uid) ?? [],
 	};
 }));
 
+const selectedStationCards = computed<WorldStationCard[]>({
+	get: () => selectedStations.value,
+	set: (stations) => {
+		const nextStationUids = stations
+			.map((station) => station.uid)
+			.filter((uid, index, uids) => uid && uids.indexOf(uid) === index);
+
+		draft.stationUids.splice(0, draft.stationUids.length, ...nextStationUids);
+	},
+});
+
+const availableStationCards = computed<WorldStationCard[]>({
+	get: () => availableStations.value
+		.filter((station) => !draft.stationUids.includes(station.uid))
+		.map((station) => ({
+			uid: station.uid,
+			order: 0,
+			title: station.title,
+			image: station.image,
+			backgroundColor: station.backgroundColor,
+			description: station.description,
+			isKnown: true,
+			usageTags: stationUsageTags.value.get(station.uid) ?? [],
+		})),
+	set: () => {},
+});
+
 const editorTitle = computed(() => {
 	if (parsedSelection.value.kind === "existing") {
-		return `Rediger verden: ${payloadPreview.value.title || payloadPreview.value.uid || "Uten tittel"}`;
+		return `Rediger stasjonskart: ${payloadPreview.value.title || payloadPreview.value.uid || "Uten tittel"}`;
 	}
 
 	if (parsedSelection.value.kind === "draft") {
-		return payloadPreview.value.title ? `Lokal verden: ${payloadPreview.value.title}` : "Ny lokal verden";
+		return payloadPreview.value.title ? `Utkast til stasjonskart: ${payloadPreview.value.title}` : "Nytt utkast til stasjonskart";
 	}
 
-	return "Ny verden";
+	return "Nytt stasjonskart";
 });
 
 const editorDescription = computed(() => {
 	if (parsedSelection.value.kind === "existing") {
-		return "Du redigerer en eksisterende verden. Lokal lagring fungerer som en override over mock-dataen til backend finnes.";
+		return "Du redigerer et eksisterende stasjonskart.";
 	}
 
 	if (parsedSelection.value.kind === "draft") {
-		return "Dette er en lokal verden uten backend-kobling. Den kan senere velges når klasserom-oppretting får valg av verden.";
+		return "Dette er et utkast som du kan fortsette å redigere senere.";
 	}
 
-	return "Opprett en ny verden lokalt. Den kan lagres uten stasjoner, så lenge den har en unik id.";
+	return "Opprett et nytt stasjonskart og legg til innhold når du er klar.";
 });
 
 const applyDraft = (payload: WorldFactoryPayload) => {
@@ -131,73 +195,37 @@ const updateLoadedSnapshot = (payload: WorldFactoryPayload) => {
 const loadSelection = async (selectionKey: string) => {
 	const loaded = await loadWorldFactoryPayload(selectionKey);
 	const store = readWorldFactoryStore();
+	const cachedPayload = factorySessionCache.getDraft("world", selectionKey);
 
 	storedDrafts.value = store.drafts;
 	loadedLocalId.value = loaded.localId;
-	applyDraft(loaded.payload);
 	updateLoadedSnapshot(loaded.payload);
+	applyDraft(cachedPayload ?? loaded.payload);
 	copyState.value = "idle";
 };
 
-const addStationUid = (uidValue: string) => {
-	const nextUid = uidValue.trim();
-
-	if (!nextUid || draft.stationUids.includes(nextUid)) {
-		return;
-	}
-
-	draft.stationUids.push(nextUid);
-	showStationPicker.value = false;
-};
-
-const removeStationUid = (uidToRemove: string) => {
-	const nextStationUids = draft.stationUids.filter((uid) => uid !== uidToRemove);
-	draft.stationUids.splice(0, draft.stationUids.length, ...nextStationUids);
-};
-
-const moveStation = (index: number, direction: -1 | 1) => {
-	const targetIndex = index + direction;
-
-	if (targetIndex < 0 || targetIndex >= draft.stationUids.length) {
-		return;
-	}
-
-	const nextStationUids = [...draft.stationUids];
-	const [movedUid] = nextStationUids.splice(index, 1);
-
-	if (movedUid === undefined) {
-		return;
-	}
-
-	nextStationUids.splice(targetIndex, 0, movedUid);
-	draft.stationUids.splice(0, draft.stationUids.length, ...nextStationUids);
-};
+const cloneStationCard = (station: WorldStationCard): WorldStationCard => ({ ...station });
 
 const resetDraft = () => {
 	applyDraft(loadedSnapshot.value);
 	copyState.value = "idle";
-	showStationPicker.value = false;
 };
 
 const goToStationFactory = () => {
-	void navigateTo(routePaths.teacherFactoryStation);
+	factorySessionCache.setDraft("world", props.selectionKey, payloadPreview.value);
+	factorySessionCache.pushReturnTarget(route.fullPath);
+	void navigateTo(`${routePaths.teacherFactoryStation}?returnTo=${encodeURIComponent(route.fullPath)}`);
 };
 
 const editStation = (uid: string) => {
-	void navigateTo(`${routePaths.teacherFactoryStation}?uid=${uid}`);
-};
-
-const openStationPicker = () => {
-	showStationPicker.value = true;
-};
-
-const closeStationPicker = () => {
-	showStationPicker.value = false;
+	factorySessionCache.setDraft("world", props.selectionKey, payloadPreview.value);
+	factorySessionCache.pushReturnTarget(route.fullPath);
+	void navigateTo(`${routePaths.teacherFactoryStation}?uid=${uid}&returnTo=${encodeURIComponent(route.fullPath)}`);
 };
 
 const finishSave = (selectionKey: string) => {
 	emit("selection-updated", selectionKey);
-	emit("saved");
+	emit("saved", { returnTarget: null });
 };
 
 const savePayload = async () => {
@@ -209,24 +237,28 @@ const savePayload = async () => {
 
 	storedDrafts.value = readWorldFactoryStore().drafts;
 	loadedLocalId.value = "";
+	factorySessionCache.moveDraft("world", props.selectionKey, saved.selectionKey);
 	updateLoadedSnapshot(saved.payload);
-	finishSave(saved.selectionKey);
-};
+	const returnTo = typeof route.query.returnTo === "string" ? route.query.returnTo : "";
+	if (returnTo) {
+		factorySessionCache.popReturnTarget();
+	}
+	const returnTarget = returnTo ? { fullPath: returnTo } : factorySessionCache.popReturnTarget();
 
-const saveAsNew = async () => {
-	if (!canSave.value) {
+	if (returnTarget) {
+		emit("selection-updated", saved.selectionKey);
+		emit("saved", { returnTarget: returnTarget.fullPath });
 		return;
 	}
 
-	const saved = await saveWorldFactoryPayloadAsNew(payloadPreview.value);
-
-	storedDrafts.value = readWorldFactoryStore().drafts;
-	loadedLocalId.value = "";
-	updateLoadedSnapshot(saved.payload);
 	finishSave(saved.selectionKey);
 };
 
 const deleteSelection = async () => {
+	if (!window.confirm("Er du sikker på at du vil slette dette elementet?")) {
+		return;
+	}
+
 	await deleteWorldFactorySelection(props.selectionKey);
 	emit("deleted");
 };
@@ -240,6 +272,30 @@ const copyPayload = async () => {
 	}
 };
 
+const handleImageSelected = async (event: Event) => {
+	const input = event.target as HTMLInputElement | null;
+	const file = input?.files?.[0];
+
+	if (!file) {
+		return;
+	}
+
+	imageUploadState.value = "uploading";
+	imageUploadError.value = "";
+
+	try {
+		const uploaded = await uploadImage(file, "uploads/factory/worlds");
+		draft.image = uploaded.url;
+	} catch (error) {
+		imageUploadError.value = error instanceof Error ? error.message : "Bildet kunne ikke lastes opp.";
+	} finally {
+		imageUploadState.value = "idle";
+		if (input) {
+			input.value = "";
+		}
+	}
+};
+
 watch(
 	() => props.selectionKey,
 	async (selectionKey) => {
@@ -248,16 +304,19 @@ watch(
 	{ immediate: true },
 );
 
-onMounted(async () => {
+	onMounted(async () => {
 	try {
-		availableStations.value = await Station.backendFetchAllStations();
+		availableStations.value = await getAllStations();
 	} catch {
 		availableStations.value = [];
 	}
 
 	try {
-		knownExistingUids.value = new Set((await fetchAllWorldFactoryWorlds()).map((world) => world.uid));
+		const worlds = await fetchAllWorldFactoryWorlds();
+		availableWorlds.value = worlds;
+		knownExistingUids.value = new Set(worlds.map((world) => world.uid));
 	} catch {
+		availableWorlds.value = [];
 		knownExistingUids.value = new Set();
 	}
 
@@ -268,6 +327,8 @@ watch(payloadPreviewText, () => {
 	if (copyState.value !== "idle") {
 		copyState.value = "idle";
 	}
+
+	factorySessionCache.setDraft("world", props.selectionKey, payloadPreview.value);
 });
 </script>
 
@@ -287,14 +348,26 @@ watch(payloadPreviewText, () => {
 					</label>
 
 					<label class="field">
-						<span>Bilde-URL</span>
-						<input v-model="draft.image" type="url" placeholder="https://..." >
+						<span>Bilde</span>
+						<input type="file" accept="image/*" :disabled="imageUploadState === 'uploading'" @change="handleImageSelected" >
+						<small class="fieldHint">
+							{{ imageUploadState === "uploading"
+								? "Laster opp..."
+								: draft.image
+									? "Bilde lastet opp. Forhandsvisning vises under."
+									: "Velg et bilde til stasjonskartet." }}
+						</small>
+						<p v-if="imageUploadError" class="fieldError">{{ imageUploadError }}</p>
 					</label>
 
 					<label class="field field--full">
 						<span>Beskrivelse</span>
-						<textarea v-model="draft.description" rows="3" placeholder="Kort beskrivelse av verdenen." />
+						<textarea v-model="draft.description" rows="3" placeholder="Kort beskrivelse av stasjonskartet." />
 					</label>
+
+					<div class="imagePreviewCard">
+						<img :src="payloadPreview.image" alt="Forhandsvisning av stasjonskartbilde" class="imagePreview" >
+					</div>
 
 				</div>
 			</section>
@@ -302,88 +375,100 @@ watch(payloadPreviewText, () => {
 			<section class="panelSection">
 				<div class="sectionHeading">
 					<h2>Stasjoner</h2>
-					<p>Bygg verdenen som en enkel loype med stasjoner i rekkefolge.</p>
+					<p>Dra stasjoner inn i stasjonskartet. Rekkefølgen her styrer løypa elevene møter.</p>
 				</div>
 
-				<div class="worldPath">
-					<article
-						v-for="(station, index) in selectedStations"
-						:key="station.uid"
-						:class="['stationNode', `stationNode--${index % 2 === 0 ? 'left' : 'right'}`]"
-					>
-						<div class="stationNode__imageShell" :style="{ backgroundColor: station.backgroundColor }">
-							<img :src="station.image" :alt="station.title" class="stationNode__image" >
-						</div>
-						<h3>{{ station.title }}</h3>
-						<p class="cardEyebrow">Stasjon {{ station.order }}</p>
-						<div class="stationNode__actions">
-							<button type="button" class="ghostButton stationNode__moveLeft" :disabled="index === 0" @click="moveStation(index, -1)">
-								<img src="https://placehold.co/80x80/1f2937/e5f3ef?text=%3C" alt="Flytt til venstre" class="stationNode__actionIcon" >
-							</button>
-							<button type="button" class="ghostButton" :disabled="!station.isKnown" @click="editStation(station.uid)">
-								<img src="https://placehold.co/80x80/0f766e/ecfeff?text=E" alt="Rediger stasjon" class="stationNode__actionIcon" >
-							</button>
-							<button type="button" class="deleteButton" @click="removeStationUid(station.uid)">
-								<img src="https://placehold.co/80x80/991b1b/fee2e2?text=X" alt="Slett stasjon" class="stationNode__actionIcon" >
-							</button>
-							<button type="button" class="ghostButton stationNode__moveRight" :disabled="index === selectedStations.length - 1" @click="moveStation(index, 1)">
-								<img src="https://placehold.co/80x80/1f2937/e5f3ef?text=%3E" alt="Flytt til hoyre" class="stationNode__actionIcon" >
-							</button>
-						</div>
-					</article>
-
-					<button
-						type="button"
-						:class="['addStationNode', `addStationNode--${selectedStations.length % 2 === 0 ? 'left' : 'right'}`]"
-						@click="openStationPicker"
-					>
-						<span class="addStationNode__plus">+</span>
-						<span>Legg til stasjon</span>
-					</button>
-				</div>
-
-				<p v-if="selectedStations.length === 0" class="emptyState emptyState--path">
-					Ingen stasjoner er lagt til ennå. Start med pluss-noden.
-				</p>
-
-				<div v-if="showStationPicker" class="stationPickerOverlay" @click.self="closeStationPicker">
-					<section class="stationPicker" role="dialog" aria-modal="true" aria-labelledby="station-picker-title">
-						<div class="sectionHeading sectionHeading--inline sectionHeading--compact">
-							<div>
-								<h3 id="station-picker-title">Velg stasjon</h3>
-								<p>Legg til en eksisterende stasjon i loypa, eller lag en ny.</p>
-							</div>
-							<button type="button" class="ghostButton" @click="closeStationPicker">
-								Lukk
-							</button>
+				<div class="stationColumns">
+					<div class="stationColumn">
+						<div class="sectionHeading sectionHeading--compact">
+							<h3>Stasjoner i stasjonskartet</h3>
 						</div>
 
-						<div class="stationPicker__actions">
+						<draggable
+							v-model="selectedStationCards"
+							class="selectedList"
+							item-key="uid"
+							:group="'world-stations'"
+						>
+							<template #item="{ element: station }">
+								<article class="selectedCard">
+									<span class="orderBadge" :aria-label="`Plass ${station.order}`">{{ station.order }}</span>
+									<span class="dragHandle" aria-hidden="true">Grip</span>
+									<img :src="station.image" :alt="station.title" class="stationCardImage" :style="{ backgroundColor: station.backgroundColor }" >
+									<div class="selectedCardContent">
+										<p class="cardEyebrow">Plass {{ station.order }}</p>
+										<h3>
+											{{ station.title }}
+											<span v-if="knownStationMap.get(station.uid)?.isBoss" class="bossPill" aria-hidden="true">Boss</span>
+										</h3>
+										<span :class="['statusPill', { 'statusPill--manual': !station.isKnown }]">
+											{{ station.isKnown ? "Tilgjengelig" : 'Ikke tilgjengelig' }}
+										</span>
+										<div v-if="station.usageTags.length > 0" class="usageTags" aria-label="Brukt i stasjonskart">
+											<span v-for="tag in station.usageTags" :key="tag" class="usageTag">{{ tag }}</span>
+										</div>
+									</div>
+									<div class="selectedCardActions">
+										<button type="button" class="iconButton" :disabled="!station.isKnown" @click="editStation(station.uid)">
+										<img :src="'/images/placeholders/action-edit.svg'" alt="Rediger stasjon" class="selectedCardActionIcon" >
+										</button>
+									</div>
+								</article>
+							</template>
+
+							<template #footer>
+								<p v-if="selectedStations.length === 0" class="emptyState dropHint">
+									Dra stasjoner hit for å legge dem til i stasjonskartet.
+								</p>
+							</template>
+						</draggable>
+					</div>
+
+					<div class="stationColumn">
+						<div class="sectionHeading sectionHeading--compact sectionHeading--inline">
+							<h3>Tilgjengelige stasjoner</h3>
 							<button type="button" class="ghostButton" @click="goToStationFactory">
 								+ Lag Stasjon
 							</button>
 						</div>
 
-						<div v-if="unselectedStations.length > 0" class="stationPickerList">
-							<button
-								v-for="station in unselectedStations"
-								:key="station.uid"
-								type="button"
-								class="stationPickerCard"
-								@click="addStationUid(station.uid)"
-							>
-								<img :src="station.image" :alt="station.title" class="stationPickerCard__image" >
-								<div>
-									<p class="cardEyebrow">{{ station.uid }}</p>
-									<h3>{{ station.title }}</h3>
-								</div>
-							</button>
-						</div>
+						<draggable
+							v-model="availableStationCards"
+							class="knownStations knownStations--columns"
+							item-key="uid"
+							:group="{ name: 'world-stations', pull: 'clone', put: true }"
+							:sort="false"
+							:clone="cloneStationCard"
+						>
+							<template #item="{ element: station }">
+								<article class="knownStationCard">
+									<span class="dragHandle" aria-hidden="true">Grip</span>
+									<img :src="station.image" :alt="station.title" class="stationCardImage" :style="{ backgroundColor: station.backgroundColor }" >
+									<div class="selectedCardContent">
+										<h3>
+											{{ station.title }}
+											<span v-if="knownStationMap.get(station.uid)?.isBoss" class="bossPill" aria-hidden="true">Skurk</span>
+										</h3>
+										<div v-if="station.usageTags.length > 0" class="usageTags" aria-label="Brukt i stasjonskart">
+					  <p class="small">Brukt i:</p>
+											<span v-for="tag in station.usageTags" :key="tag" class="usageTag">{{ tag }}</span>
+										</div>
+									</div>
+									<div class="selectedCardActions">
+										<button type="button" class="iconButton" :disabled="!station.isKnown" @click="editStation(station.uid)">
+										<img :src="'/images/placeholders/action-edit.svg'" alt="Rediger stasjon" class="selectedCardActionIcon" >
+										</button>
+									</div>
+								</article>
+							</template>
 
-						<p v-else class="emptyState">
-							Alle tilgjengelige stasjoner er allerede lagt til i verdenen.
-						</p>
-					</section>
+							<template #footer>
+								<p v-if="availableStationCards.length === 0" class="emptyState dropHint">
+									Alle tilgjengelige stasjoner er lagt til. Dra hit for å fjerne fra stasjonskartet.
+								</p>
+							</template>
+						</draggable>
+					</div>
 				</div>
 			</section>
 
@@ -398,7 +483,7 @@ watch(payloadPreviewText, () => {
 			<section class="panelSection">
 				<div class="sectionHeading">
 					<h2>Innhold</h2>
-					<p>Her ser du det viktigste i verdenen akkurat nå.</p>
+					<p>Her ser du det viktigste i stasjonskartet akkurat nå.</p>
 				</div>
 
 				<div class="statusStack">
@@ -411,28 +496,24 @@ watch(payloadPreviewText, () => {
 					<article class="summaryCard">
 						<p class="cardEyebrow">Tittel</p>
 						<h3>{{ payloadPreview.title || 'Ingen tittel ennå' }}</h3>
-						<p>{{ payloadPreview.description || 'Legg til en beskrivelse for verdenen.' }}</p>
+						<p>{{ payloadPreview.description || 'Legg til en beskrivelse for stasjonskartet.' }}</p>
 					</article>
 				</div>
 			</section>
 
 			<div class="actionRow actionRow--save">
 				<button
-					v-if="parsedSelection.kind !== 'new'"
+					v-if="parsedSelection.kind === 'existing'"
 					type="button"
 					class="deleteButton"
 					@click="deleteSelection"
 				>
 					Slett
 				</button>
-				<button type="button" class="ghostButton" :disabled="!canSave" @click="saveAsNew">
-					Lagre som ny
-				</button>
 				<button
-					v-if="parsedSelection.kind !== 'new'"
 					type="submit"
 					class="primaryButton"
-					:disabled="!canSave || !hasChanges"
+					:disabled="!canSave || (parsedSelection.kind !== 'new' && !hasChanges)"
 				>
 					Lagre
 				</button>
@@ -440,16 +521,16 @@ watch(payloadPreviewText, () => {
 
 			<section class="panelSection debugSection">
 				<details>
-					<summary class="debugSummary">Debug: payload</summary>
+					<summary class="debugSummary">Dataoversikt</summary>
 					<div class="debugContent">
 						<div class="sectionHeading sectionHeading--inline">
 							<div>
-								<h2>Payload</h2>
-								<p>Dette er objektet du senere kan sende med POST til backend.</p>
+								<h2>JSON-data</h2>
+								<p>Her kan du se dataene som er knyttet til stasjonskartet.</p>
 							</div>
 
 							<button type="button" class="ghostButton" @click="copyPayload">
-								{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier JSON' }}
+								{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier data' }}
 							</button>
 						</div>
 
@@ -463,414 +544,485 @@ watch(payloadPreviewText, () => {
 
 <style scoped>
 .factoryGrid {
-	display: grid;
-	grid-template-columns: 1fr;
-	gap: 1.25rem;
-	align-items: start;
+  --factory-label-font: var(--font-family-mono);
+  --factory-label-size: var(--font-size-12);
+  --factory-label-tracking: var(--font-tracking-wider);
+  --factory-label-color: var(--color-text-primary);
+  --factory-field-bg: var(--color-bg-canvas);
+  --factory-field-border: var(--color-border-default);
+  --factory-field-focus: var(--color-brand-primary);
+  --factory-drop-accept: var(--palette-overlay-green-soft);
+  --factory-drop-reject: var(--palette-overlay-red-soft);
+  --factory-delete-border: var(--color-semantic-error);
+  --factory-delete-bg: var(--palette-overlay-red-soft);
+  --factory-delete-text: var(--color-semantic-error);
+  --factory-tag-blue: var(--palette-ice-200);
+  --factory-tag-gold: var(--palette-gold-400);
+  --factory-tag-pink: var(--palette-red-200);
+  --factory-tag-green: var(--palette-green-100);
+  --factory-payload-bg: var(--color-bg-canvas);
+  --factory-payload-text: var(--color-text-primary);
+  --factory-payload-font: var(--font-family-mono);
+  --factory-station-bg: var(--palette-ice-200);
+
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.bossPill {
+	display: inline-block;
+	margin-left: 0.6rem;
+	padding: 0.15rem 0.5rem;
+	font-size: 0.72rem;
+	font-weight: 700;
+	color: var(--palette-white);
+	background: #b00020;
+	border-radius: 999px;
+	line-height: 1;
 }
 
 .editorPanel,
 .previewPanel {
-	padding: 1.25rem;
-	border: 1px solid var(--border);
-	border-radius: 1.2rem;
-	background:
-		linear-gradient(180deg, rgba(101, 240, 175, 0.08), rgba(101, 240, 175, 0)) top/100% 5rem no-repeat,
-		var(--surface);
-	box-shadow: var(--shadow);
+  padding: var(--space-5);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-3);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-folder);
+}
+
+.previewPanel {
+  border-style: dashed;
 }
 
 .panelSection + .panelSection {
-	margin-top: 1.5rem;
+  margin-top: var(--space-5);
 }
 
 .sectionHeading {
-	display: grid;
-	gap: 0.35rem;
-	margin-bottom: 1rem;
+  display: grid;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
 }
 
 .sectionHeading--compact {
-	margin-bottom: 0.75rem;
+  margin-bottom: var(--space-3);
 }
 
 .sectionHeading--inline {
-	grid-template-columns: 1fr auto;
-	align-items: start;
-	gap: 0.75rem;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: var(--space-3);
 }
 
 .sectionHeading h2,
 .summaryCard h3,
-.stationNode h3,
-.stationPickerCard h3 {
-	margin: 0;
+.knownStationCard h3,
+.selectedCard h3 {
+  margin: 0;
 }
 
 .sectionHeading p,
 .summaryCard p,
-.stationPickerCard p,
+.knownStationCard p,
+.selectedCard p,
 .emptyState {
-	margin: 0;
-	color: var(--muted);
-	line-height: 1.5;
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: var(--font-leading-base);
 }
 
 .statusStack,
-.stationPickerList {
-	display: grid;
-	gap: 0.75rem;
+.knownStations,
+.selectedList {
+  display: grid;
+  gap: var(--space-3);
 }
 
-
-.worldPath {
-	display: grid;
-	gap: 1rem;
-	justify-items: start;
+.stationColumns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: stretch;
 }
 
-.stationNode,
-.addStationNode {
-	width: min(100%, 18rem);
-	display: grid;
-	gap: 0.75rem;
-	padding: 1rem;
-	border: 1px solid var(--border);
-	border-radius: 1.2rem;
-	background: rgba(255, 255, 255, 0.03);
+.stationColumn {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: var(--space-3);
 }
 
-.stationNode--right,
-.addStationNode--right {
-	justify-self: end;
-	margin-right: max(0rem, 12%);
-}
-
-.stationNode--left,
-.addStationNode--left {
-	margin-left: max(0rem, 12%);
-}
-
-.stationNode__imageShell {
-	overflow: hidden;
-	border-radius: 1rem;
-	aspect-ratio: 1 / 1;
-	border: 1px solid var(--border);
-}
-
-.stationNode__image {
-	display: block;
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-}
-
-.stationNode__actions {
-	display: flex;
-	gap: 0.75rem;
-	align-items: center;
-	flex-wrap: nowrap;
-}
-
-.stationNode__actionIcon {
-	display: block;
-	width: 3rem;
-	height: 3rem;
-	border-radius: 0.45rem;
-}
-
-.stationNode__moveLeft {
-	margin-right: auto;
-}
-
-.stationNode__moveRight {
-	margin-left: auto;
-}
-
-.addStationNode {
-	place-items: center;
-	min-height: 13rem;
-	background: rgba(101, 240, 175, 0.06);
-	color: var(--text);
-	text-align: center;
-}
-
-.addStationNode__plus {
-	display: grid;
-	place-items: center;
-	width: 4.5rem;
-	height: 4.5rem;
-	border-radius: 999px;
-	border: 1px dashed var(--primary);
-	color: var(--primary);
-	font-size: 2rem;
-	font-weight: 700;
-}
-
-.emptyState--path {
-	margin-top: 1rem;
-}
-
-.stationPickerOverlay {
-	position: fixed;
-	inset: 0;
-	display: grid;
-	place-items: center;
-	padding: 1.5rem;
-	background: rgba(0, 0, 0, 0.6);
-	z-index: 1000;
-}
-
-.stationPicker {
-	width: min(100%, 52rem);
-	max-height: min(80vh, 46rem);
-	overflow: auto;
-	display: grid;
-	gap: 1rem;
-	padding: 1.5rem;
-	border: 1px solid var(--border);
-	border-radius: 1.2rem;
-	background: var(--surface);
-	box-shadow: var(--shadow);
-}
-
-.stationPicker__actions {
-	display: flex;
-	justify-content: flex-start;
-}
-
-.stationPickerList {
-	grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-}
-
-.stationPickerCard {
-	display: grid;
-	gap: 0.75rem;
-	padding: 0.9rem;
-	border: 1px solid var(--border);
-	border-radius: 1rem;
-	background: rgba(255, 255, 255, 0.03);
-	color: var(--text);
-	text-align: left;
-}
-
-.stationPickerCard__image {
-	display: block;
-	width: 100%;
-	aspect-ratio: 16 / 10;
-	border-radius: 0.9rem;
-	object-fit: cover;
+.stationCardImage {
+  display: block;
+  /* deliberate: fixed thumbnail size */
+  width: 4rem;
+  height: 4rem;
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-1);
+  object-fit: cover;
 }
 
 .fieldGrid {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 0.9rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.fieldHint {
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
+.fieldError {
+	margin: 0;
+	color: #fca5a5;
+	font-size: 0.9rem;
 }
 
 .field {
-	display: grid;
-	gap: 0.45rem;
+  display: grid;
+  gap: var(--space-1);
 }
 
 .field--full {
-	grid-column: 1 / -1;
+  grid-column: 1 / -1;
 }
 
 .field--grow {
-	flex: 1;
+  flex: 1;
 }
 
 .field span {
-	font-weight: 700;
+  color: var(--factory-label-color);
+  font-family: var(--factory-label-font), sans-serif;
+  font-size: var(--factory-label-size);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--factory-label-tracking);
+  text-transform: uppercase;
 }
 
 .field input,
 .field textarea {
-	width: 100%;
-	padding: 0.85rem 1rem;
-	border: 1px solid var(--border);
-	border-radius: 0.9rem;
-	background: rgba(0, 0, 0, 0.16);
-	color: var(--text);
-	font: inherit;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width-hairline) solid var(--factory-field-border);
+  border-radius: var(--radius-1);
+  background: var(--factory-field-bg);
+  color: var(--color-text-primary);
+  font: inherit;
 }
 
 .field textarea {
-	resize: vertical;
+  resize: vertical;
 }
 
 .field input:focus,
 .field textarea:focus {
-	outline: none;
-	border-color: var(--primary);
+  outline: none;
+  border-color: var(--factory-field-focus);
 }
 
 .field input:disabled {
-	opacity: 0.7;
-	cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.summaryCard,
+.knownStationCard,
+.selectedCard {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-2);
+  background: var(--color-bg-surface);
 }
 
 .summaryCard {
-	display: flex;
-	justify-content: space-between;
-	align-items: flex-start;
-	gap: 0.75rem;
-	padding: 1rem;
-	border: 1px solid var(--border);
-	border-radius: 1rem;
-	background: rgba(255, 255, 255, 0.02);
+  justify-content: space-between;
+}
+
+.imagePreviewCard {
+  margin-top: var(--space-4);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-2);
+  overflow: hidden;
+  background: var(--color-bg-surface);
+}
+
+.imagePreview {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 8;
+  object-fit: cover;
+}
+
+.knownStations,
+.selectedList {
+  margin-top: 0;
+  height: 100%;
+  min-height: 12rem; /* deliberate: keep both drop zones easy to target */
+  align-content: start;
+}
+
+.selectedCardContent {
+  flex: 1;
+}
+
+.selectedCardActions {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.iconButton {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.iconButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.selectedCardActionIcon {
+  display: block;
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-1);
+}
+
+.orderBadge {
+  display: inline-grid;
+  place-items: center;
+  width: var(--space-7);
+  height: var(--space-7);
+  border: var(--border-width-hairline) solid var(--color-brand-primary);
+  border-radius: var(--radius-pill);
+  background: var(--factory-drop-accept);
+  color: var(--color-brand-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.dropHint {
+  padding: var(--space-4);
+  border: var(--border-width-hairline) dashed var(--color-border-default);
+  border-radius: var(--radius-2);
+  background: var(--factory-drop-accept);
+}
+
+.dragHandle {
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--size-control-lg);
+  padding: var(--space-1) var(--space-2);
+  border: var(--border-width-hairline) dashed var(--color-border-default);
+  border-radius: var(--radius-pill);
+  color: var(--color-brand-primary);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--font-tracking-wider);
+  text-transform: uppercase;
+  cursor: grab;
+  user-select: none;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
 }
 
 .actionRow {
-	display: flex;
-	gap: 0.75rem;
-	align-items: end;
-	flex-wrap: wrap;
+  display: flex;
+  gap: var(--space-3);
+  align-items: end;
+  flex-wrap: wrap;
 }
 
 .statusPill {
-	display: inline-flex;
-	margin-top: 0.75rem;
-	padding: 0.3rem 0.65rem;
-	border-radius: 999px;
-	background: rgba(101, 240, 175, 0.12);
-	color: var(--primary);
-	font-size: 0.85rem;
-	font-weight: 700;
+  display: inline-flex;
+  margin-top: var(--space-3);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-1);
+  background: var(--factory-drop-accept);
+  color: var(--color-brand-primary);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
 }
 
 .statusPill--manual {
-	background: rgba(255, 255, 255, 0.08);
-	color: var(--text);
+  background: var(--color-bg-surface-hover);
+  color: var(--color-text-primary);
+}
+
+.usageTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.usageTag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  max-width: 100%;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--font-leading-12);
+}
+
+.usageTag::before {
+  content: "";
+  width: var(--space-1);
+  height: var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-primary);
+  box-shadow: 0 0 0 var(--border-width-thick) var(--factory-tag-green); /* deliberate: tokenized solid shadow because opacity cannot be expressed without raw rgba */
+  flex: 0 0 auto;
+}
+
+.usageTag:nth-child(4n + 2)::before {
+  background: var(--factory-tag-blue);
+  box-shadow: 0 0 0 var(--border-width-thick) var(--factory-tag-blue); /* deliberate: tokenized solid shadow because opacity cannot be expressed without raw rgba */
+}
+
+.usageTag:nth-child(4n + 3)::before {
+  background: var(--factory-tag-gold);
+  box-shadow: 0 0 0 var(--border-width-thick) var(--factory-tag-gold); /* deliberate: tokenized solid shadow because opacity cannot be expressed without raw rgba */
+}
+
+.usageTag:nth-child(4n + 4)::before {
+  background: var(--factory-tag-pink);
+  box-shadow: 0 0 0 var(--border-width-thick) var(--factory-tag-pink); /* deliberate: tokenized solid shadow because opacity cannot be expressed without raw rgba */
 }
 
 .ghostButton,
 .deleteButton,
 .primaryButton {
-	border: 1px solid var(--border);
-	border-radius: 999px;
-	padding: 0.75rem 1rem;
-	font-weight: 700;
-	transition: transform var(--transition), border-color var(--transition), background var(--transition);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-1);
+  padding: var(--space-3) var(--space-4);
+  font-weight: var(--font-weight-bold);
+  transition: transform var(--transition-base), border-color var(--transition-base), background var(--transition-base);
 }
 
 .ghostButton,
 .deleteButton {
-	background: transparent;
-	color: var(--text);
+  background: transparent;
+  color: var(--color-text-primary);
 }
 
 .ghostButton {
-	background: rgba(255, 255, 255, 0.03);
+  background: var(--color-bg-surface);
 }
 
 .primaryButton {
-	border-color: var(--primary);
-	background: var(--primary);
-	color: var(--bg);
+  border-color: var(--color-brand-primary);
+  background: var(--color-brand-primary);
+  color: var(--color-text-onDark);
 }
 
 .deleteButton {
-	border-color: rgba(248, 113, 113, 0.55);
-	background: rgba(127, 29, 29, 0.18);
-	color: #fecaca;
+  border-color: var(--factory-delete-border);
+  background: var(--factory-delete-bg);
+  color: var(--factory-delete-text);
 }
 
 .ghostButton:hover,
 .deleteButton:hover,
 .primaryButton:hover {
-	transform: translateY(-1px);
+  transform: translateY(-1px);
 }
 
 .ghostButton:hover {
-	background: rgba(255, 255, 255, 0.08);
+  background: var(--color-bg-surface-hover);
 }
 
 .deleteButton:hover {
-	background: rgba(153, 27, 27, 0.32);
-	border-color: rgba(248, 113, 113, 0.75);
+  background: var(--factory-delete-bg);
+  border-color: var(--factory-delete-border);
+  filter: brightness(0.85);
 }
 
 .ghostButton:disabled,
 .deleteButton:disabled,
 .primaryButton:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-	transform: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .actionRow {
-	justify-content: space-between;
-	margin-top: 1.5rem;
+  justify-content: space-between;
+  margin-top: var(--space-5);
 }
 
 .actionRow--reset {
-	justify-content: flex-start;
+  justify-content: flex-start;
 }
 
 .actionRow--save {
-	margin-top: 1.5rem;
-	justify-content: flex-end;
+  margin-top: var(--space-5);
+  justify-content: flex-end;
 }
 
 .payloadPreview {
-	overflow-x: auto;
-	padding: 1rem;
-	border-radius: 1rem;
-	background: rgba(0, 0, 0, 0.24);
-	color: #d7f9ea;
-	font-size: 0.9rem;
-	line-height: 1.5;
+  overflow-x: auto;
+  padding: var(--space-4);
+  border: var(--border-width-hairline) dashed var(--color-border-default);
+  border-radius: var(--radius-2);
+  background: var(--factory-payload-bg);
+  color: var(--factory-payload-text);
+  font-family: var(--factory-payload-font), monospace;
+  font-size: var(--font-size-14);
+  line-height: var(--font-leading-base);
 }
 
 .debugSection {
-	opacity: 0.9;
+  opacity: 0.9;
 }
 
 .debugSummary {
-	cursor: pointer;
-	font-weight: 700;
-	color: var(--muted);
-	list-style: none;
+  cursor: pointer;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  list-style: none;
 }
 
 .debugSummary::-webkit-details-marker {
-	display: none;
+  display: none;
 }
 
 .debugContent {
-	margin-top: 1rem;
+  margin-top: var(--space-4);
 }
 
 @media (max-width: 800px) {
-	.fieldGrid {
-		grid-template-columns: 1fr;
-	}
+  .fieldGrid {
+    grid-template-columns: 1fr;
+  }
 
-	.stationNode,
-	.addStationNode {
-		width: 100%;
-	}
+  .stationColumns {
+    grid-template-columns: 1fr;
+  }
 
-	.stationNode--right,
-	.addStationNode--right,
-	.stationNode--left,
-	.addStationNode--left {
-		justify-self: stretch;
-		margin-left: 0;
-		margin-right: 0;
-	}
+  .sectionHeading--inline,
+  .summaryCard,
+  .knownStationCard,
+  .selectedCard,
+  .selectedCardActions,
+  .actionRow {
+    display: grid;
+  }
 
-	.sectionHeading--inline,
-	.summaryCard,
-	.stationPickerCard,
-	.actionRow {
-		display: grid;
-	}
-
-	.actionRow {
-		justify-content: stretch;
-	}
+  .actionRow {
+    justify-content: stretch;
+  }
 }
 </style>

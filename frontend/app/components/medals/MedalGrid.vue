@@ -5,6 +5,10 @@ import type { AchievementResponse } from "~/composables/types/AchievementTypes";
 const props = defineProps<{
   medals: AchievementResponse[];
 }>();
+
+const emit = defineEmits<{
+  (e: "select", medal: AchievementResponse): void;
+}>();
 </script>
 
 <template>
@@ -13,6 +17,7 @@ const props = defineProps<{
       v-for="medal in props.medals"
       :key="medal.UUID"
       :medal="medal"
+      @select="emit('select', $event)"
     />
   </section>
 </template> 
@@ -21,7 +26,9 @@ const props = defineProps<{
 .medalGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: minmax(0, 1fr);
   gap: var(--space-5);
   width: 100%;
+  height: 100%;
 }
 </style>

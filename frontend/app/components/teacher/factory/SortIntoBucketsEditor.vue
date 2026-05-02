@@ -78,12 +78,12 @@ const setBucketColorEnabled = (bucketIndex: number, enabled: boolean) => {
 				<input v-model="props.task.prompt!.title" type="text" >
 			</label>
 
-			<label class="field field--full">
+			<label class="field fieldFull">
 				<span>Prompt-tekst</span>
 				<textarea v-model="props.task.prompt!.text" rows="2"></textarea>
 			</label>
 
-			<label class="field field--full">
+			<label class="field fieldFull">
 				<span>Etikett for usorterte kort</span>
 				<input v-model="props.task.unplacedLabel" type="text" >
 			</label>
@@ -124,12 +124,12 @@ const setBucketColorEnabled = (bucketIndex: number, enabled: boolean) => {
 						<input v-model="bucket.title" type="text" >
 					</label>
 
-					<label class="field field--full">
+					<label class="field fieldFull">
 						<span>Beskrivelse</span>
 						<textarea v-model="bucket.description" rows="2"></textarea>
 					</label>
 
-					<div class="colorField field--full">
+					<div class="colorField fieldFull">
 						<label class="toggleRow">
 							<input
 								:checked="hasBucketColor(bucketIndex)"
@@ -147,7 +147,7 @@ const setBucketColorEnabled = (bucketIndex: number, enabled: boolean) => {
 			</article>
 		</div>
 
-		<div class="sectionRow sectionRow--top">
+		<div class="sectionRow sectionRowTop">
 			<div>
 				<h5>Kort</h5>
 				<p>Hvert kort trenger en riktig boks.</p>
@@ -186,7 +186,7 @@ const setBucketColorEnabled = (bucketIndex: number, enabled: boolean) => {
 						</select>
 					</label>
 
-					<label class="field field--full">
+					<label class="field fieldFull">
 						<span>Forklaring</span>
 						<textarea v-model="item.explanation" rows="2"></textarea>
 					</label>
@@ -198,154 +198,190 @@ const setBucketColorEnabled = (bucketIndex: number, enabled: boolean) => {
 
 <style scoped>
 .templateSection {
-	margin-top: 1rem;
-	padding-top: 1rem;
-	border-top: 1px solid var(--border);
+   margin-top: var(--space-4);
+   padding-top: var(--space-4);
+   border-top: var(--border-width-hairline) solid var(--color-border-default);
 }
 
-.templateSection h4,
-.sectionRow h5,
-.configCardHeader h5 {
-	margin: 0;
-	font-weight: 700;
+.templateSection h4 {
+   margin: 0 0 var(--space-3);
 }
 
 .fieldGrid {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 0.9rem;
+   display: grid;
+   grid-template-columns: repeat(2, minmax(0, 1fr));
+   gap: var(--space-3);
 }
 
-.field,
+.field {
+   display: grid;
+   gap: var(--space-1);
+}
+
 .colorField {
-	display: grid;
-	gap: 0.45rem;
+   display: grid;
+   gap: var(--space-1);
 }
 
-.field--full {
-	grid-column: 1 / -1;
+.fieldFull {
+   grid-column: 1 / -1;
 }
 
 .field span,
-.toggleRow span {
-	font-weight: 700;
+.toggleRow span,
+.sectionRow h5,
+.configCardHeader h5 {
+   color: var(--factory-label-color);
+   font-family: var(--factory-label-font), monospace;
+   font-size: var(--factory-label-size);
+   font-weight: var(--font-weight-bold);
+   letter-spacing: var(--factory-label-tracking);
+   text-transform: uppercase;
+}
+
+.sectionRow h5,
+.configCardHeader h5 {
+   margin: 0;
 }
 
 .field input,
 .field select,
 .field textarea {
-	width: 100%;
-	padding: 0.85rem 1rem;
-	border: 1px solid var(--border);
-	border-radius: 0.9rem;
-	background: rgba(0, 0, 0, 0.16);
-	color: var(--text);
-	font: inherit;
+   width: 100%;
+   padding: var(--space-3) var(--space-4);
+   border: var(--border-width-hairline) solid var(--factory-field-border);
+   border-radius: var(--radius-1);
+   background: var(--factory-field-bg);
+   color: var(--color-text-primary);
+   font: inherit;
 }
 
 .field textarea {
-	resize: vertical;
+   resize: vertical;
 }
 
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-	outline: none;
-	border-color: var(--primary);
+   outline: none;
+   border-color: var(--factory-field-focus);
 }
 
 .sectionRow,
 .configCardHeader {
-	display: flex;
-	justify-content: space-between;
-	gap: 0.75rem;
-	align-items: center;
-	margin-top: 1rem;
-	margin-bottom: 0.9rem;
+   display: flex;
+   justify-content: space-between;
+   gap: var(--space-3);
+   align-items: center;
+   margin-top: var(--space-4);
+   margin-bottom: var(--space-3);
 }
 
 .sectionRow p {
-	margin: 0.3rem 0 0;
-	color: var(--muted);
-	line-height: 1.5;
+   margin: var(--space-1) 0 0;
+   color: var(--color-text-secondary);
+   line-height: var(--font-leading-base);
 }
 
-.sectionRow--top {
-	margin-top: 1.25rem;
+.sectionRowTop {
+   margin-top: var(--space-4);
 }
 
 .stackList {
-	display: grid;
-	gap: 0.75rem;
+   display: grid;
+   gap: var(--space-3);
 }
 
 .configCard {
-	padding: 1rem;
-	border: 1px solid var(--border);
-	border-radius: 1rem;
-	background: rgba(255, 255, 255, 0.02);
+   padding: var(--space-4);
+   border: var(--border-width-hairline) solid var(--color-border-default);
+   border-radius: var(--radius-2);
+   background: var(--color-bg-canvas);
 }
 
 .toggleRow {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.6rem;
+   display: inline-flex;
+   align-items: center;
+   gap: var(--space-2);
 }
 
 .colorPickerRow {
-	display: flex;
+   display: flex;
 }
 
 .colorPicker {
-	width: 3.25rem;
-	height: 3rem;
-	padding: 0;
-	border: 1px solid var(--border);
-	border-radius: 0.75rem;
-	background: transparent;
-	overflow: hidden;
+   width: 3.25rem; /* deliberate: fixed color-picker size */
+   height: 3rem; /* deliberate: fixed color-picker size */
+   padding: 0;
+   border: var(--border-width-hairline) solid var(--color-border-default);
+   border-radius: var(--radius-1);
+   background: transparent;
+   overflow: hidden;
+}
+
+.colorPicker::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.colorPicker::-webkit-color-swatch {
+  border: none;
+  border-radius: var(--radius-1);
 }
 
 .ghostButton,
 .deleteButton {
-	border: 1px solid var(--border);
-	border-radius: 999px;
-	padding: 0.7rem 1rem;
-	font-weight: 700;
-	transition: transform var(--transition), border-color var(--transition), background var(--transition);
+   border: var(--border-width-hairline) solid var(--color-border-default);
+   border-radius: var(--radius-1);
+   padding: var(--space-3) var(--space-4);
+   font-weight: var(--font-weight-bold);
+   transition: transform var(--transition-base), border-color var(--transition-base), background var(--transition-base);
+}
+
+.ghostButton,
+.deleteButton {
+   background: transparent;
+   color: var(--color-text-primary);
 }
 
 .ghostButton {
-	background: transparent;
-	color: var(--text);
+   background: var(--color-bg-surface);
 }
 
 .deleteButton {
-	background: transparent;
-	color: #fca5a5;
+   border-color: var(--factory-delete-border);
+   background: var(--factory-delete-bg);
+   color: var(--factory-delete-text);
 }
 
 .ghostButton:hover,
 .deleteButton:hover {
-	transform: translateY(-1px);
+   transform: translateY(calc(-1 * var(--border-width-hairline)));
+}
+
+.ghostButton:hover {
+   background: var(--color-bg-surface-hover);
+}
+
+.deleteButton:hover {
+   filter: brightness(0.85);
 }
 
 .ghostButton:disabled,
 .deleteButton:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-	transform: none;
+   opacity: 0.5;
+   cursor: not-allowed;
+   transform: none;
 }
 
-@media (max-width: 800px) {
-	.fieldGrid {
-		grid-template-columns: 1fr;
-	}
+@media (max-width: 800px) { /* deliberate: matches factory editor mobile breakpoint */
+   .fieldGrid {
+      grid-template-columns: 1fr;
+   }
 
-	.sectionRow,
-	.configCardHeader {
-		flex-direction: column;
-		align-items: flex-start;
-	}
+   .sectionRow,
+   .configCardHeader {
+      flex-direction: column;
+      align-items: flex-start;
+   }
 }
 </style>

@@ -1,20 +1,19 @@
 package no.safety.backend.notification.dto;
 
-import java.util.UUID;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 
 /**
- * Internal DTO for conveying necessry information to Notification Service.
+ * Base event class for notification-related events.
+ * Contains sender ID, message, and priority for creating notifications.
  */
 @Getter
 @Setter
 @RequiredArgsConstructor
 public class NotificationEvent {
-    private final UUID senderUserUuid;
+    private final Long senderInternalId;
     private final String message;
     private final int priority;
 }

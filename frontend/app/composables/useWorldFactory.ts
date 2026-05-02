@@ -1,5 +1,5 @@
 import { createDraftId } from "~/composables/useExerciseFactory";
-import { Station } from "~/composables/types/StationType";
+import type { Station } from "~/composables/types/StationTypes";
 import { World } from "~/composables/types/WorldTypes";
 
 export type WorldFactoryPayload = {
@@ -42,7 +42,7 @@ export const worldFactoryNewSelectionKey = "__new_world__";
 
 const storageKey = "teacher.worldFactory.records";
 const previousStorageKey = "teacher.worldFactory.payloadsByClassroom";
-const defaultImage = "https://placehold.co/1200x720?text=Verden";
+const defaultImage = "/images/placeholders/world.svg";
 
 export const worldFactoryDefaultImage = defaultImage;
 
@@ -324,16 +324,16 @@ export const getWorldFactorySelectionOptions = (): WorldFactorySelectableOption[
 		label: record.payload.title || record.payload.uid,
 		description: record.payload.description || `${record.payload.stationUids.length} stasjoner`,
 		kind: "existing" as const,
-		badge: "Eksisterende verden · lokal override",
+		badge: "Eksisterende stasjonskart · lokal override",
 	}));
 	const draftOptions = [...store.drafts]
 		.sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
 		.map((draft) => ({
 			selectionKey: makeWorldFactoryDraftSelectionKey(draft.localId),
-			label: draft.payload.title || "Ny verden uten tittel",
+			label: draft.payload.title || "Nytt stasjonskart uten tittel",
 			description: draft.payload.description || `${draft.payload.stationUids.length} stasjoner`,
 			kind: "draft" as const,
-			badge: "Ny lokal verden",
+			badge: "Nytt lokalt stasjonskart",
 		}));
 
 	return [...existingOptions, ...draftOptions];
@@ -348,16 +348,16 @@ export const getWorldFactorySelectionOptionsFromWorlds = (
 		label: world.title || world.uid,
 		description: world.description || `${world.stationUids.length} stasjoner`,
 		kind: "existing" as const,
-		badge: store.overrides[world.uid] ? "Eksisterende verden · lokal override" : "Eksisterende verden",
+		badge: store.overrides[world.uid] ? "Eksisterende stasjonskart · lokal override" : "Eksisterende stasjonskart",
 	}));
 	const draftOptions = [...store.drafts]
 		.sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
 		.map((draft) => ({
 			selectionKey: makeWorldFactoryDraftSelectionKey(draft.localId),
-			label: draft.payload.title || "Ny verden uten tittel",
+			label: draft.payload.title || "Nytt stasjonskart uten tittel",
 			description: draft.payload.description || `${draft.payload.stationUids.length} stasjoner`,
 			kind: "draft" as const,
-			badge: "Ny lokal verden",
+			badge: "Nytt lokalt stasjonskart",
 		}));
 
 	return [...existingOptions, ...draftOptions];

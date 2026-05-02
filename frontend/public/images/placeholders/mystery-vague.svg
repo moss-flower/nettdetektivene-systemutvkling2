@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#fff5f1"/>
+  <rect x="150" y="110" width="900" height="500" rx="40" fill="#ffffff"/>
+  <rect x="220" y="190" width="700" height="80" rx="22" fill="#ffb08d"/>
+  <text x="600" y="245" text-anchor="middle" font-size="68" font-family="Arial, sans-serif" fill="#7a3a1f">DU VIL IKKE TRO DETTE</text>
+</svg>

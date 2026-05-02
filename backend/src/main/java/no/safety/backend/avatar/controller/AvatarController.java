@@ -10,23 +10,34 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.RequestBody;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.auth.model.UserPrincipal;
 import no.safety.backend.avatar.dto.AvatarConfigRequest;
 import no.safety.backend.avatar.dto.AvatarConfigResponse;
+import no.safety.backend.avatar.dto.AvatarOptionsResponse;
 import no.safety.backend.avatar.service.AvatarService;
 
+/**
+ * REST controller for managing student avatar configurations.
+ * Provides endpoints for retrieving, updating, and fetching available options for avatar customization.
+ * All endpoints require the user to have the STUDENT role.
+ */
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
 @Tag(name = "Profile Management for Students")
 public class AvatarController {
 
-    
     private final AvatarService avatarService;
 
+    /**
+     * Retrieves the avatar configuration for the currently authenticated student.
+     *
+     * @param principal the authenticated user principal containing user details
+     * @return the avatar configuration response containing the student's current avatar settings
+     */
     @Operation(
         summary = "Get student Avatar",
         description = "Returns the logged-in student's avatar configuration",
@@ -40,12 +51,30 @@ public class AvatarController {
     }
 
     /**
-     * Allows a Student to update the Configuration for their Avatar.
-     * Requires that one be logged in as a student.
-     * 
-     * @param request an AvatarConfigRequest dto containing permutation information.
-     * @param principal Spring security principal for calling the user.
-     * @return a response entity. Containing error message on failed update.
+     * Retrieves all available avatar customization options.
+     * Returns lists of available hair styles, hair colors, outfits, eye colors, and skin colors
+     * that students can choose from when customizing their avatar.
+     *
+     * @return response containing all available avatar customization options
+     */
+    @Operation(
+        summary = "Get avatar customization options",
+        description = "Returns the available enum options for avatar customization",
+        tags = {"Profile Management for Students"}
+    )
+    @PreAuthorize("hasRole('STUDENT')")
+    @GetMapping("/avatar/options")
+    public AvatarOptionsResponse getAvatarOptions() {
+        return AvatarOptionsResponse.fromEnums();
+    }
+
+    /**
+     * Updates the avatar configuration for the currently authenticated student.
+     * Validates the request body and saves the new avatar settings to the database.
+     *
+     * @param request the avatar configuration request containing the new avatar settings
+     * @param principal the authenticated user principal containing user details
+     * @return a ResponseEntity with HTTP 200 OK on successful update
      */
     @Operation(
         summary = "Update student Avatar",

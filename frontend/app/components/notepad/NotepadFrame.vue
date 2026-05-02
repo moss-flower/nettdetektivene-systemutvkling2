@@ -5,14 +5,18 @@ import type { NotepadEntry } from "~/composables/types/NotepadTypes.ts";
 const props = defineProps<{
   notes: NotepadEntry[];
 }>();
+
+const sortedNotes = computed(() =>
+  [...props.notes].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+);
 </script>
 
 <template>
   <div class="notepadFrame">
     <div class="notesScroll">
       <NotepadEntry
-        v-for="note in props.notes"
-        :key="`${note.date}-${note.title}`"
+        v-for="note in sortedNotes"
+        :key="note.publicUuid"
         :entry="note"
       />
     </div>

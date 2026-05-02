@@ -1,4 +1,12 @@
 <script setup lang="ts">
+const props = withDefaults(defineProps<{
+	message?: string;
+	buttonLabel?: string;
+}>(), {
+	message: "Endringene er lagret.",
+	buttonLabel: "Lukk",
+});
+
 const emit = defineEmits<{
 	(event: "close"): void;
 }>();
@@ -11,12 +19,10 @@ const closePopup = () => {
 <template>
 	<div class="popupOverlay" @click.self="closePopup">
 		<section class="popupCard" role="dialog" aria-modal="true" aria-labelledby="popup-title">
-			<h2 id="popup-title">Oppgaven er lagret</h2>
-			<p>
-				Dette blir senere sendt til backend. For nå er oppgaven lagret lokalt.
-			</p>
+			<h2 id="popup-title">Lagret</h2>
+			<p>{{ props.message }}</p>
 			<button type="button" class="primaryButton" @click="closePopup">
-				Lukk
+				{{ props.buttonLabel }}
 			</button>
 		</section>
 	</div>
@@ -24,48 +30,49 @@ const closePopup = () => {
 
 <style scoped>
 .popupOverlay {
-	position: fixed;
-	inset: 0;
-	display: grid;
-	place-items: center;
-	padding: 1.5rem;
-	background: rgba(0, 0, 0, 0.6);
-	z-index: 1000;
+   position: fixed;
+   inset: 0;
+   display: grid;
+   place-items: center;
+   padding: var(--space-6);
+   background: var(--palette-overlay-dark-deep);
+   z-index: 1000;
 }
 
 .popupCard {
-	width: min(100%, 28rem);
-	display: grid;
-	gap: 1rem;
-	padding: 1.5rem;
-	border: 1px solid var(--border);
-	border-radius: 1.2rem;
-	background: var(--surface);
-	box-shadow: var(--shadow);
+  /* deliberate width exception */
+   width: min(100%, 28rem);
+   display: grid;
+   gap: var(--space-4);
+   padding: var(--space-6);
+   border: var(--border-width-hairline) solid var(--color-border-default);
+   border-radius: var(--radius-3);
+   background: var(--color-bg-surface);
+   box-shadow: var(--shadow-folder);
 }
 
 .popupCard h2,
 .popupCard p {
-	margin: 0;
+   margin: 0;
 }
 
 .popupCard p {
-	color: var(--muted);
-	line-height: 1.5;
+   color: var(--color-text-secondary);
+   line-height: var(--font-leading-base);
 }
 
 .primaryButton {
-	justify-self: flex-start;
-	border: 1px solid var(--primary);
-	border-radius: 999px;
-	padding: 0.75rem 1rem;
-	font-weight: 700;
-	background: var(--primary);
-	color: var(--bg);
-	transition: transform var(--transition), border-color var(--transition), background var(--transition);
+   justify-self: flex-start;
+   border: var(--border-width-hairline) solid var(--color-brand-primary);
+   border-radius: var(--radius-1);
+   padding: var(--space-3) var(--space-4);
+   font-weight: var(--font-weight-bold);
+   background: var(--color-brand-primary);
+   color: var(--color-text-onDark);
+   transition: transform var(--transition-base), border-color var(--transition-base), background var(--transition-base);
 }
 
 .primaryButton:hover {
-	transform: translateY(-1px);
+   transform: translateY(-1px);
 }
 </style>

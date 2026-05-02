@@ -3,198 +3,161 @@ import WorldFactoryEditor from "~/components/teacher/factory/WorldFactoryEditor.
 import PopupFactorySaved from "~/components/teacher/factory/PopupFactorySaved.vue";
 import { routePaths } from "~/composables/utils/routePaths";
 import {
-	fetchAllWorldFactoryWorlds,
-	getWorldFactorySelectionOptions,
-	getWorldFactorySelectionOptionsFromWorlds,
 	makeWorldFactoryExistingSelectionKey,
-	type WorldFactorySelectableOption,
 	worldFactoryNewSelectionKey,
+	parseWorldFactorySelectionKey,
 } from "~/composables/useWorldFactory";
 
 const route = useRoute();
-const router = useRouter();
-const selectedWorldKey = ref<string>("");
-const selectableOptions = ref<WorldFactorySelectableOption[]>([]);
 const showSavedPopup = ref(false);
+const pendingSavedNavigationTarget = ref<string | null>(null);
+const returnTo = computed(() => typeof route.query.returnTo === "string" ? route.query.returnTo : "");
 const lockedWorldUid = computed(() => {
 	const uid = route.query.uid;
 
 	return typeof uid === "string" && uid.trim().length > 0 ? uid.trim() : "";
 });
-const showWorldSelector = computed(() => lockedWorldUid.value.length === 0);
+const selectedWorldKey = computed(() => lockedWorldUid.value
+	? makeWorldFactoryExistingSelectionKey(lockedWorldUid.value)
+	: worldFactoryNewSelectionKey);
 
 const goBack = () => {
-	if (import.meta.client && window.history.length > 1) {
-		router.back();
-		return;
-	}
-
-	void navigateTo(routePaths.teacherOverview);
+	void navigateTo(returnTo.value || routePaths.teacherOverview);
 };
 
-const refreshSelectableOptions = async () => {
-	try {
-		const worlds = await fetchAllWorldFactoryWorlds();
-
-		selectableOptions.value = getWorldFactorySelectionOptionsFromWorlds(worlds);
-	} catch {
-		selectableOptions.value = getWorldFactorySelectionOptions();
-	}
-};
 const handleSelectionUpdated = async (selectionKey: string) => {
-	await refreshSelectableOptions();
-	selectedWorldKey.value = selectionKey;
+	const selection = parseWorldFactorySelectionKey(selectionKey);
+
+	if (selection.kind === "existing" && selection.uid !== lockedWorldUid.value) {
+		await navigateTo({
+			path: routePaths.teacherFactoryWorld,
+			query: {
+				uid: selection.uid,
+				...(returnTo.value ? { returnTo: returnTo.value } : {}),
+			},
+		}, { replace: true });
+	}
 };
 
-const handleSaved = async () => {
-	await refreshSelectableOptions();
-
-	if (lockedWorldUid.value) {
-		selectedWorldKey.value = makeWorldFactoryExistingSelectionKey(lockedWorldUid.value);
-	}
-
+const handleSaved = (payload?: { returnTarget?: string | null }) => {
+	pendingSavedNavigationTarget.value = payload?.returnTarget ?? null;
 	showSavedPopup.value = true;
 };
 
 const handleDeleted = async () => {
-	await refreshSelectableOptions();
-	selectedWorldKey.value = lockedWorldUid.value
-		? makeWorldFactoryExistingSelectionKey(lockedWorldUid.value)
-		: "";
+	await navigateTo({
+		path: routePaths.teacherFactoryWorld,
+		query: returnTo.value ? { returnTo: returnTo.value } : {},
+	}, { replace: true });
 };
 
 const closeSavedPopup = () => {
 	showSavedPopup.value = false;
+
+	if (pendingSavedNavigationTarget.value) {
+		const nextTarget = pendingSavedNavigationTarget.value;
+		pendingSavedNavigationTarget.value = null;
+		void navigateTo(nextTarget);
+	}
 };
 
-onMounted(async () => {
-	await refreshSelectableOptions();
-});
-
-watch(
-	lockedWorldUid,
-	(uid) => {
-		selectedWorldKey.value = uid ? makeWorldFactoryExistingSelectionKey(uid) : "";
-	},
-	{ immediate: true },
-);
 </script>
 
 <template>
 	<section class="factoryPage">
 		<header class="factoryHero">
 			<button class="backButton" type="button" @click="goBack">Tilbake</button>
-			<h1 v-if="showWorldSelector">Verdener</h1>
 		</header>
-
-		<section v-if="showWorldSelector" class="selectorPanel">
-			<div class="selectorControls">
-				<label class="field field--grow">
-					<select v-model="selectedWorldKey">
-						<option value="">Velg verden</option>
-						<option :value="worldFactoryNewSelectionKey">Ny verden</option>
-						<option v-for="option in selectableOptions" :key="option.selectionKey" :value="option.selectionKey">
-							{{ option.label }}
-						</option>
-					</select>
-				</label>
-			</div>
-		</section>
-
 		<WorldFactoryEditor
-			v-if="selectedWorldKey"
 			:selection-key="selectedWorldKey"
 			@selection-updated="handleSelectionUpdated"
 			@saved="handleSaved"
 			@deleted="handleDeleted"
 		/>
 
-		<PopupFactorySaved v-if="showSavedPopup" @close="closeSavedPopup" />
+		<PopupFactorySaved
+			v-if="showSavedPopup"
+			button-label="Lukk"
+			message="Endringene er lagret."
+			@close="closeSavedPopup"
+		/>
 	</section>
 </template>
 
 <style scoped>
 .factoryPage {
-	width: 100%;
-	max-width: 1400px;
-	margin: 0 auto;
-	padding: var(--space-4);
+   width: 100%;
+   max-width: var(--layout-max-width);
+   margin: 0 auto;
+   padding: var(--layout-page-padding);
+   color: var(--color-text-primary);
+   background: var(--color-bg-canvas);
 }
 
 .factoryHero {
-	margin-bottom: 1rem;
+  display: grid;
+  gap: var(--space-2);
+   margin-bottom: var(--space-4);
+  padding: var(--space-5);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-top: var(--border-width-thick) solid var(--color-accent-reward);
+  border-radius: var(--radius-3);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-folder);
 }
 
 .backButton {
-	display: inline-flex;
-	align-items: center;
-	margin-bottom: 0.75rem;
-	padding: 0;
-	border: 0;
-	background: transparent;
-	color: var(--primary);
-	font: inherit;
-	font-weight: 600;
-	cursor: pointer;
+   display: inline-flex;
+   align-items: center;
+   margin-bottom: var(--space-3);
+   padding: 0;
+   border: 0;
+   background: transparent;
+   color: var(--color-brand-primary);
+   font: inherit;
+   font-weight: var(--font-weight-semibold);
+   cursor: pointer;
+   transition: color var(--transition-fast);
 }
 
 .backButton:hover {
-	text-decoration: underline;
+   text-decoration: underline;
 }
 
 h1,
 h2,
 h3 {
-	margin: 0;
+   margin: 0;
 }
 
-.selectorPanel {
-	display: grid;
-	gap: 1rem;
-	margin-bottom: 1.25rem;
-	padding: 1.25rem;
-	border: 1px solid var(--border);
-	border-radius: 1.2rem;
-	background:
-		linear-gradient(180deg, rgba(101, 240, 175, 0.08), rgba(101, 240, 175, 0)) top/100% 5rem no-repeat,
-		var(--surface);
-	box-shadow: var(--shadow);
-}
-.selectorControls {
-	display: flex;
-}
-
-.field {
-	display: grid;
-	gap: 0.45rem;
-	max-width: 32rem;
-}
-
-.field--grow {
-	flex: 1;
+h1 {
+  font-family: var(--font-family-serif), sans-serif;
+  font-size: var(--font-size-28);
+  line-height: var(--font-leading-28);
+  color: var(--color-text-primary);
 }
 
 .field select {
-	width: 100%;
-	padding: 0.85rem 1rem;
-	border: 1px solid var(--border);
-	border-radius: 0.9rem;
-	background: rgba(0, 0, 0, 0.16);
-	color: var(--text);
-	font: inherit;
+   width: 100%;
+   padding: var(--space-4);
+   border: var(--border-width-hairline) solid var(--color-border-default);
+   border-radius: var(--radius-3);
+   background: var(--color-bg-surface);
+   color: var(--color-text-primary);
+   font: inherit;
 }
 
 .field select:focus {
-	outline: none;
-	border-color: var(--primary);
+   outline: none;
+   border-color: var(--color-brand-primary);
 }
 @media (max-width: 800px) {
-	.selectorControls {
-		display: grid;
-	}
+   .selectorControls {
+      display: grid;
+   }
 
-	.field {
-		max-width: none;
-	}
+   .field {
+      max-width: none;
+   }
 }
 </style>

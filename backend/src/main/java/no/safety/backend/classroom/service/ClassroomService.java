@@ -1,25 +1,31 @@
 package no.safety.backend.classroom.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.classroom.dto.ClassroomRequest;
 import no.safety.backend.classroom.dto.ClassroomResponse;
 import no.safety.backend.classroom.model.Classroom;
+import no.safety.backend.classroom.model.ClassroomWeeklyMystery;
 import no.safety.backend.classroom.repository.ClassroomRepository;
+import no.safety.backend.classroom.repository.ClassroomWeeklyMysteryRepository;
 import no.safety.backend.exception.ConflictException;
 import no.safety.backend.exception.NotFoundException;
 import no.safety.backend.exception.domain.NotClassroomOwnerException;
 import no.safety.backend.exception.domain.StudentNotInClassException;
-import no.safety.backend.notification.dto.NotificationEvent;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.repository.StudentUserRepository;
 import no.safety.backend.user.repository.TeacherUserRepository;
-
-import org.springframework.context.ApplicationEventPublisher;
+import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptResponse;
+import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +35,7 @@ public class ClassroomService {
   private final TeacherUserRepository teacherRepo;
   private final StudentUserRepository studentRepo;
   private final ClassroomCodeGenerator codegen;
-  private final ApplicationEventPublisher eventPublisher; // use this for publishing notifications for the teacher
+  private final ClassroomWeeklyMysteryRepository classroomWeeklyMysteryRepository;
 
   @Transactional
   public ClassroomResponse create(ClassroomRequest req, UUID callerUuid) {
@@ -57,6 +63,12 @@ public class ClassroomService {
   @Transactional
   public void delete(UUID classroomUid, UUID callerUuid) {
     Classroom c = requireOwned(classroomUid, callerUuid);
+
+    c.getMembers().forEach(member -> member.setClassroom(null));
+    c.getMembers().clear();
+    c.getOwners().clear();
+    classroomWeeklyMysteryRepository.deleteByClassroom_InternalId(c.getInternalId());
+
     classroomRepo.delete(c);
   }
 
@@ -96,7 +108,7 @@ public class ClassroomService {
    * Generates a new code for joining the classroom. Useful when codes are leaked.
    *
    * @param classroomUid Classroom uid
-   * @param callerUuid  UUID of the calling user
+   * @param callerUuid   UUID of the calling user
    * @return ClassroomResponse
    */
   @Transactional
@@ -119,8 +131,15 @@ public class ClassroomService {
     }
 
     member.setClassroom(c);
+    member.setClassroomPending(true);
     c.getMembers().add(member);
-    return ClassroomResponse.from(c);
+    return ClassroomResponse.from(c, true);
+  }
+
+  @Transactional
+  public void updateWeeklyMystery(Classroom classroom, WeeklyMysteryPrompt prompt) {
+    classroom.setWeeklyMysteryPrompt(prompt);
+    classroomRepo.save(classroom);
   }
 
   @Transactional
@@ -132,11 +151,23 @@ public class ClassroomService {
     if (member.getClassroom() == null || !member.getClassroom().getUid().equals(classroomUid)) {
       throw new StudentNotInClassException("Student is not a member of this classroom");
     }
-
-    eventPublisher.publishEvent(new NotificationEvent(memberUuid, "Do a thing!", 0));
     member.setClassroom(null);
+    member.setClassroomPending(false);
     c.getMembers().remove(member);
 
+    return ClassroomResponse.from(c);
+  }
+
+  @Transactional
+  public ClassroomResponse approveMember(UUID classroomUid, UUID memberUuid, UUID callerUuid) {
+    Classroom c = requireOwned(classroomUid, callerUuid);
+    StudentUser member = requireStudent(memberUuid);
+
+    if (member.getClassroom() == null || !member.getClassroom().getUid().equals(classroomUid)) {
+      throw new StudentNotInClassException("Student is not a member of this classroom");
+    }
+
+    member.setClassroomPending(false);
     return ClassroomResponse.from(c);
   }
 
@@ -153,6 +184,7 @@ public class ClassroomService {
     }
 
     member.setClassroom(null);
+    member.setClassroomPending(false);
     studentRepo.save(member);
   }
 
@@ -170,6 +202,15 @@ public class ClassroomService {
   }
 
   @Transactional(readOnly = true)
+  public Classroom getFullClassroom(UUID classroomUid) {
+    Optional<Classroom> classroom = classroomRepo.findByUid(classroomUid);
+    if (classroom.isEmpty()) {
+      throw new NotFoundException("Classroom with uuid " + classroomUid + " not found");
+    }
+    return classroom.get();
+  }
+
+  @Transactional(readOnly = true)
   public ClassroomResponse getMyClassroom(UUID callerUuid) {
     StudentUser student = studentRepo.findByPublicUuid(callerUuid)
         .orElseThrow(() -> new NotFoundException("Student not found"));
@@ -178,7 +219,37 @@ public class ClassroomService {
       throw new StudentNotInClassException("Student is not in a classroom");
     }
 
-    return ClassroomResponse.from(student.getClassroom());
+    return ClassroomResponse.from(student.getClassroom(), student.isClassroomPending());
+  }
+
+  /**
+   * Method for retrieving the weekly mystery prompt connected directly to a
+   * classroom.
+   * 
+   * @param classroomPublicId UUID representing a classrooms public id, for
+   *                          resolving.
+   * @return an object containing information about a Weekly Mystery Response.
+   */
+  public Optional<WeeklyMysteryPrompt> getClassroomWeeklyMystery(UUID classroomPublicId) {
+    return classroomRepo.findByUid(classroomPublicId)
+        .map(Classroom::getWeeklyMysteryPrompt);
+  }
+
+  /**
+   * Method for retrieving weekly mysteries associated with a given classroom
+   * @param classroomPublicId the UUID of the classroom
+   * @return a list of prompt response data transfer objects
+   */
+  public List<WeeklyMysteryPromptResponse> getWeeklyMysteryHistory(UUID classroomPublicId) {
+    Long classroomId = classroomRepo.findByUid(classroomPublicId)
+      .map(Classroom::getInternalId).orElseThrow(() -> new EntityNotFoundException());
+
+    return classroomWeeklyMysteryRepository
+      .findByClassroom_InternalIdOrderByAssignedDateDesc(classroomId)
+      .stream()
+      .map(ClassroomWeeklyMystery::getWeeklyMysteryPrompt)
+      .map(WeeklyMysteryPromptResponse::fromEntity)
+      .toList();
   }
 
   private Classroom requireOwned(UUID classroomUid, UUID callerUuid) {

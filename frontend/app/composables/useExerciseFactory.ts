@@ -8,11 +8,21 @@ import type {
   XOrYTaskData,
 } from "~/composables/types/TaskTypes";
 import { Exercise } from "~/composables/types/ExerciseType";
+import type { BackendNotepadEntryType, NotepadEntryResponse } from "~/composables/types/NotepadTypes";
+
+export type ExerciseFactoryNotepadEntryPayload = {
+  title: string;
+  type: BackendNotepadEntryType;
+  content: string;
+  source: string;
+};
 
 export type ExerciseFactoryPayload = {
   title: string;
   difficultyName: string;
   description: string;
+  hint: string;
+  notepadEntry: ExerciseFactoryNotepadEntryPayload | null;
   tasks: ExerciseTask[];
 };
 
@@ -20,14 +30,18 @@ export type BackendExerciseRequestPayload = {
   title: string;
   difficultyName: string;
   description: string;
+  hint: string;
+  notepadEntry: ExerciseFactoryNotepadEntryPayload | null;
   tasks: BackendTaskRequestPayload[];
 };
 
 type BackendExerciseResponsePayload = {
-  publicId: string;
+  uid: string;
   title: string;
   difficultyName: string;
   description?: string;
+  hint?: string;
+  notepadEntry?: NotepadEntryResponse | null;
   tasks: Array<{
     internalId?: number | null;
     templateKind: ExerciseTemplateKind;
@@ -64,7 +78,7 @@ export const emailHotspotTargetIds = {
 } as const;
 
 const storageKey = "teacher.exerciseFactory.payloads";
-const placeholderImage = "https://placehold.co/1200x720?text=Oppgavebilde";
+const placeholderImage = "/images/placeholders/task.svg";
 
 export const createDraftId = (prefix: string) => {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -271,6 +285,8 @@ export const createExerciseDraft = (): ExerciseFactoryPayload => ({
   title: "",
   difficultyName: "",
   description: "",
+  hint: "",
+  notepadEntry: null,
   tasks: [],
 });
 
@@ -286,11 +302,14 @@ const normalizeStoredPayload = (payload: Record<string, unknown>): StoredExercis
       ? payload.difficultyText
       : "";
   const description = typeof payload.description === "string" ? payload.description : "";
+  const hint = typeof payload.hint === "string" ? payload.hint : "";
+  const rawNotepadEntry = payload.notepadEntry;
   const tasks = Array.isArray(payload.tasks) ? payload.tasks as ExerciseTask[] : [];
   const localId = typeof payload.localId === "string" ? payload.localId : createDraftId("exercise");
   const createdAt = typeof payload.createdAt === "string" ? payload.createdAt : new Date().toISOString();
+  const notepadEntry = normalizeNotepadEntry(rawNotepadEntry);
 
-  if (!title && !difficultyName && !description && tasks.length === 0) {
+  if (!title && !difficultyName && !description && !hint && !notepadEntry && tasks.length === 0) {
     return null;
   }
 
@@ -298,9 +317,36 @@ const normalizeStoredPayload = (payload: Record<string, unknown>): StoredExercis
     title,
     difficultyName,
     description,
+    hint,
+    notepadEntry,
     tasks,
     localId,
     createdAt,
+  };
+};
+
+const normalizeNotepadEntry = (value: unknown): ExerciseFactoryNotepadEntryPayload | null => {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+  const title = typeof record.title === "string" ? record.title : "";
+  const type = record.type === "TIP" || record.type === "INFO" || record.type === "OBSERVATION"
+    ? record.type
+    : "TIP";
+  const content = typeof record.content === "string" ? record.content : "";
+  const source = typeof record.source === "string" ? record.source : "";
+
+  if (!title && !content && !source) {
+    return null;
+  }
+
+  return {
+    title,
+    type,
+    content,
+    source,
   };
 };
 
@@ -391,12 +437,13 @@ const normalizeExerciseFactoryRecord = (record: Record<string, unknown>): Exerci
   return {
     localId: payload.localId,
     sourceUid: typeof record.sourceUid === "string" && record.sourceUid.trim().length > 0 ? record.sourceUid.trim() : undefined,
-    payload: {
-      title: payload.title,
-      difficultyName: payload.difficultyName,
-      description: payload.description,
-      tasks: payload.tasks,
-    },
+      payload: {
+        title: payload.title,
+        difficultyName: payload.difficultyName,
+        description: payload.description,
+        hint: payload.hint,
+        tasks: payload.tasks,
+      },
     createdAt: payload.createdAt,
     updatedAt: typeof record.updatedAt === "string"
       ? record.updatedAt
@@ -423,6 +470,7 @@ export const readExerciseFactoryStore = (): ExerciseFactoryStore => {
           title: payload.title,
           difficultyName: payload.difficultyName,
           description: payload.description,
+          hint: payload.hint,
           tasks: payload.tasks,
         },
         createdAt: payload.createdAt,
@@ -614,6 +662,15 @@ const toExercisePayloadFromBackend = (exercise: Exercise): ExerciseFactoryPayloa
   title: exercise.title,
   difficultyName: exercise.difficultyName,
   description: exercise.description ?? "",
+  hint: exercise.hint,
+  notepadEntry: exercise.notepadEntry
+    ? {
+        title: exercise.notepadEntry.title,
+        type: exercise.notepadEntry.type,
+        content: exercise.notepadEntry.content,
+        source: exercise.notepadEntry.source ?? "",
+      }
+    : null,
   tasks: exercise.tasks,
 });
 
@@ -679,11 +736,13 @@ export const saveExerciseFactoryPayload = async (
     clearExerciseFactoryOverride(selection.uid);
 
     return {
-      selectionKey: makeExerciseFactoryExistingSelectionKey(response.publicId),
+      selectionKey: makeExerciseFactoryExistingSelectionKey(response.uid),
       payload: {
         title: response.title,
         difficultyName: response.difficultyName,
         description: response.description ?? "",
+        hint: response.hint ?? "",
+        notepadEntry: payload.notepadEntry,
         tasks: payload.tasks,
       },
     };
@@ -699,11 +758,13 @@ export const saveExerciseFactoryPayload = async (
   }
 
   return {
-    selectionKey: makeExerciseFactoryExistingSelectionKey(response.publicId),
+    selectionKey: makeExerciseFactoryExistingSelectionKey(response.uid),
     payload: {
       title: response.title,
       difficultyName: response.difficultyName,
       description: response.description ?? "",
+      hint: response.hint ?? "",
+      notepadEntry: payload.notepadEntry,
       tasks: payload.tasks,
     },
   };
@@ -719,11 +780,13 @@ export const saveExerciseFactoryPayloadAsNew = async (
   });
 
   return {
-    selectionKey: makeExerciseFactoryExistingSelectionKey(response.publicId),
+    selectionKey: makeExerciseFactoryExistingSelectionKey(response.uid),
     payload: {
       title: response.title,
       difficultyName: response.difficultyName,
       description: response.description ?? "",
+      hint: response.hint ?? "",
+      notepadEntry: payload.notepadEntry,
       tasks: payload.tasks,
     },
   };
@@ -813,5 +876,7 @@ export const mapExerciseToBackendRequest = (
   title: payload.title,
   difficultyName: payload.difficultyName,
   description: payload.description,
+  hint: payload.hint,
+  notepadEntry: payload.notepadEntry,
   tasks: payload.tasks.map(mapTaskToBackendTaskRequest),
 });

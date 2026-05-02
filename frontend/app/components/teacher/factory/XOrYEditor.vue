@@ -1,9 +1,54 @@
 <script setup lang="ts">
 import type { XOrYTaskData } from "~/composables/types/TaskTypes";
+import { useFactoryImageUpload } from "~/composables/useFactoryImageUpload";
 
 const props = defineProps<{
 	task: XOrYTaskData;
 }>();
+
+const { uploadImage } = useFactoryImageUpload();
+const xUploadState = ref<"idle" | "uploading">("idle");
+const yUploadState = ref<"idle" | "uploading">("idle");
+const xUploadError = ref("");
+const yUploadError = ref("");
+
+const uploadOptionImage = async (choice: "x" | "y", event: Event) => {
+	const input = event.target as HTMLInputElement | null;
+	const file = input?.files?.[0];
+
+	if (!file) {
+		return;
+	}
+
+	if (choice === "x") {
+		xUploadState.value = "uploading";
+		xUploadError.value = "";
+	} else {
+		yUploadState.value = "uploading";
+		yUploadError.value = "";
+	}
+
+	try {
+		const uploaded = await uploadImage(file, "uploads/factory/tasks");
+		props.task.options[choice].imageUrl = uploaded.url;
+	} catch (error) {
+		const message = error instanceof Error ? error.message : "Bildet kunne ikke lastes opp.";
+		if (choice === "x") {
+			xUploadError.value = message;
+		} else {
+			yUploadError.value = message;
+		}
+	} finally {
+		if (choice === "x") {
+			xUploadState.value = "idle";
+		} else {
+			yUploadState.value = "idle";
+		}
+		if (input) {
+			input.value = "";
+		}
+	}
+};
 </script>
 
 <template>
@@ -15,7 +60,7 @@ const props = defineProps<{
 				<input v-model="props.task.prompt!.title" type="text" >
 			</label>
 
-			<label class="field field--full">
+			<label class="field fieldFull">
 				<span>Prompt-tekst</span>
 				<textarea v-model="props.task.prompt!.text" rows="2"></textarea>
 			</label>
@@ -45,13 +90,18 @@ const props = defineProps<{
 					<textarea v-model="props.task.options.x.text" rows="3"></textarea>
 				</label>
 				<label class="field">
-					<span>Bilde-URL</span>
-					<input v-model="props.task.options.x.imageUrl" type="url" >
+					<span>Bilde</span>
+					<input type="file" accept="image/*" :disabled="xUploadState === 'uploading'" @change="uploadOptionImage('x', $event)" >
+					<small class="fieldHint">{{ xUploadState === "uploading" ? "Laster opp..." : "Velg et bilde for alternativ X." }}</small>
+					<p v-if="xUploadError" class="fieldError">{{ xUploadError }}</p>
 				</label>
 				<label class="field">
 					<span>Bildetekst</span>
 					<input v-model="props.task.options.x.imageAlt" type="text" >
 				</label>
+				<div class="imagePreviewCard">
+					<img :src="props.task.options.x.imageUrl" :alt="props.task.options.x.imageAlt || 'Forhandsvisning av alternativ X'" class="imagePreview" >
+				</div>
 			</article>
 
 			<article class="splitCard">
@@ -69,13 +119,18 @@ const props = defineProps<{
 					<textarea v-model="props.task.options.y.text" rows="3"></textarea>
 				</label>
 				<label class="field">
-					<span>Bilde-URL</span>
-					<input v-model="props.task.options.y.imageUrl" type="url" >
+					<span>Bilde</span>
+					<input type="file" accept="image/*" :disabled="yUploadState === 'uploading'" @change="uploadOptionImage('y', $event)" >
+					<small class="fieldHint">{{ yUploadState === "uploading" ? "Laster opp..." : "Velg et bilde for alternativ Y." }}</small>
+					<p v-if="yUploadError" class="fieldError">{{ yUploadError }}</p>
 				</label>
 				<label class="field">
 					<span>Bildetekst</span>
 					<input v-model="props.task.options.y.imageAlt" type="text" >
 				</label>
+				<div class="imagePreviewCard">
+					<img :src="props.task.options.y.imageUrl" :alt="props.task.options.y.imageAlt || 'Forhandsvisning av alternativ Y'" class="imagePreview" >
+				</div>
 			</article>
 		</div>
 	</div>
@@ -83,81 +138,121 @@ const props = defineProps<{
 
 <style scoped>
 .templateSection {
-	margin-top: 1rem;
-	padding-top: 1rem;
-	border-top: 1px solid var(--border);
+   margin-top: var(--space-4);
+   padding-top: var(--space-4);
+   border-top: var(--border-width-hairline) solid var(--color-border-default);
 }
 
 .templateSection h4 {
-	margin: 0 0 0.8rem;
-	font-weight: 700;
+   margin: 0 0 var(--space-3);
 }
 
-.fieldGrid,
-.splitGrid {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 0.9rem;
+.fieldGrid {
+   display: grid;
+   grid-template-columns: repeat(2, minmax(0, 1fr));
+   gap: var(--space-3);
 }
 
 .splitGrid {
-	margin-top: 0.9rem;
+   display: grid;
+   grid-template-columns: repeat(2, minmax(0, 1fr));
+   gap: var(--space-3);
+   margin-top: var(--space-3);
 }
 
 .field {
-	display: grid;
-	gap: 0.45rem;
+   display: grid;
+   gap: var(--space-1);
 }
 
-.field--full {
-	grid-column: 1 / -1;
+.fieldFull {
+   grid-column: 1 / -1;
 }
 
-.field span,
-.splitCard h5 {
-	font-weight: 700;
+.field span {
+   color: var(--factory-label-color);
+   font-family: var(--factory-label-font), monospace;
+   font-size: var(--factory-label-size);
+   font-weight: var(--font-weight-bold);
+   letter-spacing: var(--factory-label-tracking);
+   text-transform: uppercase;
+}
+
+.fieldHint {
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
+.fieldError {
+	margin: 0;
+	color: #fca5a5;
+	font-size: 0.9rem;
 }
 
 .field input,
 .field select,
 .field textarea {
-	width: 100%;
-	padding: 0.85rem 1rem;
-	border: 1px solid var(--border);
-	border-radius: 0.9rem;
-	background: rgba(0, 0, 0, 0.16);
-	color: var(--text);
-	font: inherit;
+   width: 100%;
+   padding: var(--space-3) var(--space-4);
+   border: var(--border-width-hairline) solid var(--factory-field-border);
+   border-radius: var(--radius-1);
+   background: var(--factory-field-bg);
+   color: var(--color-text-primary);
+   font: inherit;
 }
 
 .field textarea {
-	resize: vertical;
+   resize: vertical;
 }
 
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-	outline: none;
-	border-color: var(--primary);
+   outline: none;
+   border-color: var(--factory-field-focus);
 }
 
 .splitCard {
-	display: grid;
-	gap: 0.75rem;
-	padding: 1rem;
-	border: 1px solid var(--border);
-	border-radius: 1rem;
+   display: grid;
+   gap: var(--space-3);
+   padding: var(--space-4);
+   border: var(--border-width-hairline) solid var(--color-border-default);
+   border-radius: var(--radius-2);
+   background: var(--color-bg-canvas);
+}
+
+.imagePreviewCard {
+	padding: 0.75rem;
+	border: var(--border-width-hairline) solid var(--color-border-default);
+	border-radius: var(--radius-2);
 	background: rgba(255, 255, 255, 0.02);
 }
 
-.splitCard h5 {
-	margin: 0;
+.imagePreview {
+	display: block;
+	width: 100%;
+	max-height: 14rem;
+	object-fit: cover;
+	border-radius: 0.75rem;
 }
 
-@media (max-width: 800px) {
-	.fieldGrid,
-	.splitGrid {
-		grid-template-columns: 1fr;
-	}
+.splitCard h5 {
+   margin: 0;
+   color: var(--factory-label-color);
+   font-family: var(--factory-label-font), monospace;
+   font-size: var(--factory-label-size);
+   font-weight: var(--font-weight-bold);
+   letter-spacing: var(--factory-label-tracking);
+   text-transform: uppercase;
+}
+
+@media (max-width: 800px) { /* deliberate: matches factory editor mobile breakpoint */
+   .fieldGrid {
+      grid-template-columns: 1fr;
+   }
+
+   .splitGrid {
+      grid-template-columns: 1fr;
+   }
 }
 </style>

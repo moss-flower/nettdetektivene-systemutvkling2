@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#edf7ff"/>
+  <rect x="150" y="110" width="900" height="500" rx="40" fill="#ffffff"/>
+  <rect x="220" y="190" width="540" height="58" rx="20" fill="#8dc4ff"/>
+  <rect x="220" y="290" width="700" height="30" rx="15" fill="#d5e9ff"/>
+  <rect x="220" y="345" width="650" height="30" rx="15" fill="#d5e9ff"/>
+  <rect x="220" y="400" width="560" height="30" rx="15" fill="#d5e9ff"/>
+  <circle cx="900" cy="215" r="42" fill="#5dd39e"/>
+  <text x="600" y="135" text-anchor="middle" font-size="50" font-family="Arial, sans-serif" fill="#2f5d8a">Rolig overskrift med tydelig avsender</text>
+</svg>

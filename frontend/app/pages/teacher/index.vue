@@ -1,16 +1,25 @@
 <script setup lang="ts">
-import { routePaths, routePathsWithString } from '~/composables/utils/routePaths';
-import { useAuth } from '~/composables/useAuth';
-import { toClassroomSummaries } from '~/composables/useTeacherDashboard';
+import {
+  routePaths,
+  routePathsWithString,
+} from "~/composables/utils/routePaths";
+import { useAuth } from "~/composables/useAuth";
+import { toClassroomSummaries } from "~/composables/useTeacherDashboard";
+import { Bell } from 'lucide-vue-next';
+
+definePageMeta({ layout: 'teacher' });
 
 const { teacher } = useClassrooms();
 
-const { data: ownedClassrooms, pending: classroomsPending } = await useAsyncData(
-  'teacher-owned-classrooms',
-  () => teacher.getOwnedClassrooms().catch(() => []),
-);
+const { data: ownedClassrooms, pending: classroomsPending } =
+  await useAsyncData("teacher-owned-classrooms", () =>
+    teacher.getOwnedClassrooms().catch(() => []),
+  );
 
-const classroomSummaries = computed(() => toClassroomSummaries(ownedClassrooms.value ?? []));
+const classroomSummaries = computed(() =>
+  toClassroomSummaries(ownedClassrooms.value ?? []),
+);
+const { notificationCount } = useNotifications();
 const { logout } = useAuth();
 const isLoggingOut = ref(false);
 
@@ -31,87 +40,138 @@ const handleLogout = async () => {
 </script>
 
 <template>
-  <section class="overviewPage">
-    <header class="overviewHeader">
-      <div class="overviewHeader__content">
-        <p class="eyebrow">Læreroversikt</p>
-        <h1>Hjemskjerm</h1>
-        <p class="subtitle">Administrer klasserom og følg aktivitet.</p>
-      </div>
-      <button class="logoutButton" type="button" :disabled="isLoggingOut" @click="handleLogout">
-        {{ isLoggingOut ? 'Logger ut...' : 'Logg ut' }}
-      </button>
-    </header>
-
-	<div class="dashboardGrid">
-	  <aside class="panel classesPanel">
-        <h2>Dine klasserom</h2>
-        <NuxtLink class="buttonLink createClassroomButton" :to="routePaths.teacherClassroomCreate">
-          + Lag klasserom
-        </NuxtLink>
-        <NuxtLink class="buttonLink joinClassroomButton" :to="routePaths.join">
-          Bli med i klasserom
-        </NuxtLink>
-
-        <div class="classroomCards">
-          <p v-if="classroomsPending" class="panelMessage">Laster klasserom...</p>
-          <p v-else-if="classroomSummaries.length === 0" class="panelMessage">Du har ingen klasserom ennå.</p>
-          <NuxtLink
-            v-for="(classroom, index) in classroomSummaries"
-            :key="classroom.id"
-            class="classroomCard"
-            :class="`classroomCard--${(index % 3) + 1}`"
-            :to="routePathsWithString(routePaths.teacherClassroomOverview, `?classroomId=${classroom.id}`)"
-          >
-            <span class="classroomName">{{ classroom.name }}</span>
-            <span class="classScore">{{ classroom.studentCount }} elever</span>
-          </NuxtLink>
-		  </div>
-		</aside>
-
-		<div class="topActionRow">
-		  <NuxtLink class="panel settingsButton" :to="routePaths.teacherSettings">
-			<img src="https://placehold.co/64x64" alt="Innstillinger ikon" class="settingsIcon">
-			<span class="settingsButton__label">Innstillinger</span>
-		  </NuxtLink>
-
-		  <NuxtLink class="panel settingsButton settingsButton--notifications" :to="routePaths.teacherNotifications">
-			<img src="https://placehold.co/64x64" alt="Varslinger ikon" class="settingsIcon">
-			<span class="settingsButton__label">Varslinger</span>
-			<span class="notificationBadge">1</span>
-		  </NuxtLink>
-		</div>
-
-      <article class="panel panel--highlight managementPanel">
-        <h2>Lag og rediger</h2>
-        <p>Lag og/eller rediger klasserom og ressurser fra samme sted.</p>
-
-        <div class="factoryActions factoryActions--grid">
-          <NuxtLink class="buttonLink buttonLink--secondary" :to="routePaths.teacherFactoryStation">
-            Stasjoner
-          </NuxtLink>
-          <NuxtLink class="buttonLink buttonLink--secondary" :to="routePaths.teacherFactoryExercise">
-            Øvelser
-          </NuxtLink>
+  <section class="overviewShell">
+    <div class="overviewPage">
+      <header class="overviewHeader">
+        <div class="overviewHeader__content">
+          <p class="eyebrow">Læreroversikt</p>
+          <h1>Hjemskjerm</h1>
+          <p class="subtitle">Administrer klasserom og følg aktivitet.</p>
         </div>
-      </article>
-
-      <article class="panel mysteryPanel">
-        <h2>Ukens mysterium</h2>
-        <button type="button" class="buttonLink buttonLink--secondary mysteryButton">
-          Placeholder
+        <button
+          class="logoutButton"
+          type="button"
+          :disabled="isLoggingOut"
+          @click="handleLogout"
+        >
+          Logg ut
         </button>
-      </article>
+      </header>
+
+      <div class="dashboardGrid">
+        <aside class="panel classesPanel">
+          <h2>Dine klasserom</h2>
+          <NuxtLink
+            class="buttonLink createClassroomButton"
+            :to="routePaths.teacherClassroomCreate"
+          >
+            + Lag klasserom
+          </NuxtLink>
+          <NuxtLink
+            class="buttonLink joinClassroomButton"
+            :to="routePaths.join"
+          >
+            Bli med i klasserom
+          </NuxtLink>
+
+          <div class="classroomCards">
+            <p v-if="classroomsPending" class="panelMessage">
+              Laster klasserom...
+            </p>
+            <p v-else-if="classroomSummaries.length === 0" class="panelMessage">
+              Du har ingen klasserom ennå.
+            </p>
+            <NuxtLink
+              v-for="(classroom, index) in classroomSummaries"
+              :key="classroom.id"
+              class="classroomCard"
+              :class="`classroomCard${(index % 3) + 1}`"
+              :to="routePathsWithString(routePaths.teacherClassroomOverview, { classroomId: classroom.id })"
+            >
+              <span class="classroomName">{{ classroom.name }}</span>
+              <span class="classScore"
+                >{{ classroom.studentCount }} elever</span
+              >
+            </NuxtLink>
+          </div>
+        </aside>
+
+        <div class="rightColumn">
+          <div class="topActionRow topActionRowSingle">
+            <NuxtLink
+              class="panel settingsButton settingsButtonNotifications"
+              :to="routePaths.teacherNotifications"
+            >
+              <Bell :size="48" class="settingsIcon" />
+              <span class="settingsButtonLabel">Varslinger</span>
+              <span v-if="notificationCount > 0" class="notificationBadge">
+                {{ notificationCount }}
+              </span>
+            </NuxtLink>
+          </div>
+
+          <article class="panel panelHighlight">
+            <h2>Hurtig tilgang</h2>
+            <p>Lag nye ressurser som kan brukes i klasserom og stasjonskart.</p>
+
+            <h3 class="quickAccessSubheading">Lag ny</h3>
+
+            <div class="factoryActions factoryActionsGrid">
+              <NuxtLink
+                class="buttonLink buttonLinkSecondary"
+                :to="{
+                  path: routePaths.teacherFactoryWorld,
+                  query: {
+                    returnTo: routePaths.teacherOverview,
+                  },
+                }"
+              >
+                + Stasjonskart
+              </NuxtLink>
+              <NuxtLink
+                class="buttonLink buttonLinkSecondary"
+                :to="{
+                  path: routePaths.teacherFactoryStation,
+                  query: {
+                    returnTo: routePaths.teacherOverview,
+                  },
+                }"
+              >
+                + Stasjon
+              </NuxtLink>
+              <NuxtLink
+                class="buttonLink buttonLinkSecondary"
+                :to="{
+                  path: routePaths.teacherFactoryExercise,
+                  query: {
+                    returnTo: routePaths.teacherOverview,
+                  },
+                }"
+              >
+                + Oppgavesett
+              </NuxtLink>
+            </div>
+          </article>
+        </div>
+      </div>
     </div>
   </section>
 </template>
 
 <style scoped>
+.overviewShell {
+  min-height: 100dvh;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  padding: var(--layout-page-padding);
+}
+
 .overviewPage {
   width: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: var(--space-4);
+  max-width: var(--layout-max-width);
+  padding: var(--layout-page-padding);
+  background: var(--color-bg-canvas);
 }
 
 .overviewHeader {
@@ -120,47 +180,72 @@ const handleLogout = async () => {
   justify-content: space-between;
   gap: var(--space-4);
   margin-bottom: var(--space-4);
+  padding: var(--space-5);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-top: var(--border-width-thick) solid var(--color-accent-reward);
+  border-radius: var(--radius-3);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-folder);
 }
 
 .overviewHeader__content {
   min-width: 0;
 }
 
+@media (max-width: 720px) {
+  .overviewShell {
+    place-items: stretch;
+  }
+  .overviewPage {
+    border-radius: var(--radius-4);
+  }
+  .overviewHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .logoutButton {
+    align-self: flex-start;
+  }
+}
+
 .eyebrow {
-  color: var(--primary);
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--font-tracking-wider);
   text-transform: uppercase;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
 }
 
 h1 {
-  margin: 0 0 0.5rem 0;
-  color: var(--text);
+  margin: 0 0 var(--space-2) 0;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-serif), sans-serif;
+  font-size: var(--font-size-28);
+  line-height: var(--font-leading-28);
 }
 
 .subtitle {
   margin: 0;
-  color: var(--muted);
+  color: var(--color-text-secondary);
 }
 
 .logoutButton {
   flex: 0 0 auto;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 0.75rem 1rem;
-  background: transparent;
-  color: var(--text);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-1);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
   font: inherit;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
 }
 
 .logoutButton:hover:not(:disabled) {
   transform: translateY(-1px);
-  border-color: var(--primary);
-  color: var(--primary);
+  border-color: var(--color-brand-primary);
+  color: var(--color-brand-primary);
 }
 
 .logoutButton:disabled {
@@ -176,179 +261,207 @@ h1 {
 }
 
 .panel {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-3);
+  background: var(--color-bg-surface);
   padding: var(--space-4);
+  box-shadow: var(--shadow-1);
 }
 
 .topActionRow {
-  grid-column: 2;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-4);
 }
 
+.topActionRowSingle {
+  grid-template-columns: minmax(132px, 164px);
+  justify-content: end;
+}
+
 .settingsButton {
   position: relative;
   display: grid;
-  justify-items: start;
-  gap: 1rem;
+  justify-items: center;
+  align-items: center;
+  gap: var(--space-2);
   color: inherit;
   text-decoration: none;
-  transition: transform 0.15s ease, border-color 0.15s ease;
+  text-align: center;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
 }
 
 .settingsButton:hover {
   transform: translateY(-1px);
-  border-color: var(--primary);
+  border-color: var(--color-brand-primary);
 }
 
 .settingsIcon {
   width: 3.5rem;
   height: 3.5rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-1);
 }
 
-.settingsButton__label {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--text);
+.settingsButtonLabel {
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
 }
 
 .notificationBadge {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: var(--space-4);
+  right: var(--space-4);
   display: grid;
   place-items: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 999px;
-  background: #ef4444;
-  color: white;
-  font-size: 0.95rem;
-  font-weight: 700;
+  min-width: var(--size-icon-md);
+  height: var(--size-icon-md);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-semantic-error);
+  color: var(--color-text-onDark);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+}
+
+.settingsButtonNotifications {
+  width: 100%;
+  min-height: 132px;
+  aspect-ratio: 1 / 1;
+  padding: var(--space-3);
 }
 
 .classesPanel {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 h2 {
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 var(--space-3) 0;
 }
 
 .classroomCards {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .panelMessage {
   margin: 0;
-  color: var(--muted);
+  color: var(--color-text-secondary);
 }
 
 .classroomCard {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: var(--space-3);
+  /* deliberate exception, card-aspect anchor */
   min-height: 96px;
-  padding: 1rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  padding: var(--space-4);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-2);
   text-decoration: none;
-  transition: transform 0.15s ease, border-color 0.15s ease;
-}
-
-.classroomCard--1 {
-  background: rgba(101, 240, 175, 0.08);
-}
-
-.classroomCard--2 {
-  background: rgba(96, 165, 250, 0.1);
-}
-
-.classroomCard--3 {
-  background: rgba(244, 114, 182, 0.1);
+  /* deliberate, navy-family tint */
+  background: var(--palette-navy-600);
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
 }
 
 .classroomCard:hover {
   transform: translateY(-1px);
-  border-color: var(--primary);
+  border-color: var(--color-brand-primary);
 }
 
 .classroomName {
-  font-weight: 700;
-  color: var(--primary);
-  font-size: 1.05rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-onDark);
+  font-size: var(--font-size-16);
 }
 
 .classScore {
-  color: var(--muted);
-  font-size: 0.95rem;
+  color: var(--color-text-onDark);
+  font-size: var(--font-size-14);
+  opacity: 0.87;
   white-space: nowrap;
 }
 
-.panel--highlight {
-  background: var(--surface);
-}
-
-.managementPanel {
-  grid-column: 2;
-}
-
-.mysteryPanel {
-  grid-column: 2;
+.panelHighlight {
+  background: var(--color-bg-surface);
+  border: var(--border-width-thick) solid var(--color-accent-reward);
+  border-radius: var(--radius-4);
+  box-shadow: var(--shadow-folder);
 }
 
 .factoryActions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 0.9rem;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
 }
 
-.factoryActions--grid {
+.factoryActionsGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.quickAccessSubheading {
+  margin: var(--space-4) 0 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-16);
+}
+
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
 }
 
 .buttonLink {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 4.5rem;
-  padding: 1rem 1.25rem;
-  border: 1px solid var(--primary);
-  border-radius: var(--radius);
-  background: var(--primary);
-  color: var(--bg);
-  font-size: 1.05rem;
-  font-weight: 700;
+  min-height: var(--size-control-lg);
+  padding: var(--space-4) var(--space-5);
+  border: var(--border-width-hairline) solid var(--color-brand-primary);
+  border-radius: var(--radius-1);
+  background: var(--color-brand-primary);
+  color: var(--color-text-onDark);
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-bold);
   text-decoration: none;
+  box-shadow: var(--shadow-1);
+  transition: tansform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
 }
 
-.buttonLink--secondary {
-  background: transparent;
-  color: var(--primary);
+.buttonLink:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2);
+}
+
+.buttonLink:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-pressed);
+}
+
+.buttonLinkSecondary {
+  background: var(--color-bg-surface);
+  border-color: var(--color-border-default);
+  color: var(--color-brand-primary);
+}
+
+.buttonLinkSecondary:hover {
+  border-color: var(--color-brand-primary);
 }
 
 .joinClassroomButton {
   width: 100%;
-  min-height: 3.5rem;
+  min-height: var(--size-control-lg);
 }
 
 .createClassroomButton {
   width: 100%;
-  min-height: 3.5rem;
-}
-
-.mysteryButton {
-  margin-top: 0.9rem;
-  width: 100%;
+  min-height: var(--size-control-lg);
 }
 
 @media (max-width: 900px) {
@@ -356,30 +469,11 @@ h2 {
     grid-template-columns: 1fr;
   }
 
-  .topActionRow {
-    grid-column: auto;
+  .topActionRowSingle {
+    grid-template-columns: 1fr;
   }
 
-  .managementPanel {
-    grid-column: auto;
-  }
-
-  .mysteryPanel {
-    grid-column: auto;
-  }
-}
-
-@media (max-width: 640px) {
-  .overviewHeader {
-    display: grid;
-  }
-
-  .logoutButton {
-    justify-self: flex-start;
-  }
-
-  .topActionRow,
-  .factoryActions--grid {
+  .factoryActionsGrid {
     grid-template-columns: 1fr;
   }
 }

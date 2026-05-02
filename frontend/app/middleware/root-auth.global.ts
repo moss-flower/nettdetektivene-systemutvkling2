@@ -7,10 +7,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return;
   }
 
+  const { $api } = useNuxtApp();
+
   try {
-    await $fetch("/api/v1/classrooms", {
+    await $api("/classrooms", {
       method: "GET",
-      credentials: "include",
       headers: authHeaders(),
     });
 
@@ -20,13 +21,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   try {
-    await $fetch("/api/v1/classrooms/me", {
+    const classroom = await $api<{ pendingEntry?: boolean }>("/classrooms/me", {
       method: "GET",
-      credentials: "include",
       headers: authHeaders(),
     });
 
-    return navigateTo(routePaths.studentHome);
+    return navigateTo(classroom.pendingEntry ? routePaths.pending : routePaths.studentHome);
   } catch {
     return;
   }

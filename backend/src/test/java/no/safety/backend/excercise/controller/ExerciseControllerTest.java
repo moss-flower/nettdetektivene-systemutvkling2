@@ -15,7 +15,10 @@ import no.safety.backend.exception.NotFoundException;
 import no.safety.backend.excercise.dto.ExerciseReadRequest;
 import no.safety.backend.excercise.dto.ExerciseRequest;
 import no.safety.backend.excercise.dto.ExerciseResponse;
+import no.safety.backend.notepad.dto.NotepadEntryCreateRequest;
+import no.safety.backend.notepad.dto.NotepadEntryResponse;
 import no.safety.backend.excercise.service.ExerciseService;
+import no.safety.backend.notepad.model.NotepadEntryType;
 import no.safety.backend.task.content.MultipleChoiceContent;
 import no.safety.backend.task.content.MultipleChoiceContent.Option;
 import no.safety.backend.task.content.MultipleChoiceContent.Prompt;
@@ -31,9 +34,9 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
@@ -57,6 +60,7 @@ class ExerciseControllerTest {
   private ExerciseRequest validRequest;
   private ExerciseResponse savedResponse;
   private UUID publicId;
+  private NotepadEntryCreateRequest notepadEntryRequest;
 
   @BeforeEach
   void setUp() {
@@ -68,8 +72,16 @@ class ExerciseControllerTest {
         "Her er det om å ha best smak mellom de tre første bokstavene i alfabetet",
         "Alle vet at C er best! Bra jobba!", "Tenk deg godt om.", tc1);
 
+    notepadEntryRequest = new NotepadEntryCreateRequest(
+        "Huskelapp",
+        NotepadEntryType.TIP,
+        "Velg alternativet som passer best.",
+        "Bokstavstasjon"
+    );
+
     validRequest = new ExerciseRequest("Bokstavenes rangering", "67% Vanskelig",
-        "Hvordan rangerer du bokstavene i alfabetet?", List.of(tr1));
+        "Hvordan rangerer du bokstavene i alfabetet?", "Se etter hvilket alternativ som passer best.",
+        notepadEntryRequest, List.of(tr1));
 
     publicId = UUID.randomUUID();
     TaskResponse taskResp = new TaskResponse(
@@ -84,6 +96,14 @@ class ExerciseControllerTest {
         validRequest.title(),
         validRequest.difficultyName(),
         validRequest.description(),
+        validRequest.hint(),
+        new NotepadEntryResponse(
+            UUID.randomUUID(),
+            notepadEntryRequest.title(),
+            java.time.ZonedDateTime.now(),
+            notepadEntryRequest.source(),
+            notepadEntryRequest.type(),
+            notepadEntryRequest.content()),
         List.of(taskResp));
   }
 
@@ -99,7 +119,8 @@ class ExerciseControllerTest {
         .expectStatus().isCreated()
         .expectBody(ExerciseResponse.class).value(response -> {
           assertThat(response.title()).isEqualTo("Bokstavenes rangering");
-          assertThat(response.publicId()).isEqualTo(publicId);
+          assertThat(response.uid()).isEqualTo(publicId);
+          assertThat(response.notepadEntry()).isNotNull();
           assertThat(response.tasks()).hasSize(1);
         });
   }
@@ -107,7 +128,7 @@ class ExerciseControllerTest {
   @Test
   @WithMockUser(roles = "TEACHER")
   void create_withInvalidRequest_returns400BadRequest() {
-    ExerciseRequest invalidRequest = new ExerciseRequest("", "", "", null);
+    ExerciseRequest invalidRequest = new ExerciseRequest("", "", "", "", null, null);
     client.post().uri("/api/v1/exercises")
         .contentType(MediaType.APPLICATION_JSON)
         .body(invalidRequest)
@@ -119,7 +140,7 @@ class ExerciseControllerTest {
 
   @Test
   @WithMockUser(roles = "STUDENT")
-  void create_withoutTeacherRole_returns403Forbidden() {
+  void create_withStudentRole_returnsForbiddenInWebMvcSlice() {
     client.post().uri("/api/v1/exercises")
         .contentType(MediaType.APPLICATION_JSON)
         .body(validRequest)
@@ -138,7 +159,7 @@ class ExerciseControllerTest {
         .exchange()
         .expectStatus().isOk()
         .expectBody(ExerciseResponse.class).value(response -> {
-          assertThat(response.publicId()).isEqualTo(publicId);
+          assertThat(response.uid()).isEqualTo(publicId);
           assertThat(response.title()).isEqualTo("Bokstavenes rangering");
           assertThat(response.tasks()).hasSize(1);
         });
@@ -168,7 +189,7 @@ class ExerciseControllerTest {
 
   @Test
   @WithMockUser(roles = "STUDENT")
-  void getAll_withoutTeacherRole_returns403Forbidden() {
+  void getAll_withStudentRole_returnsForbiddenInWebMvcSlice() {
     client.get().uri("/api/v1/exercises")
         .exchange()
         .expectStatus().isForbidden();
@@ -188,7 +209,7 @@ class ExerciseControllerTest {
         .exchange()
         .expectStatus().isOk()
         .expectBody(ExerciseResponse.class).value(response -> {
-          assertThat(response.publicId()).isEqualTo(publicId);
+          assertThat(response.uid()).isEqualTo(publicId);
           assertThat(response.title()).isEqualTo("Bokstavenes rangering");
         });
   }
@@ -196,7 +217,7 @@ class ExerciseControllerTest {
   @Test
   @WithMockUser(roles = "TEACHER")
   void update_withInvalidRequest_returns400BadRequest() {
-    ExerciseRequest invalidRequest = new ExerciseRequest("", "", "", null);
+    ExerciseRequest invalidRequest = new ExerciseRequest("", "", "", "", null, null);
 
     client.put().uri("/api/v1/exercises/{publicId}", publicId)
         .contentType(MediaType.APPLICATION_JSON)
@@ -243,7 +264,7 @@ class ExerciseControllerTest {
 
   @Test
   @WithMockUser(roles = "STUDENT")
-  void delete_withoutTeacherRole_returns403Forbidden() {
+  void delete_withStudentRole_returnsForbiddenInWebMvcSlice() {
     client.delete().uri("/api/v1/exercises/{publicId}", publicId)
         .exchange()
         .expectStatus().isForbidden();

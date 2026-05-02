@@ -8,7 +8,8 @@ import no.safety.backend.notepad.model.NotepadEntryType;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Defines a {@link NotepadEntry} request for POST requests.
+ * DTO for notepad entry creation requests.
+ * Contains the required fields for creating a new notepad entry.
  */
 public record NotepadEntryCreateRequest(
     @NotBlank 

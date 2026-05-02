@@ -8,18 +8,22 @@ public record StationResponse(
     UUID uid,
     String title,
     String description,
+    String hint,
     String image,
     String backgroundColor,
-    List<UUID> exerciseUids
+    List<UUID> exerciseUids,
+    boolean isBoss
 ) {
   public static StationResponse from(Station station) {
     return new StationResponse(
         station.getUid(),
         station.getTitle(),
         station.getDescription(),
+        station.getHint(),
         station.getImage(),
         station.getBackgroundColor(),
-        station.getExerciseUids()
+        station.getExerciseUids(),
+        station.isBoss()
     );
   }
 }
