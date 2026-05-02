@@ -300,7 +300,6 @@ const feedbackText = computed(() => {
 })
 
 const showAnswerDialog = computed(() => Boolean(answerState.value))
-const canAutoSolve = computed(() => Boolean(currentTask.value) && !answerState.value)
 const taskResultActionLabel = computed(() => {
   if (!answerState.value) {
     return 'Neste sak'
@@ -312,65 +311,6 @@ const taskResultActionLabel = computed(() => {
 
   return currentIndex.value >= tasks.length - 1 ? 'Fullfor' : 'Neste sak'
 })
-
-const autoSolveCurrentTask = () => {
-  if (!currentTask.value || answerState.value) {
-    return
-  }
-
-  if (currentTask.value.templateKind === 'multiple-choice') {
-    onAnsweredMultipleChoice({
-      correct: true,
-      choice: currentTask.value.correctChoice,
-    })
-    return
-  }
-
-  if (currentTask.value.templateKind === 'x-or-y') {
-    onAnswered({
-      correct: true,
-      choice: currentTask.value.correctChoice,
-    })
-    return
-  }
-
-  if (currentTask.value.templateKind === 'email-hotspots') {
-    onAnsweredEmailHotspots({
-      correct: true,
-      selectedTargetIds: currentTask.value.targets
-      .filter((target) => target.isSuspicious)
-      .map((target) => target.id),
-    })
-    return
-  }
-
-  if (currentTask.value.templateKind === 'sort-into-buckets') {
-    const placements = currentTask.value.items.reduce<Record<string, string[]>>((accumulator, item) => {
-      if (!accumulator[item.correctBucketKey]) {
-        accumulator[item.correctBucketKey] = []
-      }
-
-      accumulator[item.correctBucketKey].push(item.id)
-      return accumulator
-    }, {})
-
-    onAnsweredSortIntoBuckets({
-      correct: true,
-      placements,
-    })
-    return
-  }
-
-  const fallbackPassword = currentTask.value.mode === 'improve'
-      ? `${currentTask.value.startingPassword ?? 'TryggStart'}!9X`
-      : 'TryggMaanebase!9X'
-
-  onAnsweredPasswordStrength({
-    correct: true,
-    password: fallbackPassword,
-    score: currentTask.value.minScoreToPass,
-  })
-}
 
 watch(correctCount, (next, prev) => {
   if (isBossStation && next > prev) {
@@ -613,17 +553,6 @@ const next = async () => {
             @answered="onAnsweredPasswordStrength"
         />
       </div>
-    </div>
-
-    <div class="station-page__test-tools">
-      <button
-          class="station-page__test-button"
-          type="button"
-          :disabled="!canAutoSolve"
-          @click="autoSolveCurrentTask"
-      >
-        Autosolve
-      </button>
     </div>
 
     <TaskResultDialog
