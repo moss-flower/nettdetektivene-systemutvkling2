@@ -5,7 +5,7 @@ import {
 } from "~/composables/utils/routePaths";
 import { useAuth } from "~/composables/useAuth";
 import { toClassroomSummaries } from "~/composables/useTeacherDashboard";
-import { Settings, Bell } from 'lucide-vue-next';
+import { Bell } from 'lucide-vue-next';
 
 definePageMeta({ layout: 'teacher' });
 
@@ -102,26 +102,16 @@ const handleLogout = async () => {
         </aside>
 
         <div class="rightColumn">
-          <div class="topActionRow">
-            <NuxtLink
-              class="panel settingsButton"
-              :to="routePaths.teacherSettings"
-            >
-              <Settings :size="48" class="settingsIcon" />
-              <span class="settingsButtonLabel">Innstillinger</span>
-            </NuxtLink>
-
-            <NuxtLink
-              class="panel settingsButton settingsButtonNotifications"
-              :to="routePaths.teacherNotifications"
-            >
-              <Bell :size="48" class="settingsIcon" />
-              <span class="settingsButtonLabel">Varslinger</span>
-              <span v-if="notificationCount > 0" class="notificationBadge">
-                {{ notificationCount }}
-              </span>
-            </NuxtLink>
-          </div>
+          <NuxtLink
+            class="panel settingsButton settingsButtonNotifications"
+            :to="routePaths.teacherNotifications"
+          >
+            <Bell :size="48" class="settingsIcon" />
+            <span class="settingsButtonLabel">Varslinger</span>
+            <span v-if="notificationCount > 0" class="notificationBadge">
+              {{ notificationCount }}
+            </span>
+          </NuxtLink>
 
           <article class="panel panelHighlight">
             <h2>Hurtig tilgang</h2>
@@ -281,12 +271,6 @@ h1 {
   box-shadow: var(--shadow-1);
 }
 
-.topActionRow {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-4);
-}
-
 .settingsButton {
   position: relative;
   display: grid;
@@ -315,19 +299,8 @@ h1 {
   color: var(--color-text-primary);
 }
 
-.notificationBadge {
-  position: absolute;
-  top: var(--space-4);
-  right: var(--space-4);
-  display: grid;
-  place-items: center;
-  width: var(--size-icon-md);
-  height: var(--size-icon-md);
-  border-radius: var(--radius-pill);
-  background: var(--color-semantic-error);
-  color: var(--color-text-onDark);
-  font-size: var(--font-size-12);
-  font-weight: var(--font-weight-semibold);
+.settingsButtonNotifications {
+  min-height: 100%;
 }
 
 .classesPanel {

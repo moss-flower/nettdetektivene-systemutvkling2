@@ -1,4 +1,12 @@
 <script setup lang="ts">
+const props = withDefaults(defineProps<{
+	message?: string;
+	buttonLabel?: string;
+}>(), {
+	message: "Endringene er lagret.",
+	buttonLabel: "Lukk",
+});
+
 const emit = defineEmits<{
 	(event: "close"): void;
 }>();
@@ -12,11 +20,9 @@ const closePopup = () => {
 	<div class="popupOverlay" @click.self="closePopup">
 		<section class="popupCard" role="dialog" aria-modal="true" aria-labelledby="popup-title">
 			<h2 id="popup-title">Lagret</h2>
-			<p>
-				Endringene er lagret i backend.
-			</p>
+			<p>{{ props.message }}</p>
 			<button type="button" class="primaryButton" @click="closePopup">
-				Lukk
+				{{ props.buttonLabel }}
 			</button>
 		</section>
 	</div>

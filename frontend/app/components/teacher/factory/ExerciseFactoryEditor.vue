@@ -33,7 +33,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	(event: "selection-updated", selectionKey: string): void;
-	(event: "saved"): void;
+	(event: "saved", payload: { returnTarget?: string | null }): void;
 	(event: "deleted"): void;
 }>();
 
@@ -90,7 +90,7 @@ const editorTitle = computed(() => {
 	}
 
 	if (parsedSelection.value.kind === "draft") {
-		return payloadPreview.value.title ? `Lokal oppgave: ${payloadPreview.value.title}` : "Ny lokal oppgave";
+		return payloadPreview.value.title ? `Utkast til oppgave: ${payloadPreview.value.title}` : "Nytt utkast til oppgave";
 	}
 
 	return "Ny oppgave";
@@ -98,14 +98,14 @@ const editorTitle = computed(() => {
 
 const editorDescription = computed(() => {
 	if (parsedSelection.value.kind === "existing") {
-		return "Du redigerer en eksisterende oppgave. Lokal lagring fungerer som en override over mock-dataen til backend finnes.";
+		return "Du redigerer en eksisterende oppgave.";
 	}
 
 	if (parsedSelection.value.kind === "draft") {
-		return "Dette er en lokal oppgave uten backend-uid ennå. Du kan fortsette å redigere den fra nedtrekkslisten.";
+		return "Dette er et utkast som du kan fortsette å redigere fra nedtrekkslisten.";
 	}
 
-	return "Opprett en ny oppgave lokalt. Etter første lagring dukker den opp i listen og kan redigeres videre.";
+	return "Opprett en ny oppgave. Etter første lagring dukker den opp i listen og kan redigeres videre.";
 	});
 
 const taskLabel = (task: ExerciseTask, index: number) => {
@@ -219,6 +219,11 @@ const handleRemovedTaskChange = (event: { added?: { element?: ExerciseTask } }) 
 		return;
 	}
 
+	if (!window.confirm("Er du sikker på at du vil slette dette elementet?")) {
+		draft.tasks.push(removedTask);
+		return;
+	}
+
 	if (draft.tasks.length === 0) {
 		draft.tasks.push(removedTask);
 		return;
@@ -266,7 +271,7 @@ const removeOption = (taskIndex: number, optionIndex: number) => {
 
 const finishSave = (selectionKey: string) => {
 	emit("selection-updated", selectionKey);
-	emit("saved");
+	emit("saved", { returnTarget: null });
 };
 
 const savePayload = async () => {
@@ -287,7 +292,8 @@ const savePayload = async () => {
 	const returnTarget = returnTo ? { fullPath: returnTo } : factorySessionCache.popReturnTarget();
 
 	if (returnTarget) {
-		await navigateTo(returnTarget.fullPath);
+		emit("selection-updated", saved.selectionKey);
+		emit("saved", { returnTarget: returnTarget.fullPath });
 		return;
 	}
 
@@ -295,6 +301,10 @@ const savePayload = async () => {
 };
 
 const deleteSelection = async () => {
+	if (!window.confirm("Er du sikker på at du vil slette dette elementet?")) {
+		return;
+	}
+
 	await deleteExerciseFactorySelection(props.selectionKey);
 	emit("deleted");
 };
@@ -589,16 +599,16 @@ watch(payloadPreviewText, () => {
 
 			<section class="panelSection debugSection">
 				<details>
-					<summary class="debugSummary">Debug: payload</summary>
+					<summary class="debugSummary">Dataoversikt</summary>
 					<div class="debugContent">
 						<div class="sectionHeading sectionHeadingInline">
 							<div>
-								<h2>Payload</h2>
-								<p>Dette er objektet du senere kan sende med POST til backend.</p>
+								<h2>JSON-data</h2>
+								<p>Her kan du se dataene som er knyttet til oppgaven.</p>
 							</div>
 
 							<button type="button" class="ghostButton" @click="copyPayload">
-								{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier JSON' }}
+								{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier data' }}
 							</button>
 						</div>
 

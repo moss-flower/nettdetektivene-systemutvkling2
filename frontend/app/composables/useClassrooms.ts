@@ -146,6 +146,15 @@ export function useClassrooms() {
       });
     },
 
+    declineMember: async (
+      classroomUid: string,
+      userUuid: string,
+    ): Promise<Classroom> => {
+      return await $api(`/classrooms/${classroomUid}/members/${userUuid}`, {
+        method: "DELETE",
+      });
+    },
+
     /**
      * Update a student's username (teacher-forced rename).
      *
