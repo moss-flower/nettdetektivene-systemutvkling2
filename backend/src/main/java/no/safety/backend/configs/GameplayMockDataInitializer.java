@@ -22,6 +22,7 @@ import no.safety.backend.task.content.SortIntoBucketsContent;
 import no.safety.backend.task.content.XOrYContent;
 import no.safety.backend.task.dto.TaskRequest;
 import no.safety.backend.task.model.Task;
+import no.safety.backend.task.repository.TaskRepository;
 import no.safety.backend.world.model.World;
 import no.safety.backend.world.repository.WorldRepository;
 import org.springframework.boot.ApplicationArguments;
@@ -60,6 +61,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   public static final UUID NEWSSTAND_EXERCISE_2_UID = stableUuid("exercise:newsstand-exercise-2");
   public static final UUID PHOTOGRAPH_EXERCISE_1_UID = stableUuid("exercise:photograph-exercise-1");
   public static final UUID PHOTOGRAPH_EXERCISE_2_UID = stableUuid("exercise:photograph-exercise-2");
+  public static final UUID PHOTOGRAPH_EXERCISE_3_UID = stableUuid("exercise:photograph-exercise-3");
   public static final UUID POSTOFFICE_EXERCISE_1_UID = stableUuid("exercise:postoffice-exercise-1");
   public static final UUID POSTOFFICE_EXERCISE_2_UID = stableUuid("exercise:postoffice-exercise-2");
   public static final UUID PASSWORDBANK_EXERCISE_1_UID = stableUuid("exercise:passwordbank-exercise-1");
@@ -84,11 +86,54 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   private static final String SOCIAL_WARNING_IMAGE = "seed/tasks/social-warning.svg";
   private static final String DETECTIVE_HUB_IMAGE = "seed/tasks/detective-hub.svg";
 
+  private static final String NEWSSTAND_STATION_IMAGE = "seed/stations/nyhetskvtartalet.png";
+  private static final String PHOTOGRAPH_STATION_IMAGE = "seed/stations/fotografen.png";
+  private static final String POSTOFFICE_STATION_IMAGE = "seed/stations/postkontoret.png";
+  private static final String PASSWORDBANK_STATION_IMAGE = "seed/stations/passordbanken.png";
+  private static final String MARKETPLACE_STATION_IMAGE = "seed/stations/markedsplassen.png";
+  private static final String SOCIALMEDIA_STATION_IMAGE = "seed/stations/sosial-moteplassen.png";
+
+  private static final String NEWSSTAND_SAFE_LIBRARY_IMAGE = "seed/tasks/nyhetskvartalet/safe-lesehjorne.png";
+  private static final String NEWSSTAND_SAFE_READING_IMAGE = "seed/tasks/nyhetskvartalet/safe-barn-leser-mer.png";
+  private static final String NEWSSTAND_WARNING_PHONE_IMAGE = "seed/tasks/nyhetskvartalet/warning-gratis-mobil.png";
+  private static final String NEWSSTAND_WARNING_SCHOOL_IMAGE = "seed/tasks/nyhetskvartalet/warning-skoler-stenger.png";
+  private static final String NEWSSTAND_WARNING_PLAYGROUND_IMAGE = "seed/tasks/nyhetskvartalet/warning-bot-lekeplass.png";
+
+  private static final String PHOTOGRAPH_REAL_DOG_IMAGE = "seed/tasks/fotografen/real-dog-frisbee.png";
+  private static final String PHOTOGRAPH_REAL_FOOTBALL_IMAGE = "seed/tasks/fotografen/real-football-player-kicking-ball.jpeg";
+  private static final String PHOTOGRAPH_REAL_PEOPLE_IMAGE = "seed/tasks/fotografen/real-people-holding-hands.png";
+  private static final String PHOTOGRAPH_AI_HANDS_IMAGE = "seed/tasks/fotografen/ai-folded-hands-many-fingers.jpeg";
+  private static final String PHOTOGRAPH_AI_BANANA_IMAGE = "seed/tasks/fotografen/ai-kid-giant-banana.jpeg";
+  private static final String PHOTOGRAPH_AI_SIGNS_IMAGE = "seed/tasks/fotografen/ai-road-sign-arrows-both-ways.png";
+  private static final String PHOTOGRAPH_AI_MARS_IMAGE = "seed/tasks/fotografen/ai-eiffel-tower-mars-landscape.jpeg";
+  private static final String PHOTOGRAPH_AI_SKY_IMAGE = "seed/tasks/fotografen/ai-sunset-spiral-clouds.jpeg";
+
+  private static final String POSTOFFICE_FAKE_IPHONE_IMAGE = "seed/tasks/postkontoret/fake-you-won-iphone.jpeg";
+  private static final String POSTOFFICE_FAKE_ACCOUNT_IMAGE = "seed/tasks/postkontoret/fake-your-account-will-be-closed.jpeg";
+  private static final String POSTOFFICE_REAL_BOOK_IMAGE = "seed/tasks/postkontoret/real-book-reservation-reminder.png";
+  private static final String POSTOFFICE_REAL_HIKE_IMAGE = "seed/tasks/postkontoret/real-hike-reminder.jpeg";
+  private static final String POSTOFFICE_REAL_TIMETABLE_IMAGE = "seed/tasks/postkontoret/real-timeplan-next-week.png";
+  private static final String POSTOFFICE_REAL_LIBRARY_IMAGE = "seed/tasks/postkontoret/real-welcome-to-library.jpeg";
+
+  private static final String MARKETPLACE_FAKE_BIKE_IMAGE = "seed/tasks/markedsplassen/fake-bike-ad.jpeg";
+  private static final String MARKETPLACE_FAKE_IPHONE_IMAGE = "seed/tasks/markedsplassen/fake-iphone-ad.jpeg";
+  private static final String MARKETPLACE_FAKE_LAPTOP_IMAGE = "seed/tasks/markedsplassen/fake-laptop-ad.jpeg";
+  private static final String MARKETPLACE_REAL_BIKE_IMAGE = "seed/tasks/markedsplassen/real-bike-ad.jpeg";
+  private static final String MARKETPLACE_REAL_LAPTOP_IMAGE = "seed/tasks/markedsplassen/real-laptop-ad.jpeg";
+
+  private static final String SOCIAL_BAD_SHARE_IMAGE = "seed/tasks/sosiale-moteplassen/bad-alle-ma-dele-laerer-skjuler-sannhet.jpeg";
+  private static final String SOCIAL_BAD_SCHOOL_IMAGE = "seed/tasks/sosiale-moteplassen/bad-alle-skoler-stenger-neste-uke.jpeg";
+  private static final String SOCIAL_BAD_CHIPS_IMAGE = "seed/tasks/sosiale-moteplassen/bad-farlige-chips-gjor-barn-syke.jpeg";
+  private static final String SOCIAL_GOOD_TIPS_IMAGE = "seed/tasks/sosiale-moteplassen/good-vaer-skeptisk-til-trender.jpeg";
+  private static final String SOCIAL_GOOD_CHIPS_IMAGE = "seed/tasks/sosiale-moteplassen/good-faktasjekk-farlige-chips.jpeg";
+  private static final String SOCIAL_GOOD_SCHOOL_IMAGE = "seed/tasks/sosiale-moteplassen/good-udir-skoler-stenger-ikke.jpeg";
+
   private final ExerciseRepository exerciseRepository;
   private final StationRepository stationRepository;
   private final WorldRepository worldRepository;
   private final MediaStorageService mediaStorageService;
   private final AchievementRepository achievementRepository;
+  private final TaskRepository taskRepository;
 
     /**
      * Runs the mock data initialization on application startup.
@@ -110,7 +155,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
      */
     private void seedExercises() {
     upsertExercise(NEWSSTAND_EXERCISE_1_UID, "Troverdige nyheter", "Lett",
-        "Undersøk hvilke nyhetssaker som virker ekte og hvilke faresignaler du bør sjekke.",
+        "Undersøk hvilke nyhetssaker som virker ekte, og hvilke faresignaler du bør sjekke.",
         List.of(
             multipleChoiceTask(
                 "Velg den forklaringen som best viser hvorfor saken virker trygg å stole på.",
@@ -118,11 +163,11 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter tegn som hjelper deg å sjekke saken, som tydelig avsender og konkret informasjon.",
                 "Hvilken forklaring passer best?",
                 "Se på skjermbildet og velg det beste tegnet på at saken virker troverdig.",
-                media(NEWS_SAFE_IMAGE),
-                "Skjermbilde av en rolig nyhetssak med tydelig avsender",
+                media(NEWSSTAND_SAFE_LIBRARY_IMAGE),
+                "Skjermbilde av en rolig nyhetssak om et nytt lesehjørne på skolen",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Saken har en tydelig avsender du kan sjekke"),
-                    new MultipleChoiceContent.Option("b", "Saken bruker mange utropstegn og sterke ord")
+                    new MultipleChoiceContent.Option("a", "Saken oppgir hvem som har skrevet den og når den er publisert"),
+                    new MultipleChoiceContent.Option("b", "Saken har et stort bilde som ser ryddig ut")
                 ),
                 "a"
             ),
@@ -132,22 +177,22 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter rolig språk, tydelig avsender og konkrete opplysninger.",
                 "Hvilken overskrift virker tryggest?",
                 "Velg saken du ville stolt mest på ved første blikk.",
-                media(NEWS_WARNING_IMAGE),
-                "Dramatisk overskrift med sterke ord og uklar avsender",
-                "Sak X",
-                "Sjokkerende avsløring uten kilde",
-                "Overskriften prøver å stresse deg, men forklarer ikke hvem som vet dette.",
-                media(NEWS_SAFE_IMAGE),
+                media(NEWSSTAND_WARNING_PHONE_IMAGE),
+                "Dramatisk nyhet om gratis mobil uten tydelig avsender",
+                "",
+                "Gratis mobil til alle elever",
+                "Utsnitt fra en nyhetssak om skole og mobilbruk.",
+                media(NEWSSTAND_SAFE_READING_IMAGE),
                 "Rolig overskrift med tydelig avsender",
-                "Sak Y",
-                "Kommunen forklarer ny regel for skoleveien",
-                "Overskriften sier hvem som informerer og hva saken handler om.",
+                "",
+                "Barn leser mer etter nytt lesehjørne på skolebiblioteket",
+                "Utsnitt fra en nyhetssak om skolebiblioteket.",
                 XOrYContent.Choice.Y
             ),
             sortIntoBucketsTask(
                 "Sorter tegnene i riktig boks.",
                 "Riktig. Du skilte mellom gode tegn og faresignaler i en nyhetssak.",
-                "Se en gang til på hvilke kort som hjelper deg a stole på saken, og hvilke som gjør deg mer skeptisk.",
+                "Se en gang til på hvilke kort som hjelper deg å stole på saken, og hvilke som gjør deg mer skeptisk.",
                 "Hva bør du stole på?",
                 "Dra kortene til riktig kategori.",
                 "Kort som skal sorteres",
@@ -156,10 +201,10 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                     new SortIntoBucketsContent.Bucket("warn", "Faresignaler", "Tegn som bør sjekkes ekstra.", "#fee2e2")
                 ),
                 List.of(
-                    new SortIntoBucketsContent.Item("news-1", "Tydelig avsender", "safe", "Da kan du sjekke hvem som står bak."),
-                    new SortIntoBucketsContent.Item("news-2", "Konkret kilde", "safe", "Kilder gjør det lettere a kontrollere innholdet."),
-                    new SortIntoBucketsContent.Item("news-3", "Sjokk-overskrift", "warn", "Sterke ord kan brukes for å lure deg til å klikke."),
-                    new SortIntoBucketsContent.Item("news-4", "Ingen forklaring på hvor informasjonen kommer fra", "warn", "Når kilden mangler, bør du være ekstra skeptisk.")
+                    new SortIntoBucketsContent.Item("news-1", "Navngitt avsender", "safe", "Da kan du sjekke hvem som står bak."),
+                    new SortIntoBucketsContent.Item("news-2", "Dato og klokkeslett", "safe", "Det gjør det lettere å forstå når saken ble skrevet."),
+                    new SortIntoBucketsContent.Item("news-3", "Overskrift som lover mer enn den forklarer", "warn", "Da bør du være ekstra forsiktig."),
+                    new SortIntoBucketsContent.Item("news-4", "Sak uten kilde eller forklaring", "warn", "Når kilden mangler, bør du være ekstra skeptisk.")
                 )
             ),
             multipleChoiceTask(
@@ -168,12 +213,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Tenk på hvilke tegn som faktisk svekker troverdigheten, ikke bare hvordan saken ser ut visuelt.",
                 "Hvorfor virker denne saken falsk?",
                 "Velg forklaringen som passer best til det du ser i skjermbildet.",
-                media(NEWS_WARNING_IMAGE),
-                "Skjermbilde av en tvilsom nyhetsartikkel",
+                media(NEWSSTAND_WARNING_PLAYGROUND_IMAGE),
+                "Skjermbilde av en tvilsom nyhetsartikkel om at lekeplassen skal stenge",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Den har en tydelig avsender og gode kilder"),
-                    new MultipleChoiceContent.Option("b", "Overskriften prover a sjokkere og avsenderen virker ukjent"),
-                    new MultipleChoiceContent.Option("c", "Bildet er stort og fargerikt")
+                    new MultipleChoiceContent.Option("a", "Den har en tydelig avsender og viser til flere kilder"),
+                    new MultipleChoiceContent.Option("b", "Den mangler navn på hvem som står bak saken"),
+                    new MultipleChoiceContent.Option("c", "Den har en stor illustrasjon øverst")
                 ),
                 "b"
             )
@@ -186,15 +231,15 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
             multipleChoiceTask(
                 "Velg saken som virker mest pålitelig når du ser på språk, avsender og forklaringer.",
                 "Riktig. Den gode saken forklarer hva som har skjedd og peker til en kjent avsender.",
-                "Se etter kjent avsender, konkret sprak og om saken forklarer hvor informasjonen kommer fra.",
+                "Se etter kjent avsender, konkret språk og om saken forklarer hvor informasjonen kommer fra.",
                 "Hva er det tydeligste faresignalet?",
                 "Saken ser profesjonell ut, men ett tegn gjør at du bør være ekstra skeptisk.",
-                media(NEWS_WARNING_IMAGE),
-                "Skjermbilde av en nyhetsartikkel uten tydelige kilder",
+                media(NEWSSTAND_WARNING_PHONE_IMAGE),
+                "Skjermbilde av en nyhetsartikkel om gratis mobil uten tydelige kilder",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Den bruker et bilde ved siden av teksten"),
+                    new MultipleChoiceContent.Option("a", "Den har en kort overskrift og et stort bilde"),
                     new MultipleChoiceContent.Option("b", "Den mangler tydelige kilder eller forklaringer"),
-                    new MultipleChoiceContent.Option("c", "Den er skrevet om et tema mange bryr seg om")
+                    new MultipleChoiceContent.Option("c", "Den handler om noe mange elever er nysgjerrige på")
                 ),
                 "b"
             ),
@@ -203,17 +248,17 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Bra. Den beste saken gir deg nok informasjon til at du kan sjekke mer selv.",
                 "Se etter hvem som står bak og om saken forklarer hvor opplysningene kommer fra.",
                 "Hvilken sak ville du sjekket videre?",
-                "Velg den som virker mest ryddig og palitelig.",
-                media(NEWS_WARNING_IMAGE),
+                "Velg den som virker mest ryddig og pålitelig.",
+                media(NEWSSTAND_WARNING_SCHOOL_IMAGE),
                 "Nyhetssak med vag overskrift og ingen tydelig kilde",
-                "Sak X",
-                "Hemmelig tips skaper kaos",
-                "Saken bruker sterke ord, men sier lite om hvem som faktisk vet noe.",
-                media(NEWS_SAFE_IMAGE),
+                "",
+                "Det skjer noe stort ved skolen i morgen",
+                "Utsnitt fra en nyhetssak om skolen.",
+                media(NEWSSTAND_SAFE_READING_IMAGE),
                 "Nyhetssak med rolig overskrift og tydelig kilde",
-                "Sak Y",
-                "Lokalavis forklarer hendelsen ved idrettshallen",
-                "Saken viser til vitner og forklarer hva som skjedde uten a overdrive.",
+                "",
+                "Barn leser mer etter nytt lesehjørne på skolebiblioteket",
+                "Utsnitt fra en nyhetssak om lesehjørnet på skolen.",
                 XOrYContent.Choice.Y
             ),
             multipleChoiceTask(
@@ -222,12 +267,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Tenk på hva som hjelper deg å undersøke saken, ikke hva som sprer den raskest.",
                 "Hva bør du gjøre etterpå?",
                 "Du er usikker på om saken stemmer. Velg det smarteste neste steget.",
-                media(DETECTIVE_HUB_IMAGE),
-                "Illustrasjon av et barn som sammenligner flere nyhetskilder",
+                media(NEWSSTAND_WARNING_PLAYGROUND_IMAGE),
+                "Skjermbilde av en nyhetssak som bør dobbeltsjekkes før den deles",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Sjekke om andre troverdige kilder sier det samme"),
-                    new MultipleChoiceContent.Option("b", "Dele saken videre og be andre vurdere den"),
-                    new MultipleChoiceContent.Option("c", "Tro pa saken hvis bildet ser ekte ut")
+                    new MultipleChoiceContent.Option("b", "Spørre en venn om hva han eller hun tror"),
+                    new MultipleChoiceContent.Option("c", "Lese kommentarfeltet først")
                 ),
                 "a"
             )
@@ -235,587 +280,575 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     );
 
     upsertExercise(PHOTOGRAPH_EXERCISE_1_UID, "Bildeblikk", "Lett",
-        "Laer a kjenne igjen ekte, KI-genererte og manipulerte bilder.",
+        "Se etter tydelige tegn på at et bilde kan være laget eller endret.",
         List.of(
             multipleChoiceTask(
-                "Se pa bildet og velg den beste forklaringen.",
-                "Bra. Rare detaljer i hender, tekst eller bakgrunn kan avslore at bildet ikke er ekte.",
-                "Se etter rare detaljer som ikke passer naturlig sammen.",
-                "Hva slags bilde ser du?",
-                "Velg den forklaringen som passer best til bildet.",
-                media(PHOTO_WARNING_IMAGE),
-                "Skjermbilde av et mistenkelig bilde",
+                "Hva bør du se nærmere på i dette bildet?",
+                "Bra. Når en detalj ikke passer helt med resten av bildet, er det lurt å dobbeltsjekke.",
+                "Se etter ting som virker litt rare eller som ikke henger helt sammen.",
+                "Hva er det beste tegnet på at bildet bør sjekkes nærmere?",
+                "Velg det du ville lagt mest merke til først.",
+                media(PHOTOGRAPH_AI_HANDS_IMAGE),
+                "En hånd med flere fingre enn forventet",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Et helt vanlig ekte bilde"),
-                    new MultipleChoiceContent.Option("b", "Et bilde med detaljer som virker manipulerte")
+                    new MultipleChoiceContent.Option("a", "Hendene har for mange fingre"),
+                    new MultipleChoiceContent.Option("b", "Bakgrunnen er litt uskarp"),
+                    new MultipleChoiceContent.Option("c", "Bildet er tatt i dagslys")
                 ),
-                "b"
+                "a"
             ),
             xOrYTask(
-                "Sammenlign to bilder og velg det som virker mest ekte.",
-                "Bra. Det ekte bildet har detaljer som passer bedre naturlig sammen.",
-                "Se etter rare hender, skjev tekst eller bakgrunner som ikke henger sammen.",
-                "Hvilket bilde virker mest ekte?",
-                "Velg bildet du stoler mest pa etter a ha sett pa detaljene.",
-                media(PHOTO_WARNING_IMAGE),
-                "Bilde med unaturlige hender og forvrengt tekst",
-                "Bilde X",
-                "Mange rare detaljer",
-                "Flere detaljer ser ut som de ikke passer sammen naturlig.",
-                media(PHOTO_SAFE_IMAGE),
-                "Bilde av en vanlig skolegard med naturlige detaljer",
-                "Bilde Y",
-                "Naturlig skolemiljo",
-                "Detaljene ser jevne og naturlige ut.",
+                "Hvilket bilde virker mest naturlig ved første blikk?",
+                "Bra. Det ene bildet har flere små ting som skurrer, mens det andre virker mer vanlig.",
+                "Se etter om kropp, lys og ting i bildet passer sammen på en naturlig måte.",
+                "Hvilket bilde virker mest troverdig?",
+                "Velg bildet som virker mest vanlig og rolig.",
+                media(PHOTOGRAPH_AI_BANANA_IMAGE),
+                "Barn holder en veldig stor banan",
+                "",
+                "Den store banenen",
+                "En gutt holder en kjempestor banan over hodet.",
+                media(PHOTOGRAPH_REAL_DOG_IMAGE),
+                "Hund som fanger en frisbee",
+                "",
+                "Hund med frisbee",
+                "En hund som hopper etter en frisbee",
                 XOrYContent.Choice.Y
-            ),
+            )
+        )
+    );
+
+    upsertExercise(PHOTOGRAPH_EXERCISE_2_UID, "Foto eller fiks?", "Middels",
+        "Sammenlign bilder og se etter små ting som gjør at noe føles feil.",
+        List.of(
             sortIntoBucketsTask(
-                "Sorter detaljene du oppdager i bildet.",
-                "Riktig. Du fant hvilke detaljer som virker naturlige og hvilke som bor sjekkes ekstra.",
-                "Se etter hvilke detaljer som ser vanlige ut, og hvilke som virker rare eller feil.",
-                "Hva skurrer i bildet?",
-                "Legg hvert kort i riktig boks.",
+                "Sorter detaljene i riktig boks.",
+                "Riktig. Du skilte mellom detaljer som passer godt inn, og detaljer som bør sjekkes nærmere.",
+                "Se etter små ting som ikke helt passer sammen i bildet.",
+                "Hva virker mest trygt å stole på?",
+                "Dra kortene til riktig kategori.",
                 "Detaljer som skal sorteres",
                 List.of(
-                    new SortIntoBucketsContent.Bucket("ok", "Ser naturlig ut", "Detaljer som ikke vekker mistanke.", "#dbeafe"),
-                    new SortIntoBucketsContent.Bucket("check", "Bor sjekkes", "Detaljer som kan avslore manipulering.", "#fee2e2")
+                    new SortIntoBucketsContent.Bucket("ok", "Virker naturlig", "Ting som passer godt inn i et ekte bilde.", "#dbeafe"),
+                    new SortIntoBucketsContent.Bucket("check", "Bør sjekkes", "Ting som ofte avslører at noe er laget eller endret.", "#fee2e2")
                 ),
                 List.of(
-                    new SortIntoBucketsContent.Item("photo-1", "Rett skilt med lesbar tekst", "ok", "Lesbar tekst er et godt tegn."),
-                    new SortIntoBucketsContent.Item("photo-2", "Hand med seks fingre", "check", "Rare hender er et vanlig faresignal."),
-                    new SortIntoBucketsContent.Item("photo-3", "Skygger som peker samme vei", "ok", "Like skygger passer bedre med ekte lys."),
-                    new SortIntoBucketsContent.Item("photo-4", "Bakgrunn som flyter inn i jakken", "check", "Nar former glir sammen, kan bildet vaere manipulert.")
+                    new SortIntoBucketsContent.Item("photo-1", "Skygger peker samme vei", "ok", "Det passer bedre med ekte lys."),
+                    new SortIntoBucketsContent.Item("photo-2", "Skilt med piler som peker begge veier", "check", "Retningen virker ikke helt logisk."),
+                    new SortIntoBucketsContent.Item("photo-3", "Ansikter og klær ser jevne ut", "ok", "Det gir mindre grunn til mistanke."),
+                    new SortIntoBucketsContent.Item("photo-4", "Utydelig kant rundt motivet", "check", "Når kanter blir rare, bør du bli skeptisk.")
                 )
+            ),
+            multipleChoiceTask(
+                "Hva bør du se nærmere på i skiltet?",
+                "Bra. Når retningen ikke virker helt logisk, er det et tegn på at noe bør sjekkes.",
+                "Tenk på hva som ikke helt stemmer med det du forventer å se på et skilt.",
+                "Hva virker mest usikkert?",
+                "Velg det som bør få deg til å stoppe opp.",
+                media(PHOTOGRAPH_AI_SIGNS_IMAGE),
+                "Et veiskilt med piler i to retninger",
+                List.of(
+                    new MultipleChoiceContent.Option("a", "Retningen på pilene virker ikke helt logisk"),
+                    new MultipleChoiceContent.Option("b", "Skiltet har tydelige farger"),
+                    new MultipleChoiceContent.Option("c", "Det står ved en vei")
+                ),
+                "a"
             )
         )
     );
 
-    upsertExercise(PHOTOGRAPH_EXERCISE_2_UID, "Bildedetektiv", "Middels",
-        "Sammenlign bilder og oppdag tegn pa at noe er generert eller manipulert.",
+    upsertExercise(PHOTOGRAPH_EXERCISE_3_UID, "Bildedetektiv", "Vanskelig",
+        "Undersøk bilder som ser nesten ekte ut, men som har små detaljer som ikke stemmer.",
+        List.of(
+            xOrYTask(
+                "Hvilket bilde virker mest troverdig ved første blikk?",
+                "Riktig. Det ene motivet passer dårlig sammen, mens det andre virker mer som et vanlig bilde av noe på himmelen.",
+                "Se etter hvilket bilde som virker mest naturlig og minst kunstig.",
+                "Hvilket bilde ville du stolt mest på?",
+                "Velg bildet som virker mest vanlig og minst overraskende.",
+                media(PHOTOGRAPH_AI_MARS_IMAGE),
+                "Eiffeltårnet står på Mars",
+                "",
+                "Alternativ 1",
+                "Et kjent tårn i et rødt landskap.",
+                media(PHOTOGRAPH_REAL_PEOPLE_IMAGE),
+                "Personer som går tur sammen",
+                "",
+                "Alternativ 2",
+                "Mange personer går ute sammen.",
+                XOrYContent.Choice.Y
+            ),
+            multipleChoiceTask(
+                "Hva bør du undersøke først i dette bildet?",
+                "Bra. Når bevegelse og kropp ikke helt henger sammen, er det lurt å se nærmere på bildet.",
+                "Se etter noe som virker litt feil i måten motivet er satt sammen på.",
+                "Hva er det beste spørsmålet å stille?",
+                "Velg det som hjelper deg å vurdere om bildet er ekte.",
+                media(PHOTOGRAPH_REAL_FOOTBALL_IMAGE),
+                "En spiller som sparker ballen i en kamp",
+                List.of(
+                    new MultipleChoiceContent.Option("a", "Ser bevegelsen og kroppen naturlig ut?"),
+                    new MultipleChoiceContent.Option("b", "Har bildet mange ulike farger?"),
+                    new MultipleChoiceContent.Option("c", "Er bildet tatt ute på en bane?")
+                ),
+                "a"
+            )
+        )
+    );
+
+    upsertExercise(POSTOFFICE_EXERCISE_1_UID, "Før du klikker", "Lett",
+        "Lær å kjenne igjen vanlige e-poster og de første tegnene på at noe er rart.",
         List.of(
             multipleChoiceTask(
-                "Velg det smarteste sporsmalet a starte med.",
-                "Ja. Start med a se etter detaljer som ser unaturlige eller feil ut.",
-                "Tenk pa hva som hjelper deg a undersoke bildet i stedet for a gjette raskt.",
-                "Hva bor du sporre deg selv om forst?",
-                "Du ser et bilde som virker litt rart. Hva er det beste forste sporsmalet?",
-                media(PHOTO_WARNING_IMAGE),
-                "Skjermbilde av et bilde med rare detaljer",
+                "Hva er det første du bør sjekke i denne meldingen?",
+                "Bra. Avsenderen er ofte det viktigste å kontrollere først.",
+                "Se etter noe som hjelper deg å forstå om meldingen er trygg å åpne.",
+                "Hva bør du se på først?",
+                "Velg det som sier mest om hvem som sendte meldingen.",
+                media(POSTOFFICE_REAL_LIBRARY_IMAGE),
+                "En vanlig e-post med tydelig avsender",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Ser detaljer som hender, tekst og bakgrunn naturlige ut?"),
-                    new MultipleChoiceContent.Option("b", "Har bildet mange fine farger?")
+                    new MultipleChoiceContent.Option("a", "Hvem som sendte e-posten"),
+                    new MultipleChoiceContent.Option("b", "Hvor mange linjer teksten har"),
+                    new MultipleChoiceContent.Option("c", "Om det er et bilde øverst")
                 ),
                 "a"
             ),
             xOrYTask(
-                "Velg bildet som virker mest troverdig etter at du har studert detaljene.",
-                "Bra. Det tryggeste valget er bildet med mest naturlige detaljer og minst rare feil.",
-                "Se etter tekst, lys, ansikter og bakgrunner som henger sammen.",
-                "Hvilket bilde ville du stolt mest pa?",
-                "Sammenlign de to bildene og velg det mest troverdige.",
-                media(PHOTO_WARNING_IMAGE),
-                "Bilde med ujevn tekst og unaturlig lys",
-                "Bilde X",
-                "Mange sma feil",
-                "Teksten er skjev og lyset passer ikke helt med resten av scenen.",
-                media(PHOTO_SAFE_IMAGE),
-                "Klassebilde med naturlige detaljer",
-                "Bilde Y",
-                "Ryddig og naturlig",
-                "Ansikter, bakgrunn og skygger virker mer naturlige sammen.",
+                "Hvilken melding virker mest som en vanlig e-post?",
+                "Riktig. Den ene prøver å lokke deg raskt, mens den andre ser ut som en vanlig påminnelse.",
+                "Se etter hvilken melding som virker mest rolig og vanlig.",
+                "Hvilken melding ville du åpnet først?",
+                "Velg den som virker mest hverdagslig.",
+                media(POSTOFFICE_FAKE_IPHONE_IMAGE),
+                "Du har vunnet en iPhone",
+                "",
+                "Melding 1",
+                "Meldingen lover en premie og vil at du skal klikke raskt.",
+                media(POSTOFFICE_REAL_BOOK_IMAGE),
+                "Påminnelse om en reservert bok",
+                "",
+                "Melding 2",
+                "Meldingen minner deg bare om en bok du har lånt.",
                 XOrYContent.Choice.Y
             ),
-            multipleChoiceTask(
-                "Velg den beste forklaringen pa hvorfor du bor vaere skeptisk til et bilde.",
-                "Riktig. Nar flere detaljer ikke henger sammen, bor du stoppe opp og sjekke bildet mer.",
-                "Se etter forklaringen som peker pa unaturlige detaljer, ikke bare stil eller farger.",
-                "Hva er det tydeligste faresignalet?",
-                "Et bilde kan virke ekte ved forste blikk. Velg tegnet som bor fa deg til a sjekke mer.",
-                media(DETECTIVE_HUB_IMAGE),
-                "Illustrasjon av et barn som gransker et bilde",
-                List.of(
-                    new MultipleChoiceContent.Option("a", "Hender, tekst og bakgrunn passer ikke helt sammen"),
-                    new MultipleChoiceContent.Option("b", "Bildet bruker klare farger"),
-                    new MultipleChoiceContent.Option("c", "Det er flere personer i bildet")
-                ),
-                "a"
-            )
-        )
-    );
-
-    upsertExercise(POSTOFFICE_EXERCISE_1_UID, "Mistenkelige e-poster", "Lett",
-        "Ov pa a avslore falske e-poster, mistenkelige lenker og rare avsendere.",
-        List.of(
-            multipleChoiceTask(
-                "Velg det tydeligste faresignalet i meldingen.",
-                "Riktig. En rar avsenderadresse er et tydelig faresignal.",
-                "Se etter noe som hjelper deg a oppdage om meldingen kan vaere falsk.",
-                "Finn den ene tingen som virker rar",
-                "Se pa e-posten og velg det som skurrer mest.",
-                media(EMAIL_WARNING_IMAGE),
-                "Skjermbilde av en mistenkelig e-post",
-                List.of(
-                    new MultipleChoiceContent.Option("a", "Avsenderadressen ser rar ut"),
-                    new MultipleChoiceContent.Option("b", "Meldingen er kort")
-                ),
-                "a"
-            ),
             emailHotspotsTask(
-                "Trykk pa de delene av e-posten som virker mistenkelige.",
-                "Bra jobbet. Du fant faresignalene i meldingen.",
-                "Se ekstra pa avsenderadressen og lenken i meldingen.",
+                "Trykk på de delene av e-posten som virker mest mistenkelige.",
+                "Bra jobbet. Du fant flere tegn på at meldingen ikke er trygg.",
+                "Se etter avsenderen, lenken og ting som prøver å stresse deg.",
                 "Finn faresignalene",
-                "Trykk pa det som virker utrygt i e-posten.",
+                "Trykk på det som gjør meldingen mistenkelig.",
                 new EmailHotspotsContent.Email(
                     "Skole-IT",
                     "sender-name",
-                    "hjelp@skole-login-alert.net",
+                    "support@skolekonto-trygg.info",
                     "sender-address",
-                    "Logg inn pa nytt i dag",
+                    "Kontoen din blir stengt i dag",
                     "subject",
                     "IT",
                     "I dag 08:15",
                     "received",
-                    "Hei!",
+                    "Hei elev!",
                     "greeting",
                     List.of(
-                        new EmailHotspotsContent.TextBlock("body-text", "Vi ma sjekke kontoen din med en gang.", "body-text-target"),
-                        new EmailHotspotsContent.LinkBlock("body-link", "Bekreft kontoen", "skole-login-check.click", "Svar innen 20 minutter", "body-link-target")
+                        new EmailHotspotsContent.TextBlock("body-text", "Du må oppdatere kontoen din med en gang for at den ikke skal bli sperret.", "body-text-target"),
+                        new EmailHotspotsContent.LinkBlock("body-link", "Oppdater her", "skolekonto-trygg.info/login", "Gjør det nå", "body-link-target")
                     ),
                     new EmailHotspotsContent.ActionButton("Logg inn", "skolenorge.no", "action-button"),
-                    List.of(new EmailHotspotsContent.Attachment("attachment", "info.pdf", "Vanlig vedlegg", "attachment-target")),
-                    "Hilsen supportteamet",
+                    List.of(new EmailHotspotsContent.Attachment("attachment", "oppdatering.zip", "Uvanlig vedlegg", "attachment-target")),
+                    "Hilsen support",
                     "closing"
                 ),
                 List.of(
                     new EmailHotspotsContent.Target("sender-name", false),
                     new EmailHotspotsContent.Target("sender-address", true),
-                    new EmailHotspotsContent.Target("subject", false),
+                    new EmailHotspotsContent.Target("subject", true),
                     new EmailHotspotsContent.Target("received", false),
                     new EmailHotspotsContent.Target("greeting", false),
-                    new EmailHotspotsContent.Target("body-text-target", false),
+                    new EmailHotspotsContent.Target("body-text-target", true),
                     new EmailHotspotsContent.Target("body-link-target", true),
                     new EmailHotspotsContent.Target("action-button", false),
-                    new EmailHotspotsContent.Target("attachment-target", false),
+                    new EmailHotspotsContent.Target("attachment-target", true),
                     new EmailHotspotsContent.Target("closing", false)
                 )
-            ),
-            xOrYTask(
-                "Sammenlign de to meldingene og velg den som virker tryggest.",
-                "Riktig. Den tryggeste meldingen bruker kjent avsender og en tydelig nettadresse.",
-                "Se etter kjent avsender, rolig sprak og lenker du kjenner igjen.",
-                "Hvilken e-post virker tryggest?",
-                "Velg meldingen du ville stolt mest pa.",
-                media(EMAIL_WARNING_IMAGE),
-                "Mistenkelig e-post med stressende sprak",
-                "Melding X",
-                "Handle na",
-                "Meldingen presser deg til a klikke med en gang og bruker en rar avsender.",
-                media(EMAIL_SAFE_IMAGE),
-                "Vanlig skoleepost med tydelig avsender",
-                "Melding Y",
-                "Vanlig informasjon",
-                "Meldingen forklarer rolig hva den handler om og kommer fra en kjent avsender.",
-                XOrYContent.Choice.Y
             )
         )
     );
 
     upsertExercise(POSTOFFICE_EXERCISE_2_UID, "E-postdetektiv", "Middels",
-        "Finn flere faresignaler i meldinger som ser nesten ekte ut.",
+        "Sammenlign meldinger og finn tegn som hjelper deg å avgjøre om de er trygge.",
         List.of(
             multipleChoiceTask(
-                "Velg den beste forklaringen pa hvorfor meldingen ikke virker trygg.",
-                "Bra. Nar meldingen presser deg til a handle raskt og lenken virker rar, bor du stoppe opp.",
-                "Se etter press, rare lenker eller avsendere du ikke kjenner.",
-                "Finn de to farlige delene",
-                "Hva er den beste forklaringen pa at denne meldingen er utrygg?",
-                media(EMAIL_WARNING_IMAGE),
-                "Skjermbilde av en mistenkelig e-post med lenke",
+                "Hva virker mest normalt i denne meldingen?",
+                "Riktig. En tydelig og kjent avsender er et godt tegn.",
+                "Se etter det som gjør meldingen lett å forstå og kontrollere.",
+                "Hva er det beste tegnet på at meldingen er grei?",
+                "Velg det som virker mest som en vanlig skolemelding.",
+                media(POSTOFFICE_REAL_TIMETABLE_IMAGE),
+                "Melding om neste ukes timeplan",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Den bruker press og en lenke som virker rar"),
-                    new MultipleChoiceContent.Option("b", "Den har skolens logo"),
-                    new MultipleChoiceContent.Option("c", "Den nevner et kjent tema")
+                    new MultipleChoiceContent.Option("a", "Den kommer fra en tydelig avsender"),
+                    new MultipleChoiceContent.Option("b", "Den lover en premie"),
+                    new MultipleChoiceContent.Option("c", "Den ber deg logge inn med en gang")
                 ),
                 "a"
             ),
-            emailHotspotsTask(
-                "Finn alle faresignalene i meldingen som ser nesten ekte ut.",
-                "Bra. Du oppdaget flere ting som gjorde meldingen utrygg.",
-                "Se etter press, rare lenker og vedlegg du ikke forventet.",
-                "Hva skurrer i e-posten?",
-                "Trykk pa alle delene som virker mistenkelige.",
-                new EmailHotspotsContent.Email(
-                    "Skolekontoret",
-                    "sender-name-2",
-                    "beskjed@skole-konto-verify.biz",
-                    "sender-address-2",
-                    "Viktig melding om skolekontoen din",
-                    "subject-2",
-                    "SK",
-                    "I dag 09:40",
-                    "received-2",
-                    "Hei elev!",
-                    "greeting-2",
-                    List.of(
-                        new EmailHotspotsContent.TextBlock("body-text-2", "Hvis du ikke svarer innen 10 minutter, blir kontoen din sperret.", "body-text-target-2"),
-                        new EmailHotspotsContent.LinkBlock("body-link-2", "Aapne skolekonto", "secure-school-check.biz/login", "Maa gjores i dag", "body-link-target-2")
-                    ),
-                    new EmailHotspotsContent.ActionButton("Les mer", "skoleportalen.no", "action-button-2"),
-                    List.of(new EmailHotspotsContent.Attachment("attachment-2", "skjema.zip", "Uventet komprimert fil", "attachment-target-2")),
-                    "Hilsen administrasjonen",
-                    "closing-2"
-                ),
-                List.of(
-                    new EmailHotspotsContent.Target("sender-name-2", false),
-                    new EmailHotspotsContent.Target("sender-address-2", true),
-                    new EmailHotspotsContent.Target("subject-2", false),
-                    new EmailHotspotsContent.Target("received-2", false),
-                    new EmailHotspotsContent.Target("greeting-2", false),
-                    new EmailHotspotsContent.Target("body-text-target-2", true),
-                    new EmailHotspotsContent.Target("body-link-target-2", true),
-                    new EmailHotspotsContent.Target("action-button-2", false),
-                    new EmailHotspotsContent.Target("attachment-target-2", true),
-                    new EmailHotspotsContent.Target("closing-2", false)
-                )
+            xOrYTask(
+                "Hvilken melding virker mest troverdig ved første blikk?",
+                "Bra. Den ene prøver å få deg til å stresse, mens den andre ligner mer på en vanlig melding.",
+                "Se etter hvilken melding som virker mest rolig og vanlig.",
+                "Hvilken melding ville du sjekket først?",
+                "Velg den som virker minst mistenkelig.",
+                media(POSTOFFICE_FAKE_ACCOUNT_IMAGE),
+                "Kontoen må oppdateres nå",
+                "",
+                "Melding 1",
+                "Meldingen presser deg til å handle raskt.",
+                media(POSTOFFICE_REAL_HIKE_IMAGE),
+                "Påminnelse om tur i helgen",
+                "",
+                "Melding 2",
+                "Meldingen virker som en vanlig beskjed uten press.",
+                XOrYContent.Choice.Y
             ),
-            sortIntoBucketsTask(
-                "Sorter tegnene fra meldingen i riktig boks.",
-                "Riktig. Du skilte mellom trygge tegn og faresignaler i e-posten.",
-                "Se pa hvilke kort som viser press eller rare detaljer, og hvilke som virker vanlige.",
-                "Trygt tegn eller faresignal?",
-                "Legg hvert kort i riktig kategori.",
-                "Kort som skal sorteres",
+            multipleChoiceTask(
+                "Hva er det tydeligste faresignalet i denne e-posten?",
+                "Bra. Når en e-post lover noe stort og vil ha deg til å klikke raskt, bør du være ekstra forsiktig.",
+                "Se etter det som gjør at du stopper opp og sjekker mer.",
+                "Hva skurrer mest?",
+                "Velg det tegnet som gjør e-posten mest mistenkelig.",
+                media(POSTOFFICE_FAKE_IPHONE_IMAGE),
+                "E-post om at du har vunnet en iPhone",
                 List.of(
-                    new SortIntoBucketsContent.Bucket("safe-mail", "Trygge tegn", "Detaljer som ofte er normale.", "#d9fbe6"),
-                    new SortIntoBucketsContent.Bucket("danger-mail", "Faresignaler", "Detaljer som bor fa deg til a stoppe opp.", "#fee2e2")
+                    new MultipleChoiceContent.Option("a", "Den lover en premie og ber deg klikke raskt"),
+                    new MultipleChoiceContent.Option("b", "Den har en kort overskrift"),
+                    new MultipleChoiceContent.Option("c", "Den bruker et bilde øverst")
                 ),
-                List.of(
-                    new SortIntoBucketsContent.Item("mail-1", "Kjent avsender fra skolen", "safe-mail", "En kjent avsender er lettere a kontrollere."),
-                    new SortIntoBucketsContent.Item("mail-2", "Lenke med rar nettadresse", "danger-mail", "Rare nettadresser er et vanlig faresignal."),
-                    new SortIntoBucketsContent.Item("mail-3", "Press om a svare med en gang", "danger-mail", "Stress brukes ofte for a fa deg til a handle fort."),
-                    new SortIntoBucketsContent.Item("mail-4", "Rolig forklaring pa hva meldingen handler om", "safe-mail", "Tydelig informasjon gjor meldingen lettere a vurdere.")
-                )
+                "a"
             )
         )
     );
 
     upsertExercise(PASSWORDBANK_EXERCISE_1_UID, "Passorddetektiv", "Lett",
-        "Laer hva som gjor et passord sterkt, trygt og lett a huske.",
+        "Lær hva som gjør et passord sterkt, trygt og mulig å huske.",
         List.of(
-            multipleChoiceTask(
-                "Velg forklaringen som best viser hvorfor passordet er svakt.",
-                "Riktig. Navn og arstall er lett a gjette.",
-                "Tenk pa hva andre lett kan vite om deg.",
-                "Hva gjor passordet utrygt?",
-                "Se pa passordet og velg den beste forklaringen.",
-                media(PASSWORD_WARNING_IMAGE),
-                "Illustrasjon av et svakt passord",
+            sortIntoBucketsTask(
+                "Sorter delene i riktig boks.",
+                "Riktig. Du skilte mellom ting som ofte styrker et passord, og ting som ofte gjør det lettere å gjette.",
+                "Tenk på hvilke valg som gjør passordet lengre og mindre opplagt.",
+                "Hva er smart å bruke i et passord?",
+                "Legg hvert kort i riktig kategori.",
+                "Deler som skal sorteres",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Det bruker navn og arstall som andre kan kjenne til"),
-                    new MultipleChoiceContent.Option("b", "Det starter med stor bokstav")
+                    new SortIntoBucketsContent.Bucket("smart", "Smart å bruke", "Valg som ofte gjør passordet sterkere.", "#d9fbe6"),
+                    new SortIntoBucketsContent.Bucket("avoid", "Bør unngås", "Valg som ofte gjør passordet lettere å gjette.", "#fee2e2")
                 ),
-                "a"
+                List.of(
+                    new SortIntoBucketsContent.Item("pw-1", "Flere ord som bare du husker", "smart", "Lengde og variasjon hjelper."),
+                    new SortIntoBucketsContent.Item("pw-2", "Eget navn og fødselsår", "avoid", "Det kan andre ofte vite om deg."),
+                    new SortIntoBucketsContent.Item("pw-3", "Et symbol eller tall som ikke er opplagt", "smart", "Små ekstra detaljer kan gjøre passordet vanskeligere å gjette."),
+                    new SortIntoBucketsContent.Item("pw-4", "123 eller qwerty", "avoid", "Vanlige mønstre blir ofte prøvd først.")
+                )
             ),
             passwordStrengthTask(
-                "Skriv et passord som oppfyller kravene i oppgaven.",
-                "Bra jobbet. Passordet ditt var langt nok og vanskeligere a gjette.",
-                "Proov igjen med flere tegn og en bedre blanding av bokstaver, tall og symboler.",
-                "Lag et sterkere passord",
-                "Lag et passord som ikke er lett a gjette.",
-                "Bruk minst 10 tegn og bland flere typer tegn.",
+                "Lag et nytt passord til skolekontoen din.",
+                "Bra jobbet. Passordet ditt var langt nok og vanskeligere å gjette.",
+                "Prøv igjen med flere tegn og en bedre blanding av bokstaver, tall og symboler.",
+                "Lag et nytt passord",
+                "Lag et passord som ikke er lett å gjette, men som du fortsatt kan huske.",
+                "Bruk minst 12 tegn og bland flere typer tegn uten å bruke navn eller enkle mønstre.",
                 PasswordStrengthContent.Mode.CREATE,
                 "Skriv passordet her",
                 null,
-                10,
+                12,
                 4,
-                List.of("123", "qwerty", "passord", "ola")
+                List.of("123", "qwerty", "passord", "skole", "ada")
             ),
-            sortIntoBucketsTask(
-                "Sorter passord-vanene i riktig boks.",
-                "Riktig. Du skilte mellom vaner som styrker passordet og vaner som gjor det svakere.",
-                "Se pa hvilke valg som gjor passordet lett eller vanskelig a gjette.",
-                "Sterk vane eller svak vane?",
-                "Legg kortene i riktig kategori.",
-                "Vaner som skal sorteres",
-                List.of(
-                    new SortIntoBucketsContent.Bucket("strong", "Sterk vane", "Valg som gjor passord tryggere.", "#d9fbe6"),
-                    new SortIntoBucketsContent.Bucket("weak", "Svak vane", "Valg som gjor passord lettere a gjette.", "#fee2e2")
-                ),
-                List.of(
-                    new SortIntoBucketsContent.Item("pw-1", "Bruke flere ord og symbol", "strong", "Lengre og mer variert er ofte tryggere."),
-                    new SortIntoBucketsContent.Item("pw-2", "Bruke eget navn og fodselsar", "weak", "Dette er lett a gjette."),
-                    new SortIntoBucketsContent.Item("pw-3", "Lage ulike passord til ulike kontoer", "strong", "Da blir ikke alle kontoene saret hvis ett passord lekker."),
-                    new SortIntoBucketsContent.Item("pw-4", "Velge passordet 123456", "weak", "Vanlige monster er enkle a gjette.")
-                )
+            passwordStrengthTask(
+                "Gjør startpassordet tryggere.",
+                "Bra. Du bygde videre på startpassordet og gjorde det mye vanskeligere å gjette.",
+                "Du må beholde noe av startpassordet, men gjøre det lengre og mindre opplagt.",
+                "Forbedre passordet",
+                "Tenk deg at noen bruker dette svake passordet allerede. Gjør det bedre uten å bytte det helt ut.",
+                "Behold startpassordet som en del av det nye passordet, men legg til flere tegn og mer variasjon.",
+                PasswordStrengthContent.Mode.IMPROVE,
+                "Skriv det forbedrede passordet her",
+                "Ada2026",
+                12,
+                4,
+                List.of("123", "qwerty", "passord", "ada")
             )
         )
     );
 
     upsertExercise(PASSWORDBANK_EXERCISE_2_UID, "Passordmester", "Middels",
-        "Laer mer om passord-gjenbruk og hvordan du lager sterkere passord.",
+        "Øv på gjenbruk, forbedring og gode passordvaner i flere situasjoner.",
         List.of(
-            multipleChoiceTask(
-                "Velg den beste forklaringen pa hvorfor passord-gjenbruk er dumt.",
-                "Ja. Hvis ett passord lekker, kan samme passord proves pa flere kontoer.",
-                "Tenk pa hva som skjer hvis noen far tak i ett av passordene dine.",
-                "Hvorfor er passord-gjenbruk dumt?",
-                "Velg den beste forklaringen.",
-                media(PASSWORD_SAFE_IMAGE),
-                "Illustrasjon av samme passord pa flere kontoer",
+            sortIntoBucketsTask(
+                "Sorter vanene i riktig boks.",
+                "Riktig. Du skilte mellom vaner som beskytter kontoene dine, og vaner som gjør dem mer sårbare.",
+                "Tenk på hva som skjer hvis noen får tak i ett av passordene dine.",
+                "Hvilke vaner er lure?",
+                "Legg hvert kort i riktig kategori.",
+                "Vaner som skal sorteres",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Da kan noen prove samme passord pa flere kontoer"),
-                    new MultipleChoiceContent.Option("b", "Da blir passordet lettere a skrive")
+                    new SortIntoBucketsContent.Bucket("smart", "Lur vane", "Valg som beskytter kontoene dine bedre.", "#d9fbe6"),
+                    new SortIntoBucketsContent.Bucket("unsafe", "Utrygg vane", "Valg som kan gjøre flere kontoer sårbare.", "#fee2e2")
                 ),
-                "a"
+                List.of(
+                    new SortIntoBucketsContent.Item("pw-5", "Bruke ulike passord til skole og spill", "smart", "Da blir ikke alt utsatt hvis ett passord lekker."),
+                    new SortIntoBucketsContent.Item("pw-6", "Bruke samme passord overalt", "unsafe", "Da kan flere kontoer bli åpnet med ett funn."),
+                    new SortIntoBucketsContent.Item("pw-7", "Lage et langt passord du kan huske", "smart", "Lengde hjelper mye."),
+                    new SortIntoBucketsContent.Item("pw-8", "Dele passord med en venn", "unsafe", "Da mister du kontrollen over hvem som kan logge inn.")
+                )
             ),
             passwordStrengthTask(
-                "Forbedre startpassordet sa det blir mye tryggere.",
-                "Bra. Du gjorde startpassordet vanskeligere a gjette og bedre a bruke.",
-                "Du ma bygge videre pa startpassordet og gjore det sterkere med flere tegn og variasjon.",
+                "Forbedre et passord som brukes flere steder.",
+                "Bra. Du gjorde passordet sterkere uten å la det bli stående nesten likt.",
+                "Du må bygge videre på startpassordet med flere tegn og mer variasjon.",
                 "Forbedre passordet",
-                "Gjor startpassordet tryggere uten a bruke det helt alene.",
-                "Behold litt av startpassordet, men gjor det lengre og sterkere.",
+                "Tenk deg at dette passordet allerede er brukt på flere kontoer. Gjør det bedre.",
+                "Behold litt av startpassordet, men gjør det lengre og mindre lett å gjette.",
                 PasswordStrengthContent.Mode.IMPROVE,
                 "Skriv det forbedrede passordet her",
-                "sommer2026",
-                12,
+                "fotball123",
+                13,
                 4,
-                List.of("123", "qwerty", "passord")
+                List.of("123", "qwerty", "passord", "fotball")
             ),
-            xOrYTask(
-                "Velg passordet som virker sterkest.",
-                "Riktig. Det sterkeste passordet er lengre og mindre lett a gjette.",
-                "Se etter lengde, variasjon og om passordet bygger pa vanlig info om deg.",
-                "Hvilket passord er smartest?",
-                "Sammenlign de to forslagene og velg det tryggeste.",
-                media(PASSWORD_WARNING_IMAGE),
-                "Kort passord med navn og arstall",
-                "Forslag X",
-                "Ola2015",
-                "Passordet bruker navn og arstall som kan vaere lett a gjette.",
-                media(PASSWORD_SAFE_IMAGE),
-                "Langt passord med flere ord og symbol",
-                "Forslag Y",
-                "Blomst!Sykkel9Maanen",
-                "Passordet er lengre og blander flere typer tegn.",
-                XOrYContent.Choice.Y
+            passwordStrengthTask(
+                "Lag et nytt passord til en spillkonto.",
+                "Bra jobbet. Passordet ditt ble langt nok og vanskeligere å gjette.",
+                "Prøv igjen med mer lengde og mindre opplagte mønstre.",
+                "Lag et nytt spillpassord",
+                "Lag et passord som ikke bygger på navnet ditt, favorittlaget ditt eller en enkel tallrekke.",
+                "Bruk minst 14 tegn og bland flere typer tegn på en måte du fortsatt kan huske.",
+                PasswordStrengthContent.Mode.CREATE,
+                "Skriv spillpassordet her",
+                null,
+                14,
+                4,
+                List.of("123", "qwerty", "passord", "fotball", "gaming")
             )
         )
     );
 
     upsertExercise(MARKETPLACE_EXERCISE_1_UID, "Trygg handel", "Lett",
-        "Laer a vurdere om nettsider og nettbutikker er trygge eller mistenkelige.",
+        "Lær å oppdage de første tegnene på at en annonse eller butikk kan være mistenkelig.",
         List.of(
             multipleChoiceTask(
-                "Velg det tydeligste faresignalet pa nettsiden.",
-                "Riktig. En rar nettadresse er ofte et faresignal.",
-                "Se etter noe som gjor at siden virker mindre troverdig.",
-                "Hva er det tydeligste faresignalet?",
-                "Velg det som skurrer mest.",
-                media(SHOP_WARNING_IMAGE),
-                "Skjermbilde av en tvilsom nettbutikk",
+                "Hva bør få deg til å stoppe opp i denne annonsen?",
+                "Bra. Når en annonse virker altfor god til å være sann, bør du sjekke mer før du trykker.",
+                "Se etter det som gjør annonsen vanskelig å stole på med en gang.",
+                "Hva skurrer mest?",
+                "Velg det tydeligste faresignalet i annonsen.",
+                media(MARKETPLACE_FAKE_IPHONE_IMAGE),
+                "En annonse for en iPhone som virker mistenkelig",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Butikken bruker en rar nettadresse som ikke ser norsk ut"),
-                    new MultipleChoiceContent.Option("b", "Produktbildet er stort og fargerikt")
+                    new MultipleChoiceContent.Option("a", "Prisen og tilbudet virker altfor gode til å være sanne"),
+                    new MultipleChoiceContent.Option("b", "Annonsen viser et tydelig produktbilde"),
+                    new MultipleChoiceContent.Option("c", "Det står hva varen heter")
                 ),
                 "a"
             ),
             xOrYTask(
-                "Sammenlign to butikker og velg den som virker mest troverdig.",
-                "Bra. Den tryggeste butikken gir deg kontaktinfo og en nettadresse som virker ryddig.",
-                "Se etter kjent navn, kontaktinfo og trygg betalingsinformasjon.",
-                "Hvilken butikk virker tryggest?",
-                "Velg butikken du ville stolt mest pa.",
-                media(SHOP_WARNING_IMAGE),
-                "Tvilsom butikk med rar nettadresse",
-                "Butikk X",
-                "Supertilbud pa alt",
-                "Butikken lover veldig mye, men nettadressen og informasjonen virker rare.",
-                media(SHOP_SAFE_IMAGE),
-                "Ryddig butikk med tydelig informasjon",
-                "Butikk Y",
-                "Tydelig og ryddig",
-                "Butikken viser kontaktinfo og virker lettere a kontrollere.",
+                "Hvilken annonse virker mest som en vanlig salgsannonse?",
+                "Riktig. Den ene annonsen virker mer vanlig, mens den andre lover mye uten å virke like ryddig.",
+                "Se etter hvilken annonse som virker mest rolig og vanlig.",
+                "Hvilken annonse ville du sett nærmere på først?",
+                "Velg den som virker minst mistenkelig ved første blikk.",
+                media(MARKETPLACE_FAKE_BIKE_IMAGE),
+                "En sykkelannonse som virker mistenkelig",
+                "",
+                "Annonse 1",
+                "En sykkel ligger til salgs.",
+                media(MARKETPLACE_REAL_BIKE_IMAGE),
+                "En vanlig sykkelannonse",
+                "",
+                "Annonse 2",
+                "En annen sykkel ligger til salgs.",
                 XOrYContent.Choice.Y
             ),
             sortIntoBucketsTask(
-                "Sorter tegnene fra nettbutikken i riktig boks.",
-                "Riktig. Du fant hvilke tegn som gjor en butikk tryggere og hvilke som vekker mistanke.",
-                "Se etter hva som hjelper deg a stole pa butikken, og hva som virker pressende eller uklart.",
-                "Trygge tegn eller faresignaler?",
+                "Sorter tegnene i riktig boks.",
+                "Riktig. Du skilte mellom ting som gjør en annonse lettere å stole på, og ting som bør sjekkes nærmere.",
+                "Tenk på hvilke detaljer som virker ryddige, og hvilke som virker pressende eller uklare.",
+                "Hva er greit, og hva bør sjekkes?",
                 "Legg hvert kort i riktig kategori.",
                 "Kort som skal sorteres",
                 List.of(
-                    new SortIntoBucketsContent.Bucket("shop-safe", "Trygge tegn", "Detaljer som styrker troverdigheten.", "#d9fbe6"),
-                    new SortIntoBucketsContent.Bucket("shop-warn", "Faresignaler", "Detaljer som bor gjore deg skeptisk.", "#fee2e2")
+                    new SortIntoBucketsContent.Bucket("shop-safe", "Trygge tegn", "Detaljer som ofte gjør en annonse lettere å kontrollere.", "#d9fbe6"),
+                    new SortIntoBucketsContent.Bucket("shop-warn", "Faresignaler", "Detaljer som bør få deg til å stoppe opp.", "#fee2e2")
                 ),
                 List.of(
-                    new SortIntoBucketsContent.Item("shop-1", "Tydelig kontaktinformasjon", "shop-safe", "Kontaktinfo gjor butikken lettere a sjekke."),
-                    new SortIntoBucketsContent.Item("shop-2", "Rar nettadresse", "shop-warn", "Rare nettadresser kan vaere et faresignal."),
-                    new SortIntoBucketsContent.Item("shop-3", "Trygg betalingslosning", "shop-safe", "Kjent betaling virker ofte mer troverdig."),
-                    new SortIntoBucketsContent.Item("shop-4", "Nedtelling som presser deg til a kjope na", "shop-warn", "Press kan brukes for a fa deg til a handle fort.")
+                    new SortIntoBucketsContent.Item("shop-1", "Tydelig informasjon om varen", "shop-safe", "Da blir annonsen lettere å forstå og sjekke."),
+                    new SortIntoBucketsContent.Item("shop-2", "Pris som virker altfor lav", "shop-warn", "Et ekstremt godt tilbud kan være et faresignal."),
+                    new SortIntoBucketsContent.Item("shop-3", "Selger svarer rolig og konkret", "shop-safe", "Rolige og tydelige svar gjør det lettere å vurdere annonsen."),
+                    new SortIntoBucketsContent.Item("shop-4", "Melding om at du må betale med en gang", "shop-warn", "Press brukes ofte for å få deg til å handle for fort.")
                 )
             )
         )
     );
 
     upsertExercise(MARKETPLACE_EXERCISE_2_UID, "Nettbutikksjekk", "Middels",
-        "Sammenlign nettbutikker og finn tegn pa om du bor stole pa dem eller ikke.",
+        "Sammenlign annonser og kjøpssituasjoner, og finn tegn som hjelper deg å vurdere dem bedre.",
         List.of(
             multipleChoiceTask(
-                "Velg butikken som virker mest troverdig.",
-                "Bra. Kjent navn, ryddig informasjon og trygg betaling er gode tegn.",
-                "Se etter tydelig informasjon og trygg betaling, ikke bare tilbudspris.",
-                "Hvilken butikk virker mest troverdig?",
-                "Velg butikken du ville stolt mest pa.",
-                media(SHOP_SAFE_IMAGE),
-                "Sammenligning av to nettbutikker",
+                "Hva gjør denne annonsen lettere å stole på?",
+                "Bra. Tydelig informasjon og en vanlig pris gjør det lettere å vurdere annonsen.",
+                "Se etter konkrete ting som gjør annonsen lettere å kontrollere.",
+                "Hva styrker tilliten mest?",
+                "Velg det beste tegnet på at annonsen virker grei.",
+                media(MARKETPLACE_REAL_LAPTOP_IMAGE),
+                "En vanlig annonse for en brukt laptop",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Spillbutikk.no med tydelig kontaktinfo og kjent betaling"),
-                    new MultipleChoiceContent.Option("b", "Superdeal-game-click.biz med pressende tilbud")
+                    new MultipleChoiceContent.Option("a", "Annonsen forklarer varen rolig og med vanlige detaljer"),
+                    new MultipleChoiceContent.Option("b", "Annonsen sier at tilbudet forsvinner om to minutter"),
+                    new MultipleChoiceContent.Option("c", "Annonsen bruker store bokstaver i overskriften")
                 ),
                 "a"
             ),
             multipleChoiceTask(
-                "Velg den beste grunnen til at en butikk virker tryggere enn en annen.",
-                "Riktig. Kontaktinfo, kjent betaling og ryddig informasjon er bedre tegn enn bare lave priser.",
-                "Se etter konkrete ting du kan kontrollere, ikke bare hvor billig varen er.",
-                "Hva styrker tilliten mest?",
-                "To butikker selger samme vare. Velg det tegnet som gjor en av dem mest troverdig.",
-                media(SHOP_SAFE_IMAGE),
-                "Illustrasjon av trygg nettbutikk med kontaktinfo",
+                "Hva er det tydeligste faresignalet i denne annonsen?",
+                "Riktig. Når en annonse prøver å lokke med veldig lav pris uten å virke ryddig, bør du være forsiktig.",
+                "Se etter det som gjør annonsen vanskelig å stole på.",
+                "Hva skurrer mest?",
+                "Velg det sterkeste faresignalet i annonsen.",
+                media(MARKETPLACE_FAKE_LAPTOP_IMAGE),
+                "En laptopannonse som virker mistenkelig",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Butikken viser tydelig kontaktinfo og kjent betalingsmate"),
-                    new MultipleChoiceContent.Option("b", "Butikken lover at tilbudet varer bare i to minutter"),
-                    new MultipleChoiceContent.Option("c", "Butikken bruker veldig sterke farger")
+                    new MultipleChoiceContent.Option("a", "Annonsen virker altfor billig uten å forklare godt hvorfor"),
+                    new MultipleChoiceContent.Option("b", "Annonsen viser hva slags vare som selges"),
+                    new MultipleChoiceContent.Option("c", "Annonsen har et bilde av produktet")
                 ),
                 "a"
             ),
             xOrYTask(
-                "Velg kassen som virker mest trygg nar du skal betale.",
-                "Bra. Den tryggeste kassen forklarer betalingen tydelig og virker mindre stressende.",
-                "Se etter tydelig betaling, ryddig informasjon og minst mulig press.",
-                "Hvilken betaling virker tryggest?",
-                "Velg kassen du ville brukt.",
-                media(SHOP_WARNING_IMAGE),
-                "Kasseside med pressende tekst og lite informasjon",
-                "Kasse X",
-                "Handle fort",
-                "Siden stresser deg og gir lite informasjon om hvem du betaler til.",
-                media(SHOP_SAFE_IMAGE),
-                "Ryddig kasseside med kontaktinfo og ordresammendrag",
-                "Kasse Y",
-                "Ryddig betaling",
-                "Siden viser hva du kjoper og hvordan du kan kontakte butikken.",
+                "Hvilken annonse ville du vært minst skeptisk til?",
+                "Bra. Den ene annonsen virker mer vanlig, mens den andre prøver hardere å lokke deg raskt.",
+                "Se etter hvilken annonse som virker mest rolig og mest mulig som et vanlig salg.",
+                "Hvilken annonse virker mest troverdig?",
+                "Velg den som virker enklest å kontrollere videre.",
+                media(MARKETPLACE_FAKE_IPHONE_IMAGE),
+                "En mistenkelig annonse for en iPhone",
+                "",
+                "Alternativ 1",
+                "En telefon ligger ute til salgs.",
+                media(MARKETPLACE_REAL_LAPTOP_IMAGE),
+                "En vanlig annonse for en brukt laptop",
+                "",
+                "Alternativ 2",
+                "En datamaskin ligger ute til salgs.",
                 XOrYContent.Choice.Y
             )
         )
     );
 
     upsertExercise(SOCIALMEDIA_EXERCISE_1_UID, "Tenk for du deler", "Lett",
-        "Laer a tenke for du deler og oppdage manipulering og gruppepress.",
+        "Lær å stoppe opp når innlegg spiller på sterke følelser eller ber deg dele raskt.",
         List.of(
             multipleChoiceTask(
-                "Velg den smarteste reaksjonen nar et innlegg prover a stresse deg.",
-                "Riktig. Det er lurt a stoppe opp og sjekke for du deler videre.",
-                "Tenk pa hva som hjelper deg a ta et tryggere valg.",
-                "Hva bor du gjore forst?",
-                "Du ser et innlegg som gjor deg usikker. Hva er smartest?",
-                media(SOCIAL_WARNING_IMAGE),
-                "Skjermbilde av et stressende innlegg i sosiale medier",
+                "Hva bør få deg til å stoppe opp i dette innlegget?",
+                "Bra. Når et innlegg prøver å få deg til å dele med en gang, bør du være ekstra forsiktig.",
+                "Se etter det som gjør at innlegget prøver å presse fram en rask reaksjon.",
+                "Hva skurrer mest?",
+                "Velg det tydeligste faresignalet i innlegget.",
+                media(SOCIAL_BAD_SHARE_IMAGE),
+                "Et innlegg som sier at alle må dele fordi læreren skjuler sannheten",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Stoppe opp og sjekke innholdet for du deler"),
-                    new MultipleChoiceContent.Option("b", "Dele raskt fordi mange andre gjor det")
+                    new MultipleChoiceContent.Option("a", "Innlegget prøver å få deg til å dele raskt uten å sjekke"),
+                    new MultipleChoiceContent.Option("b", "Innlegget har mye tekst i bildet"),
+                    new MultipleChoiceContent.Option("c", "Innlegget handler om skolen")
                 ),
                 "a"
             ),
             xOrYTask(
-                "Sammenlign to innlegg og velg det som virker mest ansvarlig a stole pa.",
-                "Bra. Det tryggeste innlegget bruker rolig sprak og presser deg ikke til a handle fort.",
-                "Se etter innlegg som forklarer mer og presser mindre.",
-                "Hvilket innlegg virker tryggest?",
-                "Velg innlegget du ville stolt mest pa.",
-                media(SOCIAL_WARNING_IMAGE),
-                "Stressende innlegg med sterke ord",
-                "Innlegg X",
-                "Del na",
-                "Innlegget bruker gruppepress og sterke ord for a fa deg til a reagere fort.",
-                media(SOCIAL_SAFE_IMAGE),
-                "Rolig innlegg med forklaring",
-                "Innlegg Y",
-                "Les for du deler",
-                "Innlegget forklarer rolig hva som skjer og virker lettere a sjekke.",
+                "Hvilket innlegg virker mest som en rolig faktasjekk?",
+                "Riktig. Det ene innlegget virker mer som en vanlig oppklaring, mens det andre prøver å få deg til å reagere raskt.",
+                "Se etter hvilket innlegg som virker mest rolig og konkret.",
+                "Hvilket innlegg ville du lest først?",
+                "Velg innlegget som virker minst stressende.",
+                media(SOCIAL_BAD_SCHOOL_IMAGE),
+                "Et innlegg som sier at alle skoler stenger neste uke",
+                "",
+                "Innlegg 1",
+                "Et innlegg om at skoler skal stenge neste uke.",
+                media(SOCIAL_GOOD_SCHOOL_IMAGE),
+                "Et innlegg fra Udir som forklarer at skolene ikke stenger",
+                "",
+                "Innlegg 2",
+                "Et innlegg om hva som faktisk gjelder for skolene.",
                 XOrYContent.Choice.Y
             ),
             sortIntoBucketsTask(
                 "Sorter reaksjonene i riktig boks.",
-                "Riktig. Du skilte mellom smarte og usmarte valg nar du ser noe i sosiale medier.",
-                "Se etter hvilke valg som gir deg tid til a tenke, og hvilke som sprer innholdet raskt videre.",
-                "Smart trekk eller dumt trekk?",
+                "Riktig. Du skilte mellom valg som gir deg tid til å tenke, og valg som sprer noe for fort.",
+                "Tenk på hvilke valg som bremser delingen, og hvilke valg som sprer innholdet videre med en gang.",
+                "Hva er smart å gjøre?",
                 "Legg hvert kort i riktig kategori.",
                 "Reaksjoner som skal sorteres",
                 List.of(
-                    new SortIntoBucketsContent.Bucket("smart", "Smart trekk", "Valg som hjelper deg a tenke deg om.", "#d9fbe6"),
-                    new SortIntoBucketsContent.Bucket("hasty", "Dumt trekk", "Valg som kan spre feilinformasjon raskt.", "#fee2e2")
+                    new SortIntoBucketsContent.Bucket("smart", "Smart trekk", "Valg som hjelper deg å tenke deg om.", "#d9fbe6"),
+                    new SortIntoBucketsContent.Bucket("hasty", "Dumt trekk", "Valg som kan spre noe videre for fort.", "#fee2e2")
                 ),
                 List.of(
-                    new SortIntoBucketsContent.Item("social-1", "Sjekke avsenderen for du deler", "smart", "Da undersoker du innholdet forst."),
-                    new SortIntoBucketsContent.Item("social-2", "Dele fordi mange andre gjor det", "hasty", "Popularitet betyr ikke at noe er sant."),
-                    new SortIntoBucketsContent.Item("social-3", "Stoppe opp hvis innlegget gjor deg stresset", "smart", "Sterke foleser er et tegn pa at du bor tenke deg om."),
-                    new SortIntoBucketsContent.Item("social-4", "Trykke del med en gang", "hasty", "Da sprer du innholdet uten a sjekke det.")
+                    new SortIntoBucketsContent.Item("social-1", "Sjekke hvem som står bak innlegget", "smart", "Da undersøker du innholdet først."),
+                    new SortIntoBucketsContent.Item("social-2", "Dele fordi mange andre allerede har delt", "hasty", "Popularitet betyr ikke at noe stemmer."),
+                    new SortIntoBucketsContent.Item("social-3", "Vente litt hvis innlegget gjør deg sint eller redd", "smart", "Sterke følelser er et tegn på at du bør tenke deg om."),
+                    new SortIntoBucketsContent.Item("social-4", "Trykke del med en gang", "hasty", "Da sprer du innholdet uten å sjekke det.")
                 )
             )
         )
     );
 
     upsertExercise(SOCIALMEDIA_EXERCISE_2_UID, "Del eller vent", "Middels",
-        "Laer hvordan du kan reagere smart nar innhold prover a presse fram raske valg.",
+        "Øv på å sammenligne innlegg og velge det som hjelper deg å sjekke før du deler.",
         List.of(
             multipleChoiceTask(
-                "Velg den beste reaksjonen nar du blir usikker.",
-                "Ja. Vent og sjekk er tryggere enn a dele pa impuls.",
-                "Tenk pa hvilken handling som gir deg tid til a undersoke mer.",
-                "Hvilken reaksjon er smartest?",
-                "Du ser et innlegg som mange deler. Hva bor du gjore?",
-                media(SOCIAL_WARNING_IMAGE),
-                "Skjermbilde av et viralt innlegg",
+                "Hva er det smarteste første steget når du blir usikker på et innlegg?",
+                "Ja. Det er tryggere å stoppe opp og sjekke enn å reagere med en gang.",
+                "Tenk på hvilket valg som gir deg mer tid til å undersøke videre.",
+                "Hva bør du gjøre først?",
+                "Velg reaksjonen som hjelper deg å finne ut mer før du deler.",
+                media(SOCIAL_GOOD_TIPS_IMAGE),
+                "Et innlegg med tips om å være skeptisk til sosiale medier-trender",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Vent og sjekk"),
-                    new MultipleChoiceContent.Option("b", "Del med en gang")
+                    new MultipleChoiceContent.Option("a", "Stoppe opp og sjekke om andre troverdige kilder sier det samme"),
+                    new MultipleChoiceContent.Option("b", "Dele innlegget videre og spørre etterpå om det stemmer"),
+                    new MultipleChoiceContent.Option("c", "Tro på innlegget hvis mange har kommentert det")
                 ),
                 "a"
             ),
             xOrYTask(
-                "Velg reaksjonen som viser best digital drommekraft.",
-                "Riktig. Den beste reaksjonen gir deg tid til a sjekke innholdet for du sprer det videre.",
-                "Se etter valget som bremser delingen og gir rom for sjekk.",
-                "Hva er smartest a gjore?",
-                "Velg alternativet som viser mest omtanke.",
-                media(SOCIAL_WARNING_IMAGE),
-                "Innlegg som oppfordrer til rask deling",
-                "Valg X",
-                "Del for sikkerhets skyld",
-                "Du sprer innholdet videre uten a vite om det stemmer.",
-                media(SOCIAL_SAFE_IMAGE),
-                "Rolig vurdering av innlegg for deling",
-                "Valg Y",
-                "Vent og sjekk",
-                "Du stopper opp og sjekker mer for du reagerer.",
+                "Hvilket innlegg virker mest troverdig ved første blikk?",
+                "Bra. Det ene innlegget virker mer som en vanlig faktasjekk, mens det andre prøver hardere å skape reaksjon.",
+                "Se etter hvilket innlegg som virker mest rolig og mest konkret.",
+                "Hvilket innlegg ville du stolt minst på?",
+                "Velg innlegget som virker enklest å kontrollere videre.",
+                media(SOCIAL_BAD_CHIPS_IMAGE),
+                "Et innlegg som sier at farlige chips gjør barn syke og at alle må se det",
+                "",
+                "Innlegg 1",
+                "Et innlegg om at farlige chips gjør barn syke.",
+                media(SOCIAL_GOOD_CHIPS_IMAGE),
+                "Et rolig innlegg som faktasjekker ryktet om farlige chips",
+                "",
+                "Innlegg 2",
+                "Et innlegg som undersøker ryktet om chipsene.",
                 XOrYContent.Choice.Y
             ),
             multipleChoiceTask(
-                "Velg det smarteste neste steget nar et innlegg spiller pa sterke foleser.",
-                "Bra. Nar et innlegg gjor deg sint eller redd, er det lurt a roe ned og sjekke kilden.",
-                "Tenk pa hva som hjelper deg a undersoke innholdet, ikke bare reagere pa det.",
-                "Hva bor du gjore hvis du blir sint?",
-                "Du ser et innlegg som prover a gjore deg opprort. Velg det beste neste steget.",
-                media(DETECTIVE_HUB_IMAGE),
-                "Illustrasjon av et barn som stopper opp for deling",
+                "Hva er det beste tegnet på at et innlegg bør sjekkes ekstra før du deler det?",
+                "Bra. Når et innlegg vil at alle skal dele med en gang og bruker sterke ord, bør du være ekstra forsiktig.",
+                "Se etter det som gjør at innlegget prøver å styre følelsene dine raskt.",
+                "Hva er det sterkeste faresignalet?",
+                "Velg det som gjør innlegget mest mistenkelig.",
+                media(SOCIAL_BAD_SHARE_IMAGE),
+                "Et innlegg som sier at alle må dele fordi læreren skjuler sannheten",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Puste litt og sjekke hvem som star bak innlegget"),
-                    new MultipleChoiceContent.Option("b", "Kommentere med en gang mens du er sint"),
-                    new MultipleChoiceContent.Option("c", "Dele det i alle gruppechattene dine")
+                    new MultipleChoiceContent.Option("a", "Innlegget ber alle dele raskt og spiller på sinne eller frykt"),
+                    new MultipleChoiceContent.Option("b", "Innlegget handler om noe på skolen"),
+                    new MultipleChoiceContent.Option("c", "Innlegget har et stort bilde og mye tekst")
                 ),
                 "a"
             )
@@ -823,72 +856,72 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     );
 
     upsertExercise(DATACENTER_EXERCISE_UID, "Datatyven", "Høy",
-        "Bruk alt du har lært for å bekjempe datatyven.",
+        "Bruk det vanskeligste du har lært i de andre stasjonene for å stoppe datatyven.",
         List.of(
             multipleChoiceTask(
-                "Datatyven sender en falsk nyhet. Velg det tydeligste faresignalet.",
-                "Riktig. Mangel pa kilde og sjokkerende sprak er klassiske faresignaler.",
-                "Tenk pa hva som hjelper deg a kontrollere om en sak stemmer.",
-                "Hva avslorer den falske nyheten?",
-                "Datatyven har lagt ut en sak som sprer seg fort. Velg det tydeligste faresignalet.",
-                media(NEWS_WARNING_IMAGE),
-                "Skjermbilde av en sjokkerende nyhetssak fra datatyven",
+                "Datatyven pakker en falsk nyhet inn som en vanlig sak. Hva er det tydeligste faresignalet?",
+                "Riktig. Når en sak mangler tydelige kilder eller forklaringer, bør du stoppe opp.",
+                "Se etter det som gjør saken vanskelig å kontrollere videre.",
+                "Hva skurrer mest?",
+                "Velg det sterkeste tegnet på at saken bør sjekkes mer.",
+                media(NEWSSTAND_WARNING_PHONE_IMAGE),
+                "En nyhet om gratis mobil uten tydelige kilder",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Saken har en kjent avsender og tydelige kilder"),
-                    new MultipleChoiceContent.Option("b", "Saken bruker sjokk-overskrift og mangler kilder"),
-                    new MultipleChoiceContent.Option("c", "Saken er kort og lett a lese")
+                    new MultipleChoiceContent.Option("a", "Den mangler tydelige kilder eller forklaringer"),
+                    new MultipleChoiceContent.Option("b", "Den handler om noe mange elever er nysgjerrige på"),
+                    new MultipleChoiceContent.Option("c", "Den har et stort bilde ved siden av teksten")
                 ),
-                "b"
+                "a"
             ),
             xOrYTask(
-                "Datatyven har sendt to bilder. Velg det som virker ekte.",
-                "Bra. Det ekte bildet har naturlige detaljer og henger sammen.",
-                "Se etter rare hender, skjev tekst eller bakgrunner som ikke passer.",
-                "Hvilket bilde er ekte?",
-                "Studer detaljene og velg bildet datatyven ikke har laget.",
-                media(PHOTO_WARNING_IMAGE),
-                "KI-generert bilde med unaturlige detaljer",
-                "Bilde X",
-                "Mange smaa feil",
-                "Hender og tekst ser unaturlige ut.",
-                media(PHOTO_SAFE_IMAGE),
-                "Ekte bilde med naturlige detaljer",
-                "Bilde Y",
-                "Naturlige detaljer",
-                "Detaljene henger sammen og virker ekte.",
+                "Datatyven viser to bilder. Hvilket virker mest troverdig ved første blikk?",
+                "Bra. Det ene motivet virker mer som et vanlig bilde, mens det andre ikke henger like godt sammen.",
+                "Se etter hvilket bilde som virker mest naturlig og minst kunstig.",
+                "Hvilket bilde ville du stolt mest på?",
+                "Velg bildet som virker enklest å tro på ved første blikk.",
+                media(PHOTOGRAPH_AI_MARS_IMAGE),
+                "Et kjent tårn i et rødt landskap",
+                "",
+                "Alternativ 1",
+                "Et kjent tårn står i et rødt landskap.",
+                media(PHOTOGRAPH_REAL_PEOPLE_IMAGE),
+                "Personer som går tur sammen",
+                "",
+                "Alternativ 2",
+                "To personer går ute sammen.",
                 XOrYContent.Choice.Y
             ),
             emailHotspotsTask(
-                "Datatyven har sendt en e-post. Trykk pa alle faresignalene.",
-                "Bra. Du fant lurene datatyven brukte for a stjele kontoen din.",
-                "Se ekstra pa avsenderadressen, lenken og uventede vedlegg.",
-                "Avslor datatyvens e-post",
-                "Trykk pa alt som virker mistenkelig.",
+                "Datatyven sender en e-post som ser nesten ekte ut. Trykk på alle faresignalene.",
+                "Bra. Du fant de viktigste tegnene på at e-posten ikke er trygg.",
+                "Se etter press, rar avsender, uventet vedlegg og lenker du ikke kjenner igjen.",
+                "Finn alt som skurrer",
+                "Trykk på delene av e-posten som gjør den mistenkelig.",
                 new EmailHotspotsContent.Email(
-                    "Datasenter-support",
+                    "Skolekonto",
                     "boss-sender-name",
-                    "support@datasenter-secure-login.click",
+                    "melding@skole-konto-verify.biz",
                     "boss-sender-address",
-                    "Kontoen din blir stengt om 5 minutter",
+                    "Viktig: konto må oppdateres nå",
                     "boss-subject",
-                    "DS",
+                    "SK",
                     "I dag 10:02",
                     "boss-received",
-                    "Hei bruker!",
+                    "Hei elev!",
                     "boss-greeting",
                     List.of(
-                        new EmailHotspotsContent.TextBlock("boss-body-text", "Klikk lenken under na for at vi ikke skal slette alle filene dine.", "boss-body-text-target"),
-                        new EmailHotspotsContent.LinkBlock("boss-body-link", "Bekreft kontoen", "datasenter-login-verify.click", "Maa gjores umiddelbart", "boss-body-link-target")
+                        new EmailHotspotsContent.TextBlock("boss-body-text", "Hvis du ikke svarer innen 10 minutter, blir kontoen din sperret.", "boss-body-text-target"),
+                        new EmailHotspotsContent.LinkBlock("boss-body-link", "Åpne skolekonto", "secure-school-check.biz/login", "Må gjøres i dag", "boss-body-link-target")
                     ),
-                    new EmailHotspotsContent.ActionButton("Logg inn", "datasenteret.no", "boss-action-button"),
-                    List.of(new EmailHotspotsContent.Attachment("boss-attachment", "konto.exe", "Uventet programfil", "boss-attachment-target")),
-                    "Hilsen datasenteret",
+                    new EmailHotspotsContent.ActionButton("Les mer", "skoleportalen.no", "boss-action-button"),
+                    List.of(new EmailHotspotsContent.Attachment("boss-attachment", "skjema.zip", "Uventet komprimert fil", "boss-attachment-target")),
+                    "Hilsen administrasjonen",
                     "boss-closing"
                 ),
                 List.of(
                     new EmailHotspotsContent.Target("boss-sender-name", false),
                     new EmailHotspotsContent.Target("boss-sender-address", true),
-                    new EmailHotspotsContent.Target("boss-subject", true),
+                    new EmailHotspotsContent.Target("boss-subject", false),
                     new EmailHotspotsContent.Target("boss-received", false),
                     new EmailHotspotsContent.Target("boss-greeting", false),
                     new EmailHotspotsContent.Target("boss-body-text-target", true),
@@ -899,117 +932,53 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 )
             ),
             passwordStrengthTask(
-                "Lag et nytt sterkt passord for a stenge datatyven ute.",
-                "Bra jobbet. Passordet ditt er langt nok og vanskelig a gjette.",
-                "Proov igjen med flere tegn og en bedre blanding av bokstaver, tall og symboler.",
-                "Lag et sterkt passord",
-                "Datatyven prover a gjette passord. Lag et som ikke er lett a knekke.",
-                "Bruk minst 12 tegn og bland flere typer tegn.",
-                PasswordStrengthContent.Mode.CREATE,
-                "Skriv passordet her",
-                null,
-                12,
-                4,
-                List.of("123", "qwerty", "passord", "datatyv", "admin")
-            ),
-            xOrYTask(
-                "Datatyven driver to nettbutikker. Velg den trygge.",
-                "Riktig. Den trygge butikken har kjent nettadresse og tydelig kontaktinfo.",
-                "Se etter kjent nettadresse, kontaktinfo og trygg betaling.",
-                "Hvilken butikk er trygg?",
-                "Velg butikken du tor a handle i.",
-                media(SHOP_WARNING_IMAGE),
-                "Tvilsom butikk med rar nettadresse og pressende tilbud",
-                "Butikk X",
-                "Sjokktilbud",
-                "Rar nettadresse, ingen kontaktinfo og pressende nedtelling.",
-                media(SHOP_SAFE_IMAGE),
-                "Ryddig butikk med kontaktinfo og kjent betaling",
-                "Butikk Y",
-                "Kjent og ryddig",
-                "Tydelig kontaktinfo, kjent nettadresse og trygg betalingsmate.",
-                XOrYContent.Choice.Y
-            ),
-            multipleChoiceTask(
-                "Datatyven sprer et innlegg som gjor deg sint. Velg den smarteste reaksjonen.",
-                "Bra. Stoppe opp og sjekke kilden er det smarteste forsvaret mot manipulering.",
-                "Tenk pa hva som hjelper deg a unnga a spre feilinformasjon.",
-                "Hva gjor du i sosiale medier?",
-                "Du ser et innlegg som prover a fa deg til a dele med en gang.",
-                media(SOCIAL_WARNING_IMAGE),
-                "Stressende innlegg fra datatyven i sosiale medier",
-                List.of(
-                    new MultipleChoiceContent.Option("a", "Dele med en gang slik at andre advares"),
-                    new MultipleChoiceContent.Option("b", "Stoppe opp, sjekke kilden og vente med a dele"),
-                    new MultipleChoiceContent.Option("c", "Kommentere mens du er sint")
-                ),
-                "b"
-            ),
-            sortIntoBucketsTask(
-                "Datatyven prover mange triks. Sorter dem som faresignal eller trygt tegn.",
-                "Riktig. Du gjenkjente datatyvens triks pa tvers av nyheter, e-post, butikker og sosiale medier.",
-                "Tenk pa hvilke triks som presser deg, og hvilke tegn som hjelper deg a kontrollere.",
-                "Faresignal eller trygt tegn?",
-                "Legg hvert kort i riktig kategori.",
-                "Triks og tegn fra datatyven",
-                List.of(
-                    new SortIntoBucketsContent.Bucket("boss-safe", "Trygge tegn", "Tegn som styrker tilliten.", "#d9fbe6"),
-                    new SortIntoBucketsContent.Bucket("boss-warn", "Faresignaler", "Triks datatyven bruker for a lure deg.", "#fee2e2")
-                ),
-                List.of(
-                    new SortIntoBucketsContent.Item("boss-1", "Tydelig avsender og kjent kilde", "boss-safe", "Da kan du sjekke hvem som star bak."),
-                    new SortIntoBucketsContent.Item("boss-2", "Lenke med rar nettadresse", "boss-warn", "Rare adresser leder ofte til falske sider."),
-                    new SortIntoBucketsContent.Item("boss-3", "Press om a handle innen fa minutter", "boss-warn", "Stress brukes for a hindre deg i a tenke."),
-                    new SortIntoBucketsContent.Item("boss-4", "Kontaktinfo og kjent betalingsmate", "boss-safe", "Kjent betaling gjor handelen lettere a kontrollere."),
-                    new SortIntoBucketsContent.Item("boss-5", "Bilde med rare hender og skjev tekst", "boss-warn", "Et tegn pa at bildet kan vaere KI-generert."),
-                    new SortIntoBucketsContent.Item("boss-6", "Rolig sprak som forklarer hva saken handler om", "boss-safe", "Rolig informasjon er lettere a kontrollere.")
-                )
-            ),
-            passwordStrengthTask(
-                "Datatyven har sett startpassordet ditt. Forbedre det sa det blir trygt.",
-                "Bra. Du gjorde passordet mye vanskeligere a gjette.",
-                "Bygg videre med flere tegn og bedre variasjon.",
+                "Datatyven kjenner et gammelt passord. Forbedre det så det blir mye tryggere.",
+                "Bra. Du gjorde passordet sterkere uten å la det bli stående nesten likt.",
+                "Du må bygge videre på startpassordet med mer lengde og bedre variasjon.",
                 "Forbedre passordet",
-                "Gjor startpassordet sterkt nok til a stoppe datatyven.",
-                "Behold litt av startpassordet, men gjor det lengre og sterkere.",
+                "Tenk deg at dette passordet allerede er brukt flere steder. Gjør det vanskeligere å gjette.",
+                "Behold litt av startpassordet, men gjør det lengre og mindre opplagt.",
                 PasswordStrengthContent.Mode.IMPROVE,
                 "Skriv det forbedrede passordet her",
-                "skole2026",
-                14,
+                "fotball123",
+                13,
                 4,
-                List.of("123", "qwerty", "passord", "datatyv")
-            ),
-            multipleChoiceTask(
-                "Datatyven viser deg et bilde og en e-post sammen. Velg det smarteste forste steget.",
-                "Riktig. Sjekk avsenderen og se etter rare detaljer for du gjor noe annet.",
-                "Tenk pa hva som hjelper deg a kontrollere om noe er ekte.",
-                "Hva gjor du forst?",
-                "Datatyven kombinerer flere triks. Velg det smarteste forste steget.",
-                media(DETECTIVE_HUB_IMAGE),
-                "Illustrasjon av en elev som sjekker avsender og bilde",
-                List.of(
-                    new MultipleChoiceContent.Option("a", "Klikke pa lenken for a se hva som skjer"),
-                    new MultipleChoiceContent.Option("b", "Sjekke avsenderen og se etter rare detaljer i bildet"),
-                    new MultipleChoiceContent.Option("c", "Videresende meldingen til vennene dine")
-                ),
-                "b"
+                List.of("123", "qwerty", "passord", "fotball", "datatyv")
             ),
             xOrYTask(
-                "Velg den endelige strategien som stopper datatyven.",
-                "Riktig. Smart digital dommekraft er a stoppe opp, sjekke kilder og bruke sterke passord.",
-                "Tenk pa det du har laert i alle stasjonene: nyheter, bilder, e-post, passord, butikker og sosiale medier.",
-                "Hvordan stopper du datatyven?",
-                "Velg den beste strategien.",
-                media(SOCIAL_WARNING_IMAGE),
-                "Risikabel strategi som spiller datatyven i hendene",
-                "Strategi X",
-                "Klikk og del raskt",
-                "Du faller for press og sprer datatyvens innhold videre.",
-                media(DETECTIVE_HUB_IMAGE),
-                "Trygg strategi med sjekk og sterke passord",
-                "Strategi Y",
-                "Stopp, sjekk og bruk sterke passord",
-                "Du tar deg tid til a kontrollere kilder, lenker og bilder, og beskytter kontoene dine.",
+                "Datatyven lokker med to annonser. Hvilken virker mest troverdig?",
+                "Bra. Den ene annonsen virker mer som et vanlig salg, mens den andre prøver hardere å lokke deg raskt.",
+                "Se etter hvilken annonse som virker mest rolig og enklest å kontrollere videre.",
+                "Hvilken annonse ville du vært minst skeptisk til?",
+                "Velg annonsen som virker mest vanlig ved første blikk.",
+                media(MARKETPLACE_FAKE_IPHONE_IMAGE),
+                "En mistenkelig annonse for en iPhone",
+                "",
+                "Alternativ 1",
+                "En telefon ligger ute til salgs.",
+                media(MARKETPLACE_REAL_LAPTOP_IMAGE),
+                "En vanlig annonse for en brukt laptop",
+                "",
+                "Alternativ 2",
+                "En datamaskin ligger ute til salgs.",
+                XOrYContent.Choice.Y
+            ),
+            xOrYTask(
+                "Datatyven sprer to innlegg. Hvilket virker mest som en faktisk oppklaring?",
+                "Riktig. Det ene innlegget virker mer som en vanlig faktasjekk, mens det andre prøver å få deg til å reagere raskt.",
+                "Se etter hvilket innlegg som virker mest rolig og mest konkret.",
+                "Hvilket innlegg ville du lest først?",
+                "Velg innlegget som virker minst stressende.",
+                media(SOCIAL_BAD_CHIPS_IMAGE),
+                "Et innlegg om at farlige chips gjør barn syke",
+                "",
+                "Innlegg 1",
+                "Et innlegg om at farlige chips gjør barn syke.",
+                media(SOCIAL_GOOD_CHIPS_IMAGE),
+                "Et innlegg som faktasjekker ryktet om farlige chips",
+                "",
+                "Innlegg 2",
+                "Et innlegg som undersøker ryktet om chipsene.",
                 XOrYContent.Choice.Y
             )
         )
@@ -1020,41 +989,41 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
      * Seeds stations into the database with predefined UUIDs.
      * Creates stations and associates them with exercises.
      */
-    private void seedStations() {
+  private void seedStations() {
     upsertStation(NEWSSTAND_STATION_UID, "Nyhetskvartalet",
         "Nyhetsartikler og kildekritikk for skoleelever.",
         "Start med a sjekke hvem som er avsender, og om saken bruker sterke ord for a presse deg til a tro pa den.",
-        media("seed/stations/newsstand.svg"), "#cfe9ff",
+        media(NEWSSTAND_STATION_IMAGE), "#cfe9ff",
         List.of(NEWSSTAND_EXERCISE_1_UID, NEWSSTAND_EXERCISE_2_UID), false);
 
     upsertStation(PHOTOGRAPH_STATION_UID, "Fotografen",
         "Normal, manipulert og KI-genererte bilder.",
         "Se ekstra nøye pa detaljer som hender, tekst, skygger og bakgrunn nar du vurderer bilder.",
-        media("seed/stations/photograph.svg"), "#5F5F5F",
-        List.of(PHOTOGRAPH_EXERCISE_1_UID, PHOTOGRAPH_EXERCISE_2_UID), false);
+        media(PHOTOGRAPH_STATION_IMAGE), "#5F5F5F",
+        List.of(PHOTOGRAPH_EXERCISE_1_UID, PHOTOGRAPH_EXERCISE_2_UID, PHOTOGRAPH_EXERCISE_3_UID), false);
 
     upsertStation(POSTOFFICE_STATION_UID, "Postkontoret",
         "Klikkbare e-posttester med avsendere, lenker og vedlegg.",
         "Ikke klikk med en gang. Sjekk avsender, lenkeadresse og om meldingen prover a stresse deg.",
-        media("seed/stations/postoffice.svg"), "#fde68a",
+        media(POSTOFFICE_STATION_IMAGE), "#fde68a",
         List.of(POSTOFFICE_EXERCISE_1_UID, POSTOFFICE_EXERCISE_2_UID), false);
 
     upsertStation(PASSWORDBANK_STATION_UID, "Passordbanken",
         "Passordsjekking og gode passordvaner.",
         "Et sterkt passord er langt, unikt og vanskelig for andre a gjette, men fortsatt mulig for deg a huske.",
-        media("seed/stations/passwordbank.svg"), "#1D5232",
+        media(PASSWORDBANK_STATION_IMAGE), "#1D5232",
         List.of(PASSWORDBANK_EXERCISE_1_UID, PASSWORDBANK_EXERCISE_2_UID), false);
 
     upsertStation(MARKETPLACE_STATION_UID, "Markedsplassen",
         "Reklame, tilbud og e-butikker som ma vurderes.",
         "Hvis et tilbud virker for godt eller haster veldig, bor du stoppe opp og sjekke butikken forst.",
-        media("seed/stations/marketplace.svg"), "#962C2C",
+        media(MARKETPLACE_STATION_IMAGE), "#962C2C",
         List.of(MARKETPLACE_EXERCISE_1_UID, MARKETPLACE_EXERCISE_2_UID), false);
 
     upsertStation(SOCIALMEDIA_STATION_UID, "Den sosiale moteplassen",
         "Deling av innlegg, vurderinger og gruppepress i sosiale medier.",
         "Vent litt for du deler. Sjekk om innholdet har en tydelig kilde og om det prover a gjore deg sint eller redd.",
-        media("seed/stations/socialmedia.svg"), "#fbcfe8",
+        media(SOCIALMEDIA_STATION_IMAGE), "#fbcfe8",
         List.of(SOCIALMEDIA_EXERCISE_1_UID, SOCIALMEDIA_EXERCISE_2_UID), false);
 
     upsertStation(DATACENTER_STATION_UID, "Datasenteret",
@@ -1122,9 +1091,10 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
      * @param hint the hint for the exercise
      * @param taskRequests the list of task requests for the exercise
      */
-    private void upsertExercise(UUID publicId, String title, String difficultyName, String description,
+  private void upsertExercise(UUID publicId, String title, String difficultyName, String description,
         String hint, List<TaskRequest> taskRequests) {
     Exercise exercise = exerciseRepository.findByPublicId(publicId).orElseGet(Exercise::new);
+    boolean existingExercise = exercise.getInternalId() != null;
 
     exercise.setPublicId(publicId);
     exercise.setTitle(title);
@@ -1132,6 +1102,11 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     exercise.setDescription(description);
     exercise.setHint(hint);
     exercise.setNotepadEntry(defaultNotepadEntry(publicId, title, description, hint));
+
+    if (existingExercise) {
+      taskRepository.deleteByExerciseId(exercise.getInternalId());
+    }
+
     exercise.getTasks().clear();
     exercise.getTasks().addAll(newTasks(exercise, taskRequests));
 

@@ -193,8 +193,9 @@ const choose = (choice: XOrYChoice) => {
 .yTemplateImage {
   width: 100%;
   aspect-ratio: 1.2 / 0.68;
-  max-height: 25vh;
-  object-fit: cover;
+  max-height: min(25vh, 13rem);
+  object-fit: contain;
+  background: #fff;
   border-radius: var(--radius-2) var(--radius-2) 0 0;
   display: block;
 }

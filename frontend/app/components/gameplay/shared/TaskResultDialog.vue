@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import DialogTemplate from '~/components/gameplay/shared/DialogTemplate.vue'
+import DialogTemplate from "~/components/gameplay/shared/DialogTemplate.vue";
 
 defineProps<{
-  title: string
-  message: string
-  isLast: boolean
-  correct: boolean
-  actionLabel?: string
-}>()
+  title: string;
+  message: string;
+  isLast: boolean;
+  correct: boolean;
+  actionLabel?: string;
+}>();
 
 defineEmits<{
-  (e: 'next'): void
-}>()
+  (e: "next"): void;
+}>();
 </script>
 
 <template>
@@ -20,11 +20,11 @@ defineEmits<{
       <p
         class="resultDialogBadge"
         :class="{
-          'dialogBadgeCorrect': correct,
-          'dialogBadgeIncorrect': !correct,
+          dialogBadgeCorrect: correct,
+          dialogBadgeIncorrect: !correct,
         }"
       >
-        {{ correct ? 'Riktig svar' : 'Ikke helt' }}
+        {{ correct ? "Riktig svar" : "Ikke helt" }}
       </p>
     </template>
 
@@ -32,12 +32,8 @@ defineEmits<{
     <p class="resultMessage">{{ message }}</p>
 
     <template #actions>
-      <button
-        class="resultButton"
-        type="button"
-        @click="$emit('next')"
-      >
-        {{ actionLabel ?? (isLast ? 'Fullfor' : 'Neste sak') }}
+      <button class="resultButton" type="button" @click="$emit('next')">
+        {{ actionLabel ?? (isLast ? "Fullfør" : "Neste sak") }}
       </button>
     </template>
   </DialogTemplate>
@@ -81,7 +77,9 @@ defineEmits<{
   background: var(--color-brand-primary);
   color: #f9fbff;
   font-weight: 700;
-  transition: transform var(--transition-base) ease, background-color var(--transition-base) ease;
+  transition:
+    transform var(--transition-base) ease,
+    background-color var(--transition-base) ease;
 }
 
 .resultButton:hover,
@@ -90,5 +88,4 @@ defineEmits<{
   transform: translateY(-1px);
   outline: none;
 }
-
 </style>

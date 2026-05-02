@@ -9,6 +9,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Optional;
+import no.safety.backend.achievements.repository.AchievementRepository;
+import no.safety.backend.achievements.repository.UserAchievementRepository;
 import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.classroom.repository.ClassroomRepository;
 import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
@@ -49,6 +51,12 @@ class ClassroomMockDataInitializerTest {
   private CompletedExerciseRepository completedExerciseRepository;
 
   @Mock
+  private AchievementRepository achievementRepository;
+
+  @Mock
+  private UserAchievementRepository userAchievementRepository;
+
+  @Mock
   private PasswordEncoder passwordEncoder;
 
   @InjectMocks
@@ -62,6 +70,7 @@ class ClassroomMockDataInitializerTest {
     when(teacherRepository.findByEmail(any())).thenReturn(Optional.empty());
     when(studentRepository.findByEmail(any())).thenReturn(Optional.empty());
     when(classroomRepository.findByUid(any())).thenReturn(Optional.empty());
+    when(achievementRepository.findBySource(any())).thenReturn(Optional.empty());
 
     when(passwordEncoder.encode(ClassroomMockDataInitializer.DEMO_PASSWORD)).thenReturn("encoded-demo-password");
     when(teacherRepository.save(any(TeacherUser.class))).thenAnswer(invocation -> invocation.getArgument(0));

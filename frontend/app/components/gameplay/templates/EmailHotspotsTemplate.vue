@@ -92,6 +92,14 @@ const activateTarget = (targetId?: string) => {
     </header>
 
     <article class="hotspotsTemplateMail">
+      <div v-if="props.email.imageUrl" class="templateMailImageFrame">
+        <img
+          :src="props.email.imageUrl"
+          :alt="props.email.imageAlt ?? ''"
+          class="templateMailImage"
+        >
+      </div>
+
       <header class="templateMailHeader">
         <div class="hotspotsTemplateSender">
           <div class="hotspotsTemplateAvatar" aria-hidden="true">
@@ -392,6 +400,21 @@ const activateTarget = (targetId?: string) => {
   padding: var(--space-4) var(--space-3);
   background: var(--hot-header-bg);
   border-bottom: var(--border-width-hairline) solid var(--hot-header-border);
+}
+
+.templateMailImageFrame {
+  padding: 0.85rem 0.85rem 0;
+  background: var(--color-bg-surface);
+}
+
+.templateMailImage {
+  width: 100%;
+  max-height: min(42dvh, 22rem);
+  object-fit: contain;
+  background: #fff;
+  display: block;
+  border-radius: 1rem;
+  border: var(--border-width-thin) solid var(--color-border-default);
 }
 
 .hotspotsTemplateSender {

@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import no.safety.backend.achievements.model.Achievement;
+import no.safety.backend.achievements.model.UserAchievement;
+import no.safety.backend.achievements.repository.AchievementRepository;
+import no.safety.backend.achievements.repository.UserAchievementRepository;
 import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.classroom.repository.ClassroomRepository;
 import no.safety.backend.completedexercise.model.CompletedExercise;
@@ -81,6 +85,8 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
   private final ClassroomRepository classroomRepository;
   private final RoleRepository roleRepository;
   private final CompletedExerciseRepository completedExerciseRepository;
+  private final AchievementRepository achievementRepository;
+  private final UserAchievementRepository userAchievementRepository;
   private final NotificationRepository notificationRepository;
   private final PasswordEncoder passwordEncoder;
 
@@ -191,6 +197,8 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     assignPendingMember(klasse7c, vildePendingElev);
 
     seedNotifications(lisaLaerer, perLaerer, adaElev, eliasElev, miaElev, lukasElev);
+    seedAdaDemoProgress(adaElev);
+    seedEliasDemoProgress(eliasElev);
   }
 
     /**
@@ -342,7 +350,73 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
             lukasElev,
             "Lukas Elev fullforte dagens stasjonskart i 7-trinn C.",
             1,
-            LocalDateTime.now().minusMinutes(4))));
+        LocalDateTime.now().minusMinutes(4))));
+  }
+
+  private void seedAdaDemoProgress(StudentUser adaElev) {
+    if (adaElev == null) {
+      return;
+    }
+
+    seedCompletedExercise(adaElev, GameplayMockDataInitializer.NEWSSTAND_EXERCISE_1_UID);
+    seedCompletedExercise(adaElev, GameplayMockDataInitializer.NEWSSTAND_EXERCISE_2_UID);
+    seedCompletedExercise(adaElev, GameplayMockDataInitializer.PHOTOGRAPH_EXERCISE_1_UID);
+    seedCompletedExercise(adaElev, GameplayMockDataInitializer.PHOTOGRAPH_EXERCISE_2_UID);
+
+    seedStationAchievement(adaElev, GameplayMockDataInitializer.NEWSSTAND_STATION_UID);
+
+    adaElev.setScore(450);
+    studentRepository.save(adaElev);
+  }
+
+  private void seedEliasDemoProgress(StudentUser eliasElev) {
+    if (eliasElev == null) {
+      return;
+    }
+
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.NEWSSTAND_EXERCISE_1_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.NEWSSTAND_EXERCISE_2_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.PHOTOGRAPH_EXERCISE_1_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.PHOTOGRAPH_EXERCISE_2_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.PHOTOGRAPH_EXERCISE_3_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.POSTOFFICE_EXERCISE_1_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.POSTOFFICE_EXERCISE_2_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.PASSWORDBANK_EXERCISE_1_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.PASSWORDBANK_EXERCISE_2_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.MARKETPLACE_EXERCISE_1_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.MARKETPLACE_EXERCISE_2_UID);
+
+    seedStationAchievement(eliasElev, GameplayMockDataInitializer.NEWSSTAND_STATION_UID);
+    seedStationAchievement(eliasElev, GameplayMockDataInitializer.PHOTOGRAPH_STATION_UID);
+    seedStationAchievement(eliasElev, GameplayMockDataInitializer.POSTOFFICE_STATION_UID);
+    seedStationAchievement(eliasElev, GameplayMockDataInitializer.PASSWORDBANK_STATION_UID);
+    seedStationAchievement(eliasElev, GameplayMockDataInitializer.MARKETPLACE_STATION_UID);
+
+    eliasElev.setScore(1350);
+    studentRepository.save(eliasElev);
+  }
+
+  private void seedCompletedExercise(StudentUser student, UUID exerciseUid) {
+    if (completedExerciseRepository.existsByStudentUidAndExerciseUid(student.getPublicUuid(), exerciseUid)) {
+      return;
+    }
+
+    CompletedExercise completedExercise = new CompletedExercise();
+    completedExercise.setStudentUid(student.getPublicUuid());
+    completedExercise.setExerciseUid(exerciseUid);
+    completedExerciseRepository.save(completedExercise);
+  }
+
+  private void seedStationAchievement(StudentUser student, UUID stationUid) {
+    Achievement achievement = achievementRepository.findBySource(stationUid.toString()).orElse(null);
+    if (achievement == null || userAchievementRepository.existsByStudentAndAchievement(student, achievement)) {
+      return;
+    }
+
+    UserAchievement userAchievement = new UserAchievement();
+    userAchievement.setStudent(student);
+    userAchievement.setAchievement(achievement);
+    userAchievementRepository.save(userAchievement);
   }
 
   private Notification seededNotification(
