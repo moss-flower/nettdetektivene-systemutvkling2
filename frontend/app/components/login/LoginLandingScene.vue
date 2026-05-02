@@ -2,6 +2,7 @@
 import loginBackgroundImage from '~/assets/images/login/spBackgroundImageLogin.png';
 import loginPlateImage from '~/assets/images/login/NamePlate.png';
 import loginLogoImage from '~/assets/images/login/spLogoGame.png';
+import { onMounted, onBeforeUnmount } from 'vue';
 
 type LoginOption = {
   label: string;
@@ -25,6 +26,18 @@ const landingPageStyle = {
 };
 
 const titleTarget = computed(() => props.options[0]?.to ?? '/login');
+
+onMounted(() => {
+  if (typeof document !== 'undefined') {
+    document.documentElement.classList.add('no-scroll-login');
+  }
+});
+
+onBeforeUnmount(() => {
+  if (typeof document !== 'undefined') {
+    document.documentElement.classList.remove('no-scroll-login');
+  }
+});
 </script>
 
 <template>
@@ -265,5 +278,15 @@ const titleTarget = computed(() => props.options[0]?.to ?? '/login');
     padding: 0.9rem 0.7rem;
     font-size: clamp(1.2rem, 5vw, 1.55rem);
   }
+}
+</style>
+
+<!-- Global rule to disable page scrolling while landing scene is mounted -->
+<style>
+html.no-scroll-login,
+html.no-scroll-login body {
+  height: 100%;
+  overflow: hidden !important;
+  touch-action: none !important;
 }
 </style>
