@@ -71,16 +71,19 @@ const { data: progressByStudent, refresh: refreshProgress } = await useAsyncData
 
 const removingStudentId = ref('');
 const renamingStudentId = ref('');
+const deletingClassroom = ref(false);
 
 const getStudentProgress = (studentId: string): StudentProgress => progressByStudent.value?.[studentId] ?? {
   completed: 0,
   remaining: totalExercises.value,
 };
 
-const removeStudent = async (studentId: string) => {
+const removeStudent = async (studentId: string, studentName: string) => {
   if (!classroom.value || removingStudentId.value) {
     return;
   }
+
+  if (!window.confirm(`Fjerne ${studentName} fra klasserommet?`)) return;
 
   removingStudentId.value = studentId;
 
@@ -112,12 +115,40 @@ const renameStudent = async (studentId: string, currentName: string) => {
     renamingStudentId.value = '';
   }
 };
+
+const deleteClassroom = async () => {
+  if (!classroom.value || deletingClassroom.value) return;
+
+  if (!window.confirm(`Slette klasserommet "${classroom.value.name}"? Dette kan ikke angres.`)) return;
+
+  deletingClassroom.value = true;
+  try {
+    await teacher.deleteClassroom(classroom.value.uid);
+    await navigateTo(routePaths.teacherOverview);
+  } catch (error) {
+    console.error('Failed to delete classroom', error);
+    window.alert('Kunne ikke slette klasserommet. Prøv igjen.');
+  } finally {
+    deletingClassroom.value = false;
+  }
+};
 </script>
 
 <template>
   <section class="classroomPage">
     <header class="pageHeader">
-      <NuxtLink class="backLink" :to="routePaths.teacherOverview">Tilbake til hjemskjerm</NuxtLink>
+      <div class="headerActions">
+        <NuxtLink class="backLink" :to="routePaths.teacherOverview">Tilbake til hjemskjerm</NuxtLink>
+        <button
+          v-if="classroom"
+          class="deleteClassroomButton"
+          type="button"
+          :disabled="deletingClassroom"
+          @click="deleteClassroom"
+        >
+          Slett klasserom
+        </button>
+      </div>
       <p class="eyebrow">Klasseromsdetaljer</p>
       <h1>{{ classroom?.name ?? 'Ukjent klasserom' }}</h1>
       <p class="subtitle">Viser klasserommet slik det ligger i backend akkurat nå.</p>
@@ -213,7 +244,7 @@ const renameStudent = async (studentId: string, currentName: string) => {
                 type="button"
                 :aria-label="`Fjern ${student.username} fra klasserommet`"
                 :disabled="removingStudentId === student.publicUuid"
-                @click="removeStudent(student.publicUuid)"
+                @click="removeStudent(student.publicUuid, student.username)"
               >
                 X
               </button>
@@ -251,9 +282,16 @@ const renameStudent = async (studentId: string, currentName: string) => {
   gap: var(--space-2);
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
 .backLink {
   display: inline-block;
-  margin-bottom: var(--space-3);
   color: var(--color-brand-primary);
   font-weight: var(--font-weight-semibold);
   transition: var(--transition-fast);
@@ -261,6 +299,25 @@ const renameStudent = async (studentId: string, currentName: string) => {
 
 .backLink:hover {
   text-decoration: underline;
+}
+
+.deleteClassroomButton {
+  padding: 0.55rem 1rem;
+  border: var(--border-width-hairline) solid color-mix(in srgb, var(--color-semantic-danger, #b42318) 70%, var(--color-border-default));
+  border-radius: var(--radius-2);
+  background: color-mix(in srgb, var(--color-bg-surface) 88%, var(--color-semantic-danger, #b42318) 12%);
+  color: var(--color-semantic-danger, #b42318);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.deleteClassroomButton:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-bg-surface) 76%, var(--color-semantic-danger, #b42318) 24%);
+}
+
+.deleteClassroomButton:disabled {
+  cursor: wait;
+  opacity: 0.55;
 }
 
 .eyebrow {
@@ -480,6 +537,11 @@ thead th {
 }
 
 @media (max-width: 800px) {
+  .headerActions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .summaryRow {
     grid-template-columns: 1fr;
   }
