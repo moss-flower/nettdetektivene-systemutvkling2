@@ -515,105 +515,105 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     );
 
     upsertExercise(PASSWORDBANK_EXERCISE_1_UID, "Passorddetektiv", "Lett",
-        "Laer hva som gjor et passord sterkt, trygt og lett a huske.",
+        "Lær hva som gjør et passord sterkt, trygt og mulig å huske.",
         List.of(
-            multipleChoiceTask(
-                "Velg forklaringen som best viser hvorfor passordet er svakt.",
-                "Riktig. Navn og arstall er lett a gjette.",
-                "Tenk pa hva andre lett kan vite om deg.",
-                "Hva gjor passordet utrygt?",
-                "Se pa passordet og velg den beste forklaringen.",
-                media(PASSWORD_WARNING_IMAGE),
-                "Illustrasjon av et svakt passord",
+            sortIntoBucketsTask(
+                "Sorter delene i riktig boks.",
+                "Riktig. Du skilte mellom ting som ofte styrker et passord, og ting som ofte gjør det lettere å gjette.",
+                "Tenk på hvilke valg som gjør passordet lengre og mindre opplagt.",
+                "Hva er smart å bruke i et passord?",
+                "Legg hvert kort i riktig kategori.",
+                "Deler som skal sorteres",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Det bruker navn og arstall som andre kan kjenne til"),
-                    new MultipleChoiceContent.Option("b", "Det starter med stor bokstav")
+                    new SortIntoBucketsContent.Bucket("smart", "Smart å bruke", "Valg som ofte gjør passordet sterkere.", "#d9fbe6"),
+                    new SortIntoBucketsContent.Bucket("avoid", "Bør unngås", "Valg som ofte gjør passordet lettere å gjette.", "#fee2e2")
                 ),
-                "a"
+                List.of(
+                    new SortIntoBucketsContent.Item("pw-1", "Flere ord som bare du husker", "smart", "Lengde og variasjon hjelper."),
+                    new SortIntoBucketsContent.Item("pw-2", "Eget navn og fødselsår", "avoid", "Det kan andre ofte vite om deg."),
+                    new SortIntoBucketsContent.Item("pw-3", "Et symbol eller tall som ikke er opplagt", "smart", "Små ekstra detaljer kan gjøre passordet vanskeligere å gjette."),
+                    new SortIntoBucketsContent.Item("pw-4", "123 eller qwerty", "avoid", "Vanlige mønstre blir ofte prøvd først.")
+                )
             ),
             passwordStrengthTask(
-                "Skriv et passord som oppfyller kravene i oppgaven.",
-                "Bra jobbet. Passordet ditt var langt nok og vanskeligere a gjette.",
-                "Proov igjen med flere tegn og en bedre blanding av bokstaver, tall og symboler.",
-                "Lag et sterkere passord",
-                "Lag et passord som ikke er lett a gjette.",
-                "Bruk minst 10 tegn og bland flere typer tegn.",
+                "Lag et nytt passord til skolekontoen din.",
+                "Bra jobbet. Passordet ditt var langt nok og vanskeligere å gjette.",
+                "Prøv igjen med flere tegn og en bedre blanding av bokstaver, tall og symboler.",
+                "Lag et nytt passord",
+                "Lag et passord som ikke er lett å gjette, men som du fortsatt kan huske.",
+                "Bruk minst 12 tegn og bland flere typer tegn uten å bruke navn eller enkle mønstre.",
                 PasswordStrengthContent.Mode.CREATE,
                 "Skriv passordet her",
                 null,
-                10,
+                12,
                 4,
-                List.of("123", "qwerty", "passord", "ola")
+                List.of("123", "qwerty", "passord", "skole", "ada")
             ),
-            sortIntoBucketsTask(
-                "Sorter passord-vanene i riktig boks.",
-                "Riktig. Du skilte mellom vaner som styrker passordet og vaner som gjor det svakere.",
-                "Se pa hvilke valg som gjor passordet lett eller vanskelig a gjette.",
-                "Sterk vane eller svak vane?",
-                "Legg kortene i riktig kategori.",
-                "Vaner som skal sorteres",
-                List.of(
-                    new SortIntoBucketsContent.Bucket("strong", "Sterk vane", "Valg som gjor passord tryggere.", "#d9fbe6"),
-                    new SortIntoBucketsContent.Bucket("weak", "Svak vane", "Valg som gjor passord lettere a gjette.", "#fee2e2")
-                ),
-                List.of(
-                    new SortIntoBucketsContent.Item("pw-1", "Bruke flere ord og symbol", "strong", "Lengre og mer variert er ofte tryggere."),
-                    new SortIntoBucketsContent.Item("pw-2", "Bruke eget navn og fodselsar", "weak", "Dette er lett a gjette."),
-                    new SortIntoBucketsContent.Item("pw-3", "Lage ulike passord til ulike kontoer", "strong", "Da blir ikke alle kontoene saret hvis ett passord lekker."),
-                    new SortIntoBucketsContent.Item("pw-4", "Velge passordet 123456", "weak", "Vanlige monster er enkle a gjette.")
-                )
+            passwordStrengthTask(
+                "Gjør startpassordet tryggere.",
+                "Bra. Du bygde videre på startpassordet og gjorde det mye vanskeligere å gjette.",
+                "Du må beholde noe av startpassordet, men gjøre det lengre og mindre opplagt.",
+                "Forbedre passordet",
+                "Tenk deg at noen bruker dette svake passordet allerede. Gjør det bedre uten å bytte det helt ut.",
+                "Behold startpassordet som en del av det nye passordet, men legg til flere tegn og mer variasjon.",
+                PasswordStrengthContent.Mode.IMPROVE,
+                "Skriv det forbedrede passordet her",
+                "Ada2026",
+                12,
+                4,
+                List.of("123", "qwerty", "passord", "ada")
             )
         )
     );
 
     upsertExercise(PASSWORDBANK_EXERCISE_2_UID, "Passordmester", "Middels",
-        "Laer mer om passord-gjenbruk og hvordan du lager sterkere passord.",
+        "Øv på gjenbruk, forbedring og gode passordvaner i flere situasjoner.",
         List.of(
-            multipleChoiceTask(
-                "Velg den beste forklaringen pa hvorfor passord-gjenbruk er dumt.",
-                "Ja. Hvis ett passord lekker, kan samme passord proves pa flere kontoer.",
-                "Tenk pa hva som skjer hvis noen far tak i ett av passordene dine.",
-                "Hvorfor er passord-gjenbruk dumt?",
-                "Velg den beste forklaringen.",
-                media(PASSWORD_SAFE_IMAGE),
-                "Illustrasjon av samme passord pa flere kontoer",
+            sortIntoBucketsTask(
+                "Sorter vanene i riktig boks.",
+                "Riktig. Du skilte mellom vaner som beskytter kontoene dine, og vaner som gjør dem mer sårbare.",
+                "Tenk på hva som skjer hvis noen får tak i ett av passordene dine.",
+                "Hvilke vaner er lure?",
+                "Legg hvert kort i riktig kategori.",
+                "Vaner som skal sorteres",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Da kan noen prove samme passord pa flere kontoer"),
-                    new MultipleChoiceContent.Option("b", "Da blir passordet lettere a skrive")
+                    new SortIntoBucketsContent.Bucket("smart", "Lur vane", "Valg som beskytter kontoene dine bedre.", "#d9fbe6"),
+                    new SortIntoBucketsContent.Bucket("unsafe", "Utrygg vane", "Valg som kan gjøre flere kontoer sårbare.", "#fee2e2")
                 ),
-                "a"
+                List.of(
+                    new SortIntoBucketsContent.Item("pw-5", "Bruke ulike passord til skole og spill", "smart", "Da blir ikke alt utsatt hvis ett passord lekker."),
+                    new SortIntoBucketsContent.Item("pw-6", "Bruke samme passord overalt", "unsafe", "Da kan flere kontoer bli åpnet med ett funn."),
+                    new SortIntoBucketsContent.Item("pw-7", "Lage et langt passord du kan huske", "smart", "Lengde hjelper mye."),
+                    new SortIntoBucketsContent.Item("pw-8", "Dele passord med en venn", "unsafe", "Da mister du kontrollen over hvem som kan logge inn.")
+                )
             ),
             passwordStrengthTask(
-                "Forbedre startpassordet sa det blir mye tryggere.",
-                "Bra. Du gjorde startpassordet vanskeligere a gjette og bedre a bruke.",
-                "Du ma bygge videre pa startpassordet og gjore det sterkere med flere tegn og variasjon.",
+                "Forbedre et passord som brukes flere steder.",
+                "Bra. Du gjorde passordet sterkere uten å la det bli stående nesten likt.",
+                "Du må bygge videre på startpassordet med flere tegn og mer variasjon.",
                 "Forbedre passordet",
-                "Gjor startpassordet tryggere uten a bruke det helt alene.",
-                "Behold litt av startpassordet, men gjor det lengre og sterkere.",
+                "Tenk deg at dette passordet allerede er brukt på flere kontoer. Gjør det bedre.",
+                "Behold litt av startpassordet, men gjør det lengre og mindre lett å gjette.",
                 PasswordStrengthContent.Mode.IMPROVE,
                 "Skriv det forbedrede passordet her",
-                "sommer2026",
-                12,
+                "fotball123",
+                13,
                 4,
-                List.of("123", "qwerty", "passord")
+                List.of("123", "qwerty", "passord", "fotball")
             ),
-            xOrYTask(
-                "Velg passordet som virker sterkest.",
-                "Riktig. Det sterkeste passordet er lengre og mindre lett a gjette.",
-                "Se etter lengde, variasjon og om passordet bygger pa vanlig info om deg.",
-                "Hvilket passord er smartest?",
-                "Sammenlign de to forslagene og velg det tryggeste.",
-                media(PASSWORD_WARNING_IMAGE),
-                "Kort passord med navn og arstall",
-                "Forslag X",
-                "Ola2015",
-                "Passordet bruker navn og arstall som kan vaere lett a gjette.",
-                media(PASSWORD_SAFE_IMAGE),
-                "Langt passord med flere ord og symbol",
-                "Forslag Y",
-                "Blomst!Sykkel9Maanen",
-                "Passordet er lengre og blander flere typer tegn.",
-                XOrYContent.Choice.Y
+            passwordStrengthTask(
+                "Lag et nytt passord til en spillkonto.",
+                "Bra jobbet. Passordet ditt ble langt nok og vanskeligere å gjette.",
+                "Prøv igjen med mer lengde og mindre opplagte mønstre.",
+                "Lag et nytt spillpassord",
+                "Lag et passord som ikke bygger på navnet ditt, favorittlaget ditt eller en enkel tallrekke.",
+                "Bruk minst 14 tegn og bland flere typer tegn på en måte du fortsatt kan huske.",
+                PasswordStrengthContent.Mode.CREATE,
+                "Skriv spillpassordet her",
+                null,
+                14,
+                4,
+                List.of("123", "qwerty", "passord", "fotball", "gaming")
             )
         )
     );
