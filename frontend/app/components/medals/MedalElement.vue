@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { AchievementResponse } from "~/composables/types/AchievementTypes";
-import filledStar from "~/assets/images/star/spStarFilled.png";
-import emptyStar from "~/assets/images/star/spStarEmpty.png";
+import filledMedal from "~/assets/images/star/Medal.png";
+import emptyMedal from "~/assets/images/star/emptymedal.png";
+import specialMedal from "~/assets/images/star/special medal.png";
 
 const props = defineProps<{
   medal: AchievementResponse;
@@ -12,7 +13,11 @@ const emit = defineEmits<{
 }>();
 
 const medalImage = (): string => {
-  return props.medal.unlocked ? filledStar : emptyStar;
+  if (props.medal.category === "special") {
+    return props.medal.unlocked ? specialMedal : emptyMedal;
+  }
+
+  return props.medal.unlocked ? filledMedal : emptyMedal;
 };
 
 </script>
@@ -20,7 +25,8 @@ const medalImage = (): string => {
 <template>
   <button
     type="button"
-    :class="['medalElement', props.medal.category, { locked: !props.medal.unlocked }]"
+    :class="['medalElement', { locked: !props.medal.unlocked }]"
+    :aria-label="`${props.medal.title} (${categoryLabel})`"
     @click="emit('select', props.medal)"
   >
     <img class="medalImage" :src="medalImage()" :alt="props.medal.title" />
@@ -43,7 +49,7 @@ const medalImage = (): string => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
+  padding: var(--space-3);
   border: 0;
   background: transparent;
   cursor: pointer;
@@ -55,8 +61,8 @@ const medalImage = (): string => {
 }
 
 .medalImage {
-  width: 100%;
-  height: 100%;
+  width: 82%;
+  height: 82%;
   object-fit: contain;
   display: block;
 }
