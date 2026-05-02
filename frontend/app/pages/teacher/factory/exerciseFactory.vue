@@ -74,92 +74,103 @@ const closeSavedPopup = () => {
 
 <style scoped>
 .factoryPage {
-	width: 100%;
-	max-width: 1400px;
-	margin: 0 auto;
-	padding: var(--space-4);
-	color: var(--color-text-primary);
-	background:
-		linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.88)),
-		linear-gradient(180deg, var(--palette-gray-50) 0%, var(--palette-cream-100) 100%);
-	border-radius: var(--radius-4);
+   width: 100%;
+   max-width: var(--layout-max-width);
+   margin: 0 auto;
+   padding: var(--layout-page-padding);
+   color: var(--color-text-primary);
+   background: var(--color-bg-canvas);
 }
 
 .factoryHero {
-	margin-bottom: var(--space-4);
+  display: grid;
+  gap: var(--space-2);
+   margin-bottom: var(--space-4);
+  padding: var(--space-5);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-top: var(--border-width-thick) solid var(--color-accent-reward);
+  border-radius: var(--radius-3);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-folder);
 }
 
 .backButton {
-	display: inline-flex;
-	align-items: center;
-	margin-bottom: var(--space-3);
-	padding: 0;
-	border: 0;
-	background: transparent;
-	color: var(--color-brand-primary);
-	font: inherit;
-	font-weight: 600;
-	cursor: pointer;
+   display: inline-flex;
+   align-items: center;
+   margin-bottom: var(--space-3);
+   padding: 0;
+   border: 0;
+   background: transparent;
+   color: var(--color-brand-primary);
+   font: inherit;
+   font-weight: var(--font-weight-semibold);
+   cursor: pointer;
+   transition: color var(--transition-fast);
 }
 
 .backButton:hover {
-	text-decoration: underline;
+   text-decoration: underline;
 }
 
 h1,
 h2,
-	h3 {
-	margin: 0;
+h3 {
+   margin: 0;
+}
+
+h1 {
+  font-family: var(--font-family-serif), sans-serif;
+  font-size: var(--font-size-28);
+  line-height: var(--font-leading-28);
+  color: var(--color-text-primary);
 }
 
 .selectorPanel {
-	display: grid;
-	gap: var(--space-4);
-	margin-bottom: 1.25rem;
-	padding: 1.25rem;
-	border: var(--border-width-hairline) solid var(--color-border-default);
-	border-radius: 1.2rem;
-	background:
-		linear-gradient(180deg, rgba(101, 240, 175, 0.08), rgba(101, 240, 175, 0)) top/100% 5rem no-repeat,
-		var(--color-bg-surface);
-	box-shadow: var(--shadow-1);
+   display: grid;
+   gap: var(--space-4);
+   margin-bottom: var(--space-5);
+   padding: var(--space-5);
+   border: var(--border-width-hairline) solid var(--color-border-default);
+   border-radius: var(--radius-4);
+   background: var(--color-bg-surface);
+   box-shadow: var(--shadow-folder);
 }
 .selectorControls {
-	display: flex;
+   display: flex;
 }
 
 .field {
-	display: grid;
-	gap: 0.45rem;
-	max-width: 32rem;
+   display: grid;
+   gap: var(--space-2);
+  /* deliberate: reading-measure cap for form fields */
+   max-width: 32rem;
 }
 
 .fieldGrow {
-	flex: 1;
+   flex: 1;
 }
 
 .field select {
-	width: 100%;
-	padding: 0.85rem var(--space-4);
-	border: var(--border-width-hairline) solid var(--color-border-default);
-	border-radius: 0.9rem;
-	background: color-mix(in srgb, var(--color-bg-surface) 92%, var(--color-bg-canvas) 8%);
-	color: var(--color-text-primary);
-	font: inherit;
+   width: 100%;
+   padding: var(--space-4);
+   border: var(--border-width-hairline) solid var(--color-border-default);
+   border-radius: var(--radius-3);
+   background: var(--color-bg-surface);
+   color: var(--color-text-primary);
+   font: inherit;
 }
 
 .field select:focus {
-	outline: none;
-	border-color: var(--color-brand-primary);
+   outline: none;
+   border-color: var(--color-brand-primary);
 }
-
 @media (max-width: 800px) {
-	.selectorControls {
-		display: grid;
-	}
+   .selectorControls {
+      display: grid;
+   }
 
-	.field {
-		max-width: none;
-	}
+   .field {
+      max-width: none;
+   }
 }
 </style>

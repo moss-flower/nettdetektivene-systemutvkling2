@@ -35,7 +35,7 @@ async function handleJoinClassroom() {
 
   try {
     await student.joinClassroom(classroomCode.value);
-    await navigateTo(routePaths.studentHome);
+    await navigateTo(routePaths.pending);
   } catch (error: any) {
     formError.value =
       error?.data?.detail ||

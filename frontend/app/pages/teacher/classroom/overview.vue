@@ -3,6 +3,7 @@ import { World } from '~/composables/types/WorldTypes';
 import starEmpty from '~/assets/images/star/spStarEmpty.png';
 import starFilled from '~/assets/images/star/spStarFilled.png';
 import { getClassroomExercises } from '~/composables/useTeacherDashboard';
+import { Bell, Map, Play, Search } from 'lucide-vue-next';
 const route = useRoute();
 import { routePaths, routePathsWithString, routePathsWithUid } from '~/composables/utils/routePaths';
 
@@ -42,6 +43,7 @@ const { data: exercises } = await useAsyncData(
 
 const classroomExerciseUids = computed(() => new Set((exercises.value ?? []).map((exercise) => exercise.uid)));
 const totalExercises = computed(() => classroomExerciseUids.value.size);
+const pendingMembers = computed(() => classroom.value?.pendingMembers ?? []);
 
 const { data: progressByStudent, refresh: refreshProgress } = await useAsyncData(
   'teacher-classroom-student-progress',
@@ -70,6 +72,7 @@ const { data: progressByStudent, refresh: refreshProgress } = await useAsyncData
 
 const removingStudentId = ref('');
 const renamingStudentId = ref('');
+const approvingStudentId = ref('');
 const deletingClassroom = ref(false);
 
 const getStudentProgress = (studentId: string): StudentProgress => progressByStudent.value?.[studentId] ?? {
@@ -92,6 +95,22 @@ const removeStudent = async (studentId: string, studentName: string) => {
     await refreshProgress();
   } finally {
     removingStudentId.value = '';
+  }
+};
+
+const approveStudent = async (studentId: string) => {
+  if (!classroom.value || approvingStudentId.value) {
+    return;
+  }
+
+  approvingStudentId.value = studentId;
+
+  try {
+    await teacher.approveMember(classroom.value.uid, studentId);
+    await refreshClassroom();
+    await refreshProgress();
+  } finally {
+    approvingStudentId.value = '';
   }
 };
 
@@ -156,22 +175,22 @@ const deleteClassroom = async () => {
     <div v-if="classroom" class="actionGrid">
       <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomNotifications, `?classroomId=${classroom.uid}`)" class="actionCard">
         <span class="actionCardTitle">Varslingssenter</span>
-        <img src="https://placehold.co/128x128?text=VS" alt="Varslingssenter" class="actionCardImage">
+        <Bell :size="48" class="actionCardIcon" />
       </NuxtLink>
 
       <NuxtLink :to="routePathsWithUid(routePaths.teacherFactoryWorld, classroom.worldUid)" class="actionCard">
         <span class="actionCardTitle">Stasjonskart</span>
-        <img src="https://placehold.co/128x128?text=SK" alt="Stasjonskart" class="actionCardImage">
+        <Map :size="48" class="actionCardIcon" />
       </NuxtLink>
 
       <NuxtLink :to="{ path: routePaths.studentLevels, query: { preview: '1', classroomId: classroom.uid } }" class="actionCard">
         <span class="actionCardTitle">Test spillet</span>
-        <img src="https://placehold.co/128x128?text=TS" alt="Test spillet" class="actionCardImage">
+        <Play :size="48" class="actionCardIcon" />
       </NuxtLink>
 
       <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomMystery, `?classroomId=${classroom.uid}`)" class="actionCard">
         <span class="actionCardTitle">Ukens mysterium</span>
-        <img src="https://placehold.co/128x128?text=UM" alt="Ukens mysterium" class="actionCardImage">
+        <Search :size="48" class="actionCardIcon" />
       </NuxtLink>
     </div>
 
@@ -179,6 +198,11 @@ const deleteClassroom = async () => {
       <article class="summaryCard">
         <span class="summaryCardLabel">Elever</span>
         <strong>{{ classroom.members.length }}</strong>
+      </article>
+
+      <article class="summaryCard">
+        <span class="summaryCardLabel">Venter</span>
+        <strong>{{ pendingMembers.length }}</strong>
       </article>
 
       <article class="summaryCard">
@@ -201,7 +225,34 @@ const deleteClassroom = async () => {
       <p class="pendingEmpty">{{ world?.title ?? classroom.worldUid }}</p>
     </section>
 
+    <section v-if="classroom" class="pendingCard">
+      <div class="pendingCardHeader">
+        <h2>Pending</h2>
+        <p>Elever som har bedt om å bli med i klasserommet.</p>
+      </div>
+
+      <div v-if="pendingMembers.length" class="pendingList">
+        <article v-for="student in pendingMembers" :key="student.publicUuid" class="pendingStudent">
+          <div>
+            <strong>{{ student.username }}</strong>
+            <span>{{ student.publicUuid }}</span>
+          </div>
+          <button
+            class="approveButton"
+            type="button"
+            :disabled="approvingStudentId === student.publicUuid"
+            @click="approveStudent(student.publicUuid)"
+          >
+            Godkjenn
+          </button>
+        </article>
+      </div>
+
+      <p v-else class="pendingEmpty">Ingen elever venter på godkjenning.</p>
+    </section>
+
     <div v-if="classroom" class="tableCard">
+      <h2 class="tableTitle">Students</h2>
       <table>
         <thead>
           <tr>
@@ -263,18 +314,22 @@ const deleteClassroom = async () => {
 <style scoped>
 .classroomPage {
   width: 100%;
-  max-width: 1000px;
+  max-width: var(--layout-max-width);
   margin: 0 auto;
-  padding: var(--space-4);
+  padding: var(--layout-page-padding);
   color: var(--color-text-primary);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.88)),
-    linear-gradient(180deg, var(--palette-gray-50) 0%, var(--palette-cream-100) 100%);
-  border-radius: var(--radius-1);
 }
 
 .pageHeader {
   margin-bottom: var(--space-4);
+  background: var(--color-bg-surface);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-top: var(--border-width-thick) solid var(--color-accent-reward);
+  box-shadow: var(--shadow-1);
+  border-radius: var(--radius-3);
+  padding: var(--space-5);
+  display: grid;
+  gap: var(--space-2);
 }
 
 .headerActions {
@@ -288,7 +343,12 @@ const deleteClassroom = async () => {
 .backLink {
   display: inline-block;
   color: var(--color-brand-primary);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
+  transition: var(--transition-fast);
+}
+
+.backLink:hover {
+  text-decoration: underline;
 }
 
 .deleteClassroomButton {
@@ -312,14 +372,17 @@ const deleteClassroom = async () => {
 
 .eyebrow {
   color: var(--color-brand-primary);
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-12);
+  letter-spacing: var(--font-tracking-wider);
   text-transform: uppercase;
-  margin-bottom: var(--space-2);
 }
 
 h1 {
-  margin: 0 0 var(--space-2) 0;
+  font-family: var(--font-family-serif), sans-serif;
+  font-size: var(--font-size-28);
+  line-height: var(--font-leading-28);
+  margin: 0;
   color: var(--color-text-primary);
 }
 
@@ -331,7 +394,7 @@ h1 {
 .summaryRow {
   display: grid;
   gap: var(--space-4);
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   margin-bottom: var(--space-4);
 }
 
@@ -347,44 +410,48 @@ h1 {
   gap: var(--space-2);
   justify-items: center;
   padding: var(--space-4);
+  background: var(--color-bg-surface);
   border: var(--border-width-hairline) solid var(--color-border-default);
   border-radius: var(--radius-3);
-  background: var(--color-bg-surface);
-  color: var(--color-text-primary);
   box-shadow: var(--shadow-1);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.actionCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2);
+  border-color: var(--color-brand-primary);
 }
 
 .actionCardTitle {
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--color-brand-primary);
   text-align: center;
 }
 
-.actionCardImage {
-  display: block;
-  width: 4.5rem;
-  height: 4.5rem;
-  border-radius: 0.9rem;
-  object-fit: cover;
+.actionCardIcon {
+  color: var(--color-brand-primary);
 }
 
 .summaryCard {
   display: grid;
-  gap: 0.35rem;
+  gap: var(--space-1);
   padding: var(--space-4);
+  background: var(--color-bg-surface);
   border: var(--border-width-hairline) solid var(--color-border-default);
   border-radius: var(--radius-3);
-  background: var(--color-bg-surface);
   box-shadow: var(--shadow-1);
 }
 
 .summaryCardLabel {
+  font-size: var(--font-size-14);
   color: var(--color-text-secondary);
-  font-size: 0.9rem;
 }
 
 .summaryCard strong {
-  font-size: 1.6rem;
+  font-size: var(--font-size-22);
   color: var(--color-brand-primary);
 }
 
@@ -393,15 +460,15 @@ h1 {
   gap: var(--space-4);
   margin-bottom: var(--space-4);
   padding: var(--space-4);
+  background: var(--color-bg-surface);
   border: var(--border-width-hairline) solid var(--color-border-default);
   border-radius: var(--radius-3);
-  background: var(--color-bg-surface);
   box-shadow: var(--shadow-1);
 }
 
 .pendingCardHeader {
   display: grid;
-  gap: 0.35rem;
+  gap: var(--space-1);
 }
 
 .pendingCardHeader h2,
@@ -422,43 +489,70 @@ h1 {
 }
 
 .pendingStudent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-canvas);
+  border-radius: var(--radius-2);
+}
+
+.pendingStudent div {
   display: grid;
   gap: var(--space-1);
-  padding: 0.85rem var(--space-4);
-  border: var(--border-width-hairline) solid var(--color-border-default);
-  border-radius: calc(var(--radius-3) - 0.2rem);
-  background: color-mix(in srgb, var(--color-bg-surface) 94%, var(--color-semantic-info) 6%);
+}
+
+.approveButton {
+  padding: 0.55rem 1rem;
+  border: 0;
+  border-radius: var(--radius-2);
+  background: var(--color-brand-primary);
+  color: var(--color-text-onDark);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.approveButton:disabled {
+  cursor: wait;
+  opacity: 0.55;
 }
 
 .tableCard {
+  background: var(--color-bg-surface);
   border: var(--border-width-hairline) solid var(--color-border-default);
   border-radius: var(--radius-3);
-  background: var(--color-bg-surface);
-  overflow: auto;
   box-shadow: var(--shadow-1);
+  overflow: auto;
+}
+
+.tableTitle {
+  margin: 0;
+  padding: var(--space-4) var(--space-4) 0;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 650px;
+  min-width: 650px; /* deliberate: minimum readable table width */
 }
 
 th,
 td {
   text-align: left;
-  padding: 0.85rem var(--space-4);
+  padding: var(--space-3) var(--space-4);
   border-bottom: var(--border-width-hairline) solid var(--color-border-default);
 }
 
 thead th {
-  background: color-mix(in srgb, var(--color-bg-surface) 88%, var(--color-semantic-info) 12%);
-  font-weight: 700;
+  background: var(--color-brand-primary);
+  color: var(--color-text-onDark);
+  font-weight: var(--font-weight-bold);
 }
 
 .studentLink {
   color: var(--color-brand-primary);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   text-decoration: none;
 }
 
@@ -469,9 +563,8 @@ thead th {
 .progressCell {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  color: var(--color-text-primary);
-  font-weight: 700;
+  gap: var(--space-1);
+  font-weight: var(--font-weight-bold);
 }
 
 .starCount {
@@ -479,13 +572,13 @@ thead th {
 }
 
 .starIcon {
-  width: 1.35rem;
-  height: 1.35rem;
+  width: var(--size-icon-sm);
+  height: var(--size-icon-sm);
   object-fit: contain;
 }
 
 .actionColumn {
-  width: 1%;
+  width: 1%; /* deliberate: shrink-to-fit column */
   text-align: right;
   white-space: nowrap;
 }
@@ -493,18 +586,18 @@ thead th {
 .removeButton {
   display: inline-grid;
   place-items: center;
-  width: 2rem;
-  height: 2rem;
-  border: var(--border-width-hairline) solid color-mix(in srgb, var(--color-semantic-danger, #b42318) 65%, var(--color-border-default));
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--color-bg-surface) 90%, var(--color-semantic-danger, #b42318) 10%);
-  color: var(--color-semantic-danger, #b42318);
+  width: var(--size-control-sm);
+  height: var(--size-control-sm);
+  border-radius: var(--radius-pill);
+  border: var(--border-width-hairline) solid var(--color-semantic-error);
+  background: var(--color-bg-surface);
+  color: var(--color-semantic-error);
   cursor: pointer;
-  font-weight: 800;
+  font-weight: var(--font-weight-bold);
 }
 
 .removeButton:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-bg-surface) 80%, var(--color-semantic-danger, #b42318) 20%);
+  background: var(--palette-overlay-red-soft);
 }
 
 .removeButton:disabled {
@@ -512,31 +605,11 @@ thead th {
   opacity: 0.55;
 }
 
-.renameButton {
-  padding: 0.5rem 1rem;
-  border: var(--border-width-hairline) solid var(--color-brand-primary);
-  border-radius: var(--radius-2);
-  background: color-mix(in srgb, var(--color-bg-surface) 90%, var(--color-brand-primary) 10%);
-  color: var(--color-brand-primary);
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-.renameButton:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-bg-surface) 80%, var(--color-brand-primary) 20%);
-}
-
-.renameButton:disabled {
-  cursor: wait;
-  opacity: 0.55;
-}
-
 .emptyState {
-  padding: 1.25rem;
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
   border: var(--border-width-hairline) solid var(--color-border-default);
   border-radius: var(--radius-3);
-  background: var(--color-bg-surface);
   box-shadow: var(--shadow-1);
 }
 

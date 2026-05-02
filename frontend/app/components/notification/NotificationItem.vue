@@ -55,7 +55,7 @@ function priorityClass(priority: number) {
   padding: var(--space-3) var(--space-4);
   border: var(--border-width-hairline) solid var(--color-border-default);
   border-radius: var(--radius-2);
-  background: rgba(101, 240, 175, 0.06);
+  background: var(--color-bg-surface);
   position: relative;
 }
 
@@ -67,43 +67,44 @@ function priorityClass(priority: number) {
 }
 
 .tray__priority {
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--font-tracking-wider);
   text-transform: uppercase;
-  padding: 0.2rem 0.5rem;
+  padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
 }
 
+/* deliberate: palette-direct, priority chip */
 .priority--high {
-  background: rgba(239, 68, 68, 0.12);
-  color: #ef4444;
+  background: var(--palette-overlay-red-soft);
+  color: var(--color-semantic-error);
 }
 
 .priority--medium {
-  background: rgba(245, 158, 11, 0.12);
-  color: #f59e0b;
+  background: var(--palette-overlay-gold-soft);
+  color: var(--palette-gold-700);
 }
 
 .priority--low {
-  background: rgba(34, 197, 94, 0.12);
-  color: #22c55e;
+  background: var(--palette-overlay-green-soft);
+  color: var(--palette-green-700);
 }
 
 .tray__date {
-  font-size: 0.8rem;
+  font-size: var(--font-size-12);
   color: var(--color-text-secondary);
 }
 
 .tray__username {
-  font-size: 1rem;
+  font-size: var(--font-size-16);
   color: var(--color-text-primary);
 }
 
 .tray__message {
-  font-size: 0.95rem;
+  font-size: var(--font-size-14);
   color: var(--color-text-primary);
-  line-height: 1.4;
+  line-height: 1.4; /* deliberate: reading-optimised line-height */
 }
 
 .tray__dismiss {
@@ -114,13 +115,13 @@ function priorityClass(priority: number) {
   border: none;
   cursor: pointer;
   color: var(--color-text-secondary);
-  font-size: 0.85rem;
+  font-size: var(--font-size-14);
   padding: 0;
   line-height: 1;
-  transition: color var(--transition-fast) ease;
+  transition: color var(--transition-fast);
 }
 
 .tray__dismiss:hover {
-  color: #ef4444;
+  color: var(--color-semantic-error);
 }
 </style>

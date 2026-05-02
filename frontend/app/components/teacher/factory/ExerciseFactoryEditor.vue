@@ -413,19 +413,19 @@ watch(payloadPreviewText, () => {
 					</div>
 
 					<div class="taskAddRow">
-						<button type="button" class="ghostButton" @click="addTask('multiple-choice')">
+						<button type="button" class="typeButton" data-task-type="multiple-choice" @click="addTask('multiple-choice')">
 							+ Flervalg
 						</button>
-						<button type="button" class="ghostButton" @click="addTask('x-or-y')">
+						<button type="button" class="typeButton" data-task-type="x-or-y" @click="addTask('x-or-y')">
 							+ X eller Y
 						</button>
-						<button type="button" class="ghostButton" @click="addTask('email-hotspots')">
+						<button type="button" class="typeButton" data-task-type="email-hotspots" @click="addTask('email-hotspots')">
 							+ E-post
 						</button>
-						<button type="button" class="ghostButton" @click="addTask('sort-into-buckets')">
+						<button type="button" class="typeButton" data-task-type="sort-into-buckets" @click="addTask('sort-into-buckets')">
 							+ Sortering
 						</button>
-						<button type="button" class="ghostButton" @click="addTask('password-strength')">
+						<button type="button" class="typeButton" data-task-type="password-strength" @click="addTask('password-strength')">
 							+ Passord
 						</button>
 					</div>
@@ -443,7 +443,7 @@ watch(payloadPreviewText, () => {
 					handle=".dragHandle"
 				>
 					<template #item="{ element: task, index: taskIndex }">
-						<article class="taskCard">
+						<article class="taskCard" :data-task-type="task.templateKind">
 							<div class="taskCardHeader">
 								<div class="taskCardTitle">
 									<span class="orderBadge" :aria-label="`Plass ${taskIndex + 1}`">{{ taskIndex + 1 }}</span>
@@ -612,373 +612,442 @@ watch(payloadPreviewText, () => {
 
 <style scoped>
 .factoryGrid {
-	display: grid;
-	grid-template-columns: 1fr;
-	gap: 1.25rem;
-	align-items: start;
+   --factory-label-font: var(--font-family-mono);
+   --factory-label-size: var(--font-size-12);
+   --factory-label-tracking: var(--font-tracking-wider);
+   --factory-label-color: var(--color-text-primary);
+
+   --factory-field-bg: var(--color-bg-canvas);
+   --factory-field-border: var(--color-border-default);
+   --factory-field-focus: var(--color-brand-primary);
+
+   --factory-drop-accept: var(--palette-overlay-green-soft);
+   --factory-drop-reject: var(--palette-overlay-red-soft);
+  --factory-drop-reject-border: var(--color-semantic-error);
+
+   --factory-delete-border: var(--color-semantic-error);
+   --factory-delete-bg: var(--palette-overlay-red-soft);
+   --factory-delete-text: var(--palette-red-700);
+
+   --factory-badge-bg: var(--palette-overlay-green-soft);
+
+   --factory-tag-blue: var(--palette-ice-200);
+   --factory-tag-gold: var(--palette-gold-400);
+   --factory-tag-pink: var(--palette-red-200);
+   --factory-tag-green: var(--palette-green-100);
+
+   --factory-payload-bg: var(--color-bg-canvas);
+   --factory-payload-text: var(--color-text-primary);
+   --factory-payload-font: var(--font-family-mono);
+
+  --factory-type-multiple-choice: var(--palette-green-100);
+  --factory-type-x-or-y: var(--palette-ice-200);
+  --factory-type-email-hotspots: var(--palette-red-200);
+  --factory-type-sort-into-buckets: var(--palette-gold-400);
+  --factory-type-password-strength: var(--palette-navy-200);
+
+   display: grid;
+   grid-template-columns: 1fr;
+   gap: var(--space-5);
+   align-items: start;
 }
 
 .editorPanel,
 .previewPanel {
-	padding: 1.25rem;
-	border: var(--border-width-hairline) solid var(--color-border-default);
-	border-radius: 1.2rem;
-	background:
-		linear-gradient(180deg, rgba(101, 240, 175, 0.08), rgba(101, 240, 175, 0)) top/100% 5rem no-repeat,
-		var(--color-bg-surface);
-	box-shadow: var(--shadow-1);
+   padding: var(--space-5);
+   border: var(--border-width-hairline) solid var(--color-border-default);
+   border-radius: var(--radius-3);
+   background: var(--color-bg-surface);
+   box-shadow: var(--shadow-folder);
+}
+
+.previewPanel {
+   border-style: dashed;
 }
 
 .panelSection + .panelSection {
-	margin-top: var(--space-6);
-	padding-top: var(--space-6);
-	border-top: var(--border-width-hairline) solid var(--color-border-default);
+   margin-top: var(--space-6);
+   padding-top: var(--space-6);
+   border-top: var(--border-width-hairline) solid var(--color-border-default);
 }
 
 .sectionHeading {
-	display: grid;
-	gap: 0.35rem;
-	margin-bottom: var(--space-4);
+   display: grid;
+   gap: var(--space-1);
+   margin-bottom: var(--space-4);
 }
 
 .sectionHeadingInline {
-	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: var(--space-4);
+   display: grid;
+   grid-template-columns: 1fr auto;
+   align-items: start;
+   gap: var(--space-3);
 }
 
 .sectionHeading h2,
 .summaryCard h3,
 .taskCard h3 {
-	margin: 0;
+   margin: 0;
 }
 
 .sectionHeading p,
 .summaryCard p {
-	margin: 0;
-	color: var(--color-text-secondary);
-	line-height: 1.5;
+   margin: 0;
+   color: var(--color-text-secondary);
+   line-height: var(--font-leading-base);
 }
 
-.statusStack {
-	display: grid;
-	gap: var(--space-3);
+.statusStack,
+.taskList {
+   display: grid;
+   gap: var(--space-4);
 }
 
 .fieldGrid {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 0.9rem;
+   display: grid;
+   grid-template-columns: repeat(2, minmax(0, 1fr));
+   gap: var(--space-3);
 }
 
-.field,
-.toggleField {
-	display: grid;
-	gap: 0.45rem;
+.field {
+   display: grid;
+   gap: var(--space-1);
+}
+
+.fieldLabel {
+  color: var(--factory-label-color);
+  font-family: var(--factory-label-font), monospace;
+  font-size: var(--factory-label-size);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--factory-label-tracking);
+  text-transform: uppercase;
 }
 
 .fieldFull {
-	grid-column: 1 / -1;
-}
-
-.field span,
-.toggleField span {
-	font-weight: 700;
+   grid-column: 1 / -1;
 }
 
 .field input,
 .field select,
 .field textarea {
-	width: 100%;
-	padding: 0.85rem var(--space-4);
-	border: var(--border-width-hairline) solid var(--color-border-default);
-	border-radius: 0.9rem;
-	background: rgba(0, 0, 0, 0.16);
-	color: var(--color-text-primary);
-	font: inherit;
+   width: 100%;
+   padding: var(--space-3) var(--space-4);
+   border: var(--border-width-hairline) solid var(--factory-field-border);
+   border-radius: var(--radius-1);
+   background: var(--factory-field-bg);
+   color: var(--color-text-primary);
+   font: inherit;
 }
 
 .field textarea {
-	resize: vertical;
+   resize: vertical;
 }
 
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-	outline: none;
-	border-color: var(--color-brand-primary);
+   outline: none;
+   border-color: var(--factory-field-focus);
 }
 
 .taskAddRow,
 .actionRow {
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--space-3);
+   display: flex;
+   gap: var(--space-3);
+   align-items: end;
+   flex-wrap: wrap;
 }
 
-.taskCardActions {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: flex-end;
-	gap: var(--space-3);
-}
-
-.taskFooterActions {
-	display: flex;
-	justify-content: flex-end;
-	margin-top: var(--space-4);
-}
-
-.summaryCard,
-.taskCard {
-	border: var(--border-width-hairline) solid var(--color-border-default);
-	border-radius: var(--radius-2);
-	background: rgba(255, 255, 255, 0.02);
+.taskAddRow {
+   justify-content: flex-end;
 }
 
 .summaryCard {
-	display: flex;
-	justify-content: space-between;
-	align-items: flex-start;
-	gap: var(--space-3);
-	padding: var(--space-4);
+   display: flex;
+   justify-content: space-between;
+   align-items: flex-start;
+   gap: var(--space-3);
+   padding: var(--space-4);
+   border: var(--border-width-hairline) solid var(--color-border-default);
+   border-radius: var(--radius-2);
+   background: var(--color-bg-surface);
 }
+
 
 .taskCard {
-	padding: var(--space-4);
+  position: relative;
+   display: grid;
+   gap: var(--space-3);
+   padding: var(--space-4);
+   border: var(--border-width-hairline) solid var(--color-border-default);
+   border-radius: var(--radius-2);
+   background: var(--color-bg-surface);
+  overflow: hidden;
 }
 
-.taskList {
-	display: grid;
-	gap: 1rem;
+.taskCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--space-2);
+  /* fallback if no data-type-task matches */
+  background: var(--color-border-default);
 }
 
-.taskList + .removeDropZone {
-	margin-top: var(--space-4);
-}
+.taskCard[data-task-type="multiple-choice"]::before { background: var(--factory-type-multiple-choice); }
+.taskCard[data-task-type="x-or-y"]::before { background: var(--factory-type-x-or-y); }
+.taskCard[data-task-type="email-hotspots"]::before { background: var(--factory-type-email-hotspots); }
+.taskCard[data-task-type="sort-into-buckets"]::before { background: var(--factory-type-sort-into-buckets); }
+.taskCard[data-task-type="password-strength"]::before { background: var(--factory-type-password-strength); }
 
 .taskCardHeader {
-	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: 0.75rem;
-	margin-bottom: 1rem;
+   display: flex;
+   align-items: flex-start;
+   justify-content: space-between;
+   gap: var(--space-3);
+   margin-bottom: var(--space-4);
 }
 
 .taskCardTitle {
-	display: flex;
-	align-items: flex-start;
-	gap: 0.75rem;
+   display: flex;
+   align-items: flex-start;
+   gap: var(--space-3);
 }
 
-.dragHandle {
-	display: inline-grid;
-	place-items: center;
-	min-width: 3.2rem;
-	padding: 0.45rem 0.6rem;
-	border: 1px dashed var(--border);
-	border-radius: 999px;
-	color: var(--primary);
-	font-size: 0.75rem;
-	font-weight: 800;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	cursor: grab;
-	user-select: none;
+.taskCardActions {
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: flex-end;
+   gap: var(--space-3);
+   margin-left: auto;
 }
 
-.dragHandle:active {
-	cursor: grabbing;
+.taskFooterActions {
+   display: flex;
+   justify-content: flex-end;
+   margin-top: var(--space-4);
 }
 
 .orderBadge {
-	display: inline-grid;
-	place-items: center;
-	width: 2.5rem;
-	height: 2.5rem;
-	border: var(--border-width-hairline) solid var(--color-brand-primary);
-	border-radius: var(--radius-pill);
-	background: rgba(101, 240, 175, 0.14);
-	color: var(--color-brand-primary);
-	font-weight: 900;
-}
-
-.removeDropZone {
-	display: grid;
-	place-items: center;
-	min-height: 4.5rem;
-	padding: 1rem;
-	border: 1px dashed rgba(252, 165, 165, 0.65);
-	border-radius: 1rem;
-	background: rgba(127, 29, 29, 0.12);
-	color: #fca5a5;
-	text-align: center;
-}
-
-.removeDropZone p {
-	margin: 0;
-}
-
-.removeDropZone__item {
-	display: none;
-}
-
-.taskCardTitle {
-	display: flex;
-	align-items: flex-start;
-	gap: 0.75rem;
+   display: inline-grid;
+   place-items: center;
+   width: var(--space-7);
+   height: var(--space-7);
+   border: var(--border-width-hairline) solid var(--color-brand-primary);
+   border-radius: var(--radius-pill);
+   background: var(--factory-badge-bg);
+   color: var(--color-brand-primary);
+   font-weight: var(--font-weight-bold);
 }
 
 .dragHandle {
-	display: inline-grid;
-	place-items: center;
-	min-width: 3.2rem;
-	padding: 0.45rem 0.6rem;
-	border: 1px dashed var(--border);
-	border-radius: 999px;
-	color: var(--primary);
-	font-size: 0.75rem;
-	font-weight: 800;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	cursor: grab;
-	user-select: none;
+   display: inline-grid;
+   place-items: center;
+   min-width: var(--size-control-lg);
+   padding: var(--space-1) var(--space-2);
+   border: var(--border-width-hairline) dashed var(--color-border-default);
+   border-radius: var(--radius-pill);
+   color: var(--color-brand-primary);
+   font-size: var(--font-size-12);
+   font-weight: var(--font-weight-bold);
+   letter-spacing: var(--font-tracking-wider);
+   text-transform: uppercase;
+   cursor: grab;
+   user-select: none;
 }
 
 .dragHandle:active {
-	cursor: grabbing;
+   cursor: grabbing;
+}
+
+.taskList + .removeDropZone {
+   margin-top: var(--space-4);
 }
 
 .removeDropZone {
-	display: grid;
-	place-items: center;
-	min-height: 4.5rem;
-	padding: 1rem;
-	border: 1px dashed rgba(252, 165, 165, 0.65);
-	border-radius: 1rem;
-	background: rgba(127, 29, 29, 0.12);
-	color: #fca5a5;
-	text-align: center;
+   display: grid;
+   place-items: center;
+   min-height: 4.5rem; /* deliberate: minimum drop target */
+   padding: var(--space-4);
+   border: var(--border-width-hairline) dashed var(--factory-drop-reject-border);
+   border-radius: var(--radius-2);
+   background: var(--factory-drop-reject);
+   color: var(--factory-delete-text);
+   text-align: center;
 }
 
 .removeDropZone p {
-	margin: 0;
+   margin: 0;
 }
 
 .removeDropZone__item {
-	display: none;
+   display: none;
 }
 
 .taskEyebrow,
 .cardEyebrow {
-	margin-bottom: 0.45rem;
-	color: var(--color-brand-primary);
-	font-size: 0.82rem;
-	font-weight: 700;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
+   margin: 0 0 var(--space-1);
+   color: var(--factory-label-color);
+   font-family: var(--factory-label-font), monospace;
+   font-size: var(--factory-label-size);
+   font-weight: var(--font-weight-bold);
+   letter-spacing: var(--factory-label-tracking);
+   text-transform: uppercase;
+}
+
+.emptyTaskState {
+   padding: var(--space-4);
+   border: var(--border-width-hairline) dashed var(--color-border-default);
+   border-radius: var(--radius-2);
+   background: var(--factory-badge-bg);
 }
 
 .payloadPreview {
-	overflow-x: auto;
-	padding: var(--space-4);
-	border: var(--border-width-hairline) solid var(--color-border-default);
-	border-radius: var(--radius-2);
-	background: #111827;
-	color: #d1fae5;
-	font-size: 0.88rem;
-	line-height: 1.55;
+   overflow-x: auto;
+   padding: var(--space-4);
+   border: var(--border-width-hairline) dashed var(--color-border-default);
+   border-radius: var(--radius-2);
+   background: var(--factory-payload-bg);
+   color: var(--factory-payload-text);
+   font-family: var(--factory-payload-font), monospace;
+   font-size: var(--font-size-14);
+   line-height: var(--font-leading-base);
 }
 
 .debugSection {
-	opacity: 0.9;
+   opacity: 0.9;
 }
 
 .debugSummary {
-	cursor: pointer;
-	font-weight: 700;
-	color: var(--color-text-secondary);
-	list-style: none;
+   cursor: pointer;
+   font-weight: var(--font-weight-bold);
+   color: var(--color-text-secondary);
+   list-style: none;
 }
 
 .debugSummary::-webkit-details-marker {
-	display: none;
+   display: none;
 }
 
 .debugContent {
-	margin-top: var(--space-4);
+   margin-top: var(--space-4);
+}
+
+.typeButton {
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-1);
+  padding: var(--space-3) var(--space-4);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  background: var(--color-bg-canvas);
+  cursor: pointer;
+  transition:
+      transform var(--transition-base),
+      border-color var(--transition-base),
+      background var(--transition-base),
+      filter var(--transition-base);
+}
+
+.typeButton[data-task-type="multiple-choice"] { background: var(--factory-type-multiple-choice); }
+.typeButton[data-task-type="x-or-y"] { background: var(--factory-type-x-or-y); }
+.typeButton[data-task-type="email-hotspots"] { background: var(--factory-type-email-hotspots); }
+.typeButton[data-task-type="sort-into-buckets"] { background: var(--factory-type-sort-into-buckets); }
+.typeButton[data-task-type="password-strength"] { background: var(--factory-type-password-strength); }
+
+.typeButton:hover {
+  transform: translateY(calc(-1 * var(--border-width-hairline)));
+  filter: brightness(0.95);
+}
+
+.typeButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .ghostButton,
 .primaryButton,
 .deleteButton {
-	border: var(--border-width-hairline) solid var(--color-border-default);
-	border-radius: var(--radius-pill);
-	padding: 0.7rem var(--space-4);
-	font-weight: 700;
-	transition: transform var(--transition-base), border-color var(--transition-base), background var(--transition-base);
+   border: var(--border-width-hairline) solid var(--color-border-default);
+   border-radius: var(--radius-1);
+   padding: var(--space-3) var(--space-4);
+   font-weight: var(--font-weight-bold);
+   transition: transform var(--transition-base), border-color var(--transition-base), background var(--transition-base);
+}
+
+.ghostButton,
+.deleteButton {
+  margin-top: var(--space-2);
+   background: transparent;
+   color: var(--color-text-primary);
 }
 
 .ghostButton {
-	background: transparent;
-	color: var(--color-text-primary);
+   background: var(--color-bg-surface);
 }
 
 .primaryButton {
-	border-color: var(--color-brand-primary);
-	background: var(--color-brand-primary);
-	color: var(--color-text-onDark);
+   border-color: var(--color-brand-primary);
+   background: var(--color-brand-primary);
+   color: var(--color-text-onDark);
 }
 
 .deleteButton {
-	background: transparent;
-	color: #fca5a5;
+   border-color: var(--factory-delete-border);
+   background: var(--factory-delete-bg);
+   color: var(--factory-delete-text);
 }
 
 .ghostButton:hover,
 .primaryButton:hover,
 .deleteButton:hover {
-	transform: translateY(-1px);
+   transform: translateY(calc(-1 * var(--border-width-hairline)));
+}
+
+.ghostButton:hover {
+   background: var(--color-bg-surface-hover);
+}
+
+.deleteButton:hover {
+   filter: brightness(0.85);
 }
 
 .ghostButton:disabled,
 .primaryButton:disabled,
 .deleteButton:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-	transform: none;
+   opacity: 0.5;
+   cursor: not-allowed;
+   transform: none;
 }
 
 .actionRowReset {
-	justify-content: flex-start;
+   justify-content: flex-start;
 }
 
 .actionRowSave {
-	margin-top: var(--space-6);
-	justify-content: flex-end;
+   margin-top: var(--space-5);
+   justify-content: flex-end;
 }
 
-.emptyTaskState {
-	padding: var(--space-4);
-	border: var(--border-width-hairline) dashed var(--color-border-default);
-	border-radius: var(--radius-2);
-	color: var(--color-text-secondary);
-	line-height: 1.5;
+@media (max-width: 800px) { /* deliberate: matches factory editor mobile breakpoint */
+   .fieldGrid {
+      grid-template-columns: 1fr;
+   }
+
+   .sectionHeadingInline,
+   .summaryCard,
+   .taskCardHeader,
+   .taskCardActions,
+   .actionRow {
+      display: grid;
+   }
+
+   .taskAddRow,
+   .taskCardActions,
+   .actionRow {
+      justify-content: stretch;
+   }
 }
-
-@media (max-width: 800px) {
-	.fieldGrid {
-		grid-template-columns: 1fr;
-	}
-
-	.sectionHeadingInline,
-		.taskCardHeader,
-		.taskCardActions,
-		.actionRow,
-		.summaryCard {
-		flex-direction: column;
-		align-items: flex-start;
-	}
-	}
 </style>

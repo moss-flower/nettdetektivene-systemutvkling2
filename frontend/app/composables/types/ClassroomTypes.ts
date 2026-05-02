@@ -11,6 +11,8 @@ export type Classroom = {
   code: string;
   owners: ClassroomUser[];
   members: ClassroomUser[];
+  pendingMembers: ClassroomUser[];
+  pendingEntry: boolean;
 };
 
 export type ClassroomRequest = {

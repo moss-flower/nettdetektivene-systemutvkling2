@@ -100,7 +100,7 @@ public class LeaderboardService {
             throw new ForbiddenException("Teacher does not have access to this classroom.");
         }
 
-        Page<StudentUser> studentUserPage = studentUserRepository.findAllByClassroomUid(classroomUid, pageable);
+        Page<StudentUser> studentUserPage = studentUserRepository.findAllByClassroomUidAndClassroomPendingFalse(classroomUid, pageable);
 
         return studentUserPage.map(studentUser -> {
             int indexOnPage = studentUserPage.getContent().indexOf(studentUser);

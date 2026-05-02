@@ -80,8 +80,8 @@ async function handleLogin() {
 
     if (response.roles.includes("ROLE_STUDENT")) {
       try {
-        await student.getMyClassroom();
-        await navigateTo(routePaths.studentHome);
+        const classroom = await student.getMyClassroom();
+        await navigateTo(classroom.pendingEntry ? routePaths.pending : routePaths.studentHome);
       } catch {
         await navigateTo(routePaths.join);
       }
