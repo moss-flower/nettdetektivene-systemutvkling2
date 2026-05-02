@@ -28,11 +28,20 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Initializes mock data for gameplay including worlds, stations, exercises, and achievements.
+ * Implements ApplicationRunner to seed the database on application startup.
+ */
 @Component
 @RequiredArgsConstructor
 public class GameplayMockDataInitializer implements ApplicationRunner {
 
-  public static final UUID SCHOOLYARD_WORLD_UID = stableUuid("world:schoolyard");
+    /**
+     * Generates a stable UUID from a string value for consistent mock data identifiers.
+     * @param value the string value to convert to UUID
+     * @return a deterministic UUID based on the input string
+     */
+    public static final UUID SCHOOLYARD_WORLD_UID = stableUuid("world:schoolyard");
   public static final UUID QUICKSTART_WORLD_UID = stableUuid("world:quickstart");
   public static final UUID CREATIVE_LAB_WORLD_UID = stableUuid("world:creative-lab");
 
@@ -65,15 +74,25 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   private final WorldRepository worldRepository;
   private final AchievementRepository achievementRepository;
 
-  @Override
-  @Transactional
-  public void run(ApplicationArguments args) {
+    /**
+     * Runs the mock data initialization on application startup.
+     * Seeds exercises, stations, worlds, and achievements into the database.
+     * @param args application arguments (not used)
+     */
+    @Override
+    @Transactional
+    public void run(ApplicationArguments args) {
     seedExercises();
     seedStations();
     seedWorlds();
   }
 
-  private void seedExercises() {
+    /**
+     * Seeds exercises into the database with predefined UUIDs.
+     * Creates various exercise types including multiple choice, X-or-Y, sort into buckets,
+     * email hotspots, and password strength tasks.
+     */
+    private void seedExercises() {
     upsertExercise(NEWSSTAND_EXERCISE_1_UID, "Troverdige nyheter", "Lett",
         "Undersøk hvilke nyhetssaker som virker ekte og hvilke faresignaler du bør sjekke.",
         List.of(
@@ -981,7 +1000,11 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     );
   }
 
-  private void seedStations() {
+    /**
+     * Seeds stations into the database with predefined UUIDs.
+     * Creates stations and associates them with exercises.
+     */
+    private void seedStations() {
     upsertStation(NEWSSTAND_STATION_UID, "Nyhetskvartalet",
         "Nyhetsartikler og kildekritikk for skoleelever.",
         "Start med a sjekke hvem som er avsender, og om saken bruker sterke ord for a presse deg til a tro pa den.",
@@ -1025,7 +1048,11 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
         List.of(DATACENTER_EXERCISE_UID), true);
   }
 
-  private void seedWorlds() {
+    /**
+     * Seeds worlds into the database with predefined UUIDs.
+     * Creates worlds and associates them with stations.
+     */
+    private void seedWorlds() {
     upsertWorld(SCHOOLYARD_WORLD_UID, "3-trinn",
         "Datasikkerhet for skoleelever: nyheter, bilder, e-post, passord, reklame, e-butikker og deling.",
         PLACEHOLDER_IMAGE,
@@ -1055,15 +1082,32 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     worldRepository.findByUid(CREATIVE_LAB_WORLD_UID).ifPresent(worldRepository::delete);
   }
 
-  private void upsertExercise(UUID publicId, String title, String difficultyName, String description,
-      List<TaskRequest> taskRequests) {
+    /**
+     * Creates or updates an exercise with the specified properties.
+     * @param publicId the public UUID for the exercise
+     * @param title the title of the exercise
+     * @param difficultyName the difficulty level name
+     * @param description the description of the exercise
+     * @param taskRequests the list of task requests for the exercise
+     */
+    private void upsertExercise(UUID publicId, String title, String difficultyName, String description,
+        List<TaskRequest> taskRequests) {
     upsertExercise(publicId, title, difficultyName, description,
         "Les oppgaven rolig og se etter detaljer som virker uvanlige eller vanskelige a kontrollere.",
         taskRequests);
   }
 
-  private void upsertExercise(UUID publicId, String title, String difficultyName, String description,
-      String hint, List<TaskRequest> taskRequests) {
+    /**
+     * Creates or updates an exercise with hint included.
+     * @param publicId the public UUID for the exercise
+     * @param title the title of the exercise
+     * @param difficultyName the difficulty level name
+     * @param description the description of the exercise
+     * @param hint the hint for the exercise
+     * @param taskRequests the list of task requests for the exercise
+     */
+    private void upsertExercise(UUID publicId, String title, String difficultyName, String description,
+        String hint, List<TaskRequest> taskRequests) {
     Exercise exercise = exerciseRepository.findByPublicId(publicId).orElseGet(Exercise::new);
 
     exercise.setPublicId(publicId);
@@ -1078,7 +1122,15 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     exerciseRepository.save(exercise);
   }
 
-  private NotepadEntry defaultNotepadEntry(UUID publicId, String title, String description, String hint) {
+    /**
+     * Creates a default notepad entry for an exercise based on its properties.
+     * @param publicId the public UUID of the exercise
+     * @param title the title of the exercise
+     * @param description the description of the exercise
+     * @param hint the hint for the exercise
+     * @return a NotepadEntry configured based on the exercise properties
+     */
+    private NotepadEntry defaultNotepadEntry(UUID publicId, String title, String description, String hint) {
     NotepadEntry notepadEntry = new NotepadEntry();
     notepadEntry.setSource(title);
 
@@ -1104,11 +1156,22 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     return notepadEntry;
   }
 
-  private String limitTo256(String value) {
+    /**
+     * Limits a string value to 256 characters.
+     * @param value the string to limit
+     * @return the truncated string if longer than 256 characters, otherwise the original
+     */
+    private String limitTo256(String value) {
     return value.length() <= 256 ? value : value.substring(0, 256);
   }
 
-  private List<Task> newTasks(Exercise exercise, List<TaskRequest> taskRequests) {
+    /**
+     * Creates new Task entities from a list of TaskRequests.
+     * @param exercise the exercise to associate the tasks with
+     * @param taskRequests the list of task requests to convert
+     * @return a list of Task entities
+     */
+    private List<Task> newTasks(Exercise exercise, List<TaskRequest> taskRequests) {
     List<Task> tasks = new ArrayList<>();
 
     for (TaskRequest taskRequest : taskRequests) {
@@ -1125,8 +1188,20 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     return tasks;
   }
 
-  private void upsertStation(UUID uid, String title, String description, String hint, String image,
-      String backgroundColor, List<UUID> exerciseUids, boolean isBoss) {
+    /**
+     * Creates or updates a station with the specified properties.
+     * Also creates an achievement for the station.
+     * @param uid the UUID for the station
+     * @param title the title of the station
+     * @param description the description of the station
+     * @param hint the hint for the station
+     * @param image the image URL for the station
+     * @param backgroundColor the background color for the station
+     * @param exerciseUids the list of exercise UUIDs associated with the station
+     * @param isBoss whether this is a boss station
+     */
+    private void upsertStation(UUID uid, String title, String description, String hint, String image,
+        String backgroundColor, List<UUID> exerciseUids, boolean isBoss) {
     Station station = stationRepository.findByUid(uid).orElseGet(Station::new);
 
     station.setUid(uid);
@@ -1143,7 +1218,13 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     createStationAchievement(title, description, isBoss);
   }
 
-  private void createStationAchievement(String title, String description, boolean isBoss) {
+    /**
+     * Creates an achievement for a station if it doesn't already exist.
+     * @param title the title of the station (used as achievement title)
+     * @param description the description of the station (used as achievement description)
+     * @param isBoss whether this is a boss station (affects achievement category)
+     */
+    private void createStationAchievement(String title, String description, boolean isBoss) {
     if (achievementRepository.findByTitle(title).isPresent()) {
       return;
     }
@@ -1159,7 +1240,15 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     achievementRepository.save(achievement);
   }
 
-  private void upsertWorld(UUID uid, String title, String description, String image, List<UUID> stationUids) {
+    /**
+     * Creates or updates a world with the specified properties.
+     * @param uid the UUID for the world
+     * @param title the title of the world
+     * @param description the description of the world
+     * @param image the image URL for the world
+     * @param stationUids the list of station UUIDs associated with the world
+     */
+    private void upsertWorld(UUID uid, String title, String description, String image, List<UUID> stationUids) {
     World world = worldRepository.findByUid(uid).orElseGet(World::new);
 
     world.setUid(uid);
@@ -1171,10 +1260,23 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     worldRepository.save(world);
   }
 
-  private TaskRequest multipleChoiceTask(String introText, String feedbackCorrect,
-      String feedbackIncorrect, String promptTitle, String promptText,
-      String imageUrl, String imageAlt, List<MultipleChoiceContent.Option> options,
-      String correctChoice) {
+    /**
+     * Creates a multiple choice task request.
+     * @param introText the introduction text for the task
+     * @param feedbackCorrect feedback to show when answer is correct
+     * @param feedbackIncorrect feedback to show when answer is incorrect
+     * @param promptTitle the title for the prompt
+     * @param promptText the text for the prompt
+     * @param imageUrl the URL of the image to display
+     * @param imageAlt alt text for the image
+     * @param options the list of options to choose from
+     * @param correctChoice the ID of the correct option
+     * @return a TaskRequest configured for multiple choice
+     */
+    private TaskRequest multipleChoiceTask(String introText, String feedbackCorrect,
+        String feedbackIncorrect, String promptTitle, String promptText,
+        String imageUrl, String imageAlt, List<MultipleChoiceContent.Option> options,
+        String correctChoice) {
     return new TaskRequest(
         introText,
         feedbackCorrect,
@@ -1187,11 +1289,31 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     );
   }
 
-  private TaskRequest xOrYTask(String introText, String feedbackCorrect, String feedbackIncorrect,
-      String promptTitle, String promptText,
-      String xImageUrl, String xImageAlt, String xEyebrow, String xTitle, String xText,
-      String yImageUrl, String yImageAlt, String yEyebrow, String yTitle, String yText,
-      XOrYContent.Choice correctChoice) {
+    /**
+     * Creates an X-or-Y task request where users choose between two options.
+     * @param introText the introduction text for the task
+     * @param feedbackCorrect feedback to show when answer is correct
+     * @param feedbackIncorrect feedback to show when answer is incorrect
+     * @param promptTitle the title for the prompt
+     * @param promptText the text for the prompt
+     * @param xImageUrl the image URL for option X
+     * @param xImageAlt alt text for option X image
+     * @param xEyebrow the eyebrow text for option X
+     * @param xTitle the title for option X
+     * @param xText the description text for option X
+     * @param yImageUrl the image URL for option Y
+     * @param yImageAlt alt text for option Y image
+     * @param yEyebrow the eyebrow text for option Y
+     * @param yTitle the title for option Y
+     * @param yText the description text for option Y
+     * @param correctChoice the correct choice (X or Y)
+     * @return a TaskRequest configured for X-or-Y comparison
+     */
+    private TaskRequest xOrYTask(String introText, String feedbackCorrect, String feedbackIncorrect,
+        String promptTitle, String promptText,
+        String xImageUrl, String xImageAlt, String xEyebrow, String xTitle, String xText,
+        String yImageUrl, String yImageAlt, String yEyebrow, String yTitle, String yText,
+        XOrYContent.Choice correctChoice) {
     return new TaskRequest(
         introText,
         feedbackCorrect,
@@ -1207,9 +1329,20 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     );
   }
 
-  private TaskRequest emailHotspotsTask(String introText, String feedbackCorrect,
-      String feedbackIncorrect, String promptTitle, String promptText,
-      EmailHotspotsContent.Email email, List<EmailHotspotsContent.Target> targets) {
+    /**
+     * Creates an email hotspots task request where users click on suspicious parts.
+     * @param introText the introduction text for the task
+     * @param feedbackCorrect feedback to show when answer is correct
+     * @param feedbackIncorrect feedback to show when answer is incorrect
+     * @param promptTitle the title for the prompt
+     * @param promptText the text for the prompt
+     * @param email the email content with hotspots
+     * @param targets the list of targets (hotspots) to click
+     * @return a TaskRequest configured for email hotspots
+     */
+    private TaskRequest emailHotspotsTask(String introText, String feedbackCorrect,
+        String feedbackIncorrect, String promptTitle, String promptText,
+        EmailHotspotsContent.Email email, List<EmailHotspotsContent.Target> targets) {
     return new TaskRequest(
         introText,
         feedbackCorrect,
@@ -1222,9 +1355,21 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     );
   }
 
-  private TaskRequest sortIntoBucketsTask(String introText, String feedbackCorrect,
-      String feedbackIncorrect, String promptTitle, String promptText, String unplacedLabel,
-      List<SortIntoBucketsContent.Bucket> buckets, List<SortIntoBucketsContent.Item> items) {
+    /**
+     * Creates a sort-into-buckets task request where users categorize items.
+     * @param introText the introduction text for the task
+     * @param feedbackCorrect feedback to show when answer is correct
+     * @param feedbackIncorrect feedback to show when answer is incorrect
+     * @param promptTitle the title for the prompt
+     * @param promptText the text for the prompt
+     * @param unplacedLabel label for items not yet sorted
+     * @param buckets the list of buckets to sort into
+     * @param items the list of items to sort
+     * @return a TaskRequest configured for sort-into-buckets
+     */
+    private TaskRequest sortIntoBucketsTask(String introText, String feedbackCorrect,
+        String feedbackIncorrect, String promptTitle, String promptText, String unplacedLabel,
+        List<SortIntoBucketsContent.Bucket> buckets, List<SortIntoBucketsContent.Item> items) {
     return new TaskRequest(
         introText,
         feedbackCorrect,
@@ -1238,10 +1383,26 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     );
   }
 
-  private TaskRequest passwordStrengthTask(String introText, String feedbackCorrect,
-      String feedbackIncorrect, String promptTitle, String promptText, String helperText,
-      PasswordStrengthContent.Mode mode, String placeholder, String startingPassword,
-      Integer minLength, int minScoreToPass, List<String> commonPatterns) {
+    /**
+     * Creates a password strength task request.
+     * @param introText the introduction text for the task
+     * @param feedbackCorrect feedback to show when answer is correct
+     * @param feedbackIncorrect feedback to show when answer is incorrect
+     * @param promptTitle the title for the prompt
+     * @param promptText the text for the prompt
+     * @param helperText helper text to display
+     * @param mode the mode (CREATE or IMPROVE)
+     * @param placeholder placeholder text for the input
+     * @param startingPassword the starting password (for IMPROVE mode)
+     * @param minLength minimum password length required
+     * @param minScoreToPass minimum score required to pass
+     * @param commonPatterns list of common patterns to reject
+     * @return a TaskRequest configured for password strength
+     */
+    private TaskRequest passwordStrengthTask(String introText, String feedbackCorrect,
+        String feedbackIncorrect, String promptTitle, String promptText, String helperText,
+        PasswordStrengthContent.Mode mode, String placeholder, String startingPassword,
+        Integer minLength, int minScoreToPass, List<String> commonPatterns) {
     return new TaskRequest(
         introText,
         feedbackCorrect,
@@ -1258,7 +1419,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     );
   }
 
-  private static UUID stableUuid(String value) {
+    /**
+     * Generates a stable UUID from a string value for consistent mock data identifiers.
+     * @param value the string value to convert to UUID
+     * @return a deterministic UUID based on the input string
+     */
+    private static UUID stableUuid(String value) {
     return UUID.nameUUIDFromBytes(value.getBytes(StandardCharsets.UTF_8));
   }
 }
