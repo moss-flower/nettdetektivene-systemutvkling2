@@ -253,6 +253,10 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
       StudentUser eliasElev,
       StudentUser miaElev,
       StudentUser lukasElev) {
+    if (lisaLaerer.getInternalId() == null || perLaerer.getInternalId() == null) {
+      return;
+    }
+
     notificationRepository.deleteAll(notificationRepository.findByTarget_InternalId(lisaLaerer.getInternalId()));
     notificationRepository.deleteAll(notificationRepository.findByTarget_InternalId(perLaerer.getInternalId()));
 
