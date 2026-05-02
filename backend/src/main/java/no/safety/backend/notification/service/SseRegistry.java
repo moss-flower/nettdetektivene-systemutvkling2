@@ -18,6 +18,7 @@ public class SseRegistry {
     private Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
 
     public SseEmitter register(Long userId) {
+        logger.info("JARJAR: SSE Register reached");
         logger.debug("Registering emitter for userId " + userId);
         SseEmitter emitter = new SseEmitter(0L);
 
@@ -26,6 +27,11 @@ public class SseRegistry {
         emitter.onCompletion(() -> emitters.remove(userId));
         emitter.onError((ex) -> emitters.remove(userId));
         emitter.onTimeout(() -> emitters.remove(userId));
+        try {
+            emitter.send(SseEmitter.event().comment("connected"));
+        } catch (IOException e) {
+            logger.error("Failed to send initial ping", e);
+        }
 
         return emitter;
     }
