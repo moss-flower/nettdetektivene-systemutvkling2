@@ -100,7 +100,7 @@ class ExerciseControllerTest {
         new NotepadEntryResponse(
             UUID.randomUUID(),
             notepadEntryRequest.title(),
-            java.time.LocalDate.now(),
+            java.time.ZonedDateTime.now(),
             notepadEntryRequest.source(),
             notepadEntryRequest.type(),
             notepadEntryRequest.content()),
