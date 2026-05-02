@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { useGamePreview } from '~/composables/useGamePreview'
-import { useThemeAttributes } from '~/composables/useThemeAttributes'
 import { routePaths } from '~/composables/utils/routePaths'
 
-useThemeAttributes('game')
 
 const route = useRoute()
 const { isPreview, classroomId } = useGamePreview()

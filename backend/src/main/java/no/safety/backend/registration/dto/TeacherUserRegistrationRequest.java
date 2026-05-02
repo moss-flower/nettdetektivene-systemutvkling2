@@ -2,7 +2,7 @@ package no.safety.backend.registration.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import no.safety.backend.registration.validation.ValidPassword;
 import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.validation.NoProfanity;
 
@@ -18,8 +18,7 @@ public record TeacherUserRegistrationRequest(
     @Email(message = "Please provide a valid email address.")
     String email,
     
-    @NotBlank 
-    @Size(min = 8, max = 128, message = "Password must be between 8 and 128 characters long.")
+    @ValidPassword
     String password
 ) {
 } 

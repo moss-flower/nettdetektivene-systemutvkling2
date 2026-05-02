@@ -545,8 +545,10 @@ const next = async () => {
               :images="bossTaskImages"
           />
           <div v-else class="stationPageMeta">
-            <p class="stationPageEyebrow">{{ station.title }}</p>
-            <p class="pageProgressPill">{{ progressLabel }}</p>
+            <div class="stationPageMeta__text">
+              <p class="stationPageEyebrow">{{ station.title }}</p>
+              <p class="pageProgressPill">{{ progressLabel }}</p>
+            </div>
           </div>
         </div>
       </header>
@@ -559,7 +561,7 @@ const next = async () => {
           @click="showTipsPopup = true"
         >
           <img :src="envelopeIcon" alt="Tipsbrev" >
-          <span>Åpne tipsbrev</span>
+          <span>Tips</span>
         </button>
 
         <XOrYTemplate
@@ -658,7 +660,6 @@ const next = async () => {
       v-if="showTipsPopup"
       :hint="exerciseHint"
       :title="activeExercise?.notepadEntry?.title ?? ''"
-      :type="activeExercise?.notepadEntry?.type ?? 'TIP'"
       @close="showTipsPopup = false"
     />
 
@@ -713,6 +714,11 @@ const next = async () => {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
+}
+
+.stationPageMeta__text {
+  display: grid;
+  gap: 0.5rem;
 }
 
 .stationPageEyebrow {
@@ -810,12 +816,12 @@ const next = async () => {
     left: var(--space-4);
   }
 
-  .station-page__hero {
+  .stationPageHero {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .station-page__meta {
+  .stationPageMeta {
     align-items: flex-start;
     flex-direction: column;
   }

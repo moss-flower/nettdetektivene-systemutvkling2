@@ -15,6 +15,10 @@ public record StationRequest(
     @Size(max = 2000, message = "description cannot exceed 2000 characters.")
     String description,
 
+    @NotBlank(message = "hint is required.")
+    @Size(max = 2000, message = "hint cannot exceed 2000 characters.")
+    String hint,
+
     @NotBlank(message = "image is required.")
     @Size(max = 1000, message = "image cannot exceed 1000 characters.")
     String image,

@@ -39,6 +39,10 @@ public class StudentUser extends User {
     @JoinColumn(name = "classroom_uid", referencedColumnName = "uid")
     private Classroom classroom;
 
+    @Column(name = "classroom_pending", nullable = false)
+    @Builder.Default
+    private boolean classroomPending = false;
+
     @Embedded
     @Builder.Default
     private AvatarConfig avatarConfig = AvatarConfig.defaultConfig();

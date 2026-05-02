@@ -295,115 +295,134 @@ const setEmailHotspotSuspicious = (targetId: string, isSuspicious: boolean) => {
 
 <style scoped>
 .templateSection {
-	margin-top: var(--space-4);
-	padding-top: var(--space-4);
-	border-top: var(--border-width-hairline) solid var(--color-border-default);
+   margin-top: var(--space-4);
+   padding-top: var(--space-4);
+   border-top: var(--border-width-hairline) solid var(--color-border-default);
 }
 
 .templateSection h4 {
-	margin: 0 0 0.8rem;
-	font-weight: 700;
+   margin: 0 0 var(--space-3);
 }
 
 .fieldGrid,
 .hotspotCardFields {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 0.9rem;
+   display: grid;
+   grid-template-columns: repeat(2, minmax(0, 1fr));
+   gap: var(--space-3);
 }
 
 .field {
-	display: grid;
-	gap: 0.45rem;
+   display: grid;
+   gap: var(--space-1);
 }
 
 .fieldFull,
 .hotspotCardFull {
-	grid-column: 1 / -1;
+   grid-column: 1 / -1;
 }
 
 .field span {
-	font-weight: 700;
+   color: var(--factory-label-color);
+   font-family: var(--factory-label-font), monospace;
+   font-size: var(--factory-label-size);
+   font-weight: var(--font-weight-bold);
+   letter-spacing: var(--factory-label-tracking);
+   text-transform: uppercase;
 }
 
 .field input,
+.field select,
 .field textarea {
-	width: 100%;
-	padding: 0.85rem var(--space-4);
-	border: var(--border-width-hairline) solid var(--color-border-default);
-	border-radius: 0.9rem;
-	background: rgba(0, 0, 0, 0.16);
-	color: var(--color-text-primary);
-	font: inherit;
+   width: 100%;
+   padding: var(--space-3) var(--space-4);
+   border: var(--border-width-hairline) solid var(--factory-field-border);
+   border-radius: var(--radius-1);
+   background: var(--factory-field-bg);
+   color: var(--color-text-primary);
+   font: inherit;
 }
 
 .field textarea {
-	resize: vertical;
+   resize: vertical;
 }
 
 .field input:focus,
+.field select:focus,
 .field textarea:focus {
-	outline: none;
-	border-color: var(--color-brand-primary);
+   outline: none;
+   border-color: var(--factory-field-focus);
 }
 
 .hotspotCard {
-	display: grid;
-	gap: 0.85rem;
-	padding: 0.85rem;
-	border: var(--border-width-hairline) solid var(--color-border-default);
-	border-radius: 0.9rem;
-	background: rgba(255, 255, 255, 0.03);
+   display: grid;
+   gap: var(--space-3);
+   padding: var(--space-3);
+   border: var(--border-width-hairline) solid var(--color-border-default);
+   border-radius: var(--radius-2);
+   background: var(--color-bg-canvas);
 }
 
 .hotspotCardHeader {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: var(--space-3);
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: var(--space-3);
 }
 
 .hotspotToggleRow {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: flex-end;
-	gap: var(--space-2);
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: flex-end;
+   gap: var(--space-2);
 }
 
 .hotspotCardTitle {
-	font-weight: 700;
-	color: var(--color-text-primary);
+   color: var(--factory-label-color);
+   font-family: var(--factory-label-font), monospace;
+   font-size: var(--factory-label-size);
+   font-weight: var(--font-weight-bold);
+   letter-spacing: var(--factory-label-tracking);
+   text-transform: uppercase;
 }
 
 .hotspotToggle {
-	display: inline-flex;
-	align-items: center;
-	gap: var(--space-2);
-	padding: 0.45rem var(--space-3);
-	border: var(--border-width-hairline) solid var(--color-border-default);
-	border-radius: var(--radius-pill);
-	background: rgba(255, 255, 255, 0.03);
-	font-weight: 700;
-	color: var(--color-text-primary);
+   display: inline-flex;
+   align-items: center;
+   gap: var(--space-2);
+   padding: var(--space-1) var(--space-3);
+   border: var(--border-width-hairline) solid var(--color-border-default);
+   border-radius: var(--radius-pill);
+   background: var(--color-bg-surface-hover);
+   color: var(--factory-label-color);
+   font-family: var(--factory-label-font), monospace;
+   font-size: var(--factory-label-size);
+   font-weight: var(--font-weight-bold);
+   letter-spacing: var(--factory-label-tracking);
+   text-transform: uppercase;
 }
 
 .hotspotToggle input {
-	margin: 0;
+   margin: 0;
 }
 
-@media (max-width: 800px) {
-	.fieldGrid,
-	.hotspotCardFields {
-		grid-template-columns: 1fr;
-	}
+.hotspotToggle:has(input:checked) {
+  border-color: var(--color-brand-primary);
+  background: var(--factory-drop-accept);
+}
 
-	.hotspotCardHeader {
-		flex-direction: column;
-		align-items: flex-start;
-	}
+@media (max-width: 800px) { /* deliberate: matches factory editor mobile breakpoint */
+   .fieldGrid,
+   .hotspotCardFields {
+      grid-template-columns: 1fr;
+   }
 
-	.hotspotToggleRow {
-		justify-content: flex-start;
-	}
+   .hotspotCardHeader {
+      flex-direction: column;
+      align-items: flex-start;
+   }
+
+   .hotspotToggleRow {
+      justify-content: flex-start;
+   }
 }
 </style>

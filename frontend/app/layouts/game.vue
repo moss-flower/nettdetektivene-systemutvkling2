@@ -2,11 +2,9 @@
 import { useGamePreview } from '~/composables/useGamePreview'
 import { useStudentProfile } from '~/composables/useStudentProfile'
 import { useStations } from '~/composables/useStations'
-import { useThemeAttributes } from '~/composables/useThemeAttributes'
 import { getLevel } from '~/composables/utils/studentProgress'
 
 provideGameConfetti()
-useThemeAttributes('game')
 const { getMyProfile } = useStudentProfile()
 const { getStationByUid } = useStations()
 const { openAvatarProfile } = useAvatarProfilePopup()

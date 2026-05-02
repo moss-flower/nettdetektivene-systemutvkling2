@@ -81,40 +81,47 @@ const notes = computed(() => {
   display: grid;
   gap: var(--space-5);
   /* fluid outer padding, deliberate exception (token system)*/
-  padding: var(--layout-page-padding-comfortable);
   min-height: 100dvh;
   width: 100%;
   display: grid;
   place-items: center;
+  max-width: var(--layout-max-width);
+  margin: 0 auto;
+  padding: var(--layout-page-padding);
+  color: var(--color-text-primary);
+  background: var(--color-bg-canvas);
 }
 
 .pageHeader {
+  margin-bottom: var(--space-4);
+  background: var(--color-bg-surface);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-top: var(--border-width-thick) solid var(--color-accent-reward);
+  box-shadow: var(--shadow-1);
+  border-radius: var(--radius-3);
+  padding: var(--space-5);
   display: grid;
-  gap: var(--space-3);
-  width: 100%;
-  max-width: 1180px;
-  padding: clamp(1.25rem, 3vw, 2rem);
-  border: var(--border-width-hairline) solid var(--notes-border);
-  border-radius: var(--radius-4);
-  background: linear-gradient(
-    135deg,
-    var(--notes-bg-top) 0%,
-    var(--notes-bg-bottom) 100%
-  );
-  box-shadow: var(--shadow-2);
+  gap: var(--space-2);
 }
 
 .backLink {
   display: inline-block;
   margin-bottom: var(--space-3);
   color: var(--color-brand-primary);
-  font-weight: 600;
-  text-decoration: none;
-  transition: color 0.15s ease;
+  font-weight: var(--font-weight-semibold);
+  transition: color var(--transition-fast);
 }
 
 .backLink:hover {
-  color: var(--color-brand-secondary);
+  text-decoration: underline;
+}
+
+h1 {
+  margin: 0;
+  font-family: var(--font-family-serif), sans-serif;
+  font-size: var(--font-size-28);
+  line-height: var(--font-leading-28);
+  color: var(--color-text-primary);
 }
 
 .eyebrow {
@@ -168,34 +175,34 @@ h1 {
 
 .noteTitle {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: var(--font-size-18);
   color: var(--color-brand-primary);
 }
 
 .noteType {
-  padding: 0.25rem 0.75rem;
+  padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
-  background: var(--palette-blue-100);
-  color: var(--palette-blue-700);
-  font-size: 0.85rem;
-  font-weight: 600;
+  background: var(--palette-ice-200); /* exception: palette-direct, type badge differentiates from surface */
+  color: var(--color-brand-primary);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
 }
 
 .noteSource {
   margin: 0 0 var(--space-2);
-  font-size: 0.9rem;
+  font-size: var(--font-size-14);
   color: var(--color-text-secondary);
 }
 
 .noteDate {
   margin: 0 0 var(--space-3);
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
+  font-size: var(--font-size-12);
+  color: var(--color-text-secondary);
 }
 
 .noteContent {
   margin: var(--space-3) 0 0;
-  line-height: 1.6;
+  line-height: 1.6; /* deliberate: reading-optimised line-height for note body */
   color: var(--color-text-primary);
 }
 </style>

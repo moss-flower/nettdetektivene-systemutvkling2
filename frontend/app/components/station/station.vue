@@ -77,20 +77,20 @@ const handleClick = () => {
   
     <div class="levelBubble" :style="{ '--station-image': `url(${station.image})` }">
       <div class="levelImageWrap">
-        <img
-          v-if="station.isBoss"
-          :src="datatyvenSprite"
-          alt=""
-          aria-hidden="true"
-          class="bossSprite"
-        >
         <img :src="station.image" :alt="station.title" class="levelImage">
       </div>
 
       <h4 class="levelName">{{ station.title }}</h4>
     </div>
 
-    <div class="starTray" aria-label="Oppgavestjerner">
+    <div class="starTray" :class="{ 'starTray--boss': station.isBoss }" aria-label="Oppgavestjerner">
+      <img
+        v-if="station.isBoss"
+        :src="datatyvenSprite"
+        alt=""
+        aria-hidden="true"
+        class="bossSprite"
+      >
       <div class="starRow">
         <img
           v-for="star in stars"
@@ -188,12 +188,12 @@ const handleClick = () => {
 
 .bossSprite {
   position: absolute;
-  top: 0;
+  bottom: calc(100% - 0.08rem);
   left: 50%;
-  z-index: 1;
+  z-index: 2;
   width: 4.25rem;
   height: auto;
-  transform: translate(-50%, -58%);
+  transform: translateX(-50%);
   pointer-events: none;
   filter: drop-shadow(0 0.35rem 0.5rem rgba(0, 0, 0, 0.22));
 }
@@ -227,6 +227,10 @@ const handleClick = () => {
     0 0.36rem 0 #5839b7,
     0 0.58rem 0.9rem rgba(25, 22, 69, 0.28),
     inset 0 -0.22rem 0 rgba(58, 34, 126, 0.26);
+}
+
+.starTray--boss {
+  margin-top: 0.25rem;
 }
 
 .starRow {

@@ -51,15 +51,15 @@ function onDismiss(index: number) {
 }
 
 .tray__status {
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--font-tracking-wider);
   text-transform: uppercase;
   color: var(--color-text-secondary);
 }
 
 .tray__status--connected {
-  color: #22c55e;
+  color: var(--palette-green-700); /* deliberate: palette-direct, connection status */
 }
 
 .tray__list {
@@ -73,7 +73,7 @@ function onDismiss(index: number) {
 .panelMessage {
   margin: 0;
   color: var(--color-text-secondary);
-  font-size: 0.9rem;
+  font-size: var(--font-size-14);
 }
 
 /* transitions stay here because they apply to the list rendering */
