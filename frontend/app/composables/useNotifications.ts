@@ -62,14 +62,18 @@ export function useNotifications() {
     _isLoaded = false
   }
 
+  const refreshNotifications = async (): Promise<void> => {
+    disconnect()
+    notifications.value = []
+    await ensureLoaded()
+  }
+
   const deleteNotification = async (uuid: string): Promise<void> => {
     await $api(`/notifications/${uuid}`, {
       method: "DELETE",
     });
 
-    notifications.value = notifications.value.filter(
-      ({ notificationUuid }) => notificationUuid !== uuid,
-    )
+    await refreshNotifications()
   };
 
   const notificationCount = computed(() => notifications.value.length)
@@ -81,6 +85,7 @@ export function useNotifications() {
     connect,
     ensureLoaded,
     disconnect,
+    refreshNotifications,
     deleteNotification,
   }
 }

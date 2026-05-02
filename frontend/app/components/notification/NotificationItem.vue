@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import type { Notification } from '~/composables/types/NotificationTypes';
 
-const props = defineProps<{ notification: Notification; index: number }>()
-const emit = defineEmits<{ dismiss: [index: number] }>()
+const props = defineProps<{ notification: Notification }>()
 
 const { deleteNotification } = useNotifications()
 
 async function dismiss() {
   await deleteNotification(props.notification.notificationUuid)
-  emit('dismiss', props.index)
 }
 
 function formatDate(date: string) {

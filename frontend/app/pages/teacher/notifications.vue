@@ -38,10 +38,9 @@ const goBack = () => {
 
 			<TransitionGroup v-if="notifications.length > 0" name="slide" tag="ul" class="notificationList">
 				<NotificationItem
-					v-for="(notification, index) in notifications"
+					v-for="notification in notifications"
 					:key="notification.notificationUuid"
 					:notification="notification"
-					:index="index"
 				/>
 			</TransitionGroup>
 

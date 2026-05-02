@@ -2,10 +2,6 @@
 import { useNotifications } from '~/composables/useNotifications'
 
 const { connected, notifications } = useNotifications()
-
-function onDismiss(index: number) {
-  notifications.value.splice(index, 1)
-}
 </script>
 
 <template>
@@ -19,11 +15,9 @@ function onDismiss(index: number) {
 
     <TransitionGroup name="slide" tag="ul" class="tray__list">
       <NotificationItem
-        v-for="(n, i) in notifications"
+        v-for="n in notifications"
         :key="n.notificationUuid"
         :notification="n"
-        :index="i"
-        @dismiss="onDismiss"
       />
     </TransitionGroup>
 
