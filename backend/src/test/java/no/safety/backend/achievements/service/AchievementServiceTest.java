@@ -7,7 +7,9 @@ import no.safety.backend.achievements.model.AchievementCategory;
 import no.safety.backend.achievements.model.UserAchievement;
 import no.safety.backend.achievements.repository.AchievementRepository;
 import no.safety.backend.achievements.repository.UserAchievementRepository;
+import no.safety.backend.station.model.Station;
 import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.repository.StudentUserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +34,9 @@ class AchievementServiceTest {
 
   @Mock
   private UserAchievementRepository userAchievementRepository;
+
+  @Mock
+  private StudentUserRepository studentUserRepository;
 
   @InjectMocks
   private AchievementService achievementService;
@@ -252,5 +257,52 @@ class AchievementServiceTest {
 
     verify(achievementRepository).findByUUID(uuid);
     verify(achievementRepository, never()).delete(any());
+  }
+
+  @Test
+  void syncStationAchievement_shouldUpgradeLegacyTitleBasedAchievement() {
+    UUID stationUid = UUID.randomUUID();
+    Station station = new Station();
+    station.setUid(stationUid);
+    station.setTitle("Datasenteret");
+    station.setBoss(true);
+
+    when(achievementRepository.findBySource(stationUid.toString())).thenReturn(Optional.empty());
+    when(achievementRepository.findBySource("Datasenteret")).thenReturn(Optional.of(stopAchievement));
+    when(achievementRepository.save(any(Achievement.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+    Achievement result = achievementService.syncStationAchievement(station, null);
+
+    assertSame(stopAchievement, result);
+    assertEquals("Datasenteret", result.getTitle());
+    assertEquals("Fullførte Datasenteret.", result.getDescription());
+    assertEquals(AchievementCategory.SPECIAL, result.getCategory());
+    assertEquals(stationUid.toString(), result.getSource());
+    assertEquals("Spesialmedalje for å ha slått bossen", result.getReward());
+    verify(achievementRepository).save(stopAchievement);
+  }
+
+  @Test
+  void unlockStationAchievement_shouldCreateAndUnlockMissingAchievement() {
+    UUID stationUid = UUID.randomUUID();
+    Station station = new Station();
+    station.setUid(stationUid);
+    station.setTitle("Bossrommet");
+    station.setBoss(true);
+
+    when(achievementRepository.findBySource(stationUid.toString())).thenReturn(Optional.empty());
+    when(achievementRepository.findBySource("Bossrommet")).thenReturn(Optional.empty());
+    when(achievementRepository.findAllByTitle("Bossrommet")).thenReturn(List.of());
+    when(achievementRepository.save(any(Achievement.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(userAchievementRepository.existsByStudentAndAchievement(eq(student), any(Achievement.class))).thenReturn(false);
+
+    AchievementResponse result = achievementService.unlockStationAchievement(student, station);
+
+    assertTrue(result.isUnlocked());
+    assertEquals("special", result.getCategory());
+    assertEquals(stationUid.toString(), result.getSource());
+    verify(achievementRepository).save(any(Achievement.class));
+    verify(userAchievementRepository).save(any(UserAchievement.class));
+    verify(studentUserRepository).save(student);
   }
 }

@@ -350,7 +350,13 @@ watch(payloadPreviewText, () => {
 					<label class="field">
 						<span>Bilde</span>
 						<input type="file" accept="image/*" :disabled="imageUploadState === 'uploading'" @change="handleImageSelected" >
-						<small class="fieldHint">{{ imageUploadState === "uploading" ? "Laster opp..." : "Velg et bilde til stasjonskartet." }}</small>
+						<small class="fieldHint">
+							{{ imageUploadState === "uploading"
+								? "Laster opp..."
+								: draft.image
+									? "Bilde lastet opp. Forhandsvisning vises under."
+									: "Velg et bilde til stasjonskartet." }}
+						</small>
 						<p v-if="imageUploadError" class="fieldError">{{ imageUploadError }}</p>
 					</label>
 
@@ -358,6 +364,10 @@ watch(payloadPreviewText, () => {
 						<span>Beskrivelse</span>
 						<textarea v-model="draft.description" rows="3" placeholder="Kort beskrivelse av stasjonskartet." />
 					</label>
+
+					<div class="imagePreviewCard">
+						<img :src="payloadPreview.image" alt="Forhandsvisning av stasjonskartbilde" class="imagePreview" >
+					</div>
 
 				</div>
 			</section>
@@ -733,6 +743,21 @@ watch(payloadPreviewText, () => {
 
 .summaryCard {
   justify-content: space-between;
+}
+
+.imagePreviewCard {
+  margin-top: var(--space-4);
+  border: var(--border-width-hairline) solid var(--color-border-default);
+  border-radius: var(--radius-2);
+  overflow: hidden;
+  background: var(--color-bg-surface);
+}
+
+.imagePreview {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 8;
+  object-fit: cover;
 }
 
 .knownStations,

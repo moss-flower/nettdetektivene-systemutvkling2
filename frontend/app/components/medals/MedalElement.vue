@@ -12,12 +12,6 @@ const emit = defineEmits<{
   (e: "select", medal: AchievementResponse): void;
 }>();
 
-const categoryLabel = computed(() => {
-  if (props.medal.category === "stop") return "Stoppested";
-  if (props.medal.category === "mystery") return "Ukens mysterium";
-  return "Spesial";
-});
-
 const medalImage = (): string => {
   if (props.medal.category === "special") {
     return props.medal.unlocked ? specialMedal : emptyMedal;
@@ -61,11 +55,20 @@ const medalImage = (): string => {
   cursor: pointer;
 }
 
+.medalElement.special {
+  --medal-chip-bg: var(--palette-blue-800);
+  --medal-chip-lift: color-mix(in srgb, var(--palette-blue-900) 75%, transparent);
+}
+
 .medalImage {
   width: 82%;
   height: 82%;
   object-fit: contain;
   display: block;
+}
+
+.medalElement.special .medalImage {
+  filter: hue-rotate(185deg) saturate(1.35) brightness(1.02);
 }
 
 .title {

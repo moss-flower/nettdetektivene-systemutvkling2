@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { useNotifications } from '~/composables/useNotifications';
-const { connect, disconnect } = useNotifications();
+const { ensureLoaded, disconnect } = useNotifications();
 
-onMounted(() => connect());
+onMounted(() => {
+  void ensureLoaded();
+});
+
 onUnmounted(() => disconnect());
 </script>
 
 <template>
-    <NotificationTray />
-    <slot />
+  <slot />
 </template>
