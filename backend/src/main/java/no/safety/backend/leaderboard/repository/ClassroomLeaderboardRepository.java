@@ -9,7 +9,18 @@ import org.springframework.data.jpa.repository.Query;
 import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.leaderboard.dto.ClassroomLeaderboardProjection;
 
+/**
+ * Repository for retrieving classroom leaderboard data.
+ * Uses a custom JPQL query with window functions to calculate rankings.
+ */
 public interface ClassroomLeaderboardRepository extends JpaRepository<Classroom, Long> {
+    /**
+     * Finds all classrooms with their total scores and ranks.
+     * Uses DENSE_RANK() window function to rank classrooms by total score.
+     *
+     * @param pageable pagination information
+     * @return a page of ClassroomLeaderboardProjection with classroom data, scores, and ranks
+     */
     @Query(value = """
             SELECT
                 c.uid as classroomPublicUuid,

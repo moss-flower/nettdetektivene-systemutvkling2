@@ -7,7 +7,8 @@ import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.validation.NoProfanity;
 
 /**
- * Defines a {@link TeacherUser} registration request to handle data specific to teachers.
+ * DTO for teacher user registration requests.
+ * Contains the required fields for registering a new teacher account.
  */
 public record TeacherUserRegistrationRequest(
     @NotBlank(message = "Username is required.")

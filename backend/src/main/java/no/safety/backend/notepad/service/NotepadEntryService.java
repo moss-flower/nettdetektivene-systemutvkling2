@@ -26,7 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 /**
- * A service that handles create, read, update and delete operations for notepad entries.
+ * Service for managing notepad entries.
+ * Provides CRUD operations and access control for notepad entries belonging to users.
  */
 @Slf4j
 @Service
@@ -39,10 +40,11 @@ public class NotepadEntryService {
     private final TeacherUserRepository teacherUserRepository;
 
     /**
-     * Reads the notes of the calling {@link User}.
-     * @param callerUserInternalId
-     * @param request
-     * @return
+     * Retrieves a paginated list of notepad entries for the calling user.
+     *
+     * @param callerUserInternalId the internal ID of the authenticated user
+     * @param request the read request containing pagination parameters
+     * @return a page of notepad entry responses belonging to the user
      */
     @Transactional(readOnly = true)
     public Page<NotepadEntryResponse> readCallerNotes(@NonNull Long callerUserInternalId, @NonNull NotepadEntryReadRequest request) {
@@ -56,12 +58,13 @@ public class NotepadEntryService {
     }
 
     /**
-     * Reads the notes of the specified {@link StudentUser} based on {@link UUID}.
-     * Only a {@link TeacherUser} with access to the {@link StudentUser}'s notes can use this method.
-     * @param callerUserInternalId
-     * @param studentUserUuid
-     * @param request
-     * @return
+     * Retrieves a paginated list of notepad entries for a specific student.
+     * Only a teacher with access to the student's notes can use this method.
+     *
+     * @param callerUserInternalId the internal ID of the authenticated teacher
+     * @param studentUserUuid the UUID of the student whose notes to retrieve
+     * @param request the read request containing pagination parameters
+     * @return a page of notepad entry responses for the specified student
      */
     @Transactional(readOnly = true)
     public Page<NotepadEntryResponse> readStudentNotes(@NonNull Long callerUserInternalId, @NonNull UUID studentUserUuid, @NonNull NotepadEntryReadRequest request) {
@@ -80,10 +83,11 @@ public class NotepadEntryService {
     }
 
     /**
-     * Creates a new {@link NotepadEntry} that's assigned to the calling {@link User}.
-     * @param callerUserInternalId
-     * @param request
-     * @return
+     * Creates a new notepad entry assigned to the calling user.
+     *
+     * @param callerUserInternalId the internal ID of the authenticated user
+     * @param request the create request containing entry details
+     * @return the created notepad entry response
      */
     @Transactional
     public NotepadEntryResponse create(@NonNull Long callerUserInternalId, @NonNull NotepadEntryCreateRequest request) {
@@ -101,12 +105,13 @@ public class NotepadEntryService {
     }
 
     /**
-     * Updates the internal values of the {@link NotepadEntry} tied to the given {@link UUID}.
-     * This can only be done if the caller {@link User} has access to the {@link NotepadEntry}.
-     * @param callerUserInternalId
-     * @param notepadEntryPublicUuid
-     * @param request
-     * @return
+     * Updates an existing notepad entry identified by its UUID.
+     * The caller must have access to the notepad entry to perform this operation.
+     *
+     * @param callerUserInternalId the internal ID of the authenticated user
+     * @param notepadEntryPublicUuid the public UUID of the notepad entry to update
+     * @param request the update request containing new entry details
+     * @return the updated notepad entry response
      */
     @Transactional
     public NotepadEntryResponse update(@NonNull Long callerUserInternalId, @NonNull UUID notepadEntryPublicUuid, @NonNull NotepadEntryUpdateRequest request) {
@@ -124,10 +129,11 @@ public class NotepadEntryService {
     }
 
     /**
-     * Updates the {@link NotepadEntry} tied to the given {@link UUID}.
-     * Can only be done if the caller {@link User} is the owner of the {@link NotepadEntry}.
-     * @param callerUserInternalId
-     * @param notepadEntryPublicUuid
+     * Deletes a notepad entry identified by its UUID.
+     * The caller must be the owner of the notepad entry to perform this operation.
+     *
+     * @param callerUserInternalId the internal ID of the authenticated user
+     * @param notepadEntryPublicUuid the public UUID of the notepad entry to delete
      */
     @Transactional
     public void delete(@NonNull Long callerUserInternalId, @NonNull UUID notepadEntryPublicUuid) {
@@ -143,10 +149,11 @@ public class NotepadEntryService {
     }
 
     /**
-     * Tries to get the {@link NotepadEntry} matching the specified {@link UUID}, from the {@link NotepadEntryRepository}.
-     * Throws {@link NotepadEntryNotFoundException} if the entry was not found in the repository.
-     * @param notepadEntryPublicUuid
-     * @return
+     * Retrieves a notepad entry by its public UUID from the repository.
+     * Throws {@link NotepadEntryNotFoundException} if the entry is not found.
+     *
+     * @param notepadEntryPublicUuid the public UUID of the notepad entry
+     * @return the found notepad entry
      */
     private NotepadEntry getNotepadEntryFromRepositoryOrThrow(UUID notepadEntryPublicUuid){
         NotepadEntry entry = notepadEntryRepository.findByPublicUuid(notepadEntryPublicUuid)
@@ -158,11 +165,12 @@ public class NotepadEntryService {
     }
 
     /**
-     * Verifies that the user has access to the {@link NoteEntry}.
-     * Throws {@link NotepadEntryNotFoundException} if the specified entry is null.
+     * Verifies that the user has access to the specified notepad entry.
+     * Throws {@link NotepadEntryNotFoundException} if the entry is null.
      * Throws {@link AccessDeniedException} if the user does not have access.
-     * @param userInternalId
-     * @param entry
+     *
+     * @param userInternalId the internal ID of the user to check access for
+     * @param entry the notepad entry to check access against
      */
     private void verifyAccessOrThrow(Long userInternalId, NotepadEntry entry){
         if (entry == null){

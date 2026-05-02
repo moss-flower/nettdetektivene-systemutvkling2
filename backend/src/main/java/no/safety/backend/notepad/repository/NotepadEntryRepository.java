@@ -11,6 +11,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Repository for managing notepad entry persistence.
+ * Provides methods for querying and deleting notepad entries by various criteria.
+ */
 @Repository
 public interface NotepadEntryRepository extends JpaRepository<NotepadEntry, Long> {
     boolean existsByPublicUuid(@NonNull UUID publicUuid);

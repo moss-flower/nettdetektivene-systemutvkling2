@@ -7,6 +7,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Represents an achievement definition that can be awarded to students.
+ * Achievements have a title, description, category, and optional source and
+ * reward fields.
+ */
 @Entity
 @Table(name = "achievements")
 @Getter
@@ -14,26 +19,33 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Achievement {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long internalId;
+    /** Auto-generated primary key for internal database use. */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long internalId;
 
-  @Column(nullable = false, unique = true)
-  private UUID UUID;
+    /** Public-facing UUID used for API references. */
+    @Column(nullable = false, unique = true)
+    private UUID UUID;
 
-  @Column(nullable = false)
-  private String title;
+    /** Display name of the achievement. */
+    @Column(nullable = false)
+    private String title;
 
-  @Column(nullable = false, length = 1000)
-  private String description;
+    /** Detailed description of the achievement, up to 1000 characters. */
+    @Column(nullable = false, length = 1000)
+    private String description;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private AchievementCategory category;
+    /** Category classifying the type of achievement. */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AchievementCategory category;
 
-  @Column(length = 1000)
-  private String source;
+    /** Identifier for the system or feature that awards this achievement. */
+    @Column(length = 1000)
+    private String source;
 
-  @Column
-  private String reward;
+    /** Optional description of the reward for unlocking this achievement. */
+    @Column
+    private String reward;
 }

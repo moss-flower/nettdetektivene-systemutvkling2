@@ -33,7 +33,8 @@ import no.safety.backend.notepad.model.NotepadEntry;
 import no.safety.backend.notepad.service.NotepadEntryService;
 
 /**
- * A controller that provides API endpoints for notepad and notes.
+ * REST controller for notepad endpoints.
+ * Provides CRUD operations for notepad entries belonging to users.
  */
 @RestController
 @RequestMapping("/api/v1/notepad")
@@ -44,11 +45,11 @@ public class NotepadController {
     private final NotepadEntryService notepadEntryService;
 
     /**
-     * Fetches all {@link NotepadEntry} the {@link User} has access to. 
-     * Filters based on the provided pagination values in the {@link NotepadEntryReadRequest}.
-     * @param userPrincipal
-     * @param request
-     * @return
+     * Retrieves a paginated list of notepad entries for the authenticated user.
+     *
+     * @param userPrincipal the authenticated user principal
+     * @param request the read request containing pagination parameters
+     * @return a page of notepad entry responses
      */
     @Operation(
         summary = "Get user notes",
@@ -66,11 +67,13 @@ public class NotepadController {
     }
 
     /**
-     * Fetches all {@link NotepadEntry} the {@link User} has access to. 
-     * Filters based on the provided pagination values in the {@link NotepadEntryReadRequest}.
-     * @param userPrincipal
-     * @param request
-     * @return
+     * Retrieves a paginated list of notepad entries for a specific student.
+     * Requires TEACHER role to access student notes.
+     *
+     * @param userPrincipal the authenticated teacher principal
+     * @param studentUuid the UUID of the student whose notes to retrieve
+     * @param request the read request containing pagination parameters
+     * @return a page of notepad entry responses for the specified student
      */
     @Operation(
         summary = "Get student notes",
@@ -91,10 +94,11 @@ public class NotepadController {
     }
 
     /**
-     * Creates a new {@link NotepadEntry} for the user
-     * @param userPrincipal
-     * @param request
-     * @return
+     * Creates a new notepad entry for the authenticated user.
+     *
+     * @param userPrincipal the authenticated user principal
+     * @param request the create request containing entry details
+     * @return the created notepad entry response
      */
     @Operation(
         summary = "Create note",
@@ -113,11 +117,12 @@ public class NotepadController {
     }
 
     /**
-     * Updated an existing {@link NotepadEntry} based on the provided {@link UUID}.
-     * @param userPrincipal
-     * @param uuid
-     * @param request
-     * @return
+     * Updates an existing notepad entry identified by its UUID.
+     *
+     * @param userPrincipal the authenticated user principal
+     * @param uuid the UUID of the notepad entry to update
+     * @param request the update request containing new entry details
+     * @return the updated notepad entry response
      */
     @Operation(
         summary = "Update note",
@@ -136,9 +141,10 @@ public class NotepadController {
     }
 
     /**
-     * Deletes the {@link NotepadEntry} matching the provided {@link UUID}.
-     * @param userPrincipal
-     * @param uuid
+     * Deletes a notepad entry identified by its UUID.
+     *
+     * @param userPrincipal the authenticated user principal
+     * @param uuid the UUID of the notepad entry to delete
      */
     @Operation(
         summary = "Delete note",

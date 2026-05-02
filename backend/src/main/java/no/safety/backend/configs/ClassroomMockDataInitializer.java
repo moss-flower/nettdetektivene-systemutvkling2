@@ -30,6 +30,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Initializes mock data for classrooms, teachers, and students.
+ * Only runs when the "test" profile is NOT active.
+ * Implements ApplicationRunner to seed the database on application startup.
+ */
 @Component
 @Profile("!test")
 @Order(10)
@@ -80,9 +85,14 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
   private final PasswordEncoder passwordEncoder;
 
 
-  @Override
-  @Transactional
-  public void run(ApplicationArguments args) {
+    /**
+     * Runs the classroom mock data initialization on application startup.
+     * Creates teachers, students, classrooms, and assigns memberships.
+     * @param args application arguments (not used)
+     */
+    @Override
+    @Transactional
+    public void run(ApplicationArguments args) {
     Role teacherRole = getOrCreateRole(RoleType.ROLE_TEACHER);
     Role studentRole = getOrCreateRole(RoleType.ROLE_STUDENT);
 
@@ -183,12 +193,25 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     seedNotifications(lisaLaerer, perLaerer, adaElev, eliasElev, miaElev, lukasElev);
   }
 
-  private Role getOrCreateRole(RoleType roleType) {
+    /**
+     * Retrieves an existing role or creates a new one if it doesn't exist.
+     * @param roleType the type of role to get or create
+     * @return the Role entity
+     */
+    private Role getOrCreateRole(RoleType roleType) {
     return roleRepository.findByType(roleType)
         .orElseGet(() -> roleRepository.save(new Role(null, roleType)));
   }
 
-  private TeacherUser upsertTeacher(UUID publicUuid, String username, String email, Role teacherRole) {
+    /**
+     * Creates or updates a teacher user with the specified properties.
+     * @param publicUuid the public UUID for the teacher
+     * @param username the teacher's username
+     * @param email the teacher's email address
+     * @param teacherRole the role to assign to the teacher
+     * @return the saved TeacherUser entity
+     */
+    private TeacherUser upsertTeacher(UUID publicUuid, String username, String email, Role teacherRole) {
     TeacherUser teacher = teacherRepository.findByEmail(email).orElseGet(TeacherUser::new);
 
     teacher.setPublicUuid(publicUuid);
@@ -200,7 +223,15 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     return teacherRepository.save(teacher);
   }
 
-  private StudentUser upsertStudent(UUID publicUuid, String username, String email, Role studentRole) {
+    /**
+     * Creates or updates a student user with the specified properties.
+     * @param publicUuid the public UUID for the student
+     * @param username the student's username
+     * @param email the student's email address
+     * @param studentRole the role to assign to the student
+     * @return the saved StudentUser entity
+     */
+    private StudentUser upsertStudent(UUID publicUuid, String username, String email, Role studentRole) {
     StudentUser student = studentRepository.findByEmail(email).orElseGet(StudentUser::new);
 
     student.setPublicUuid(publicUuid);
@@ -212,7 +243,12 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     return studentRepository.save(student);
   }
 
-  private void clearSeededMemberships(List<StudentUser> students) {
+    /**
+     * Clears classroom memberships for the specified students.
+     * Removes students from classrooms and clears pending status.
+     * @param students the list of students to clear memberships for
+     */
+    private void clearSeededMemberships(List<StudentUser> students) {
     for (StudentUser student : students) {
       student.setClassroom(null);
       student.setClassroomPending(false);
@@ -220,8 +256,18 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     }
   }
 
-  private Classroom upsertClassroom(UUID uid, String code, String name, String description, UUID worldUid,
-      Set<TeacherUser> owners) {
+    /**
+     * Creates or updates a classroom with the specified properties.
+     * @param uid the UUID for the classroom
+     * @param code the join code for the classroom
+     * @param name the name of the classroom
+     * @param description the description of the classroom
+     * @param worldUid the UUID of the world associated with the classroom
+     * @param owners the set of teacher owners for the classroom
+     * @return the saved Classroom entity
+     */
+    private Classroom upsertClassroom(UUID uid, String code, String name, String description, UUID worldUid,
+        Set<TeacherUser> owners) {
     Classroom classroom = classroomRepository.findByUid(uid).orElseGet(Classroom::new);
 
     classroom.setUid(uid);
@@ -234,7 +280,12 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     return classroomRepository.save(classroom);
   }
 
-  private void assignMembers(Classroom classroom, List<StudentUser> members) {
+    /**
+     * Assigns students as members to a classroom.
+     * @param classroom the classroom to assign members to
+     * @param members the list of students to assign
+     */
+    private void assignMembers(Classroom classroom, List<StudentUser> members) {
     for (StudentUser member : members) {
       member.setClassroom(classroom);
       member.setClassroomPending(false);
@@ -242,7 +293,12 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     }
   }
 
-  private void assignPendingMember(Classroom classroom, StudentUser member) {
+    /**
+     * Assigns a student as a pending member to a classroom.
+     * @param classroom the classroom to assign the pending member to
+     * @param member the student to assign as pending
+     */
+    private void assignPendingMember(Classroom classroom, StudentUser member) {
     member.setClassroom(classroom);
     member.setClassroomPending(true);
     studentRepository.save(member);
@@ -306,7 +362,12 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
         .build();
   }
 
-  private static UUID stableUuid(String value) {
-    return UUID.nameUUIDFromBytes(value.getBytes(StandardCharsets.UTF_8));
+    /**
+     * Generates a stable UUID from a string value for consistent mock data identifiers.
+     * @param value the string value to convert to UUID
+     * @return a deterministic UUID based on the input string
+     */
+    private static UUID stableUuid(String value) {
+      return UUID.nameUUIDFromBytes(value.getBytes(StandardCharsets.UTF_8));
   }
 }

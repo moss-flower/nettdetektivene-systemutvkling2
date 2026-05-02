@@ -20,7 +20,8 @@ import no.safety.backend.user.repository.TeacherUserRepository;
 import no.safety.backend.user.service.UserService;
 
 /**
- * A service that handles registration of different user accounts e.g. student accounts and teacher accounts
+ * Service for handling user registration.
+ * Provides methods for registering new student and teacher accounts with role assignment.
  */
 @Service
 @RequiredArgsConstructor
