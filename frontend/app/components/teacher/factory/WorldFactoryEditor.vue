@@ -582,11 +582,12 @@ watch(payloadPreviewText, () => {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--space-4);
-  align-items: start;
+  align-items: stretch;
 }
 
 .stationColumn {
   display: grid;
+  grid-template-rows: auto 1fr;
   gap: var(--space-3);
 }
 
@@ -674,7 +675,9 @@ watch(payloadPreviewText, () => {
 .knownStations,
 .selectedList {
   margin-top: 0;
-  min-height: 5rem; /* deliberate: minimum drop zone height */
+  height: 100%;
+  min-height: 12rem; /* deliberate: keep both drop zones easy to target */
+  align-content: start;
 }
 
 .selectedCardContent {

@@ -550,10 +550,11 @@ watch(payloadPreviewText, () => {
    display: grid;
    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
    gap: var(--space-4);
-   align-items: start;
+   align-items: stretch;
 }
 .exerciseColumn {
    display: grid;
+   grid-template-rows: auto 1fr;
    gap: var(--space-3);
 }
 .fieldGrid {
@@ -645,8 +646,10 @@ watch(payloadPreviewText, () => {
 }
 .knownExercises,
 .selectedList {
-   margin-top: 0;
-   min-height: 5rem; /* deliberate: minimum drop zone height */
+    margin-top: 0;
+    height: 100%;
+    min-height: 12rem; /* deliberate: keep both drop zones easy to target */
+    align-content: start;
 }
 .knownExercises--columns {
    margin-top: 0;
