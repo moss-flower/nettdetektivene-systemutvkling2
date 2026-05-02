@@ -19,6 +19,7 @@ const { data: ownedClassrooms, pending: classroomsPending } =
 const classroomSummaries = computed(() =>
   toClassroomSummaries(ownedClassrooms.value ?? []),
 );
+const { notificationCount } = useNotifications();
 const { logout } = useAuth();
 const isLoggingOut = ref(false);
 
@@ -116,7 +117,9 @@ const handleLogout = async () => {
             >
               <Bell :size="48" class="settingsIcon" />
               <span class="settingsButtonLabel">Varslinger</span>
-              <span class="notificationBadge">1</span>
+              <span v-if="notificationCount > 0" class="notificationBadge">
+                {{ notificationCount }}
+              </span>
             </NuxtLink>
           </div>
 

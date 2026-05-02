@@ -1,6 +1,7 @@
 package no.safety.backend.configs;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -11,6 +12,8 @@ import no.safety.backend.classroom.repository.ClassroomRepository;
 import no.safety.backend.completedexercise.model.CompletedExercise;
 import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
 import no.safety.backend.notification.dto.NotificationEvent;
+import no.safety.backend.notification.model.Notification;
+import no.safety.backend.notification.repository.NotificationRepository;
 import no.safety.backend.role.model.Role;
 import no.safety.backend.role.model.RoleType;
 import no.safety.backend.role.repository.RoleRepository;
@@ -71,6 +74,7 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
   private final ClassroomRepository classroomRepository;
   private final RoleRepository roleRepository;
   private final CompletedExerciseRepository completedExerciseRepository;
+  private final NotificationRepository notificationRepository;
   private final PasswordEncoder passwordEncoder;
 
 
@@ -173,6 +177,8 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     assignPendingMember(klasse7a, noraPendingElev);
     assignPendingMember(klasse7b, akselPendingElev);
     assignPendingMember(klasse7c, vildePendingElev);
+
+    seedNotifications(lisaLaerer, perLaerer, adaElev, eliasElev, miaElev, lukasElev);
   }
 
   private Role getOrCreateRole(RoleType roleType) {
@@ -238,6 +244,60 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     member.setClassroom(classroom);
     member.setClassroomPending(true);
     studentRepository.save(member);
+  }
+
+  private void seedNotifications(
+      TeacherUser lisaLaerer,
+      TeacherUser perLaerer,
+      StudentUser adaElev,
+      StudentUser eliasElev,
+      StudentUser miaElev,
+      StudentUser lukasElev) {
+    notificationRepository.deleteAll(notificationRepository.findByTarget_InternalId(lisaLaerer.getInternalId()));
+    notificationRepository.deleteAll(notificationRepository.findByTarget_InternalId(perLaerer.getInternalId()));
+
+    notificationRepository.saveAll(List.of(
+        seededNotification(
+            lisaLaerer,
+            adaElev,
+            "Ada Elev fullforte et oppgavesett og ber om at du ser gjennom besvarelsen.",
+            3,
+            LocalDateTime.now().minusMinutes(18)),
+        seededNotification(
+            lisaLaerer,
+            eliasElev,
+            "Elias Elev trenger hjelp i 3-trinn A etter flere feil pa rad.",
+            2,
+            LocalDateTime.now().minusMinutes(9)),
+        seededNotification(
+            perLaerer,
+            miaElev,
+            "Mia Elev sendte inn et sporsmal om nettbutikk-oppgaven.",
+            2,
+            LocalDateTime.now().minusMinutes(14)),
+        seededNotification(
+            perLaerer,
+            lukasElev,
+            "Lukas Elev fullforte dagens stasjonskart i 7-trinn C.",
+            1,
+            LocalDateTime.now().minusMinutes(4))));
+  }
+
+  private Notification seededNotification(
+      TeacherUser target,
+      StudentUser sender,
+      String message,
+      int priority,
+      LocalDateTime createdAt) {
+    return Notification.builder()
+        .message(message)
+        .priority(priority)
+        .createdAt(createdAt)
+        .publicId(UUID.randomUUID())
+        .senderName(sender.getUsername())
+        .senderId(sender.getPublicUuid())
+        .target(target)
+        .build();
   }
 
   private static UUID stableUuid(String value) {
