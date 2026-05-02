@@ -152,7 +152,7 @@ const editorTitle = computed(() => {
 	}
 
 	if (parsedSelection.value.kind === "draft") {
-		return payloadPreview.value.title ? `Lokalt stasjonskart: ${payloadPreview.value.title}` : "Nytt lokalt stasjonskart";
+		return payloadPreview.value.title ? `Utkast til stasjonskart: ${payloadPreview.value.title}` : "Nytt utkast til stasjonskart";
 	}
 
 	return "Nytt stasjonskart";
@@ -160,14 +160,14 @@ const editorTitle = computed(() => {
 
 const editorDescription = computed(() => {
 	if (parsedSelection.value.kind === "existing") {
-		return "Du redigerer et eksisterende stasjonskart. Lokal lagring fungerer som en override over mock-dataen til backend finnes.";
+		return "Du redigerer et eksisterende stasjonskart.";
 	}
 
 	if (parsedSelection.value.kind === "draft") {
-		return "Dette er et lokalt stasjonskart uten backend-kobling. Det kan senere velges når klasserom-oppretting får valg av stasjonskart.";
+		return "Dette er et utkast som du kan fortsette å redigere senere.";
 	}
 
-	return "Opprett et nytt stasjonskart lokalt. Det kan lagres uten stasjoner, så lenge det har en unik id.";
+	return "Opprett et nytt stasjonskart og legg til innhold når du er klar.";
 });
 
 const applyDraft = (payload: WorldFactoryPayload) => {
@@ -471,16 +471,16 @@ watch(payloadPreviewText, () => {
 
 			<section class="panelSection debugSection">
 				<details>
-					<summary class="debugSummary">Debug: payload</summary>
+					<summary class="debugSummary">Dataoversikt</summary>
 					<div class="debugContent">
 						<div class="sectionHeading sectionHeading--inline">
 							<div>
-								<h2>Payload</h2>
-								<p>Dette er objektet du senere kan sende med POST til backend.</p>
+								<h2>JSON-data</h2>
+								<p>Her kan du se dataene som er knyttet til stasjonskartet.</p>
 							</div>
 
 							<button type="button" class="ghostButton" @click="copyPayload">
-								{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier JSON' }}
+								{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier data' }}
 							</button>
 						</div>
 
