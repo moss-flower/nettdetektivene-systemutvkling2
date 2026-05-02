@@ -264,11 +264,20 @@ watch(stationCards, () => {
   align-content: start;
   padding: var(--layout-page-padding);
   border-radius: var(--radius-3);
+  position: relative; /* needed so z-index on ::before works */
+  isolation: isolate; 
+}
+
+.stationsPage::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
   background:
     linear-gradient(var(--palette-overlay-dark-strong), var(--palette-overlay-dark-strong)),
-    linear-gradient(var(--palette-overlay-dark-medium), var(--palette-overlay-dark-medium )),
+    linear-gradient(var(--palette-overlay-dark-medium), var(--palette-overlay-dark-medium)),
     url("~/assets/images/background_2_blurred.png") center / cover no-repeat;
-  background-attachment: fixed;
+  pointer-events: none;
 }
 
 
