@@ -1,5 +1,4 @@
 <script setup lang="ts">
-useHead({ htmlAttrs: { 'data-theme': 'game' } as any })
 </script>
 
 <template>
