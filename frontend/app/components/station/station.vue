@@ -133,7 +133,7 @@ const handleClick = () => {
 }
 
 .levelCard:focus-visible .levelBubble {
-  outline: var(--border-width-thick) solid color-mix(in srgb, #78e5ff 70%, white);
+  outline: var(--border-width-thick) solid color-mix(in srgb, var(--color-focus-ring) 75%, white);
   outline-offset: 0.22rem;
 }
 
@@ -146,24 +146,24 @@ const handleClick = () => {
   width: min(100%, 13.5rem);
   aspect-ratio: 1;
   padding: 1.35rem 1.2rem 2.65rem;
-  border: 0.36rem solid #fff8b8;
+  border: 0.36rem solid var(--palette-cream-300);
   border-radius: 50%;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.68) 0%, rgba(255, 255, 255, 0.34) 30%, rgba(255, 255, 255, 0.02) 68%),
-    radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.92) 0 10%, transparent 11%),
+    linear-gradient(180deg, rgba(245, 239, 226, 0.92) 0%, rgba(217, 206, 181, 0.82) 100%),
     var(--station-image) center / cover no-repeat,
-    linear-gradient(145deg, #ff77c8 0%, #ffb64d 48%, #7bdcff 100%);
+    var(--palette-cream-100);
+  background-blend-mode: soft-light, normal, normal;
   box-shadow:
-    0 0.5rem 0 #d45a88,
-    0 0.85rem 1.2rem rgba(38, 18, 52, 0.34),
-    inset 0 -0.65rem 0 rgba(160, 53, 109, 0.24),
-    inset 0 0.55rem 0 rgba(255, 255, 255, 0.34);
+    0 0.4rem 0 var(--palette-cork-400),
+    0 0.85rem 1.2rem rgba(42, 26, 11, 0.18),
+    inset 0 -0.45rem 0 rgba(122, 78, 42, 0.16),
+    inset 0 0.4rem 0 rgba(255, 255, 255, 0.32);
   transition: transform 150ms ease, filter 150ms ease;
 }
 
 .levelCard:hover .levelBubble {
-  transform: translateY(-0.18rem) rotate(-1deg) scale(1.025);
-  filter: saturate(1.12);
+  transform: translateY(-0.14rem) scale(1.01);
+  filter: brightness(1.02);
 }
 
 .levelImage {
@@ -195,7 +195,7 @@ const handleClick = () => {
   height: auto;
   transform: translateX(-50%);
   pointer-events: none;
-  filter: drop-shadow(0 0.35rem 0.5rem rgba(0, 0, 0, 0.22));
+  filter: drop-shadow(0 0.35rem 0.5rem rgba(42, 26, 11, 0.2));
 }
 
 .levelName {
@@ -205,10 +205,8 @@ const handleClick = () => {
   font-size: clamp(0.9rem, 2.6vw, 1.08rem);
   line-height: 1.05;
   font-weight: var(--font-weight-bold);
-  color: #4a226c;
-  text-shadow:
-    0 0.08rem 0 #fff7c4,
-    0 0.16rem 0 rgba(255, 255, 255, 0.55);
+  color: var(--palette-navy-900);
+  text-shadow: 0 0.08rem 0 rgba(255, 255, 255, 0.5);
 }
 
 .starTray {
@@ -218,15 +216,13 @@ const handleClick = () => {
   min-height: 3.2rem;
   margin-top: -1.85rem;
   padding: 0.65rem 0.85rem 0.5rem;
-  border: 0.22rem solid #ffe783;
+  border: 0.22rem solid var(--palette-cream-300);
   border-radius: 1.15rem;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 38%),
-    linear-gradient(135deg, #8b5cff 0%, #44c7ff 100%);
+  background: linear-gradient(180deg, rgba(246, 234, 209, 0.98) 0%, rgba(217, 206, 181, 0.94) 100%);
   box-shadow:
-    0 0.36rem 0 #5839b7,
-    0 0.58rem 0.9rem rgba(25, 22, 69, 0.28),
-    inset 0 -0.22rem 0 rgba(58, 34, 126, 0.26);
+    0 0.32rem 0 var(--palette-cork-400),
+    0 0.58rem 0.9rem rgba(42, 26, 11, 0.16),
+    inset 0 -0.18rem 0 rgba(122, 78, 42, 0.14);
 }
 
 .starTray--boss {
@@ -244,7 +240,7 @@ const handleClick = () => {
 .starImage {
   width: clamp(1.45rem, 4.5vw, 1.85rem);
   height: clamp(1.45rem, 4.5vw, 1.85rem);
-  filter: drop-shadow(0 0.14rem 0 rgba(49, 31, 97, 0.28));
+  filter: drop-shadow(0 0.12rem 0 rgba(74, 46, 23, 0.2));
 }
 
 .lock {
@@ -258,9 +254,9 @@ const handleClick = () => {
   height: 2.25rem;
   margin: 0;
   border-radius: 50%;
-  background: #fff4a8;
+  background: var(--palette-cream-200);
   font-size: 1.1rem;
-  box-shadow: 0 0.22rem 0 rgba(92, 52, 96, 0.32);
+  box-shadow: 0 0.22rem 0 rgba(74, 46, 23, 0.22);
 }
 
 </style>
