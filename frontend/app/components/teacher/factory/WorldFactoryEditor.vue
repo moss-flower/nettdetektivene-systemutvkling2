@@ -352,10 +352,7 @@ watch(payloadPreviewText, () => {
 									<img :src="station.image" :alt="station.title" class="stationCardImage" :style="{ backgroundColor: station.backgroundColor }" >
 									<div class="selectedCardContent">
 										<p class="cardEyebrow">Plass {{ station.order }}</p>
-										<h3>
-											{{ station.title }}
-											<span v-if="knownStationMap.get(station.uid)?.isBoss" class="bossPill" aria-hidden="true">Boss</span>
-										</h3>k
+										<h3>{{ station.title }}</h3>
 										<span :class="['statusPill', { 'statusPill--manual': !station.isKnown }]">
 											{{ station.isKnown ? "Tilgjengelig" : 'Ikke tilgjengelig' }}
 										</span>
@@ -400,12 +397,10 @@ watch(payloadPreviewText, () => {
 									<span class="dragHandle" aria-hidden="true">Grip</span>
 									<img :src="station.image" :alt="station.title" class="stationCardImage" :style="{ backgroundColor: station.backgroundColor }" >
 									<div class="selectedCardContent">
-										<h3>
-											{{ station.title }}
-											<span v-if="knownStationMap.get(station.uid)?.isBoss" class="bossPill" aria-hidden="true">Skurk</span>
-										</h3>
+										<p class="cardEyebrow">{{ station.uid }}</p>
+										<h3>{{ station.title }}</h3>
 										<div v-if="station.usageTags.length > 0" class="usageTags" aria-label="Brukt i stasjonskart">
-					  <p class="small">Brukt i:</p>
+                      <p class="small">Brukt i:</p>
 											<span v-for="tag in station.usageTags" :key="tag" class="usageTag">{{ tag }}</span>
 										</div>
 									</div>
@@ -524,18 +519,6 @@ watch(payloadPreviewText, () => {
   grid-template-columns: 1fr;
   gap: var(--space-5);
   align-items: start;
-}
-
-.bossPill {
-	display: inline-block;
-	margin-left: 0.6rem;
-	padding: 0.15rem 0.5rem;
-	font-size: 0.72rem;
-	font-weight: 700;
-	color: var(--palette-white);
-	background: #b00020;
-	border-radius: 999px;
-	line-height: 1;
 }
 
 .editorPanel,
