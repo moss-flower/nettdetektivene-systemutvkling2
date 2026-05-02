@@ -3,6 +3,9 @@ package no.safety.backend.configs;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.List;
+import java.util.HashSet;
+import java.util.Locale;
 import java.util.UUID;
 
 import org.springframework.boot.ApplicationArguments;
@@ -20,6 +23,14 @@ import no.safety.backend.classroom.repository.ClassroomRepository;
 import no.safety.backend.classroom.repository.ClassroomWeeklyMysteryRepository;
 import no.safety.backend.excercise.model.Exercise;
 import no.safety.backend.excercise.repository.ExerciseRepository;
+import no.safety.backend.notepad.model.NotepadEntry;
+import no.safety.backend.notepad.model.NotepadEntryType;
+import no.safety.backend.media.service.MediaStorageService;
+import no.safety.backend.task.content.MultipleChoiceContent;
+import no.safety.backend.task.content.TaskContent;
+import no.safety.backend.task.content.XOrYContent;
+import no.safety.backend.task.model.Task;
+import no.safety.backend.task.repository.TaskRepository;
 import no.safety.backend.user.model.StudentUser;
 import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.repository.StudentUserRepository;
@@ -55,10 +66,15 @@ public class WeeklyMysteryMockDataInitializer implements ApplicationRunner {
   public static final UUID SEED_SUB_INGRID_7A = stableUuid("weekly-mystery-seed:sub-ingrid-7a");
   public static final UUID SEED_SUB_EMIL_7A = stableUuid("weekly-mystery-seed:sub-emil-7a");
 
-  private static final String SEED_IMAGE_NEWS = "seed/tasks/news-warning.svg";
-  private static final String SEED_IMAGE_PHOTO = "seed/tasks/photo-warning.svg";
-  private static final String SEED_IMAGE_SOCIAL = "seed/tasks/social-warning.svg";
-  private static final String SEED_IMAGE_EMAIL = "seed/tasks/email-warning.svg";
+  public static final UUID SEED_EXERCISE_3A = stableUuid("weekly-mystery-seed:exercise-3a");
+  public static final UUID SEED_EXERCISE_7A = stableUuid("weekly-mystery-seed:exercise-7a");
+
+  private static final String SEED_IMAGE_NEWS = "seed/tasks/nyhetskvartalet/warning-gratis-mobil.png";
+  private static final String SEED_IMAGE_PHOTO = "seed/tasks/fotografen/ai-folded-hands-many-fingers.jpeg";
+  private static final String SEED_IMAGE_SOCIAL = "seed/tasks/sosiale-moteplassen/bad-alle-skoler-stenger-neste-uke.jpeg";
+  private static final String SEED_IMAGE_SOCIAL_FACT = "seed/tasks/sosiale-moteplassen/good-udir-skoler-stenger-ikke.jpeg";
+  private static final String SEED_IMAGE_EMAIL = "seed/tasks/postkontoret/fake-your-account-will-be-closed.jpeg";
+  private static final String SEED_IMAGE_EMAIL_SAFE = "seed/tasks/postkontoret/real-timeplan-next-week.png";
 
   private final TeacherUserRepository teacherUserRepository;
   private final StudentUserRepository studentUserRepository;
@@ -67,6 +83,8 @@ public class WeeklyMysteryMockDataInitializer implements ApplicationRunner {
   private final WeeklyMysterySubmissionRepository submissionRepository;
   private final ClassroomWeeklyMysteryRepository classroomWeeklyMysteryRepository;
   private final ExerciseRepository exerciseRepository;
+  private final TaskRepository taskRepository;
+  private final MediaStorageService mediaStorageService;
 
   @Override
   @Transactional
@@ -80,7 +98,8 @@ public class WeeklyMysteryMockDataInitializer implements ApplicationRunner {
     }
 
     TeacherUser teacher = lisa.get();
-    Optional<Exercise> newsExercise = exerciseRepository.findByPublicId(GameplayMockDataInitializer.NEWSSTAND_EXERCISE_1_UID);
+    Exercise classroom3aExercise = upsertExercise3a();
+    Exercise classroom7aExercise = upsertExercise7a();
 
     upsertPrompt(
         SEED_PROMPT_LIBRARY_LISA,
@@ -92,11 +111,11 @@ public class WeeklyMysteryMockDataInitializer implements ApplicationRunner {
         Optional.empty()
     );
 
-    seedKlasse3a(teacher, newsExercise);
-    seedKlasse7a(teacher, newsExercise);
+    seedKlasse3a(teacher, classroom3aExercise);
+    seedKlasse7a(teacher, classroom7aExercise);
   }
 
-  private void seedKlasse3a(TeacherUser teacher, Optional<Exercise> newsExercise) {
+  private void seedKlasse3a(TeacherUser teacher, Exercise mysteryExercise) {
     Optional<Classroom> classroomOpt = classroomRepository.findByUid(ClassroomMockDataInitializer.KLASSE_3A_UID);
     if (classroomOpt.isEmpty()) {
       log.warn("WeeklyMysteryMockDataInitializer: demo classroom 3-trinn A not found — skipping.");
@@ -121,11 +140,10 @@ public class WeeklyMysteryMockDataInitializer implements ApplicationRunner {
         SEED_PROMPT_ACTIVE_3A,
         teacher,
         "Uke 13",
-        "Finn falske spor i nyhetsbilder",
-        "Finn noe som kan være falske nyheter eller et bilde som prøver å lure deg. "
-            + "Send inn skjermbilde og forklar kort hva du reagerer på.",
-        "Sjekk avsender, dato og om teksten prøver å sjokkere deg.",
-        newsExercise
+        "Skolene stenger neste uke?",
+        "Se på innlegg om at skolene stenger neste uke. Finn ut hva som gjør at du bør sjekke saken før du tror på den.",
+        "Se etter hvem som står bak, og om noen prøver å få deg til å reagere raskt.",
+        Optional.of(mysteryExercise)
     );
 
     recordHistoryIfMissing(classroom, archived, LocalDate.now().minusWeeks(1));
@@ -141,22 +159,22 @@ public class WeeklyMysteryMockDataInitializer implements ApplicationRunner {
 
     if (ada != null) {
       upsertSubmission(SEED_SUB_ADA_NEWS, active, ada,
-          "Avisartikkel som bruker skumle og vage ord uten god kilde.",
-          "fake_headline.svg",
-          SEED_IMAGE_NEWS);
+          "Dette innlegget sier at skolene stenger, men jeg vil sjekke om det faktisk kommer fra noen jeg kan stole på.",
+          "skolene-stenger.jpeg",
+          seedSubmissionImage("uploads/mysteries/submissions/seed/ada/skolene-stenger.jpeg", SEED_IMAGE_SOCIAL));
       upsertSubmission(SEED_SUB_ADA_SOCIAL, active, ada,
-          "Denne profilen lover gratis ting hvis du deler videre — virker litt for bra.",
-          "social_bait.svg",
-          SEED_IMAGE_SOCIAL);
+          "Jeg reagerte på at innlegget vil at alle skal dele fort, i stedet for å forklare rolig hva som skjer.",
+          "udir-faktasjekk.jpeg",
+          seedSubmissionImage("uploads/mysteries/submissions/seed/ada/udir-faktasjekk.jpeg", SEED_IMAGE_SOCIAL_FACT));
     } else {
       log.warn("WeeklyMysteryMockDataInitializer: ada.elev@test.com not found — no Ada submissions seeded.");
     }
 
     if (elias != null) {
       upsertSubmission(SEED_SUB_ELIAS_PHOTO, active, elias,
-          "Bildet ser redigert ut ved kantene, og det mangler foto-kreditering.",
-          "edited_photo.svg",
-          SEED_IMAGE_PHOTO);
+          "Jeg la merke til at dette virker mer som et rykte enn en vanlig beskjed fra skolen.",
+          "skole-rykte.jpeg",
+          seedSubmissionImage("uploads/mysteries/submissions/seed/elias/skole-rykte.jpeg", SEED_IMAGE_SOCIAL));
     } else {
       log.warn("WeeklyMysteryMockDataInitializer: elias.elev@test.com not found — no Elias submissions seeded.");
     }
@@ -166,7 +184,7 @@ public class WeeklyMysteryMockDataInitializer implements ApplicationRunner {
         classroom.getName(), active.getTitle(), submissionRows);
   }
 
-  private void seedKlasse7a(TeacherUser teacher, Optional<Exercise> newsExercise) {
+  private void seedKlasse7a(TeacherUser teacher, Exercise mysteryExercise) {
     Optional<Classroom> classroomOpt = classroomRepository.findByUid(ClassroomMockDataInitializer.KLASSE_7A_UID);
     if (classroomOpt.isEmpty()) {
       log.warn("WeeklyMysteryMockDataInitializer: demo classroom 7-trinn A not found — skipping.");
@@ -191,10 +209,10 @@ public class WeeklyMysteryMockDataInitializer implements ApplicationRunner {
         SEED_PROMPT_ACTIVE_7A,
         teacher,
         "Uke 12",
-        "E-post som virker ekte",
-        "Send inn et skjermbilde av en e-post eller melding du synes virker ekte eller mistenkelig, og forklar hvorfor.",
-        "Se etter avsenderadresse, stress og rare lenker.",
-        newsExercise
+        "Melding fra skolekontoen",
+        "Se på en melding som sier at skolekontoen må oppdateres. Finn ut hvilke detaljer som gjør den trygg eller mistenkelig.",
+        "Se etter avsender, press og om meldingen prøver å få deg til å handle fort.",
+        Optional.of(mysteryExercise)
     );
 
     recordHistoryIfMissing(classroom, archived, LocalDate.now().minusWeeks(2));
@@ -205,15 +223,15 @@ public class WeeklyMysteryMockDataInitializer implements ApplicationRunner {
 
     if (ingrid != null) {
       upsertSubmission(SEED_SUB_INGRID_7A, active, ingrid,
-          "Avsenderen sier de er fra skolen, men adressen ser feil ut.",
-          "skole_epost.svg",
-          SEED_IMAGE_EMAIL);
+          "Avsenderen høres skoleaktig ut, men adressen og måten den prøver å stresse meg på gjør meg skeptisk.",
+          "skolekonto-varsel.jpeg",
+          seedSubmissionImage("uploads/mysteries/submissions/seed/ingrid/skolekonto-varsel.jpeg", SEED_IMAGE_EMAIL));
     }
     if (emil != null) {
       upsertSubmission(SEED_SUB_EMIL_7A, active, emil,
-          "De ber meg klikke med en gang — det føles stresset.",
-          "stresset_lenke.svg",
-          SEED_IMAGE_EMAIL);
+          "Dette ser mer ut som en vanlig timeplanmelding fordi det ikke prøver å skremme meg til å klikke.",
+          "timeplan-neste-uke.png",
+          seedSubmissionImage("uploads/mysteries/submissions/seed/emil/timeplan-neste-uke.png", SEED_IMAGE_EMAIL_SAFE));
     }
 
     log.info("WeeklyMysteryMockDataInitializer: demo data for {} — aktivt oppdrag {}.",
@@ -249,6 +267,164 @@ public class WeeklyMysteryMockDataInitializer implements ApplicationRunner {
     return promptRepository.save(entity);
   }
 
+  private Exercise upsertExercise3a() {
+    Exercise exercise = exerciseRepository.findByPublicId(SEED_EXERCISE_3A).orElseGet(Exercise::new);
+    exercise.setPublicId(SEED_EXERCISE_3A);
+    exercise.setTitle("Ukens mysterium: skoleinnlegg");
+    exercise.setDifficultyName("Lett");
+    exercise.setDescription("Se på et innlegg om skolen og finn ut hva som gjør at du bør sjekke det nærmere.");
+    exercise.setHint("Se etter om noen prøver å få deg til å dele raskt, og om det står tydelig hvem som står bak.");
+    exercise.setNotepadEntry(defaultNotepadEntry("Ukens mysterium: skoleinnlegg",
+        "Stopp opp hvis et innlegg prøver å få deg til å reagere fort."));
+
+    if (exercise.getInternalId() != null) {
+      taskRepository.deleteByExerciseId(exercise.getInternalId());
+    }
+
+    exercise.getTasks().clear();
+    exercise.getTasks().addAll(new HashSet<>(List.of(
+        multipleChoiceTask(
+            exercise,
+            "Hva bør få deg til å stoppe opp i dette innlegget?",
+            "Bra. Når et innlegg prøver å få deg til å dele raskt, bør du sjekke mer før du tror på det.",
+            "Se etter det som prøver å presse fram en rask reaksjon.",
+            "Hva skurrer mest?",
+            "Velg det tydeligste faresignalet i innlegget.",
+            SEED_IMAGE_SOCIAL,
+            "Et innlegg som sier at skolene stenger neste uke",
+            List.of(
+                new MultipleChoiceContent.Option("a", "Innlegget prøver å få deg til å reagere raskt uten å sjekke"),
+                new MultipleChoiceContent.Option("b", "Innlegget handler om skolen"),
+                new MultipleChoiceContent.Option("c", "Innlegget har et stort bilde")
+            ),
+            "a"
+        ),
+        xOrYTask(
+            exercise,
+            "Hvilket innlegg virker mest som en faktisk oppklaring?",
+            "Riktig. Det ene innlegget virker mer som en vanlig oppklaring, mens det andre prøver å få deg til å reagere raskt.",
+            "Se etter hvilket innlegg som virker mest rolig og konkret.",
+            "Hvilket innlegg ville du lest først?",
+            "Velg innlegget som virker minst stressende.",
+            SEED_IMAGE_SOCIAL,
+            "Et innlegg som sier at skolene stenger neste uke",
+            "",
+            "Innlegg 1",
+            "Et innlegg om at skolene skal stenge neste uke.",
+            SEED_IMAGE_SOCIAL_FACT,
+            "Et innlegg som forklarer hva som faktisk gjelder for skolene",
+            "",
+            "Innlegg 2",
+            "Et innlegg om hva som faktisk gjelder for skolene.",
+            XOrYContent.Choice.Y
+        )
+    )));
+
+    return exerciseRepository.save(exercise);
+  }
+
+  private Exercise upsertExercise7a() {
+    Exercise exercise = exerciseRepository.findByPublicId(SEED_EXERCISE_7A).orElseGet(Exercise::new);
+    exercise.setPublicId(SEED_EXERCISE_7A);
+    exercise.setTitle("Ukens mysterium: skolekonto");
+    exercise.setDifficultyName("Middels");
+    exercise.setDescription("Sammenlign meldinger om skolekontoen og finn ut hva som gjør dem trygge eller mistenkelige.");
+    exercise.setHint("Se etter avsender, press og om meldingen prøver å få deg til å handle fort.");
+    exercise.setNotepadEntry(defaultNotepadEntry("Ukens mysterium: skolekonto",
+        "Ikke stol på en melding bare fordi den ser skoleaktig ut."));
+
+    if (exercise.getInternalId() != null) {
+      taskRepository.deleteByExerciseId(exercise.getInternalId());
+    }
+
+    exercise.getTasks().clear();
+    exercise.getTasks().addAll(new HashSet<>(List.of(
+        xOrYTask(
+            exercise,
+            "Hvilken melding virker mest som en vanlig skolebeskjed?",
+            "Bra. Den ene meldingen prøver å stresse deg, mens den andre ligner mer på en vanlig beskjed.",
+            "Se etter hvilken melding som virker mest rolig og vanlig.",
+            "Hvilken melding ville du åpnet først?",
+            "Velg den som virker minst mistenkelig.",
+            SEED_IMAGE_EMAIL,
+            "En melding som sier at konto må oppdateres nå",
+            "",
+            "Melding 1",
+            "En melding om at skolekontoen må oppdateres raskt.",
+            SEED_IMAGE_EMAIL_SAFE,
+            "En vanlig melding om neste ukes timeplan",
+            "",
+            "Melding 2",
+            "En vanlig beskjed om neste ukes timeplan.",
+            XOrYContent.Choice.Y
+        ),
+        multipleChoiceTask(
+            exercise,
+            "Hva er det tydeligste faresignalet i meldingen om skolekontoen?",
+            "Bra. Når en melding vil at du skal handle raskt og ikke virker helt vanlig, bør du være ekstra forsiktig.",
+            "Se etter det som prøver å få deg til å klikke eller svare fort.",
+            "Hva skurrer mest?",
+            "Velg det sterkeste faresignalet i meldingen.",
+            SEED_IMAGE_EMAIL,
+            "En melding om at skolekontoen må oppdateres nå",
+            List.of(
+                new MultipleChoiceContent.Option("a", "Meldingen prøver å få deg til å handle raskt"),
+                new MultipleChoiceContent.Option("b", "Meldingen handler om skolekontoen"),
+                new MultipleChoiceContent.Option("c", "Meldingen har tekst og bilde")
+            ),
+            "a"
+        )
+    )));
+
+    return exerciseRepository.save(exercise);
+  }
+
+  private NotepadEntry defaultNotepadEntry(String title, String content) {
+    NotepadEntry notepadEntry = new NotepadEntry();
+    notepadEntry.setTitle(title);
+    notepadEntry.setSource(title);
+    notepadEntry.setType(NotepadEntryType.TIP);
+    notepadEntry.setContent(content);
+    return notepadEntry;
+  }
+
+  private Task multipleChoiceTask(Exercise exercise, String introText, String feedbackCorrect,
+      String feedbackIncorrect, String promptTitle, String promptText, String imageUrl,
+      String imageAlt, List<MultipleChoiceContent.Option> options, String correctChoice) {
+    Task task = new Task();
+    task.setExercise(exercise);
+    task.setIntroText(introText);
+    task.setFeedbackCorrect(feedbackCorrect);
+    task.setFeedbackIncorrect(feedbackIncorrect);
+    task.setContent(new MultipleChoiceContent(
+        new MultipleChoiceContent.Prompt(imageUrl, imageAlt, promptTitle, promptText),
+        options,
+        correctChoice
+    ));
+    return task;
+  }
+
+  private Task xOrYTask(Exercise exercise, String introText, String feedbackCorrect,
+      String feedbackIncorrect, String promptTitle, String promptText,
+      String xImageUrl, String xImageAlt, String xEyebrow, String xTitle, String xText,
+      String yImageUrl, String yImageAlt, String yEyebrow, String yTitle, String yText,
+      XOrYContent.Choice correctChoice) {
+    Task task = new Task();
+    task.setExercise(exercise);
+    task.setIntroText(introText);
+    task.setFeedbackCorrect(feedbackCorrect);
+    task.setFeedbackIncorrect(feedbackIncorrect);
+    task.setContent(new XOrYContent(
+        new XOrYContent.Prompt(promptTitle, promptText),
+        new XOrYContent.Options(
+            new XOrYContent.Option(xImageUrl, xImageAlt, xEyebrow, xTitle, xText),
+            new XOrYContent.Option(yImageUrl, yImageAlt, yEyebrow, yTitle, yText)
+        ),
+        correctChoice
+    ));
+    return task;
+  }
+
   private void upsertSubmission(UUID publicUuid, WeeklyMysteryPrompt prompt, StudentUser student,
       String message, String fileName, String storageKey) {
     WeeklyMysterySubmission entity = submissionRepository.findByPublicUuid(publicUuid)
@@ -260,6 +436,24 @@ public class WeeklyMysteryMockDataInitializer implements ApplicationRunner {
     entity.setSubmitterStudentUser(student);
     entity.setWeeklyMysteryPrompt(prompt);
     submissionRepository.save(entity);
+  }
+
+  private String seedSubmissionImage(String objectKey, String classpathResource) {
+    mediaStorageService.uploadPublicClasspathImage(objectKey, classpathResource, contentTypeFor(objectKey));
+    return objectKey;
+  }
+
+  private String contentTypeFor(String path) {
+    String normalizedPath = path.toLowerCase(Locale.ROOT);
+    if (normalizedPath.endsWith(".png")) {
+      return "image/png";
+    }
+
+    if (normalizedPath.endsWith(".jpg") || normalizedPath.endsWith(".jpeg")) {
+      return "image/jpeg";
+    }
+
+    throw new IllegalStateException("Unsupported weekly mystery media type: " + path);
   }
 
   private static UUID stableUuid(String value) {
