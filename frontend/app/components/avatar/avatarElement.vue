@@ -97,6 +97,9 @@ const level = computed(() => getLevel(userStats.value.totalXp).level)
   letter-spacing: var(--font-tracking-wide);
   text-align: center;
   text-wrap: balance;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .level {
