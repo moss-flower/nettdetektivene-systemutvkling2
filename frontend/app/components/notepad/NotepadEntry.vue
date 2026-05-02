@@ -116,6 +116,9 @@ const titlePrefix = computed(() => {
   font-family: var(--font-family-body), sans-serif;
   font-size: var(--font-size-16);
   line-height: var(--font-leading-16);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
 }
 
 .tip {

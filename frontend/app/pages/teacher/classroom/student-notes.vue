@@ -69,15 +69,39 @@ const notes = computed(() => {
 
 <style scoped>
 .studentNotesPage {
+  --notes-bg-top: var(--palette-cream-100);
+  --notes-bg-bottom: var(--palette-cream-200);
+  --notes-border: var(--palette-overlay-cork-shadow);
+  --notes-eyebrow: var(--palette-cork-580);
+  --notes-title: var(--palette-cork-900);
+  --notes-summary: var(--palette-cork-700);
+  --notes-missing-bg: var(--palette-red-100);
+  --notes-missing-border: var(--palette-red-200);
+
+  display: grid;
+  gap: var(--space-5);
+  /* fluid outer padding, deliberate exception (token system)*/
+  padding: var(--layout-page-padding-comfortable);
+  min-height: 100dvh;
   width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: var(--layout-page-padding);
-  color: var(--color-text-primary);
+  display: grid;
+  place-items: center;
 }
 
 .pageHeader {
-  margin-bottom: var(--space-5);
+  display: grid;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 1180px;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: var(--border-width-hairline) solid var(--notes-border);
+  border-radius: var(--radius-4);
+  background: linear-gradient(
+    135deg,
+    var(--notes-bg-top) 0%,
+    var(--notes-bg-bottom) 100%
+  );
+  box-shadow: var(--shadow-2);
 }
 
 .backLink {
@@ -93,22 +117,37 @@ const notes = computed(() => {
   color: var(--color-brand-secondary);
 }
 
+.eyebrow {
+  color: var(--notes-eyebrow);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-2);
+}
+
+h1 {
+  margin: 0 0 var(--space-2) 0;
+  color: var(--notes-title);
+}
+
 .subtitle {
   margin: 0;
-  color: var(--color-text-secondary);
+  color: var(--notes-summary);
 }
 
 .errorMessage,
 .emptyMessage {
-  padding: var(--space-4);
+  padding: var(--space-5);
   border-radius: var(--radius-3);
-  background: var(--color-bg-surface);
-  color: var(--color-text-secondary);
+  background: var(--notes-missing-bg);
+  border: var(--border-width-hairline) solid var(--notes-missing-border);
 }
 
 .notesList {
   display: grid;
   gap: var(--space-4);
+  width: 100%;
+  max-width: 1180px;
 }
 
 .noteCard {
