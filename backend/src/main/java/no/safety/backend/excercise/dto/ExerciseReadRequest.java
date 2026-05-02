@@ -43,10 +43,3 @@ public record ExerciseReadRequest(
   }
 
 }
-
-  public Pageable toPageable() {
-    Sort sort = Sort.by(Direction.DESC, "publicId");
-    return PageRequest.of(page, size, sort);
-  }
-
-}
