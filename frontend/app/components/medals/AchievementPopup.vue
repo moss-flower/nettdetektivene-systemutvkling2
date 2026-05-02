@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { AchievementResponse } from "~/composables/types/AchievementTypes";
-import filledStar from "~/assets/images/star/spStarFilled.png";
+import filledMedal from "~/assets/images/star/Medal.png";
+import emptyMedal from "~/assets/images/star/emptymedal.png";
+import specialMedal from "~/assets/images/star/special medal.png";
 
 const props = defineProps<{
   achievement: AchievementResponse;
@@ -9,6 +11,14 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: "close"): void;
 }>();
+
+const achievementImage = computed(() => {
+  if (props.achievement.category === "special") {
+    return props.achievement.unlocked ? specialMedal : emptyMedal;
+  }
+
+  return props.achievement.unlocked ? filledMedal : emptyMedal;
+});
 </script>
 
 <template>
@@ -17,7 +27,7 @@ const emit = defineEmits<{
       <div class="popupImageWrap">
         <img
           class="popupImage"
-          :src="filledStar"
+          :src="achievementImage"
           :alt="props.achievement.title"
         >
       </div>
