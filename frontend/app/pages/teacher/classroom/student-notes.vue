@@ -13,14 +13,14 @@ const studentId = computed(() => String(route.query.studentId ?? ''));
 
 const { data: classroom } = await useAsyncData(
   'teacher-classroom-for-student-notes',
-  () => (classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : null),
+  () => classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : Promise.resolve(null),
   { watch: [classroomId] },
 );
 
 const { data: notesPage, error: notesError } = await useAsyncData(
   'teacher-student-notes',
   () => {
-    if (!studentId.value) return null;
+    if (!studentId.value) return Promise.resolve(null);
     return getStudentNotes(studentId.value);
   },
   { watch: [studentId] },
