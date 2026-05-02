@@ -270,6 +270,31 @@ class ClassroomManagementIntegrationTest {
         .expectStatus().isOk()
         .expectBody(ClassroomResponse.class)
         .value(r -> {
+          assertThat(r.members()).isEmpty();
+          assertThat(r.pendingMembers()).hasSize(1);
+          assertThat(r.pendingMembers().getFirst().publicUuid()).isEqualTo(student.getPublicUuid());
+          assertThat(r.pendingEntry()).isTrue();
+        });
+  }
+
+  @Test
+  void approveMember_asOwner_movesPendingStudentToMembers() {
+    TeacherUser teacher = saveTeacher("teacher1");
+    StudentUser student = saveStudent("student1");
+    ClassroomResponse created = createClassroom(teacher, "Klasse 5B");
+
+    client.post().uri("/api/v1/classrooms/join/{code}", created.code())
+        .header("X-Test-User", student.getPublicUuid().toString())
+        .exchange()
+        .expectStatus().isOk();
+
+    client.post().uri("/api/v1/classrooms/{id}/members/{uuid}/approve", created.uid(), student.getPublicUuid())
+        .header("X-Test-User", teacher.getPublicUuid().toString())
+        .exchange()
+        .expectStatus().isOk()
+        .expectBody(ClassroomResponse.class)
+        .value(r -> {
+          assertThat(r.pendingMembers()).isEmpty();
           assertThat(r.members()).hasSize(1);
           assertThat(r.members().getFirst().publicUuid()).isEqualTo(student.getPublicUuid());
         });
