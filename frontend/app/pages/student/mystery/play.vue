@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import EmailHotspotsTemplate from '~/components/gameplay/templates/EmailHotspotsTemplate.vue'
 import MultipleChoiceTemplate from '~/components/gameplay/templates/MultipleChoiceTemplate.vue'
+import PasswordStrengthTemplate from '~/components/gameplay/templates/PasswordStrengthTemplate.vue'
+import SortIntoBucketsTemplate from '~/components/gameplay/templates/SortIntoBucketsTemplate.vue'
 import XOrYTemplate from '~/components/gameplay/templates/XOrYTemplate.vue'
 import ExerciseResultDialog from '~/components/gameplay/shared/ExerciseResultDialog.vue'
 import TaskResultDialog from '~/components/gameplay/shared/TaskResultDialog.vue'
@@ -11,20 +14,36 @@ definePageMeta({
 })
 
 import type {
+  EmailHotspotResult,
   MultipleChoiceOptionKey,
   MultipleChoiceResult,
+  PasswordStrengthResult,
+  SortIntoBucketsResult,
   XOrYChoice,
   XOrYResult,
 } from '~/composables/types/TaskTypes'
 
-const { mysteryPlaySession } = useStudentMysteryPlay()
+const { loadMysteryPlaySession } = useStudentMysteryPlay()
+const mysteryPlaySession = await loadMysteryPlaySession()
+
+if (!mysteryPlaySession) {
+  throw createError({
+    statusCode: 404,
+    statusMessage: 'Ukens mysterium er ikke klart for spilling ennå.',
+  })
+}
+
 const { celebrateCorrectAnswer, celebrateLevelComplete, stop } = useGameConfetti()
 
 const tasks = mysteryPlaySession.tasks
 const currentIndex = ref(0)
 const correctCount = ref(0)
 const showMysteryResultDialog = ref(false)
-const answerState = ref<{ correct: boolean, choice: string } | null>(null)
+const answerState = ref<{
+  correct: boolean
+  choice: string
+  missingStartingPassword?: boolean
+} | null>(null)
 
 const currentTask = computed(() => tasks[currentIndex.value] ?? null)
 const currentOptions = computed(() => {
@@ -77,6 +96,8 @@ const feedbackText = computed(() => {
 
   return answerState.value.correct
     ? currentTask.value.feedbackCorrect
+    : currentTask.value.templateKind === 'password-strength' && answerState.value.missingStartingPassword
+      ? 'Det nye passordet må inneholde startpassordet som en del av svaret ditt.'
     : currentTask.value.feedbackIncorrect
 })
 
@@ -102,6 +123,43 @@ function onAnsweredMultipleChoice(result: MultipleChoiceResult) {
   answerState.value = {
     correct: result.correct,
     choice: result.choice,
+  }
+
+  if (result.correct) {
+    correctCount.value += 1
+    celebrateCorrectAnswer()
+  }
+}
+
+function onAnsweredEmailHotspots(result: EmailHotspotResult) {
+  answerState.value = {
+    correct: result.correct,
+    choice: result.selectedTargetIds.join(','),
+  }
+
+  if (result.correct) {
+    correctCount.value += 1
+    celebrateCorrectAnswer()
+  }
+}
+
+function onAnsweredSortIntoBuckets(result: SortIntoBucketsResult) {
+  answerState.value = {
+    correct: result.correct,
+    choice: Object.values(result.placements).flat().join(','),
+  }
+
+  if (result.correct) {
+    correctCount.value += 1
+    celebrateCorrectAnswer()
+  }
+}
+
+function onAnsweredPasswordStrength(result: PasswordStrengthResult) {
+  answerState.value = {
+    correct: result.correct,
+    choice: result.password,
+    missingStartingPassword: result.missingStartingPassword,
   }
 
   if (result.correct) {
@@ -164,6 +222,35 @@ function next() {
         :disabled="Boolean(answerState)"
         :selected-choice="selectedMultipleChoiceOption"
         @answered="onAnsweredMultipleChoice"
+      />
+
+      <EmailHotspotsTemplate
+        v-else-if="currentTask?.templateKind === 'email-hotspots'"
+        :key="`${currentTask.id}-email-hotspots`"
+        :prompt="currentTask.prompt"
+        :email="currentTask.email"
+        :targets="currentTask.targets"
+        :disabled="Boolean(answerState)"
+        @answered="onAnsweredEmailHotspots"
+      />
+
+      <SortIntoBucketsTemplate
+        v-else-if="currentTask?.templateKind === 'sort-into-buckets'"
+        :key="`${currentTask.id}-sort-into-buckets`"
+        :prompt="currentTask.prompt"
+        :items="currentTask.items"
+        :buckets="currentTask.buckets"
+        :unplaced-label="currentTask.unplacedLabel"
+        :disabled="Boolean(answerState)"
+        @answered="onAnsweredSortIntoBuckets"
+      />
+
+      <PasswordStrengthTemplate
+        v-else-if="currentTask?.templateKind === 'password-strength'"
+        :key="`${currentTask.id}-password-strength`"
+        :task="currentTask"
+        :disabled="Boolean(answerState)"
+        @answered="onAnsweredPasswordStrength"
       />
     </div>
 

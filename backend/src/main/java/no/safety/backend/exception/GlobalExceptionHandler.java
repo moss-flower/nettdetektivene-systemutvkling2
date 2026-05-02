@@ -102,6 +102,14 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    public ProblemDetail handleBadRequest(BadRequestException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setTitle("Bad Request");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
     /**
      * Handles {@link NotFoundException} exceptions.
      * @return Returns a {@link ProblemDetail} with HTTP status code: 404 Not Found.

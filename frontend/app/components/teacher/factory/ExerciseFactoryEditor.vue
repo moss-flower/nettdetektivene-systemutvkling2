@@ -274,6 +274,19 @@ const finishSave = (selectionKey: string) => {
 	emit("saved", { returnTarget: null });
 };
 
+const withSavedExerciseUid = (fullPath: string, selectionKey: string) => {
+	const selection = parseExerciseFactorySelectionKey(selectionKey);
+
+	if (selection.kind !== "existing") {
+		return fullPath;
+	}
+
+	const url = new URL(fullPath, "http://factory-return.local");
+	url.searchParams.set("exerciseUid", selection.uid);
+
+	return `${url.pathname}${url.search}${url.hash}`;
+};
+
 const savePayload = async () => {
 	if (!canSave.value) {
 		return;
@@ -293,7 +306,9 @@ const savePayload = async () => {
 
 	if (returnTarget) {
 		emit("selection-updated", saved.selectionKey);
-		emit("saved", { returnTarget: returnTarget.fullPath });
+		emit("saved", {
+			returnTarget: withSavedExerciseUid(returnTarget.fullPath, saved.selectionKey),
+		});
 		return;
 	}
 

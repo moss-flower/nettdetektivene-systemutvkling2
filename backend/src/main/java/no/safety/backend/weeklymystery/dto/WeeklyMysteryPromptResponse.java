@@ -12,7 +12,8 @@ public record WeeklyMysteryPromptResponse(
     String weekLabel,
     String title,
     String prompt,
-    String clue
+    String clue,
+    UUID exerciseUid
 ) {
     public static WeeklyMysteryPromptResponse fromEntity(WeeklyMysteryPrompt prompt){
         return new WeeklyMysteryPromptResponse(
@@ -20,6 +21,7 @@ public record WeeklyMysteryPromptResponse(
             prompt.getWeekLabel(),
             prompt.getTitle(),
             prompt.getPrompt(),
-            prompt.getClue());
+            prompt.getClue(),
+            prompt.getExercise() != null ? prompt.getExercise().getPublicId() : null);
     }
 }

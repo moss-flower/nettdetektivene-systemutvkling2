@@ -3,10 +3,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return;
   }
 
+  const { $api } = useNuxtApp();
+
   try {
-    await $fetch("/api/v1/classrooms", {
+    await $api("/classrooms", {
       method: "GET",
-      credentials: "include",
       headers: import.meta.server ? useRequestHeaders(["cookie"]) : undefined,
     });
   } catch {

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#d7f1d7"/>
+  <rect x="60" y="80" width="1080" height="560" rx="40" fill="#f5fff1"/>
+  <circle cx="220" cy="190" r="72" fill="#ffd166"/>
+  <rect x="150" y="430" width="900" height="90" rx="45" fill="#7bc47f"/>
+  <rect x="280" y="250" width="220" height="150" rx="24" fill="#72a6ff"/>
+  <rect x="700" y="220" width="260" height="180" rx="24" fill="#ff9f7a"/>
+  <path d="M340 250 L390 190 L440 250" fill="#4f77d9"/>
+  <path d="M760 220 L830 160 L900 220" fill="#e2794e"/>
+  <text x="600" y="145" text-anchor="middle" font-size="58" font-family="Arial, sans-serif" fill="#224b2f">Skolegarden</text>
+  <text x="600" y="595" text-anchor="middle" font-size="32" font-family="Arial, sans-serif" fill="#366144">Et trygt startsted for nettoppdrag</text>
+</svg>

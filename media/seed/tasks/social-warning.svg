@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#fff1f1"/>
+  <rect x="170" y="110" width="860" height="500" rx="40" fill="#ffffff"/>
+  <rect x="240" y="190" width="720" height="84" rx="22" fill="#ffb8b8"/>
+  <rect x="240" y="320" width="560" height="34" rx="16" fill="#ffe2e2"/>
+  <rect x="240" y="380" width="620" height="34" rx="16" fill="#ffe2e2"/>
+  <circle cx="860" cy="460" r="46" fill="#ff7b7b"/>
+  <text x="600" y="145" text-anchor="middle" font-size="50" font-family="Arial, sans-serif" fill="#8a2f2f">Del na ellers er det for sent</text>
+</svg>

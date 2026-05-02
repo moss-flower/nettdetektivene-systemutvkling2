@@ -34,11 +34,14 @@ DB_USERNAME=your_db_username
 DB_PASSWORD=your_db_password
 JWT_SECRET_KEY=your_jwt_secret_key
 NUXT_SESSION_PASSWORD=your_nuxt_session_password
+MINIO_ROOT_USER=minioadmin
+MINIO_ROOT_PASSWORD=minioadmin123
+MINIO_PUBLIC_BUCKET=nettdetektivene-public
 ```
 
 ### Run Everything With Docker Compose
 
-This starts MySQL, backend, and frontend together.
+This starts MySQL, backend, frontend, MinIO, and the MinIO seed job together.
 
 ```bash
 docker compose up --build
@@ -49,6 +52,8 @@ Services:
 - Frontend: `http://localhost:3000`
 - Backend: `http://localhost:8080`
 - MySQL: `localhost:3306`
+- MinIO API: `http://localhost:9000`
+- MinIO Console: `http://localhost:9001`
 
 Stop containers:
 
@@ -56,13 +61,15 @@ Stop containers:
 docker compose down
 ```
 
-If the database volume needs to be removed as well, run:
+If the database or MinIO volume needs to be removed as well, run:
 
 ```bash
 docker compose down -v
 ```
 
-If `down` is not enough, use `down` first and then `down -v` to fully remove the database volume.
+If `down` is not enough, use `down` first and then `down -v`.
+
+`docker compose down -v` removes both the MySQL database and the MinIO object store. Seeded media is loaded again the next time you start the stack.
 
 After code changes, rebuild with:
 
@@ -71,8 +78,6 @@ docker compose up --build
 ```
 
 ### Run Frontend Locally
-
-You can run the frontend without Docker using either `npm` or `bun`.
 
 With `npm`:
 
@@ -102,6 +107,25 @@ cd backend
 ```
 
 The backend expects the database and other values from the root `.env`.
+
+### Media Storage
+
+Seeded gameplay images are served from MinIO instead of `placehold.co`.
+
+- Shared seed files live in `media/seed/`
+- `minio-seed` creates the bucket and uploads the seed files on startup
+- Public media URLs are served from `http://localhost:9000/<bucket>/...`
+
+The backend also exposes a public image upload endpoint for authenticated users:
+
+```text
+POST /api/v1/media/uploads/public
+```
+
+Use `multipart/form-data` with:
+
+- `file`: image file
+- `folder`: optional object key prefix such as `uploads/mysteries`
 
 ## Test Data
 

@@ -5,21 +5,20 @@ import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Represents a data transfer object for handling submission data
  * for weekly mystery
  */
 public record WeeklyMysterySubmissionCreateRequest(
-    @NotBlank(message = "Screenshot Required")
-    @Size(max = 1, message = "Please only attach a single image.")
+    @NotNull(message = "Screenshot required")
     MultipartFile file, 
 
-    @NotBlank(message = "Message Required")
+    @NotBlank(message = "Message required")
     String message,
 
-    @NotBlank(message = "Public ID of Weekly Mystery Prompt required")
+    @NotNull(message = "Public ID of Weekly Mystery Prompt required")
     UUID weeklyMysterPromptUuid
 ) {
     
