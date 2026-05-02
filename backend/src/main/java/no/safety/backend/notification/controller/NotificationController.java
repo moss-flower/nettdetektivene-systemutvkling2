@@ -45,7 +45,7 @@ public class NotificationController {
         description = "Creates a new connection mapped to the caller. Connection lives until closed.",
         tags = { "Notification management for Teachers" }
     )
-    @GetMapping(value = "/stream")
+    @GetMapping(value = "/sse")
     public SseEmitter stream(
         @AuthenticationPrincipal UserPrincipal userPrincipal
     ) {

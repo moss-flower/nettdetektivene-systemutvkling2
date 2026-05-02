@@ -9,7 +9,7 @@ export function useNotifications() {
   function connect() {
     if (_source) return
 
-    _source = new EventSource('/api/v1/notifications/stream')
+    _source = new EventSource('/api/v1/notifications/sse')
 
     _source.onopen = () => {
       console.log("JARJAR says ONOPEN")

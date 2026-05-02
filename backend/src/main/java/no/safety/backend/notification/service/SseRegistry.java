@@ -27,6 +27,11 @@ public class SseRegistry {
         emitter.onCompletion(() -> emitters.remove(userId));
         emitter.onError((ex) -> emitters.remove(userId));
         emitter.onTimeout(() -> emitters.remove(userId));
+        try {
+            emitter.send(SseEmitter.event().comment("connected"));
+        } catch (IOException e) {
+            logger.error("Failed to send initial ping", e);
+        }
 
         return emitter;
     }
