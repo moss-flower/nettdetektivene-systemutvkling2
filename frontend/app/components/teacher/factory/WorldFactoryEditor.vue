@@ -355,7 +355,7 @@ watch(payloadPreviewText, () => {
 										<h3>
 											{{ station.title }}
 											<span v-if="knownStationMap.get(station.uid)?.isBoss" class="bossPill" aria-hidden="true">Boss</span>
-										</h3>k
+										</h3>
 										<span :class="['statusPill', { 'statusPill--manual': !station.isKnown }]">
 											{{ station.isKnown ? "Tilgjengelig" : 'Ikke tilgjengelig' }}
 										</span>
