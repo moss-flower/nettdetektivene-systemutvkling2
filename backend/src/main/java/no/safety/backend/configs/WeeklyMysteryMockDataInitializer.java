@@ -397,7 +397,7 @@ public class WeeklyMysteryMockDataInitializer implements ApplicationRunner {
     task.setFeedbackCorrect(feedbackCorrect);
     task.setFeedbackIncorrect(feedbackIncorrect);
     task.setContent(new MultipleChoiceContent(
-        new MultipleChoiceContent.Prompt(imageUrl, imageAlt, promptTitle, promptText),
+        new MultipleChoiceContent.Prompt(media(imageUrl), imageAlt, promptTitle, promptText),
         options,
         correctChoice
     ));
@@ -417,12 +417,16 @@ public class WeeklyMysteryMockDataInitializer implements ApplicationRunner {
     task.setContent(new XOrYContent(
         new XOrYContent.Prompt(promptTitle, promptText),
         new XOrYContent.Options(
-            new XOrYContent.Option(xImageUrl, xImageAlt, xEyebrow, xTitle, xText),
-            new XOrYContent.Option(yImageUrl, yImageAlt, yEyebrow, yTitle, yText)
+            new XOrYContent.Option(media(xImageUrl), xImageAlt, xEyebrow, xTitle, xText),
+            new XOrYContent.Option(media(yImageUrl), yImageAlt, yEyebrow, yTitle, yText)
         ),
         correctChoice
     ));
     return task;
+  }
+
+  private String media(String objectKey) {
+    return mediaStorageService.publicUrl(objectKey);
   }
 
   private void upsertSubmission(UUID publicUuid, WeeklyMysteryPrompt prompt, StudentUser student,
