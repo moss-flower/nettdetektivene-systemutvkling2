@@ -235,7 +235,6 @@ const deleteClassroom = async () => {
         <article v-for="student in pendingMembers" :key="student.publicUuid" class="pendingStudent">
           <div>
             <strong>{{ student.username }}</strong>
-            <span>{{ student.publicUuid }}</span>
           </div>
           <button
             class="approveButton"
