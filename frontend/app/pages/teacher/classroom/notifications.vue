@@ -7,7 +7,7 @@ const { teacher } = useClassrooms();
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
 const { data: classroom } = await useAsyncData(
   'teacher-classroom-notifications',
-  () => (classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : null),
+  () => classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : Promise.resolve(null),
   { watch: [classroomId] },
 );
 </script>
@@ -15,7 +15,7 @@ const { data: classroom } = await useAsyncData(
 <template>
   <section class="pageShell">
     <header class="pageHeader">
-      <NuxtLink class="backLink" :to="routePathsWithString(routePaths.teacherClassroomOverview, `?classroomId=${classroomId}`)">Tilbake til klasserommet</NuxtLink>
+      <NuxtLink class="backLink" :to="routePathsWithString(routePaths.teacherClassroomOverview, { classroomId: classroomId })">Tilbake til klasserommet</NuxtLink>
       <p class="eyebrow">Varslingssenter</p>
       <h1>{{ classroom?.name ?? 'Ukjent klasserom' }}</h1>
     </header>

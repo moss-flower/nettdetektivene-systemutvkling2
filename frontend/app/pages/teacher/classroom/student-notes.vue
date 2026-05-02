@@ -37,7 +37,7 @@ const notes = computed(() => {
     <header class="pageHeader">
       <NuxtLink 
         class="backLink"
-        :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, `?classroomId=${classroomId}&studentId=${studentId}`)"
+        :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, { classroomId: classroomId, studentId: studentId })"
       >
         ← Tilbake til elevprogresjon
       </NuxtLink>

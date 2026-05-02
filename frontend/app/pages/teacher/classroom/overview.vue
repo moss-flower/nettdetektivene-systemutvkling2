@@ -23,7 +23,7 @@ const classroomId = computed(() => String(route.query.classroomId ?? ''));
 
 const { data: classroom, refresh: refreshClassroom } = await useAsyncData(
   'teacher-classroom-overview',
-  () => (classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : null),
+  () => classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : Promise.resolve(null),
   { watch: [classroomId] },
 );
 
@@ -31,7 +31,7 @@ const worldUid = computed(() => classroom.value?.worldUid ?? '');
 
 const { data: world } = await useAsyncData(
   'teacher-classroom-world',
-  () => (worldUid.value ? World.backendFetchWorldByUid(worldUid.value) : null),
+  () => worldUid.value ? World.backendFetchWorldByUid(worldUid.value) : Promise.resolve(null),
   { watch: [worldUid] },
 );
 
@@ -173,7 +173,7 @@ const deleteClassroom = async () => {
     </header>
 
     <div v-if="classroom" class="actionGrid">
-      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomNotifications, `?classroomId=${classroom.uid}`)" class="actionCard">
+      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomNotifications, { classroomId: classroom.uid })" class="actionCard">
         <span class="actionCardTitle">Varslingssenter</span>
         <Bell :size="48" class="actionCardIcon" />
       </NuxtLink>
@@ -188,7 +188,7 @@ const deleteClassroom = async () => {
         <Play :size="48" class="actionCardIcon" />
       </NuxtLink>
 
-      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomMystery, `?classroomId=${classroom.uid}`)" class="actionCard">
+      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomMystery, { classroomId: classroom.uid })" class="actionCard">
         <span class="actionCardTitle">Ukens mysterium</span>
         <Search :size="48" class="actionCardIcon" />
       </NuxtLink>
@@ -264,7 +264,7 @@ const deleteClassroom = async () => {
         <tbody>
           <tr v-for="student in classroom.members" :key="student.publicUuid">
             <td>
-              <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, `?classroomId=${classroomId}&studentId=${student.publicUuid}`)" class="studentLink">
+              <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, { classroomId: classroomId, studentId: student.publicUuid })" class="studentLink">
                 {{ student.username }}
               </NuxtLink>
             </td>
