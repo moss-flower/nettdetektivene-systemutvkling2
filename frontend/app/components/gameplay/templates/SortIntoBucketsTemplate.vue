@@ -239,42 +239,88 @@ watch(
 
 <style scoped>
 .sortTemplate {
+  /* header */
+  --sb-title: var(--palette-cork-900);
+  --sb-muted: var(--palette-cork-580);
+
+  /* tray & bucket card surfaces */
+  --sb-card-bg: var(--palette-cream-100);
+  --sb-card-border: var(--palette-overlay-cork-medium);
+  --sb-card-shadow: var(--palette-overlay-dark-soft);
+  --sb-card-text: var(--palette-cork-900);
+
+  /* section head text */
+  --sb-section-title: var(--palette-cork-900);
+  --sb-section-muted: var(--palette-cork-580);
+
+  /* draggable item pill, idle */
+  --sb-item-bg: var(--palette-white);
+  --sb-item-border: var(--palette-overlay-cork-medium);
+  --sb-item-text: var(--palette-cork-900);
+  --sb-item-shadow: var(--palette-overlay-dark-soft);
+
+  /* item pill, hover */
+  --sb-item-border-hover: var(--palette-navy-200);
+  --sb-item-shadow-hover: var(--palette-overlay-dark-medium);
+
+  /* item pill, selected */
+  --sb-item-bg-selected: var(--palette-cream-200);
+  --sb-item-border-selected: var(--palette-navy-900);
+
+  /* empty dropzone */
+  --sb-empty-border: var(--palette-overlay-cork-medium);
+  --sb-empty-text: var(--palette-cork-580);
+
+  /* ghost / move button */
+  --sb-ghost-bg: var(--palette-cream-200);
+  --sb-ghost-text: var(--palette-navy-700);
+
+  /* submit button */
+  --sb-submit-bg: var(--palette-navy-900);
+  --sb-submit-text: var(--palette-cream-100);
+
+  /* disabled */
+  --sb-disabled-opacity: 0.6;
+
   display: grid;
   gap: var(--space-4);
-  color: var(--palette-gray-900);
+  color: var(--sb-title);
 }
 
 .sortTemplateHeader {
   display: grid;
-  gap: 0.45rem;
+  gap: var(--space-1);
 }
 
 .sortTemplateWorkspace {
   display: grid;
+  /* bucket column min, deliberate exception */
   grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.9fr);
   align-items: stretch;
   gap: var(--space-4);
 }
 
 .sortTemplateTitle {
+  /* fluid title scale, deliberate exception */
   font-size: clamp(1.35rem, 2.5vw, 2rem);
   line-height: 1.1;
-  color: var(--color-text-primary);
+  color: var(--sb-title);
 }
 
 .sortTemplateText {
-  max-width: 56rem;
-  line-height: 1.5;
-  color: var(--color-text-secondary);
+  max-width: 56ch;
+  font-size: var(--font-size-16);
+  line-height: var(--font-leading-16);
+  color: var(--sb-muted);
 }
 
 .sortTemplateTray,
 .bucketCard {
   padding: var(--space-4);
-  border-radius: 1.5rem;
-  border: var(--border-width-thin) solid var(--color-border-default);
-  background: var(--color-bg-surface);
-  box-shadow: 0 12px 24px rgba(52, 77, 115, 0.08);
+  border-radius: var(--radius-3);
+  border: var(--border-width-thin) solid var(--sb-card-border);
+  background: var(--sb-card-bg);
+  box-shadow: 0 var(--space-3) var(--space-5) var(--sb-card-shadow);
 }
 
 .sortTemplateTray {
@@ -288,18 +334,19 @@ watch(
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-4);
-  margin-bottom: 0.85rem;
+  margin-bottom: var(--space-2);
 }
 
 .templateSectionHead h3 {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: var(--font-size-16);
+  color: var(--sb-section-title);
 }
 
 .templateSectionHead p {
   margin: var(--space-1) 0 0;
-  color: var(--color-text-secondary);
-  line-height: 1.45;
+  color: var(--sb-section-muted);
+  line-height: var(--font-leading-14);
 }
 
 .bucketHead {
@@ -308,6 +355,7 @@ watch(
 
 .templateItemList,
 .bucketDropzone {
+  /* min drop target height, deliberate exception */
   min-height: 6rem;
   display: grid;
   gap: var(--space-3);
@@ -325,55 +373,58 @@ watch(
 
 .sortTemplateItem {
   width: 100%;
-  padding: 0.9rem var(--space-4);
-  border: var(--border-width-thin) solid var(--color-border-default);
+  padding: var(--space-2) var(--space-4);
+  border: var(--border-width-thin) solid var(--sb-item-border);
   border-radius: var(--radius-2);
-  background: var(--palette-white);
-  color: var(--palette-gray-900);
-  font-weight: 700;
+  background: var(--sb-item-bg);
+  color: var(--sb-item-text);
+  font-weight: var(--font-weight-bold);
   text-align: left;
-  box-shadow: 0 8px 14px rgba(71, 94, 128, 0.08);
-  transition: transform var(--transition-base) ease, border-color var(--transition-base) ease, box-shadow var(--transition-base) ease;
+  box-shadow: 0 var(--space-2) var(--space-3) var(--sb-item-shadow);
+  transition: var(--transition-base);
 }
 
 .sortTemplateItem:hover:not(:disabled),
 .sortTemplateItem:focus-visible {
-  transform: translateY(-1px);
-  border-color: #7ea0c9;
-  box-shadow: 0 12px 20px rgba(71, 94, 128, 0.14);
+  transform: translateY(calc(var(--border-width-hairline) * -1));
+  border-color: var(--sb-item-border-hover);
+  box-shadow: 0 var(--space-3) var(--space-4) var(--sb-item-shadow-hover);
   outline: none;
 }
 
+.templateItemSelected,
 .itemSelected {
-  border-color: #3568a8;
-  background: var(--color-semantic-info);
+  border-color: var(--sb-item-border-selected);
+  background: var(--sb-item-bg-selected);
 }
 
 .emptyState {
   margin: 0;
   padding: var(--space-4);
-  border: var(--border-width-thin) dashed var(--color-border-default);
+  border: var(--border-width-thin) dashed var(--sb-empty-border);
   border-radius: var(--radius-2);
-  color: var(--color-text-secondary);
+  color: var(--sb-empty-text);
   text-align: center;
 }
 
+.templateGhostButton,
 .ghostButton,
 .sortTemplateSubmit {
-  padding: 0.8rem var(--space-4);
+  padding: var(--space-2) var(--space-4);
   border: 0;
   border-radius: var(--radius-pill);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
+.templateGhostButton,
 .ghostButton {
-  background: #e8f0fb;
-  color: var(--palette-navy-700);
+  background: var(--sb-ghost-bg);
+  color: var(--sb-ghost-text);
 }
 
 .sortTemplateSubmit {
-  background: var(--color-brand-primary);
-  color: #f9fbff;
+  background: var(--sb-submit-bg);
+  color: var(--sb-submit-text);
 }
 
 .sortTemplateActions {
@@ -381,11 +432,12 @@ watch(
   justify-content: flex-end;
 }
 
+.templateGhostButton:disabled,
 .ghostButton:disabled,
 .sortTemplateSubmit:disabled,
 .sortTemplateItem:disabled {
   cursor: default;
-  opacity: 0.72;
+  opacity: var(--sb-disabled-opacity);
 }
 
 </style>
