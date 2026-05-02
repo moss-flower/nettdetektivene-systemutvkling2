@@ -10,6 +10,7 @@ import no.safety.backend.achievements.model.AchievementCategory;
 import no.safety.backend.achievements.repository.AchievementRepository;
 import no.safety.backend.excercise.model.Exercise;
 import no.safety.backend.excercise.repository.ExerciseRepository;
+import no.safety.backend.media.service.MediaStorageService;
 import no.safety.backend.notepad.model.NotepadEntry;
 import no.safety.backend.notepad.model.NotepadEntryType;
 import no.safety.backend.station.model.Station;
@@ -25,10 +26,12 @@ import no.safety.backend.world.model.World;
 import no.safety.backend.world.repository.WorldRepository;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
+@Order(5)
 @RequiredArgsConstructor
 public class GameplayMockDataInitializer implements ApplicationRunner {
 
@@ -58,11 +61,24 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   public static final UUID SOCIALMEDIA_EXERCISE_2_UID = stableUuid("exercise:socialmedia-exercise-2");
   public static final UUID DATACENTER_EXERCISE_UID = stableUuid("exercise:datacenter-exercise");
 
-  private static final String PLACEHOLDER_IMAGE = "https://placehold.co/1200x720?text=Nettdetektivene";
+  private static final String NEWS_SAFE_IMAGE = "seed/tasks/news-safe.svg";
+  private static final String NEWS_WARNING_IMAGE = "seed/tasks/news-warning.svg";
+  private static final String PHOTO_SAFE_IMAGE = "seed/tasks/photo-safe.svg";
+  private static final String PHOTO_WARNING_IMAGE = "seed/tasks/photo-warning.svg";
+  private static final String EMAIL_SAFE_IMAGE = "seed/tasks/email-safe.svg";
+  private static final String EMAIL_WARNING_IMAGE = "seed/tasks/email-warning.svg";
+  private static final String PASSWORD_SAFE_IMAGE = "seed/tasks/password-safe.svg";
+  private static final String PASSWORD_WARNING_IMAGE = "seed/tasks/password-warning.svg";
+  private static final String SHOP_SAFE_IMAGE = "seed/tasks/shop-safe.svg";
+  private static final String SHOP_WARNING_IMAGE = "seed/tasks/shop-warning.svg";
+  private static final String SOCIAL_SAFE_IMAGE = "seed/tasks/social-safe.svg";
+  private static final String SOCIAL_WARNING_IMAGE = "seed/tasks/social-warning.svg";
+  private static final String DETECTIVE_HUB_IMAGE = "seed/tasks/detective-hub.svg";
 
   private final ExerciseRepository exerciseRepository;
   private final StationRepository stationRepository;
   private final WorldRepository worldRepository;
+  private final MediaStorageService mediaStorageService;
   private final AchievementRepository achievementRepository;
 
   @Override
@@ -83,7 +99,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter tegn som hjelper deg å sjekke saken, som tydelig avsender og konkret informasjon.",
                 "Hvilken forklaring passer best?",
                 "Se på skjermbildet og velg det beste tegnet på at saken virker troverdig.",
-                "https://placehold.co/1200x720?text=NRK%3A+Skolen+endrer+rutiner",
+                media(NEWS_SAFE_IMAGE),
                 "Skjermbilde av en rolig nyhetssak med tydelig avsender",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Saken har en tydelig avsender du kan sjekke"),
@@ -97,12 +113,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter rolig språk, tydelig avsender og konkrete opplysninger.",
                 "Hvilken overskrift virker tryggest?",
                 "Velg saken du ville stolt mest på ved første blikk.",
-                "https://placehold.co/1200x720?text=VG%3A+vinn+5+millioner+na",
+                media(NEWS_WARNING_IMAGE),
                 "Dramatisk overskrift med sterke ord og uklar avsender",
                 "Sak X",
                 "Sjokkerende avsløring uten kilde",
                 "Overskriften prøver å stresse deg, men forklarer ikke hvem som vet dette.",
-                "https://placehold.co/1200x720?text=Kommunen%3A+ny+regel+for+skoleveien",
+                media(NEWS_SAFE_IMAGE),
                 "Rolig overskrift med tydelig avsender",
                 "Sak Y",
                 "Kommunen forklarer ny regel for skoleveien",
@@ -133,7 +149,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Tenk på hvilke tegn som faktisk svekker troverdigheten, ikke bare hvordan saken ser ut visuelt.",
                 "Hvorfor virker denne saken falsk?",
                 "Velg forklaringen som passer best til det du ser i skjermbildet.",
-                "https://placehold.co/1200x720?text=KlikkNytt%3A+sjokkfunn+i+kantina",
+                media(NEWS_WARNING_IMAGE),
                 "Skjermbilde av en tvilsom nyhetsartikkel",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Den har en tydelig avsender og gode kilder"),
@@ -154,7 +170,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter kjent avsender, konkret sprak og om saken forklarer hvor informasjonen kommer fra.",
                 "Hva er det tydeligste faresignalet?",
                 "Saken ser profesjonell ut, men ett tegn gjør at du bør være ekstra skeptisk.",
-                "https://placehold.co/1200x720?text=Nyhetsrask%3A+hemmelig+rapport+lekket",
+                media(NEWS_WARNING_IMAGE),
                 "Skjermbilde av en nyhetsartikkel uten tydelige kilder",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Den bruker et bilde ved siden av teksten"),
@@ -169,12 +185,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter hvem som står bak og om saken forklarer hvor opplysningene kommer fra.",
                 "Hvilken sak ville du sjekket videre?",
                 "Velg den som virker mest ryddig og palitelig.",
-                "https://placehold.co/1200x720?text=TikTok%3A+hemmelig+tips+gar+viralt",
+                media(NEWS_WARNING_IMAGE),
                 "Nyhetssak med vag overskrift og ingen tydelig kilde",
                 "Sak X",
                 "Hemmelig tips skaper kaos",
                 "Saken bruker sterke ord, men sier lite om hvem som faktisk vet noe.",
-                "https://placehold.co/1200x720?text=Lokalavisa%3A+forklarer+hendelsen",
+                media(NEWS_SAFE_IMAGE),
                 "Nyhetssak med rolig overskrift og tydelig kilde",
                 "Sak Y",
                 "Lokalavis forklarer hendelsen ved idrettshallen",
@@ -187,7 +203,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Tenk på hva som hjelper deg å undersøke saken, ikke hva som sprer den raskest.",
                 "Hva bør du gjøre etterpå?",
                 "Du er usikker på om saken stemmer. Velg det smarteste neste steget.",
-                "https://placehold.co/1200x720?text=Faktisk%3A+slik+sjekker+du+kilder",
+                media(DETECTIVE_HUB_IMAGE),
                 "Illustrasjon av et barn som sammenligner flere nyhetskilder",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Sjekke om andre troverdige kilder sier det samme"),
@@ -208,7 +224,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter rare detaljer som ikke passer naturlig sammen.",
                 "Hva slags bilde ser du?",
                 "Velg den forklaringen som passer best til bildet.",
-                "https://placehold.co/1200x720?text=Insta%3A+robotkatt+pa+skoleplassen",
+                media(PHOTO_WARNING_IMAGE),
                 "Skjermbilde av et mistenkelig bilde",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Et helt vanlig ekte bilde"),
@@ -222,12 +238,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter rare hender, skjev tekst eller bakgrunner som ikke henger sammen.",
                 "Hvilket bilde virker mest ekte?",
                 "Velg bildet du stoler mest pa etter a ha sett pa detaljene.",
-                "https://placehold.co/1200x720?text=Snap%3A+klassebilde+med+rare+hender",
+                media(PHOTO_WARNING_IMAGE),
                 "Bilde med unaturlige hender og forvrengt tekst",
                 "Bilde X",
                 "Mange rare detaljer",
                 "Flere detaljer ser ut som de ikke passer sammen naturlig.",
-                "https://placehold.co/1200x720?text=Skolefoto%3A+turdag+i+parken",
+                media(PHOTO_SAFE_IMAGE),
                 "Bilde av en vanlig skolegard med naturlige detaljer",
                 "Bilde Y",
                 "Naturlig skolemiljo",
@@ -264,7 +280,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Tenk pa hva som hjelper deg a undersoke bildet i stedet for a gjette raskt.",
                 "Hva bor du sporre deg selv om forst?",
                 "Du ser et bilde som virker litt rart. Hva er det beste forste sporsmalet?",
-                "https://placehold.co/1200x720?text=Bildenytt%3A+ekte+eller+KI",
+                media(PHOTO_WARNING_IMAGE),
                 "Skjermbilde av et bilde med rare detaljer",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Ser detaljer som hender, tekst og bakgrunn naturlige ut?"),
@@ -278,12 +294,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter tekst, lys, ansikter og bakgrunner som henger sammen.",
                 "Hvilket bilde ville du stolt mest pa?",
                 "Sammenlign de to bildene og velg det mest troverdige.",
-                "https://placehold.co/1200x720?text=Insta%3A+premieutdeling+med+skjev+tekst",
+                media(PHOTO_WARNING_IMAGE),
                 "Bilde med ujevn tekst og unaturlig lys",
                 "Bilde X",
                 "Mange sma feil",
                 "Teksten er skjev og lyset passer ikke helt med resten av scenen.",
-                "https://placehold.co/1200x720?text=Skolefoto%3A+klasse+7B+pa+tur",
+                media(PHOTO_SAFE_IMAGE),
                 "Klassebilde med naturlige detaljer",
                 "Bilde Y",
                 "Ryddig og naturlig",
@@ -296,7 +312,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter forklaringen som peker pa unaturlige detaljer, ikke bare stil eller farger.",
                 "Hva er det tydeligste faresignalet?",
                 "Et bilde kan virke ekte ved forste blikk. Velg tegnet som bor fa deg til a sjekke mer.",
-                "https://placehold.co/1200x720?text=Bildepost%3A+se+detaljene+forst",
+                media(DETECTIVE_HUB_IMAGE),
                 "Illustrasjon av et barn som gransker et bilde",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Hender, tekst og bakgrunn passer ikke helt sammen"),
@@ -317,7 +333,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter noe som hjelper deg a oppdage om meldingen kan vaere falsk.",
                 "Finn den ene tingen som virker rar",
                 "Se pa e-posten og velg det som skurrer mest.",
-                "https://placehold.co/1200x720?text=Skole-IT%3A+bekreft+kontoen+din",
+                media(EMAIL_WARNING_IMAGE),
                 "Skjermbilde av en mistenkelig e-post",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Avsenderadressen ser rar ut"),
@@ -371,12 +387,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter kjent avsender, rolig sprak og lenker du kjenner igjen.",
                 "Hvilken e-post virker tryggest?",
                 "Velg meldingen du ville stolt mest pa.",
-                "https://placehold.co/1200x720?text=Skole-IT%3A+kontoen+stenges+na",
+                media(EMAIL_WARNING_IMAGE),
                 "Mistenkelig e-post med stressende sprak",
                 "Melding X",
                 "Handle na",
                 "Meldingen presser deg til a klikke med en gang og bruker en rar avsender.",
-                "https://placehold.co/1200x720?text=Skolen%3A+ukebrev+for+fredag",
+                media(EMAIL_SAFE_IMAGE),
                 "Vanlig skoleepost med tydelig avsender",
                 "Melding Y",
                 "Vanlig informasjon",
@@ -395,7 +411,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter press, rare lenker eller avsendere du ikke kjenner.",
                 "Finn de to farlige delene",
                 "Hva er den beste forklaringen pa at denne meldingen er utrygg?",
-                "https://placehold.co/1200x720?text=Admin%3A+viktig+skjema+i+dag",
+                media(EMAIL_WARNING_IMAGE),
                 "Skjermbilde av en mistenkelig e-post med lenke",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Den bruker press og en lenke som virker rar"),
@@ -474,7 +490,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Tenk pa hva andre lett kan vite om deg.",
                 "Hva gjor passordet utrygt?",
                 "Se pa passordet og velg den beste forklaringen.",
-                "https://placehold.co/1200x720?text=Login%3A+Ola2015+avslort",
+                media(PASSWORD_WARNING_IMAGE),
                 "Illustrasjon av et svakt passord",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Det bruker navn og arstall som andre kan kjenne til"),
@@ -526,7 +542,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Tenk pa hva som skjer hvis noen far tak i ett av passordene dine.",
                 "Hvorfor er passord-gjenbruk dumt?",
                 "Velg den beste forklaringen.",
-                "https://placehold.co/1200x720?text=Passordnytt%3A+ett+passord+overalt",
+                media(PASSWORD_SAFE_IMAGE),
                 "Illustrasjon av samme passord pa flere kontoer",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Da kan noen prove samme passord pa flere kontoer"),
@@ -554,12 +570,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter lengde, variasjon og om passordet bygger pa vanlig info om deg.",
                 "Hvilket passord er smartest?",
                 "Sammenlign de to forslagene og velg det tryggeste.",
-                "https://placehold.co/1200x720?text=Passordforslag%3A+Ola2015",
+                media(PASSWORD_WARNING_IMAGE),
                 "Kort passord med navn og arstall",
                 "Forslag X",
                 "Ola2015",
                 "Passordet bruker navn og arstall som kan vaere lett a gjette.",
-                "https://placehold.co/1200x720?text=Passordforslag%3A+Blomst%21Sykkel9Maanen",
+                media(PASSWORD_SAFE_IMAGE),
                 "Langt passord med flere ord og symbol",
                 "Forslag Y",
                 "Blomst!Sykkel9Maanen",
@@ -578,7 +594,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter noe som gjor at siden virker mindre troverdig.",
                 "Hva er det tydeligste faresignalet?",
                 "Velg det som skurrer mest.",
-                "https://placehold.co/1200x720?text=SuperDeal%3A+spill+til+9+kr",
+                media(SHOP_WARNING_IMAGE),
                 "Skjermbilde av en tvilsom nettbutikk",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Butikken bruker en rar nettadresse som ikke ser norsk ut"),
@@ -592,12 +608,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter kjent navn, kontaktinfo og trygg betalingsinformasjon.",
                 "Hvilken butikk virker tryggest?",
                 "Velg butikken du ville stolt mest pa.",
-                "https://placehold.co/1200x720?text=super-billige-spill-deals.biz%3A+90%25+rabatt",
+                media(SHOP_WARNING_IMAGE),
                 "Tvilsom butikk med rar nettadresse",
                 "Butikk X",
                 "Supertilbud pa alt",
                 "Butikken lover veldig mye, men nettadressen og informasjonen virker rare.",
-                "https://placehold.co/1200x720?text=spillbutikk.no%3A+trygg+bestilling",
+                media(SHOP_SAFE_IMAGE),
                 "Ryddig butikk med tydelig informasjon",
                 "Butikk Y",
                 "Tydelig og ryddig",
@@ -634,7 +650,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter tydelig informasjon og trygg betaling, ikke bare tilbudspris.",
                 "Hvilken butikk virker mest troverdig?",
                 "Velg butikken du ville stolt mest pa.",
-                "https://placehold.co/1200x720?text=Butikksjekk%3A+to+spillbutikker",
+                media(SHOP_SAFE_IMAGE),
                 "Sammenligning av to nettbutikker",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Spillbutikk.no med tydelig kontaktinfo og kjent betaling"),
@@ -648,7 +664,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter konkrete ting du kan kontrollere, ikke bare hvor billig varen er.",
                 "Hva styrker tilliten mest?",
                 "To butikker selger samme vare. Velg det tegnet som gjor en av dem mest troverdig.",
-                "https://placehold.co/1200x720?text=Spillbutikk%3A+kontaktinfo+og+Vipps",
+                media(SHOP_SAFE_IMAGE),
                 "Illustrasjon av trygg nettbutikk med kontaktinfo",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Butikken viser tydelig kontaktinfo og kjent betalingsmate"),
@@ -663,12 +679,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter tydelig betaling, ryddig informasjon og minst mulig press.",
                 "Hvilken betaling virker tryggest?",
                 "Velg kassen du ville brukt.",
-                "https://placehold.co/1200x720?text=Kasse%3A+Vipps+na+ellers+mister+du+varen",
+                media(SHOP_WARNING_IMAGE),
                 "Kasseside med pressende tekst og lite informasjon",
                 "Kasse X",
                 "Handle fort",
                 "Siden stresser deg og gir lite informasjon om hvem du betaler til.",
-                "https://placehold.co/1200x720?text=Kasse%3A+ordrebekreftelse+og+kontaktinfo",
+                media(SHOP_SAFE_IMAGE),
                 "Ryddig kasseside med kontaktinfo og ordresammendrag",
                 "Kasse Y",
                 "Ryddig betaling",
@@ -687,7 +703,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Tenk pa hva som hjelper deg a ta et tryggere valg.",
                 "Hva bor du gjore forst?",
                 "Du ser et innlegg som gjor deg usikker. Hva er smartest?",
-                "https://placehold.co/1200x720?text=TikTok%3A+alle+ma+dele+dette",
+                media(SOCIAL_WARNING_IMAGE),
                 "Skjermbilde av et stressende innlegg i sosiale medier",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Stoppe opp og sjekke innholdet for du deler"),
@@ -701,12 +717,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter innlegg som forklarer mer og presser mindre.",
                 "Hvilket innlegg virker tryggest?",
                 "Velg innlegget du ville stolt mest pa.",
-                "https://placehold.co/1200x720?text=Snap%3A+DEL+NA+ELLERS+ER+DET+FOR+SENT",
+                media(SOCIAL_WARNING_IMAGE),
                 "Stressende innlegg med sterke ord",
                 "Innlegg X",
                 "Del na",
                 "Innlegget bruker gruppepress og sterke ord for a fa deg til a reagere fort.",
-                "https://placehold.co/1200x720?text=Skolen%3A+forklarer+endring+i+timeplanen",
+                media(SOCIAL_SAFE_IMAGE),
                 "Rolig innlegg med forklaring",
                 "Innlegg Y",
                 "Les for du deler",
@@ -743,7 +759,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Tenk pa hvilken handling som gir deg tid til a undersoke mer.",
                 "Hvilken reaksjon er smartest?",
                 "Du ser et innlegg som mange deler. Hva bor du gjore?",
-                "https://placehold.co/1200x720?text=Gruppechat%3A+del+eller+vent",
+                media(SOCIAL_WARNING_IMAGE),
                 "Skjermbilde av et viralt innlegg",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Vent og sjekk"),
@@ -757,12 +773,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter valget som bremser delingen og gir rom for sjekk.",
                 "Hva er smartest a gjore?",
                 "Velg alternativet som viser mest omtanke.",
-                "https://placehold.co/1200x720?text=Gruppechat%3A+del+for+a+advare+alle",
+                media(SOCIAL_WARNING_IMAGE),
                 "Innlegg som oppfordrer til rask deling",
                 "Valg X",
                 "Del for sikkerhets skyld",
                 "Du sprer innholdet videre uten a vite om det stemmer.",
-                "https://placehold.co/1200x720?text=Faktasjekk%3A+vent+og+sjekk+forst",
+                media(SOCIAL_SAFE_IMAGE),
                 "Rolig vurdering av innlegg for deling",
                 "Valg Y",
                 "Vent og sjekk",
@@ -775,7 +791,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Tenk pa hva som hjelper deg a undersoke innholdet, ikke bare reagere pa det.",
                 "Hva bor du gjore hvis du blir sint?",
                 "Du ser et innlegg som prover a gjore deg opprort. Velg det beste neste steget.",
-                "https://placehold.co/1200x720?text=Kommentarfelt%3A+stopp+opp+forst",
+                media(DETECTIVE_HUB_IMAGE),
                 "Illustrasjon av et barn som stopper opp for deling",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Puste litt og sjekke hvem som star bak innlegget"),
@@ -788,7 +804,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     );
 
     upsertExercise(DATACENTER_EXERCISE_UID, "Datatyven", "Høy",
-        "Bruk alt du har lært for å bekjempe datatyven!",
+        "Bruk alt du har lært for å bekjempe datatyven.",
         List.of(
             multipleChoiceTask(
                 "Datatyven sender en falsk nyhet. Velg det tydeligste faresignalet.",
@@ -796,7 +812,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Tenk pa hva som hjelper deg a kontrollere om en sak stemmer.",
                 "Hva avslorer den falske nyheten?",
                 "Datatyven har lagt ut en sak som sprer seg fort. Velg det tydeligste faresignalet.",
-                "https://placehold.co/1200x720?text=DATATYVEN+SLAAR+TIL",
+                media(NEWS_WARNING_IMAGE),
                 "Skjermbilde av en sjokkerende nyhetssak fra datatyven",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Saken har en kjent avsender og tydelige kilder"),
@@ -811,12 +827,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter rare hender, skjev tekst eller bakgrunner som ikke passer.",
                 "Hvilket bilde er ekte?",
                 "Studer detaljene og velg bildet datatyven ikke har laget.",
-                "https://placehold.co/1200x720?text=Rare+detaljer",
+                media(PHOTO_WARNING_IMAGE),
                 "KI-generert bilde med unaturlige detaljer",
                 "Bilde X",
                 "Mange smaa feil",
                 "Hender og tekst ser unaturlige ut.",
-                "https://placehold.co/1200x720?text=Naturlig+bilde",
+                media(PHOTO_SAFE_IMAGE),
                 "Ekte bilde med naturlige detaljer",
                 "Bilde Y",
                 "Naturlige detaljer",
@@ -883,12 +899,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter kjent nettadresse, kontaktinfo og trygg betaling.",
                 "Hvilken butikk er trygg?",
                 "Velg butikken du tor a handle i.",
-                "https://placehold.co/1200x720?text=mega-deal-store.click",
+                media(SHOP_WARNING_IMAGE),
                 "Tvilsom butikk med rar nettadresse og pressende tilbud",
                 "Butikk X",
                 "Sjokktilbud",
                 "Rar nettadresse, ingen kontaktinfo og pressende nedtelling.",
-                "https://placehold.co/1200x720?text=trygghandel.no",
+                media(SHOP_SAFE_IMAGE),
                 "Ryddig butikk med kontaktinfo og kjent betaling",
                 "Butikk Y",
                 "Kjent og ryddig",
@@ -901,7 +917,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Tenk pa hva som hjelper deg a unnga a spre feilinformasjon.",
                 "Hva gjor du i sosiale medier?",
                 "Du ser et innlegg som prover a fa deg til a dele med en gang.",
-                "https://placehold.co/1200x720?text=DEL+NA",
+                media(SOCIAL_WARNING_IMAGE),
                 "Stressende innlegg fra datatyven i sosiale medier",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Dele med en gang slik at andre advares"),
@@ -950,7 +966,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Tenk pa hva som hjelper deg a kontrollere om noe er ekte.",
                 "Hva gjor du forst?",
                 "Datatyven kombinerer flere triks. Velg det smarteste forste steget.",
-                "https://placehold.co/1200x720?text=Sjekk+forst",
+                media(DETECTIVE_HUB_IMAGE),
                 "Illustrasjon av en elev som sjekker avsender og bilde",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Klikke pa lenken for a se hva som skjer"),
@@ -965,12 +981,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Tenk pa det du har laert i alle stasjonene: nyheter, bilder, e-post, passord, butikker og sosiale medier.",
                 "Hvordan stopper du datatyven?",
                 "Velg den beste strategien.",
-                "https://placehold.co/1200x720?text=Klikk+og+del+raskt",
+                media(SOCIAL_WARNING_IMAGE),
                 "Risikabel strategi som spiller datatyven i hendene",
                 "Strategi X",
                 "Klikk og del raskt",
                 "Du faller for press og sprer datatyvens innhold videre.",
-                "https://placehold.co/1200x720?text=Stopp+sjekk+og+sterkt+passord",
+                media(DETECTIVE_HUB_IMAGE),
                 "Trygg strategi med sjekk og sterke passord",
                 "Strategi Y",
                 "Stopp, sjekk og bruk sterke passord",
@@ -985,50 +1001,50 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     upsertStation(NEWSSTAND_STATION_UID, "Nyhetskvartalet",
         "Nyhetsartikler og kildekritikk for skoleelever.",
         "Start med a sjekke hvem som er avsender, og om saken bruker sterke ord for a presse deg til a tro pa den.",
-        PLACEHOLDER_IMAGE, "#cfe9ff",
+        media("seed/stations/newsstand.svg"), "#cfe9ff",
         List.of(NEWSSTAND_EXERCISE_1_UID, NEWSSTAND_EXERCISE_2_UID), false);
 
     upsertStation(PHOTOGRAPH_STATION_UID, "Fotografen",
         "Normal, manipulert og KI-genererte bilder.",
         "Se ekstra nøye pa detaljer som hender, tekst, skygger og bakgrunn nar du vurderer bilder.",
-        PLACEHOLDER_IMAGE, "#5F5F5F",
+        media("seed/stations/photograph.svg"), "#5F5F5F",
         List.of(PHOTOGRAPH_EXERCISE_1_UID, PHOTOGRAPH_EXERCISE_2_UID), false);
 
     upsertStation(POSTOFFICE_STATION_UID, "Postkontoret",
         "Klikkbare e-posttester med avsendere, lenker og vedlegg.",
         "Ikke klikk med en gang. Sjekk avsender, lenkeadresse og om meldingen prover a stresse deg.",
-        PLACEHOLDER_IMAGE, "#fde68a",
+        media("seed/stations/postoffice.svg"), "#fde68a",
         List.of(POSTOFFICE_EXERCISE_1_UID, POSTOFFICE_EXERCISE_2_UID), false);
 
     upsertStation(PASSWORDBANK_STATION_UID, "Passordbanken",
         "Passordsjekking og gode passordvaner.",
         "Et sterkt passord er langt, unikt og vanskelig for andre a gjette, men fortsatt mulig for deg a huske.",
-        PLACEHOLDER_IMAGE, "#1D5232",
+        media("seed/stations/passwordbank.svg"), "#1D5232",
         List.of(PASSWORDBANK_EXERCISE_1_UID, PASSWORDBANK_EXERCISE_2_UID), false);
 
     upsertStation(MARKETPLACE_STATION_UID, "Markedsplassen",
         "Reklame, tilbud og e-butikker som ma vurderes.",
         "Hvis et tilbud virker for godt eller haster veldig, bor du stoppe opp og sjekke butikken forst.",
-        PLACEHOLDER_IMAGE, "#962C2C",
+        media("seed/stations/marketplace.svg"), "#962C2C",
         List.of(MARKETPLACE_EXERCISE_1_UID, MARKETPLACE_EXERCISE_2_UID), false);
 
     upsertStation(SOCIALMEDIA_STATION_UID, "Den sosiale moteplassen",
         "Deling av innlegg, vurderinger og gruppepress i sosiale medier.",
         "Vent litt for du deler. Sjekk om innholdet har en tydelig kilde og om det prover a gjore deg sint eller redd.",
-        PLACEHOLDER_IMAGE, "#fbcfe8",
+        media("seed/stations/socialmedia.svg"), "#fbcfe8",
         List.of(SOCIALMEDIA_EXERCISE_1_UID, SOCIALMEDIA_EXERCISE_2_UID), false);
 
     upsertStation(DATACENTER_STATION_UID, "Datasenteret",
-        "Finalebanen der du bruker det du har laert for a bekjempe datatyven.",
-        "Bruk alt du har laert: stopp opp, sjekk kilden, vurder detaljer og velg trygge handlinger.",
-        PLACEHOLDER_IMAGE, "#8A2A2A",
+        "Finalebanen der du bruker alt du har lært for å bekjempe datatyven.",
+        "Bruk alt du har lært: stopp opp, sjekk kilden, vurder detaljer og velg trygge handlinger.",
+        media("seed/stations/datacenter.svg"), "#8A2A2A",
         List.of(DATACENTER_EXERCISE_UID), true);
   }
 
   private void seedWorlds() {
     upsertWorld(SCHOOLYARD_WORLD_UID, "3-trinn",
         "Datasikkerhet for skoleelever: nyheter, bilder, e-post, passord, reklame, e-butikker og deling.",
-        PLACEHOLDER_IMAGE,
+        media("seed/worlds/schoolyard.svg"),
         List.of(
             NEWSSTAND_STATION_UID,
             PHOTOGRAPH_STATION_UID,
@@ -1041,7 +1057,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
 
     upsertWorld(QUICKSTART_WORLD_UID, "7-trinn",
         "Datasikkerhet for skoleelever: nyheter, bilder, e-post, passord, reklame, e-butikker og deling.",
-        PLACEHOLDER_IMAGE,
+        media("seed/worlds/quickstart.svg"),
         List.of(
             NEWSSTAND_STATION_UID,
             PHOTOGRAPH_STATION_UID,
@@ -1169,6 +1185,10 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     world.setStationUids(new ArrayList<>(stationUids));
 
     worldRepository.save(world);
+  }
+
+  private String media(String objectKey) {
+    return mediaStorageService.publicUrl(objectKey);
   }
 
   private TaskRequest multipleChoiceTask(String introText, String feedbackCorrect,

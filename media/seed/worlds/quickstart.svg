@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#dff0ff"/>
+  <rect x="70" y="70" width="1060" height="580" rx="44" fill="#ffffff"/>
+  <path d="M190 520 C320 320 500 220 690 280 C870 340 980 300 1040 190" stroke="#3d7cff" stroke-width="34" fill="none" stroke-linecap="round"/>
+  <circle cx="190" cy="520" r="34" fill="#3d7cff"/>
+  <circle cx="1040" cy="190" r="34" fill="#ff7f50"/>
+  <text x="600" y="170" text-anchor="middle" font-size="58" font-family="Arial, sans-serif" fill="#1b4168">Hurtigstart</text>
+  <text x="600" y="590" text-anchor="middle" font-size="32" font-family="Arial, sans-serif" fill="#426b94">En kort vei inn i de viktigste oppgavene</text>
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#fff5f5"/>
+  <rect x="170" y="100" width="860" height="520" rx="42" fill="#ffffff"/>
+  <rect x="230" y="170" width="740" height="380" rx="26" fill="#ffe2e2"/>
+  <circle cx="360" cy="250" r="50" fill="#ffd166"/>
+  <path d="M260 470 L450 330 L610 430 L760 250 L940 470 Z" fill="#f58f8f"/>
+  <path d="M520 280 Q560 210 600 280 Q640 350 680 280" stroke="#8b0000" stroke-width="18" fill="none" stroke-linecap="round"/>
+  <text x="600" y="130" text-anchor="middle" font-size="50" font-family="Arial, sans-serif" fill="#8a2f2f">Bilde med detaljer som skurrer</text>
+</svg>

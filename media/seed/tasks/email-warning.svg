@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#fff4f1"/>
+  <rect x="180" y="120" width="840" height="480" rx="36" fill="#ffffff"/>
+  <rect x="240" y="200" width="720" height="44" rx="16" fill="#ffc6c6"/>
+  <rect x="240" y="280" width="560" height="30" rx="14" fill="#ffe3e3"/>
+  <rect x="240" y="335" width="620" height="30" rx="14" fill="#ffe3e3"/>
+  <rect x="240" y="390" width="420" height="30" rx="14" fill="#ffe3e3"/>
+  <rect x="240" y="470" width="220" height="64" rx="18" fill="#ff7b7b"/>
+  <text x="600" y="145" text-anchor="middle" font-size="50" font-family="Arial, sans-serif" fill="#8a2f2f">Melding med faresignaler</text>
+</svg>

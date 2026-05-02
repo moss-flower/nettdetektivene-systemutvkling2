@@ -14,6 +14,7 @@ const successMessage = ref('');
 const previewUrl = ref('');
 const showPreviousMysteries = ref(false);
 const showSuggestionDialog = ref(false);
+const isSubmitting = ref(false);
 
 function handleDialogKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
@@ -26,12 +27,18 @@ const {
   currentMystery,
   previousMysteries,
   submissionHistory,
+  isLoading,
+  loadMysteryData,
   submitMysteryExample,
 } = useStudentMystery();
 
+await useAsyncData('student-mystery-data', loadMysteryData);
+
 const canSubmit = computed(() => {
-  return selectedFile.value !== null && studentMessage.value.trim().length >= 8;
+  return currentMystery.value !== null && selectedFile.value !== null && studentMessage.value.trim().length >= 8;
 });
+
+const hasPlayableMystery = computed(() => Boolean(currentMystery.value?.exerciseUid));
 
 const anyDialogOpen = computed(() => showPreviousMysteries.value || showSuggestionDialog.value);
 
@@ -81,7 +88,7 @@ function clearForm() {
   fileInputKey.value += 1;
 }
 
-function sendMysterySubmission() {
+async function sendMysterySubmission() {
   errorMessage.value = '';
   successMessage.value = '';
 
@@ -95,9 +102,17 @@ function sendMysterySubmission() {
     return;
   }
 
-  submitMysteryExample(studentMessage.value, selectedFile.value.name);
-  successMessage.value = 'Innleveringen er sendt til lærer for verifisering.';
-  clearForm();
+  isSubmitting.value = true;
+
+  try {
+    await submitMysteryExample(studentMessage.value, selectedFile.value);
+    successMessage.value = 'Innleveringen er sendt til lærer for vurdering.';
+    clearForm();
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Kunne ikke sende inn bidraget akkurat nå.';
+  } finally {
+    isSubmitting.value = false;
+  }
 }
 </script>
 
@@ -107,20 +122,24 @@ function sendMysterySubmission() {
       <header class="studentMysteryHeader">
         <p class="studentMysteryEyebrow">Ukens mysterium</p>
         <div class="mysteryTitleRow">
-          <h1>{{ currentMystery.title }}</h1>
-          <p class="studentMysteryWeek mysteryWeekHero">{{ currentMystery.weekLabel }}</p>
+          <h1>{{ currentMystery?.title ?? 'Ukens mysterium' }}</h1>
+          <p class="studentMysteryWeek mysteryWeekHero">{{ currentMystery?.weekLabel ?? 'Ingen sak valgt' }}</p>
         </div>
         <p class="studentMysteryIntro">
-          Spill ukens mysterium, eller tips læreren om en senere sak.
+          {{ hasPlayableMystery ? 'Spill ukens mysterium, eller tips læreren om en senere sak.' : currentMystery ? 'Læreren samler forslag før spillet blir klart.' : 'Læreren har ikke valgt et mysterium for klassen ennå.' }}
         </p>
       </header>
 
       <section class="studentMysterySection mysterySectionFeature" aria-labelledby="current-mystery-heading">
         <div class="mysteryPlayCard">
           <h2 id="current-mystery-heading" class="mysteryPlayTitle">Denne ukens sak</h2>
+          <p v-if="isLoading" class="studentMysteryHelper">Laster mysteriet...</p>
+          <p class="studentMysteryHelper">{{ currentMystery?.prompt ?? 'Det er ikke publisert noen aktiv sak ennå.' }}</p>
+          <p v-if="currentMystery?.clue" class="studentMysteryMeta"><strong>Tips:</strong> {{ currentMystery.clue }}</p>
+          <p v-if="currentMystery && !hasPlayableMystery" class="studentMysteryMeta">Spillet blir tilgjengelig når læreren har valgt et elevforslag og laget saken ferdig.</p>
 
           <div class="mysteryActionsRow">
-            <NuxtLink :to="routePaths.studentMysteryPlay" class="mysteryPlayAction">
+            <NuxtLink :to="routePaths.studentMysteryPlay" class="mysteryPlayAction" :aria-disabled="!hasPlayableMystery" :tabindex="hasPlayableMystery ? 0 : -1" :class="{ mysteryPlayActionDisabled: !hasPlayableMystery }">
               Spill ukens mysterium
             </NuxtLink>
 
@@ -158,10 +177,10 @@ function sendMysterySubmission() {
         <div class="mysteryDialogHeader">
           <div class="mysterySectionHeader">
             <p class="studentMysteryEyebrow">Neste uke</p>
-            <h2 id="suggestion-dialog-title">Tips læreren om et nytt mysterium</h2>
-            <p class="studentMysteryHelper">{{ currentMystery.prompt }}</p>
-            <p class="studentMysteryHelper">Send inn et bilde og en kort forklaring. Læreren kan bruke det i et senere mysterium.</p>
-            <p class="studentMysteryMeta"><strong>Tips:</strong> {{ currentMystery.clue }}</p>
+            <h2 id="suggestion-dialog-title">{{ currentMystery?.title ?? 'Ingen oppdrag publisert ennå' }}</h2>
+            <p v-if="currentMystery" class="studentMysteryHelper">{{ currentMystery.prompt }}</p>
+            <p v-if="currentMystery?.clue" class="studentMysteryMeta"><strong>Tips:</strong> {{ currentMystery.clue }}</p>
+            <p v-if="!currentMystery" class="studentMysteryError">Læreren har ikke publisert et oppdrag for klassen ennå. Når oppdraget er klart, kan du sende inn bilde og forklaring her.</p>
           </div>
 
           <button
@@ -174,7 +193,7 @@ function sendMysterySubmission() {
           </button>
         </div>
 
-        <div class="mysteryDialogBody">
+        <div v-if="currentMystery" class="mysteryDialogBody">
           <label class="studentMysteryField mysteryFieldUpload">
             <span>Bilde</span>
             <span class="mysteryUploadControl">
@@ -183,6 +202,7 @@ function sendMysterySubmission() {
                 class="mysteryFileInput"
                 type="file"
                 accept="image/*"
+                :disabled="!currentMystery || isSubmitting"
                 @change="handleFileChange"
               >
               <span class="mysteryUploadMain">
@@ -213,10 +233,10 @@ function sendMysterySubmission() {
             <button
               type="button"
               class="studentMysterySubmit"
-              :disabled="!canSubmit"
+              :disabled="!canSubmit || isSubmitting"
               @click="sendMysterySubmission"
             >
-              Send til lærer
+              {{ isSubmitting ? 'Sender...' : 'Send til lærer' }}
             </button>
           </div>
 
@@ -225,7 +245,7 @@ function sendMysterySubmission() {
         </div>
 
         <section
-          v-if="submissionHistory.length > 0"
+          v-if="currentMystery && submissionHistory.length > 0"
           class="studentMysterySection mysterySectionCompact"
           aria-labelledby="submissions-heading"
         >
@@ -237,10 +257,10 @@ function sendMysterySubmission() {
             <li v-for="submission in submissionHistory.slice(0, 3)" :key="submission.id" class="mysteryListItem">
               <div class="mysteryStatusRow">
                 <strong>{{ submission.status }}</strong>
-                <span>{{ submission.submittedAt }}</span>
+                <span>{{ submission.screenshotName }}</span>
               </div>
               <p>{{ submission.message }}</p>
-              <p class="studentMysteryMeta">{{ submission.screenshotName }}</p>
+              <a :href="submission.screenshotUrl" target="_blank" rel="noreferrer" class="studentMysteryMeta">Vis bildet</a>
             </li>
           </ul>
         </section>
@@ -276,9 +296,12 @@ function sendMysterySubmission() {
         </div>
 
         <ul class="mysteryDialogList">
+          <li v-if="previousMysteries.length === 0" class="mysteryDialogCard">
+            <p>Ingen tidligere mysterier er registrert for klasserommet ennå.</p>
+          </li>
           <li
             v-for="mystery in previousMysteries"
-            :key="mystery.id"
+            :key="mystery.publicId"
             class="mysteryDialogCard"
           >
             <div class="dialogCardHeader">
@@ -502,6 +525,11 @@ function sendMysterySubmission() {
   text-decoration: none;
   cursor: pointer;
   transition: background var(--transition-fast);
+}
+
+.mysteryPlayActionDisabled {
+  pointer-events: none;
+  opacity: 0.55;
 }
 
 .mysteryPlayAction:hover {

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#eefcf8"/>
+  <rect x="150" y="110" width="900" height="500" rx="40" fill="#ffffff"/>
+  <circle cx="400" cy="360" r="130" fill="#c7f0df"/>
+  <path d="M350 360 L390 400 L470 310" fill="none" stroke="#20855c" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="720" y="360" text-anchor="middle" font-size="70" font-family="Arial, sans-serif" fill="#275d4a">Sjekk kilden forst</text>
+</svg>

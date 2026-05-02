@@ -43,6 +43,8 @@ const { data: exercises } = await useAsyncData(
 
 const classroomExerciseUids = computed(() => new Set((exercises.value ?? []).map((exercise) => exercise.uid)));
 const totalExercises = computed(() => classroomExerciseUids.value.size);
+const classroomMembers = computed(() => Array.isArray(classroom.value?.members) ? classroom.value.members : []);
+const classroomOwners = computed(() => Array.isArray(classroom.value?.owners) ? classroom.value.owners : []);
 const pendingMembers = computed(() => classroom.value?.pendingMembers ?? []);
 
 const { data: progressByStudent, refresh: refreshProgress } = await useAsyncData(
@@ -52,7 +54,7 @@ const { data: progressByStudent, refresh: refreshProgress } = await useAsyncData
       return {};
     }
 
-    const entries = await Promise.all(classroom.value.members.map(async (student) => {
+    const entries = await Promise.all(classroomMembers.value.map(async (student) => {
       const completedExercises = await $api<CompletedExerciseResponse[]>(`/completed-exercises/students/${student.publicUuid}`, {
         method: 'GET',
       }).catch(() => []);
@@ -218,7 +220,7 @@ const deleteClassroom = async () => {
     <div v-if="classroom" class="summaryRow">
       <article class="summaryCard">
         <span class="summaryCardLabel">Elever</span>
-        <strong>{{ classroom.members.length }}</strong>
+        <strong>{{ classroomMembers.length }}</strong>
       </article>
 
       <article class="summaryCard">
@@ -228,7 +230,7 @@ const deleteClassroom = async () => {
 
       <article class="summaryCard">
         <span class="summaryCardLabel">Eiere</span>
-        <strong>{{ classroom.owners.length }}</strong>
+        <strong>{{ classroomOwners.length }}</strong>
       </article>
 
       <article class="summaryCard">
@@ -293,7 +295,7 @@ const deleteClassroom = async () => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="student in classroom.members" :key="student.publicUuid">
+          <tr v-for="student in classroomMembers" :key="student.publicUuid">
             <td>
               <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, { classroomId: classroomId, studentId: student.publicUuid })" class="studentLink">
                 {{ student.username }}
