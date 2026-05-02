@@ -11,7 +11,19 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * Filter that ensures CSRF token is written to a cookie on each request.
+ * Extends OncePerRequestFilter to guarantee a single execution per request.
+ */
 public class CsrfCookieFilter extends OncePerRequestFilter {
+    /**
+     * Intercepts requests to ensure the CSRF token is written to a cookie.
+     * @param request the HTTP request
+     * @param response the HTTP response
+     * @param filterChain the filter chain to continue processing
+     * @throws ServletException if a servlet error occurs
+     * @throws IOException if an I/O error occurs
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {

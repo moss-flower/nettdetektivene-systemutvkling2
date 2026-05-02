@@ -42,9 +42,10 @@ public class AuthenticationController {
     private String refreshCookieName;
 
     /**
-     * API endpoint for user login
-     * @param request
-     * @return
+     * API endpoint for user login.
+     * Authenticates user credentials and returns JWT tokens in HTTP-only cookies.
+     * @param request the UserLoginRequest containing email and password
+     * @return ResponseEntity with UserLoginResponse and Set-Cookie headers
      */
     @PostMapping(value = "/login")
     public ResponseEntity<UserLoginResponse> login(@Valid @RequestBody UserLoginRequest request){
@@ -62,7 +63,8 @@ public class AuthenticationController {
     /**
      * API endpoint for refresh tokens.
      * Sends an access and refresh token pair in a cookie.
-     * @return
+     * @param request the HttpServletRequest containing the refresh token cookie
+     * @return ResponseEntity with no content but Set-Cookie headers for new tokens
      */
     @PostMapping(value = "/refresh")
     public ResponseEntity<Void> refresh(HttpServletRequest request){
@@ -80,7 +82,7 @@ public class AuthenticationController {
     /**
      * API endpoint for user logout.
      * Sends an empty cookie to clear the existing cookie in browser.
-     * @return
+     * @return ResponseEntity with no content but Set-Cookie headers to clear tokens
      */
     @PostMapping(value = "/logout")
     public ResponseEntity<Void> logout(){
@@ -94,8 +96,8 @@ public class AuthenticationController {
 
     /**
      * API endpoint to retrieve user details of the logged in user.
-     * @param userPrincipal
-     * @return
+     * @param userPrincipal the authenticated user's principal injected by Spring Security
+     * @return ResponseEntity with UserLoginResponse containing current user details
      */
     @GetMapping(value = "/me")
     public ResponseEntity<UserLoginResponse> getActiveUserDetails(@AuthenticationPrincipal UserPrincipal userPrincipal){
@@ -108,9 +110,9 @@ public class AuthenticationController {
 
     /**
      * Extracts the cookie value from a request.
-     * @param request
-     * @param cookieName
-     * @return
+     * @param request the HTTP request containing cookies
+     * @param cookieName the name of the cookie to extract
+     * @return the cookie value if found, null otherwise
      */
     private String extractCookieValue(HttpServletRequest request, String cookieName) {
         if (request.getCookies() == null) {
