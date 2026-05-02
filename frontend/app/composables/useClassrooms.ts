@@ -21,6 +21,8 @@ export function useClassrooms() {
     ...classroom,
     owners: Array.isArray(classroom.owners) ? classroom.owners : [],
     members: Array.isArray(classroom.members) ? classroom.members : [],
+    pendingMembers: Array.isArray(classroom.pendingMembers) ? classroom.pendingMembers : [],
+    pendingEntry: Boolean(classroom.pendingEntry),
   });
 
   const normalizeClassrooms = (classrooms: Classroom[]) =>
@@ -109,9 +111,11 @@ export function useClassrooms() {
       classroomUid: string,
       userUuid: string,
     ): Promise<Classroom> => {
-      return await $api(`/classrooms/${classroomUid}/owners/${userUuid}`, {
+      const classroom = await $api<Classroom>(`/classrooms/${classroomUid}/owners/${userUuid}`, {
         method: "POST",
       });
+
+      return normalizeClassroom(classroom);
     },
 
     /**
@@ -123,9 +127,11 @@ export function useClassrooms() {
       classroomUid: string,
       userUuid: string,
     ): Promise<Classroom> => {
-      return await $api(`/classrooms/${classroomUid}/owners/${userUuid}`, {
+      const classroom = await $api<Classroom>(`/classrooms/${classroomUid}/owners/${userUuid}`, {
         method: "DELETE",
       });
+
+      return normalizeClassroom(classroom);
     },
 
     /**
@@ -156,6 +162,33 @@ export function useClassrooms() {
       });
 
       return normalizeClassroom(classroom);
+    },
+
+    approveMember: async (
+      classroomUid: string,
+      userUuid: string,
+    ): Promise<Classroom> => {
+      const classroom = await $api<Classroom>(`/classrooms/${classroomUid}/members/${userUuid}/approve`, {
+        method: "POST",
+      });
+
+      return normalizeClassroom(classroom);
+    },
+
+    /**
+     * Update a student's username (teacher-forced rename).
+     *
+     * @param studentUuid - Public UUID of the student
+     * @param newUsername - The new username
+     */
+    updateStudentUsername: async (
+      studentUuid: string,
+      newUsername: string,
+    ): Promise<{ username: string; message: string }> => {
+      return await $api(`/users/${studentUuid}/username`, {
+        method: "PATCH",
+        body: { username: newUsername },
+      });
     },
   };
 

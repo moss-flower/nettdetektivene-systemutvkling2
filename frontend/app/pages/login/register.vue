@@ -2,9 +2,6 @@
 import TextInput from "~/components/ui/TextInput.vue";
 import { routePaths } from "~/composables/utils/routePaths";
 import { useAuth } from "~/composables/useAuth";
-import { useThemeAttributes } from "~/composables/useThemeAttributes";
-
-useThemeAttributes("teacher");
 
 // Holds current form fields
 const username = ref("");
@@ -95,6 +92,7 @@ async function handleRegister() {
     await navigateTo(loginTarget.value);
   } catch (error: any) {
     formError.value =
+      error?.data?.detail ||
       error?.data?.message ||
       error?.data?.error ||
       error?.statusMessage ||

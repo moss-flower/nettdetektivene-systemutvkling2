@@ -138,39 +138,44 @@ const uploadOptionImage = async (choice: "x" | "y", event: Event) => {
 
 <style scoped>
 .templateSection {
-	margin-top: var(--space-4);
-	padding-top: var(--space-4);
-	border-top: var(--border-width-hairline) solid var(--color-border-default);
+   margin-top: var(--space-4);
+   padding-top: var(--space-4);
+   border-top: var(--border-width-hairline) solid var(--color-border-default);
 }
 
 .templateSection h4 {
-	margin: 0 0 0.8rem;
-	font-weight: 700;
+   margin: 0 0 var(--space-3);
 }
 
-.fieldGrid,
-.splitGrid {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 0.9rem;
+.fieldGrid {
+   display: grid;
+   grid-template-columns: repeat(2, minmax(0, 1fr));
+   gap: var(--space-3);
 }
 
 .splitGrid {
-	margin-top: 0.9rem;
+   display: grid;
+   grid-template-columns: repeat(2, minmax(0, 1fr));
+   gap: var(--space-3);
+   margin-top: var(--space-3);
 }
 
 .field {
-	display: grid;
-	gap: 0.45rem;
+   display: grid;
+   gap: var(--space-1);
 }
 
 .fieldFull {
-	grid-column: 1 / -1;
+   grid-column: 1 / -1;
 }
 
-.field span,
-.splitCard h5 {
-	font-weight: 700;
+.field span {
+   color: var(--factory-label-color);
+   font-family: var(--factory-label-font), monospace;
+   font-size: var(--factory-label-size);
+   font-weight: var(--font-weight-bold);
+   letter-spacing: var(--factory-label-tracking);
+   text-transform: uppercase;
 }
 
 .fieldHint {
@@ -187,33 +192,33 @@ const uploadOptionImage = async (choice: "x" | "y", event: Event) => {
 .field input,
 .field select,
 .field textarea {
-	width: 100%;
-	padding: 0.85rem var(--space-4);
-	border: var(--border-width-hairline) solid var(--color-border-default);
-	border-radius: 0.9rem;
-	background: rgba(0, 0, 0, 0.16);
-	color: var(--color-text-primary);
-	font: inherit;
+   width: 100%;
+   padding: var(--space-3) var(--space-4);
+   border: var(--border-width-hairline) solid var(--factory-field-border);
+   border-radius: var(--radius-1);
+   background: var(--factory-field-bg);
+   color: var(--color-text-primary);
+   font: inherit;
 }
 
 .field textarea {
-	resize: vertical;
+   resize: vertical;
 }
 
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-	outline: none;
-	border-color: var(--color-brand-primary);
+   outline: none;
+   border-color: var(--factory-field-focus);
 }
 
 .splitCard {
-	display: grid;
-	gap: var(--space-3);
-	padding: var(--space-4);
-	border: var(--border-width-hairline) solid var(--color-border-default);
-	border-radius: var(--radius-2);
-	background: rgba(255, 255, 255, 0.02);
+   display: grid;
+   gap: var(--space-3);
+   padding: var(--space-4);
+   border: var(--border-width-hairline) solid var(--color-border-default);
+   border-radius: var(--radius-2);
+   background: var(--color-bg-canvas);
 }
 
 .imagePreviewCard {
@@ -232,13 +237,22 @@ const uploadOptionImage = async (choice: "x" | "y", event: Event) => {
 }
 
 .splitCard h5 {
-	margin: 0;
+   margin: 0;
+   color: var(--factory-label-color);
+   font-family: var(--factory-label-font), monospace;
+   font-size: var(--factory-label-size);
+   font-weight: var(--font-weight-bold);
+   letter-spacing: var(--factory-label-tracking);
+   text-transform: uppercase;
 }
 
-@media (max-width: 800px) {
-	.fieldGrid,
-	.splitGrid {
-		grid-template-columns: 1fr;
-	}
+@media (max-width: 800px) { /* deliberate: matches factory editor mobile breakpoint */
+   .fieldGrid {
+      grid-template-columns: 1fr;
+   }
+
+   .splitGrid {
+      grid-template-columns: 1fr;
+   }
 }
 </style>

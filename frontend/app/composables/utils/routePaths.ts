@@ -3,6 +3,7 @@ export enum routePaths {
     studentLevels = '/student/game/stations',
     login = '/login',
     join = '/login/join',
+    pending = '/login/pending',
     register = '/login/register',
     teacherOverview = '/teacher',
     teacherSettings = '/teacher/settings',
@@ -13,11 +14,13 @@ export enum routePaths {
     teacherClassroomNotifications = '/teacher/classroom/notifications',
     teacherClassroomStudentProgress = '/teacher/classroom/student-progress',
     teacherClassroomStudents = '/teacher/classroom/students',
+    teacherClassroomStudentNotes = '/teacher/classroom/student-notes',
     teacherClassroomExercises = '/teacher/classroom/tasks',
     teacherFactoryExercise = '/teacher/factory/exerciseFactory',
     teacherFactoryStation = '/teacher/factory/stationFactory',
     teacherFactoryWorld = '/teacher/factory/worldFactory',
     studentHome = '/student',
+    studentEditAvatar = '/student/editAvatar',
     studentProfile = '/student/profile',
     studentAchievements = '/student/achievements',
     studentExerciseDifficultySelect = '/student/game/selectDifficulty',
@@ -32,6 +35,9 @@ export enum routePaths {
 
     notYetImplemented = '/shared/notYetImplemented',
     studentHelp = '/student/help',
+
+
+    editAvatar = "/student/editavatar"
 }
 
 export const routePathsWithString = (path: routePaths, string: string) => `${path}${string}`;

@@ -1,13 +1,16 @@
 package no.safety.backend.notification.service;
 
 import java.util.Set;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import no.safety.backend.exception.AccessDeniedException;
 import no.safety.backend.notification.dto.NotificationEvent;
 import no.safety.backend.notification.model.Notification;
 import no.safety.backend.notification.repository.NotificationRepository;
@@ -42,7 +45,9 @@ public class NotificationService {
             notification = Notification.builder()
             .message(event.getMessage())
             .target(user)
+            .senderId(sender.getPublicUuid())
             .priority(event.getPriority())
+            .senderName(sender.getUsername())
             .build();
 
             repository.save(notification);
@@ -70,6 +75,17 @@ public class NotificationService {
         for (Notification notification : notifications) {
             registry.send(userId, notification);
         }
+    }
+
+    public void deleteNotification(UUID notificationUuid, Long requestingUserId) {
+        Notification notification = repository.findByPublicId(notificationUuid)
+            .orElseThrow(() -> new EntityNotFoundException("Notification not found"));
+
+        if (!notification.getTarget().getInternalId().equals(requestingUserId)) {
+            throw new AccessDeniedException("Not authorized to delete this notification");
+        }
+
+        repository.delete(notification);
     }
 
 

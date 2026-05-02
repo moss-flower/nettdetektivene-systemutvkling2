@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BackgroundMusic from '~/components/audio/BackgroundMusic.vue'
+import AvatarProfilePopup from '~/components/avatar/AvatarProfilePopup.vue'
 
 const route = useRoute()
 const isInGame = computed(() =>
@@ -13,6 +14,7 @@ const isInGame = computed(() =>
   </NuxtLayout>
   <ClientOnly>
     <BackgroundMusic v-if="isInGame" />
+    <AvatarProfilePopup v-if="isInGame" />
   </ClientOnly>
 </template>
 

@@ -105,9 +105,15 @@ const items: StudentHomeItem[] = [
 
 const router = useRouter();
 const { logout } = useAuth();
+const { openAvatarProfile } = useAvatarProfilePopup();
 const isLoggingOut = ref(false);
 
 function handleClick(item: StudentHomeItem) {
+  if (item.id === 'avatar') {
+    openAvatarProfile();
+    return;
+  }
+
   if (!item.route) {
     return;
   }

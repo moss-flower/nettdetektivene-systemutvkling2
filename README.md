@@ -149,20 +149,37 @@ Student accounts:
 - `mia.elev@test.com` (`Mia Elev`)
 - `lukas.elev@test.com` (`Lukas Elev`)
 
+Pending student accounts:
+- `theo.venter@test.com` (`Theo Venter`)
+- `amalie.venter@test.com` (`Amalie Venter`)
+- `henrik.venter@test.com` (`Henrik Venter`)
+- `nora.venter@test.com` (`Nora Venter`)
+- `aksel.venter@test.com` (`Aksel Venter`)
+- `vilde.venter@test.com` (`Vilde Venter`)
+
+Student without classroom:
+- `oda.utenklasse@test.com` (`Oda Uten Klasse`)
+
 ### Classrooms
 
-- `Klasse 5B` with code `SUPER-SKOG-KOPP`
-- `Klasse 6A` with code `MODIG-TAVLE-BRUS`
-- `Nettdetektivene` with code `KONGE-LAVA-TRE`
+- `3-trinn A` with code `SUPER-SKOG-KOPP`
+- `3-trinn B` with code `MODIG-TAVLE-BRUS`
+- `3-trinn C` with code `KONGE-LAVA-TRE`
+- `7-trinn A` with code `TRYGG-REV-SOL`
+- `7-trinn B` with code `KLAR-FJELL-BOK`
+- `7-trinn C` with code `RASK-ELG-LYS`
 
 ### Current memberships
 
-- `Ada Elev`, `Elias Elev` and `Sara Elev` belong to `Klasse 5B`
-- `Noah Elev` and `Ingrid Elev` belong to `Klasse 6A`
-- `Emil Elev` belongs to `Nettdetektivene`
-- `Mia Elev` and `Lukas Elev` are not in a classroom yet
+- `Ada Elev` and `Elias Elev` belong to `3-trinn A`; `Theo Venter` is pending
+- `Sara Elev` belongs to `3-trinn B`; `Amalie Venter` is pending
+- `Noah Elev` belongs to `3-trinn C`; `Henrik Venter` is pending
+- `Ingrid Elev` and `Emil Elev` belong to `7-trinn A`; `Nora Venter` is pending
+- `Mia Elev` belongs to `7-trinn B`; `Aksel Venter` is pending
+- `Lukas Elev` belongs to `7-trinn C`; `Vilde Venter` is pending
+- `Oda Uten Klasse` is not in a classroom yet
 
-Teachers can log in directly to test teacher views. Students already assigned to a classroom can log in and test student flows without joining first. Use `Mia Elev` or `Lukas Elev` together with the join codes above to test classroom join flows.
+Teachers can log in directly to test teacher views. Active students can log in and test student flows without joining first. Pending students log in to the pending classroom page, and can be approved from the teacher classroom overview.
 
 ### Aktivitetsdiagram
 ![Aktivitetsdiagram](docs/flowchart.png)

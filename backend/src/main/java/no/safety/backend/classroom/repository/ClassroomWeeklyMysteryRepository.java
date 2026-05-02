@@ -10,6 +10,7 @@ import java.util.UUID;
 
 public interface ClassroomWeeklyMysteryRepository extends JpaRepository<ClassroomWeeklyMystery, Long> {
     List<ClassroomWeeklyMystery> findByClassroom_InternalIdOrderByAssignedDateDesc(Long classroomId);
+    void deleteByClassroom_InternalId(Long classroomId);
     boolean existsByWeeklyMysteryPrompt_AndClassroom_Owners_InternalId(WeeklyMysteryPrompt prompt, Long teacherInternalId);
     boolean existsByClassroom_InternalIdAndWeeklyMysteryPrompt_PublicUuid(Long classroomInternalId, UUID promptPublicUuid);
 }

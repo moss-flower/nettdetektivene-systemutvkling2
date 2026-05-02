@@ -309,6 +309,17 @@ public class ClassroomController {
         return classroomService.removeMember(classroomId, userUuid, getCallerUuid(principal));
     }
 
+    @Operation(summary = "Approve a pending student", description = "Approves a pending classroom membership request. Requires the caller to be an owner.", tags = {
+            "Classroom management for teachers" })
+    @PreAuthorize("hasRole('TEACHER')")
+    @PostMapping("/{classroomId}/members/{userUuid}/approve")
+    public ClassroomResponse approveMember(
+            @PathVariable UUID classroomId,
+            @PathVariable UUID userUuid,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return classroomService.approveMember(classroomId, userUuid, getCallerUuid(principal));
+    }
+
     /**
      * Allows a student to leave a classroom they are a member of.
      *

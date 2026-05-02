@@ -10,6 +10,7 @@ import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.classroom.repository.ClassroomRepository;
 import no.safety.backend.completedexercise.model.CompletedExercise;
 import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
+import no.safety.backend.notification.dto.NotificationEvent;
 import no.safety.backend.role.model.Role;
 import no.safety.backend.role.model.RoleType;
 import no.safety.backend.role.repository.RoleRepository;
@@ -19,6 +20,7 @@ import no.safety.backend.user.repository.StudentUserRepository;
 import no.safety.backend.user.repository.TeacherUserRepository;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -44,6 +46,13 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
   public static final UUID EMIL_ELEV_UID = stableUuid("87229500-189e-4823-8874-0a6014430d1d");
   public static final UUID MIA_ELEV_UID = stableUuid("54550c30-f4ac-44f0-96e6-fcfe4d9d9bd5");
   public static final UUID LUKAS_ELEV_UID = stableUuid("ae7780a8-f017-4956-9468-d72d3617baa0");
+  public static final UUID ODA_NO_CLASSROOM_ELEV_UID = stableUuid("student:oda-no-classroom");
+  public static final UUID THEO_PENDING_ELEV_UID = stableUuid("student:theo-pending");
+  public static final UUID AMALIE_PENDING_ELEV_UID = stableUuid("student:amalie-pending");
+  public static final UUID HENRIK_PENDING_ELEV_UID = stableUuid("student:henrik-pending");
+  public static final UUID NORA_PENDING_ELEV_UID = stableUuid("student:nora-pending");
+  public static final UUID AKSEL_PENDING_ELEV_UID = stableUuid("student:aksel-pending");
+  public static final UUID VILDE_PENDING_ELEV_UID = stableUuid("student:vilde-pending");
 
   public static final UUID KLASSE_3A_UID = stableUuid("729b159a-97a1-4917-a71b-901420a2749d");
   public static final UUID KLASSE_3B_UID = stableUuid("d217f63d-1252-419f-8106-998728797235");
@@ -65,6 +74,7 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
   private final RoleRepository roleRepository;
   private final CompletedExerciseRepository completedExerciseRepository;
   private final PasswordEncoder passwordEncoder;
+
 
   @Override
   @Transactional
@@ -93,9 +103,17 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     StudentUser emilElev = upsertStudent(EMIL_ELEV_UID, "Emil Elev", "emil.elev@test.com", studentRole);
     StudentUser miaElev = upsertStudent(MIA_ELEV_UID, "Mia Elev", "mia.elev@test.com", studentRole);
     StudentUser lukasElev = upsertStudent(LUKAS_ELEV_UID, "Lukas Elev", "lukas.elev@test.com", studentRole);
+    StudentUser odaNoClassroomElev = upsertStudent(ODA_NO_CLASSROOM_ELEV_UID, "Oda Uten Klasse", "oda.utenklasse@test.com", studentRole);
+    StudentUser theoPendingElev = upsertStudent(THEO_PENDING_ELEV_UID, "Theo Venter", "theo.venter@test.com", studentRole);
+    StudentUser amaliePendingElev = upsertStudent(AMALIE_PENDING_ELEV_UID, "Amalie Venter", "amalie.venter@test.com", studentRole);
+    StudentUser henrikPendingElev = upsertStudent(HENRIK_PENDING_ELEV_UID, "Henrik Venter", "henrik.venter@test.com", studentRole);
+    StudentUser noraPendingElev = upsertStudent(NORA_PENDING_ELEV_UID, "Nora Venter", "nora.venter@test.com", studentRole);
+    StudentUser akselPendingElev = upsertStudent(AKSEL_PENDING_ELEV_UID, "Aksel Venter", "aksel.venter@test.com", studentRole);
+    StudentUser vildePendingElev = upsertStudent(VILDE_PENDING_ELEV_UID, "Vilde Venter", "vilde.venter@test.com", studentRole);
 
     clearSeededMemberships(List.of(adaElev, eliasElev, saraElev, noahElev, ingridElev, emilElev, miaElev,
-        lukasElev));
+        lukasElev, odaNoClassroomElev, theoPendingElev, amaliePendingElev, henrikPendingElev, noraPendingElev,
+        akselPendingElev, vildePendingElev));
 
     Classroom klasse3a = upsertClassroom(
         KLASSE_3A_UID,
@@ -151,6 +169,12 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     assignMembers(klasse7a, List.of(ingridElev, emilElev));
     assignMembers(klasse7b, List.of(miaElev));
     assignMembers(klasse7c, List.of(lukasElev));
+    assignPendingMember(klasse3a, theoPendingElev);
+    assignPendingMember(klasse3b, amaliePendingElev);
+    assignPendingMember(klasse3c, henrikPendingElev);
+    assignPendingMember(klasse7a, noraPendingElev);
+    assignPendingMember(klasse7b, akselPendingElev);
+    assignPendingMember(klasse7c, vildePendingElev);
   }
 
   private Role getOrCreateRole(RoleType roleType) {
@@ -185,6 +209,7 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
   private void clearSeededMemberships(List<StudentUser> students) {
     for (StudentUser student : students) {
       student.setClassroom(null);
+      student.setClassroomPending(false);
       studentRepository.save(student);
     }
   }
@@ -206,8 +231,15 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
   private void assignMembers(Classroom classroom, List<StudentUser> members) {
     for (StudentUser member : members) {
       member.setClassroom(classroom);
+      member.setClassroomPending(false);
       studentRepository.save(member);
     }
+  }
+
+  private void assignPendingMember(Classroom classroom, StudentUser member) {
+    member.setClassroom(classroom);
+    member.setClassroomPending(true);
+    studentRepository.save(member);
   }
 
   private static UUID stableUuid(String value) {

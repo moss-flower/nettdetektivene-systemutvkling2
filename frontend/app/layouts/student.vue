@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { useGamePreview } from '~/composables/useGamePreview'
-import { useThemeAttributes } from '~/composables/useThemeAttributes'
 import { routePaths } from '~/composables/utils/routePaths'
 
-useThemeAttributes('game')
 
 const route = useRoute()
 const { isPreview, classroomId } = useGamePreview()
@@ -18,6 +16,22 @@ const backButtonRoute = computed(() => {
     return {
       path: routePaths.teacherClassroomOverview,
       query: { classroomId: classroomId.value },
+    }
+  }
+
+  if (route.path === routePaths.studentExerciseDifficultySelect) {
+    if (isPreview.value && classroomId.value) {
+      return {
+        path: routePaths.studentLevels,
+        query: { preview: '1', classroomId: classroomId.value },
+      }
+    }
+
+    const worldUid = typeof route.query.worldUid === 'string' ? route.query.worldUid : undefined
+
+    return {
+      path: routePaths.studentLevels,
+      query: worldUid ? { worldUid } : undefined,
     }
   }
 
@@ -61,7 +75,7 @@ const backButtonRoute = computed(() => {
 
 .studentShellFrame {
   position: relative;
-  width: 90vw;
+  width: min(90vw, 100%);
   height: 90vh;
   padding: var(--space-5);
   overflow: hidden;
