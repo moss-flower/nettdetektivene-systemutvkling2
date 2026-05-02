@@ -40,6 +40,13 @@ public class StationMediaSeedInitializer implements ApplicationRunner {
   private static final String PHOTOGRAPH_AI_MARS_IMAGE = "seed/tasks/fotografen/ai-eiffel-tower-mars-landscape.jpeg";
   private static final String PHOTOGRAPH_AI_SKY_IMAGE = "seed/tasks/fotografen/ai-sunset-spiral-clouds.jpeg";
 
+  private static final String POSTOFFICE_FAKE_IPHONE_IMAGE = "seed/tasks/postkontoret/fake-you-won-iphone.jpeg";
+  private static final String POSTOFFICE_FAKE_ACCOUNT_IMAGE = "seed/tasks/postkontoret/fake-your-account-will-be-closed.jpeg";
+  private static final String POSTOFFICE_REAL_BOOK_IMAGE = "seed/tasks/postkontoret/real-book-reservation-reminder.png";
+  private static final String POSTOFFICE_REAL_HIKE_IMAGE = "seed/tasks/postkontoret/real-hike-reminder.jpeg";
+  private static final String POSTOFFICE_REAL_TIMETABLE_IMAGE = "seed/tasks/postkontoret/real-timeplan-next-week.png";
+  private static final String POSTOFFICE_REAL_LIBRARY_IMAGE = "seed/tasks/postkontoret/real-welcome-to-library.jpeg";
+
   private final MediaStorageService mediaStorageService;
 
   @Override
@@ -68,7 +75,13 @@ public class StationMediaSeedInitializer implements ApplicationRunner {
         PHOTOGRAPH_AI_BANANA_IMAGE,
         PHOTOGRAPH_AI_SIGNS_IMAGE,
         PHOTOGRAPH_AI_MARS_IMAGE,
-        PHOTOGRAPH_AI_SKY_IMAGE
+        PHOTOGRAPH_AI_SKY_IMAGE,
+        POSTOFFICE_FAKE_IPHONE_IMAGE,
+        POSTOFFICE_FAKE_ACCOUNT_IMAGE,
+        POSTOFFICE_REAL_BOOK_IMAGE,
+        POSTOFFICE_REAL_HIKE_IMAGE,
+        POSTOFFICE_REAL_TIMETABLE_IMAGE,
+        POSTOFFICE_REAL_LIBRARY_IMAGE
     ).forEach(image -> mediaStorageService.uploadPublicClasspathImage(image, image, PNG));
   }
 }

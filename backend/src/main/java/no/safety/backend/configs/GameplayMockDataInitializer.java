@@ -107,6 +107,13 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   private static final String PHOTOGRAPH_AI_MARS_IMAGE = "seed/tasks/fotografen/ai-eiffel-tower-mars-landscape.jpeg";
   private static final String PHOTOGRAPH_AI_SKY_IMAGE = "seed/tasks/fotografen/ai-sunset-spiral-clouds.jpeg";
 
+  private static final String POSTOFFICE_FAKE_IPHONE_IMAGE = "seed/tasks/postkontoret/fake-you-won-iphone.jpeg";
+  private static final String POSTOFFICE_FAKE_ACCOUNT_IMAGE = "seed/tasks/postkontoret/fake-your-account-will-be-closed.jpeg";
+  private static final String POSTOFFICE_REAL_BOOK_IMAGE = "seed/tasks/postkontoret/real-book-reservation-reminder.png";
+  private static final String POSTOFFICE_REAL_HIKE_IMAGE = "seed/tasks/postkontoret/real-hike-reminder.jpeg";
+  private static final String POSTOFFICE_REAL_TIMETABLE_IMAGE = "seed/tasks/postkontoret/real-timeplan-next-week.png";
+  private static final String POSTOFFICE_REAL_LIBRARY_IMAGE = "seed/tasks/postkontoret/real-welcome-to-library.jpeg";
+
   private final ExerciseRepository exerciseRepository;
   private final StationRepository stationRepository;
   private final WorldRepository worldRepository;
@@ -353,7 +360,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "To personer som går sammen",
                 "",
                 "Alternativ 2",
-                "To personer går ute sammen.",
+                "Mange personer går ute sammen.",
                 XOrYContent.Choice.Y
             ),
             multipleChoiceTask(
@@ -374,159 +381,135 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
         )
     );
 
-    upsertExercise(POSTOFFICE_EXERCISE_1_UID, "Mistenkelige e-poster", "Lett",
-        "Ov pa a avslore falske e-poster, mistenkelige lenker og rare avsendere.",
+    upsertExercise(POSTOFFICE_EXERCISE_1_UID, "Før du klikker", "Lett",
+        "Lær å kjenne igjen vanlige e-poster og de første tegnene på at noe er rart.",
         List.of(
             multipleChoiceTask(
-                "Velg det tydeligste faresignalet i meldingen.",
-                "Riktig. En rar avsenderadresse er et tydelig faresignal.",
-                "Se etter noe som hjelper deg a oppdage om meldingen kan vaere falsk.",
-                "Finn den ene tingen som virker rar",
-                "Se pa e-posten og velg det som skurrer mest.",
-                media(EMAIL_WARNING_IMAGE),
-                "Skjermbilde av en mistenkelig e-post",
+                "Hva er det første du bør sjekke i denne meldingen?",
+                "Bra. Avsenderen er ofte det viktigste å kontrollere først.",
+                "Se etter noe som hjelper deg å forstå om meldingen er trygg å åpne.",
+                "Hva bør du se på først?",
+                "Velg det som sier mest om hvem som sendte meldingen.",
+                media(POSTOFFICE_REAL_LIBRARY_IMAGE),
+                "En vanlig e-post med tydelig avsender",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Avsenderadressen ser rar ut"),
-                    new MultipleChoiceContent.Option("b", "Meldingen er kort")
+                    new MultipleChoiceContent.Option("a", "Hvem som sendte e-posten"),
+                    new MultipleChoiceContent.Option("b", "Hvor mange linjer teksten har"),
+                    new MultipleChoiceContent.Option("c", "Om det er et bilde øverst")
                 ),
                 "a"
             ),
+            xOrYTask(
+                "Hvilken melding virker mest som en vanlig e-post?",
+                "Riktig. Den ene prøver å lokke deg raskt, mens den andre ser ut som en vanlig påminnelse.",
+                "Se etter hvilken melding som virker mest rolig og vanlig.",
+                "Hvilken melding ville du åpnet først?",
+                "Velg den som virker mest hverdagslig.",
+                media(POSTOFFICE_FAKE_IPHONE_IMAGE),
+                "Du har vunnet en iPhone",
+                "",
+                "Melding 1",
+                "Meldingen lover en premie og vil at du skal klikke raskt.",
+                media(POSTOFFICE_REAL_BOOK_IMAGE),
+                "Påminnelse om en reservert bok",
+                "",
+                "Melding 2",
+                "Meldingen minner deg bare om en bok du har lånt.",
+                XOrYContent.Choice.Y
+            ),
             emailHotspotsTask(
-                "Trykk pa de delene av e-posten som virker mistenkelige.",
-                "Bra jobbet. Du fant faresignalene i meldingen.",
-                "Se ekstra pa avsenderadressen og lenken i meldingen.",
+                "Trykk på de delene av e-posten som virker mest mistenkelige.",
+                "Bra jobbet. Du fant flere tegn på at meldingen ikke er trygg.",
+                "Se etter avsenderen, lenken og ting som prøver å stresse deg.",
                 "Finn faresignalene",
-                "Trykk pa det som virker utrygt i e-posten.",
+                "Trykk på det som gjør meldingen mistenkelig.",
                 new EmailHotspotsContent.Email(
                     "Skole-IT",
                     "sender-name",
-                    "hjelp@skole-login-alert.net",
+                    "support@skolekonto-trygg.info",
                     "sender-address",
-                    "Logg inn pa nytt i dag",
+                    "Kontoen din blir stengt i dag",
                     "subject",
                     "IT",
                     "I dag 08:15",
                     "received",
-                    "Hei!",
+                    "Hei elev!",
                     "greeting",
                     List.of(
-                        new EmailHotspotsContent.TextBlock("body-text", "Vi ma sjekke kontoen din med en gang.", "body-text-target"),
-                        new EmailHotspotsContent.LinkBlock("body-link", "Bekreft kontoen", "skole-login-check.click", "Svar innen 20 minutter", "body-link-target")
+                        new EmailHotspotsContent.TextBlock("body-text", "Du må oppdatere kontoen din med en gang for at den ikke skal bli sperret.", "body-text-target"),
+                        new EmailHotspotsContent.LinkBlock("body-link", "Oppdater her", "skolekonto-trygg.info/login", "Gjør det nå", "body-link-target")
                     ),
                     new EmailHotspotsContent.ActionButton("Logg inn", "skolenorge.no", "action-button"),
-                    List.of(new EmailHotspotsContent.Attachment("attachment", "info.pdf", "Vanlig vedlegg", "attachment-target")),
-                    "Hilsen supportteamet",
+                    List.of(new EmailHotspotsContent.Attachment("attachment", "oppdatering.zip", "Uvanlig vedlegg", "attachment-target")),
+                    "Hilsen support",
                     "closing"
                 ),
                 List.of(
                     new EmailHotspotsContent.Target("sender-name", false),
                     new EmailHotspotsContent.Target("sender-address", true),
-                    new EmailHotspotsContent.Target("subject", false),
+                    new EmailHotspotsContent.Target("subject", true),
                     new EmailHotspotsContent.Target("received", false),
                     new EmailHotspotsContent.Target("greeting", false),
-                    new EmailHotspotsContent.Target("body-text-target", false),
+                    new EmailHotspotsContent.Target("body-text-target", true),
                     new EmailHotspotsContent.Target("body-link-target", true),
                     new EmailHotspotsContent.Target("action-button", false),
-                    new EmailHotspotsContent.Target("attachment-target", false),
+                    new EmailHotspotsContent.Target("attachment-target", true),
                     new EmailHotspotsContent.Target("closing", false)
                 )
-            ),
-            xOrYTask(
-                "Sammenlign de to meldingene og velg den som virker tryggest.",
-                "Riktig. Den tryggeste meldingen bruker kjent avsender og en tydelig nettadresse.",
-                "Se etter kjent avsender, rolig sprak og lenker du kjenner igjen.",
-                "Hvilken e-post virker tryggest?",
-                "Velg meldingen du ville stolt mest pa.",
-                media(EMAIL_WARNING_IMAGE),
-                "Mistenkelig e-post med stressende sprak",
-                "Melding X",
-                "Handle na",
-                "Meldingen presser deg til a klikke med en gang og bruker en rar avsender.",
-                media(EMAIL_SAFE_IMAGE),
-                "Vanlig skoleepost med tydelig avsender",
-                "Melding Y",
-                "Vanlig informasjon",
-                "Meldingen forklarer rolig hva den handler om og kommer fra en kjent avsender.",
-                XOrYContent.Choice.Y
             )
         )
     );
 
     upsertExercise(POSTOFFICE_EXERCISE_2_UID, "E-postdetektiv", "Middels",
-        "Finn flere faresignaler i meldinger som ser nesten ekte ut.",
+        "Sammenlign meldinger og finn tegn som hjelper deg å avgjøre om de er trygge.",
         List.of(
             multipleChoiceTask(
-                "Velg den beste forklaringen pa hvorfor meldingen ikke virker trygg.",
-                "Bra. Nar meldingen presser deg til a handle raskt og lenken virker rar, bor du stoppe opp.",
-                "Se etter press, rare lenker eller avsendere du ikke kjenner.",
-                "Finn de to farlige delene",
-                "Hva er den beste forklaringen pa at denne meldingen er utrygg?",
-                media(EMAIL_WARNING_IMAGE),
-                "Skjermbilde av en mistenkelig e-post med lenke",
+                "Hva virker mest normalt i denne meldingen?",
+                "Riktig. En tydelig og kjent avsender er et godt tegn.",
+                "Se etter det som gjør meldingen lett å forstå og kontrollere.",
+                "Hva er det beste tegnet på at meldingen er grei?",
+                "Velg det som virker mest som en vanlig skolemelding.",
+                media(POSTOFFICE_REAL_TIMETABLE_IMAGE),
+                "Melding om neste ukes timeplan",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Den bruker press og en lenke som virker rar"),
-                    new MultipleChoiceContent.Option("b", "Den har skolens logo"),
-                    new MultipleChoiceContent.Option("c", "Den nevner et kjent tema")
+                    new MultipleChoiceContent.Option("a", "Den kommer fra en tydelig avsender"),
+                    new MultipleChoiceContent.Option("b", "Den lover en premie"),
+                    new MultipleChoiceContent.Option("c", "Den ber deg logge inn med en gang")
                 ),
                 "a"
             ),
-            emailHotspotsTask(
-                "Finn alle faresignalene i meldingen som ser nesten ekte ut.",
-                "Bra. Du oppdaget flere ting som gjorde meldingen utrygg.",
-                "Se etter press, rare lenker og vedlegg du ikke forventet.",
-                "Hva skurrer i e-posten?",
-                "Trykk pa alle delene som virker mistenkelige.",
-                new EmailHotspotsContent.Email(
-                    "Skolekontoret",
-                    "sender-name-2",
-                    "beskjed@skole-konto-verify.biz",
-                    "sender-address-2",
-                    "Viktig melding om skolekontoen din",
-                    "subject-2",
-                    "SK",
-                    "I dag 09:40",
-                    "received-2",
-                    "Hei elev!",
-                    "greeting-2",
-                    List.of(
-                        new EmailHotspotsContent.TextBlock("body-text-2", "Hvis du ikke svarer innen 10 minutter, blir kontoen din sperret.", "body-text-target-2"),
-                        new EmailHotspotsContent.LinkBlock("body-link-2", "Aapne skolekonto", "secure-school-check.biz/login", "Maa gjores i dag", "body-link-target-2")
-                    ),
-                    new EmailHotspotsContent.ActionButton("Les mer", "skoleportalen.no", "action-button-2"),
-                    List.of(new EmailHotspotsContent.Attachment("attachment-2", "skjema.zip", "Uventet komprimert fil", "attachment-target-2")),
-                    "Hilsen administrasjonen",
-                    "closing-2"
-                ),
-                List.of(
-                    new EmailHotspotsContent.Target("sender-name-2", false),
-                    new EmailHotspotsContent.Target("sender-address-2", true),
-                    new EmailHotspotsContent.Target("subject-2", false),
-                    new EmailHotspotsContent.Target("received-2", false),
-                    new EmailHotspotsContent.Target("greeting-2", false),
-                    new EmailHotspotsContent.Target("body-text-target-2", true),
-                    new EmailHotspotsContent.Target("body-link-target-2", true),
-                    new EmailHotspotsContent.Target("action-button-2", false),
-                    new EmailHotspotsContent.Target("attachment-target-2", true),
-                    new EmailHotspotsContent.Target("closing-2", false)
-                )
+            xOrYTask(
+                "Hvilken melding virker mest troverdig ved første blikk?",
+                "Bra. Den ene prøver å få deg til å stresse, mens den andre ligner mer på en vanlig melding.",
+                "Se etter hvilken melding som virker mest rolig og vanlig.",
+                "Hvilken melding ville du sjekket først?",
+                "Velg den som virker minst mistenkelig.",
+                media(POSTOFFICE_FAKE_ACCOUNT_IMAGE),
+                "Kontoen må oppdateres nå",
+                "",
+                "Melding 1",
+                "Meldingen presser deg til å handle raskt.",
+                media(POSTOFFICE_REAL_HIKE_IMAGE),
+                "Påminnelse om tur i helgen",
+                "",
+                "Melding 2",
+                "Meldingen virker som en vanlig beskjed uten press.",
+                XOrYContent.Choice.Y
             ),
-            sortIntoBucketsTask(
-                "Sorter tegnene fra meldingen i riktig boks.",
-                "Riktig. Du skilte mellom trygge tegn og faresignaler i e-posten.",
-                "Se pa hvilke kort som viser press eller rare detaljer, og hvilke som virker vanlige.",
-                "Trygt tegn eller faresignal?",
-                "Legg hvert kort i riktig kategori.",
-                "Kort som skal sorteres",
+            multipleChoiceTask(
+                "Hva er det tydeligste faresignalet i denne e-posten?",
+                "Bra. Når en e-post lover noe stort og vil ha deg til å klikke raskt, bør du være ekstra forsiktig.",
+                "Se etter det som gjør at du stopper opp og sjekker mer.",
+                "Hva skurrer mest?",
+                "Velg det tegnet som gjør e-posten mest mistenkelig.",
+                media(POSTOFFICE_FAKE_IPHONE_IMAGE),
+                "E-post om at du har vunnet en iPhone",
                 List.of(
-                    new SortIntoBucketsContent.Bucket("safe-mail", "Trygge tegn", "Detaljer som ofte er normale.", "#d9fbe6"),
-                    new SortIntoBucketsContent.Bucket("danger-mail", "Faresignaler", "Detaljer som bor fa deg til a stoppe opp.", "#fee2e2")
+                    new MultipleChoiceContent.Option("a", "Den lover en premie og ber deg klikke raskt"),
+                    new MultipleChoiceContent.Option("b", "Den har en kort overskrift"),
+                    new MultipleChoiceContent.Option("c", "Den bruker et bilde øverst")
                 ),
-                List.of(
-                    new SortIntoBucketsContent.Item("mail-1", "Kjent avsender fra skolen", "safe-mail", "En kjent avsender er lettere a kontrollere."),
-                    new SortIntoBucketsContent.Item("mail-2", "Lenke med rar nettadresse", "danger-mail", "Rare nettadresser er et vanlig faresignal."),
-                    new SortIntoBucketsContent.Item("mail-3", "Press om a svare med en gang", "danger-mail", "Stress brukes ofte for a fa deg til a handle fort."),
-                    new SortIntoBucketsContent.Item("mail-4", "Rolig forklaring pa hva meldingen handler om", "safe-mail", "Tydelig informasjon gjor meldingen lettere a vurdere.")
-                )
+                "a"
             )
         )
     );
