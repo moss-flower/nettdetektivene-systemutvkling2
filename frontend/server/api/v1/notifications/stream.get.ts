@@ -9,9 +9,13 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  setHeader(event, 'Content-Type', 'text/event-stream')
-  setHeader(event, 'Cache-Control', 'no-cache')
-  setHeader(event, 'Connection', 'keep-alive')
+  // Copy all headers from the backend response directly
+  response.headers.forEach((value, key) => {
+    setHeader(event, key, value)
+  })
+  const reader = response.body!.getReader()
+  const first = await reader.read()
+  console.log('[SSE Proxy] first chunk:', new TextDecoder().decode(first.value))
 
   return sendStream(event, response.body!)
 })

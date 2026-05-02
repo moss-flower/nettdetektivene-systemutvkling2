@@ -59,6 +59,7 @@ public class NotificationController {
         SseEmitter emitter = sseRegistry.register(userId);
 
         notificationService.flushPending(userId);
+        System.out.println("Responding with emitter " + emitter);
         return emitter;
     }
 

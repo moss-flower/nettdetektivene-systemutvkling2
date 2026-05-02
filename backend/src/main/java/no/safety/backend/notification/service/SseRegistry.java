@@ -18,6 +18,7 @@ public class SseRegistry {
     private Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
 
     public SseEmitter register(Long userId) {
+        logger.info("JARJAR: SSE Register reached");
         logger.debug("Registering emitter for userId " + userId);
         SseEmitter emitter = new SseEmitter(0L);
 
