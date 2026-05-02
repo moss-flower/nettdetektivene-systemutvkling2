@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import StudentHomeMenuItem from '~/components/student/StudentHomeMenuItem.vue';
+import StoppestedIntroVideo from '~/components/gameplay/shared/StoppestedIntroVideo.vue';
 import { routePaths } from '~/composables/utils/routePaths';
+import { HOME_INTRO_VIDEO } from '~/composables/utils/stationVideos';
 import { useAuth } from '~/composables/useAuth';
 import mapImage from "~/assets/ui-icons/Map-big.png";
 import helpImage from "~/assets/images/studentHome/help.png";
@@ -107,6 +109,21 @@ const router = useRouter();
 const { logout } = useAuth();
 const { openAvatarProfile } = useAvatarProfilePopup();
 const isLoggingOut = ref(false);
+const showHomeTour = ref(false);
+
+onMounted(() => {
+  if (import.meta.client && window.localStorage.getItem('nd:seen-home-tour') === null) {
+    showHomeTour.value = true;
+  }
+});
+
+function closeHomeTour() {
+  if (import.meta.client) {
+    window.localStorage.setItem('nd:seen-home-tour', '1');
+  }
+
+  showHomeTour.value = false;
+}
 
 function handleClick(item: StudentHomeItem) {
   if (item.id === 'avatar') {
@@ -157,6 +174,13 @@ async function handleLogout() {
         :class="['student-home__item', `student-home__item--${item.id}`]"
         />
     </div>
+
+    <StoppestedIntroVideo
+      :youtube-id="HOME_INTRO_VIDEO.youtubeId"
+      :title-no="HOME_INTRO_VIDEO.titleNo"
+      :open="showHomeTour"
+      @close="closeHomeTour"
+    />
   </section>
 </template>
 
