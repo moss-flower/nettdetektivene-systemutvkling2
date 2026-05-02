@@ -19,6 +19,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Defines a World entity.
+ */
 @Entity
 @Table(name = "worlds")
 @Getter

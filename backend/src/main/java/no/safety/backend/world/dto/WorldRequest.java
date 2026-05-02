@@ -5,7 +5,16 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
+import no.safety.backend.world.model.World;
 
+/**
+ * A Data Transfer Object for requests pertaining to the handling of {@link World}s.
+ *
+ * @param title       title of the {@link World}
+ * @param description description of the {@link World}
+ * @param image       a {@link World} image
+ * @param stationUids uids of all stations the world contains as a {@link List} of {@link UUID}
+ */
 public record WorldRequest(
     @NotBlank(message = "title is required.")
     @Size(max = 100, message = "title cannot exceed 100 characters.")
@@ -22,4 +31,5 @@ public record WorldRequest(
     @NotNull(message = "stationUids is required.")
     List<UUID> stationUids
 ) {
+
 }

@@ -8,6 +8,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+/**
+ * A {@link JpaRepository} for {@link World}s
+ */
 @Repository
 public interface WorldRepository extends JpaRepository<World, Long> {
 

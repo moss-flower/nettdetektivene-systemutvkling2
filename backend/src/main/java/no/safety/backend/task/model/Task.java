@@ -27,6 +27,9 @@ import no.safety.backend.task.content.XOrYContent;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+/**
+ * Defines a task entity.
+ */
 @Entity
 @Table(name = "tasks")
 @Getter

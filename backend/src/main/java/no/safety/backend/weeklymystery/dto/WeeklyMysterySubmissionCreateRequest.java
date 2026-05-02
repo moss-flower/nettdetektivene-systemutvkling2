@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * Represents a data transfer object for handling submission data
+ * Represents a data transfer object for handling submission requests
  * for weekly mystery
  */
 public record WeeklyMysterySubmissionCreateRequest(

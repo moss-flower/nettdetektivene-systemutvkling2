@@ -9,7 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Rejects strings that contain a substring listed in {@code profanity-list.txt} on the classpath.
+ * Rejects {@link String}s that contain a substring listed in {@code profanity-list.txt} on the classpath.
  * Matching is case-insensitive. {@code null} values are considered valid.
  *
  * The default message is general, and should be specified further. For example add a {@code
