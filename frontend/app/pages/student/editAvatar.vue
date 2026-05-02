@@ -233,6 +233,15 @@ async function saveAvatar() {
   justify-items: center;
   padding: var(--layout-page-padding);
   border-radius: var(--radius-3);
+  position: relative;
+  isolation: isolate;
+}
+
+.avatarEditorPage::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
   background:
     radial-gradient(ellipse 70% 50% at 50% 20%, var(--palette-overlay-warm-glow), transparent 70%),
     repeating-linear-gradient(
@@ -245,7 +254,7 @@ async function saveAvatar() {
       var(--palette-overlay-warm-glow) 122px
     ),
     var(--palette-wood-900);
-  background-attachment: fixed;
+  pointer-events: none;
 }
 
 .avatarEditorHeader,
