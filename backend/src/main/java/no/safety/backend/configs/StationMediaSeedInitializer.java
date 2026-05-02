@@ -52,6 +52,13 @@ public class StationMediaSeedInitializer implements ApplicationRunner {
   private static final String MARKETPLACE_REAL_BIKE_IMAGE = "seed/tasks/markedsplassen/real-bike-ad.jpeg";
   private static final String MARKETPLACE_REAL_LAPTOP_IMAGE = "seed/tasks/markedsplassen/real-laptop-ad.jpeg";
 
+  private static final String SOCIAL_BAD_SHARE_IMAGE = "seed/tasks/sosiale-moteplassen/bad-alle-ma-dele-laerer-skjuler-sannhet.jpeg";
+  private static final String SOCIAL_BAD_SCHOOL_IMAGE = "seed/tasks/sosiale-moteplassen/bad-alle-skoler-stenger-neste-uke.jpeg";
+  private static final String SOCIAL_BAD_CHIPS_IMAGE = "seed/tasks/sosiale-moteplassen/bad-farlige-chips-gjor-barn-syke.jpeg";
+  private static final String SOCIAL_GOOD_TIPS_IMAGE = "seed/tasks/sosiale-moteplassen/good-vaer-skeptisk-til-trender.jpeg";
+  private static final String SOCIAL_GOOD_CHIPS_IMAGE = "seed/tasks/sosiale-moteplassen/good-faktasjekk-farlige-chips.jpeg";
+  private static final String SOCIAL_GOOD_SCHOOL_IMAGE = "seed/tasks/sosiale-moteplassen/good-udir-skoler-stenger-ikke.jpeg";
+
   private final MediaStorageService mediaStorageService;
 
   @Override
@@ -91,7 +98,13 @@ public class StationMediaSeedInitializer implements ApplicationRunner {
         MARKETPLACE_FAKE_IPHONE_IMAGE,
         MARKETPLACE_FAKE_LAPTOP_IMAGE,
         MARKETPLACE_REAL_BIKE_IMAGE,
-        MARKETPLACE_REAL_LAPTOP_IMAGE
+        MARKETPLACE_REAL_LAPTOP_IMAGE,
+        SOCIAL_BAD_SHARE_IMAGE,
+        SOCIAL_BAD_SCHOOL_IMAGE,
+        SOCIAL_BAD_CHIPS_IMAGE,
+        SOCIAL_GOOD_TIPS_IMAGE,
+        SOCIAL_GOOD_CHIPS_IMAGE,
+        SOCIAL_GOOD_SCHOOL_IMAGE
     ).forEach(image -> mediaStorageService.uploadPublicClasspathImage(image, image, contentTypeFor(image)));
   }
 

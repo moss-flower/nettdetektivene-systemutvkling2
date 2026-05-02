@@ -120,6 +120,13 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   private static final String MARKETPLACE_REAL_BIKE_IMAGE = "seed/tasks/markedsplassen/real-bike-ad.jpeg";
   private static final String MARKETPLACE_REAL_LAPTOP_IMAGE = "seed/tasks/markedsplassen/real-laptop-ad.jpeg";
 
+  private static final String SOCIAL_BAD_SHARE_IMAGE = "seed/tasks/sosiale-moteplassen/bad-alle-ma-dele-laerer-skjuler-sannhet.jpeg";
+  private static final String SOCIAL_BAD_SCHOOL_IMAGE = "seed/tasks/sosiale-moteplassen/bad-alle-skoler-stenger-neste-uke.jpeg";
+  private static final String SOCIAL_BAD_CHIPS_IMAGE = "seed/tasks/sosiale-moteplassen/bad-farlige-chips-gjor-barn-syke.jpeg";
+  private static final String SOCIAL_GOOD_TIPS_IMAGE = "seed/tasks/sosiale-moteplassen/good-vaer-skeptisk-til-trender.jpeg";
+  private static final String SOCIAL_GOOD_CHIPS_IMAGE = "seed/tasks/sosiale-moteplassen/good-faktasjekk-farlige-chips.jpeg";
+  private static final String SOCIAL_GOOD_SCHOOL_IMAGE = "seed/tasks/sosiale-moteplassen/good-udir-skoler-stenger-ikke.jpeg";
+
   private final ExerciseRepository exerciseRepository;
   private final StationRepository stationRepository;
   private final WorldRepository worldRepository;
@@ -736,108 +743,110 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     );
 
     upsertExercise(SOCIALMEDIA_EXERCISE_1_UID, "Tenk for du deler", "Lett",
-        "Laer a tenke for du deler og oppdage manipulering og gruppepress.",
+        "Lær å stoppe opp når innlegg spiller på sterke følelser eller ber deg dele raskt.",
         List.of(
             multipleChoiceTask(
-                "Velg den smarteste reaksjonen nar et innlegg prover a stresse deg.",
-                "Riktig. Det er lurt a stoppe opp og sjekke for du deler videre.",
-                "Tenk pa hva som hjelper deg a ta et tryggere valg.",
-                "Hva bor du gjore forst?",
-                "Du ser et innlegg som gjor deg usikker. Hva er smartest?",
-                media(SOCIAL_WARNING_IMAGE),
-                "Skjermbilde av et stressende innlegg i sosiale medier",
+                "Hva bør få deg til å stoppe opp i dette innlegget?",
+                "Bra. Når et innlegg prøver å få deg til å dele med en gang, bør du være ekstra forsiktig.",
+                "Se etter det som gjør at innlegget prøver å presse fram en rask reaksjon.",
+                "Hva skurrer mest?",
+                "Velg det tydeligste faresignalet i innlegget.",
+                media(SOCIAL_BAD_SHARE_IMAGE),
+                "Et innlegg som sier at alle må dele fordi læreren skjuler sannheten",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Stoppe opp og sjekke innholdet for du deler"),
-                    new MultipleChoiceContent.Option("b", "Dele raskt fordi mange andre gjor det")
+                    new MultipleChoiceContent.Option("a", "Innlegget prøver å få deg til å dele raskt uten å sjekke"),
+                    new MultipleChoiceContent.Option("b", "Innlegget har mye tekst i bildet"),
+                    new MultipleChoiceContent.Option("c", "Innlegget handler om skolen")
                 ),
                 "a"
             ),
             xOrYTask(
-                "Sammenlign to innlegg og velg det som virker mest ansvarlig a stole pa.",
-                "Bra. Det tryggeste innlegget bruker rolig sprak og presser deg ikke til a handle fort.",
-                "Se etter innlegg som forklarer mer og presser mindre.",
-                "Hvilket innlegg virker tryggest?",
-                "Velg innlegget du ville stolt mest pa.",
-                media(SOCIAL_WARNING_IMAGE),
-                "Stressende innlegg med sterke ord",
-                "Innlegg X",
-                "Del na",
-                "Innlegget bruker gruppepress og sterke ord for a fa deg til a reagere fort.",
-                media(SOCIAL_SAFE_IMAGE),
-                "Rolig innlegg med forklaring",
-                "Innlegg Y",
-                "Les for du deler",
-                "Innlegget forklarer rolig hva som skjer og virker lettere a sjekke.",
+                "Hvilket innlegg virker mest som en rolig faktasjekk?",
+                "Riktig. Det ene innlegget virker mer som en vanlig oppklaring, mens det andre prøver å få deg til å reagere raskt.",
+                "Se etter hvilket innlegg som virker mest rolig og konkret.",
+                "Hvilket innlegg ville du lest først?",
+                "Velg innlegget som virker minst stressende.",
+                media(SOCIAL_BAD_SCHOOL_IMAGE),
+                "Et innlegg som sier at alle skoler stenger neste uke",
+                "",
+                "Innlegg 1",
+                "Et innlegg om at skoler skal stenge neste uke.",
+                media(SOCIAL_GOOD_SCHOOL_IMAGE),
+                "Et innlegg fra Udir som forklarer at skolene ikke stenger",
+                "",
+                "Innlegg 2",
+                "Et innlegg om hva som faktisk gjelder for skolene.",
                 XOrYContent.Choice.Y
             ),
             sortIntoBucketsTask(
                 "Sorter reaksjonene i riktig boks.",
-                "Riktig. Du skilte mellom smarte og usmarte valg nar du ser noe i sosiale medier.",
-                "Se etter hvilke valg som gir deg tid til a tenke, og hvilke som sprer innholdet raskt videre.",
-                "Smart trekk eller dumt trekk?",
+                "Riktig. Du skilte mellom valg som gir deg tid til å tenke, og valg som sprer noe for fort.",
+                "Tenk på hvilke valg som bremser delingen, og hvilke valg som sprer innholdet videre med en gang.",
+                "Hva er smart å gjøre?",
                 "Legg hvert kort i riktig kategori.",
                 "Reaksjoner som skal sorteres",
                 List.of(
-                    new SortIntoBucketsContent.Bucket("smart", "Smart trekk", "Valg som hjelper deg a tenke deg om.", "#d9fbe6"),
-                    new SortIntoBucketsContent.Bucket("hasty", "Dumt trekk", "Valg som kan spre feilinformasjon raskt.", "#fee2e2")
+                    new SortIntoBucketsContent.Bucket("smart", "Smart trekk", "Valg som hjelper deg å tenke deg om.", "#d9fbe6"),
+                    new SortIntoBucketsContent.Bucket("hasty", "Dumt trekk", "Valg som kan spre noe videre for fort.", "#fee2e2")
                 ),
                 List.of(
-                    new SortIntoBucketsContent.Item("social-1", "Sjekke avsenderen for du deler", "smart", "Da undersoker du innholdet forst."),
-                    new SortIntoBucketsContent.Item("social-2", "Dele fordi mange andre gjor det", "hasty", "Popularitet betyr ikke at noe er sant."),
-                    new SortIntoBucketsContent.Item("social-3", "Stoppe opp hvis innlegget gjor deg stresset", "smart", "Sterke foleser er et tegn pa at du bor tenke deg om."),
-                    new SortIntoBucketsContent.Item("social-4", "Trykke del med en gang", "hasty", "Da sprer du innholdet uten a sjekke det.")
+                    new SortIntoBucketsContent.Item("social-1", "Sjekke hvem som står bak innlegget", "smart", "Da undersøker du innholdet først."),
+                    new SortIntoBucketsContent.Item("social-2", "Dele fordi mange andre allerede har delt", "hasty", "Popularitet betyr ikke at noe stemmer."),
+                    new SortIntoBucketsContent.Item("social-3", "Vente litt hvis innlegget gjør deg sint eller redd", "smart", "Sterke følelser er et tegn på at du bør tenke deg om."),
+                    new SortIntoBucketsContent.Item("social-4", "Trykke del med en gang", "hasty", "Da sprer du innholdet uten å sjekke det.")
                 )
             )
         )
     );
 
     upsertExercise(SOCIALMEDIA_EXERCISE_2_UID, "Del eller vent", "Middels",
-        "Laer hvordan du kan reagere smart nar innhold prover a presse fram raske valg.",
+        "Øv på å sammenligne innlegg og velge det som hjelper deg å sjekke før du deler.",
         List.of(
             multipleChoiceTask(
-                "Velg den beste reaksjonen nar du blir usikker.",
-                "Ja. Vent og sjekk er tryggere enn a dele pa impuls.",
-                "Tenk pa hvilken handling som gir deg tid til a undersoke mer.",
-                "Hvilken reaksjon er smartest?",
-                "Du ser et innlegg som mange deler. Hva bor du gjore?",
-                media(SOCIAL_WARNING_IMAGE),
-                "Skjermbilde av et viralt innlegg",
+                "Hva er det smarteste første steget når du blir usikker på et innlegg?",
+                "Ja. Det er tryggere å stoppe opp og sjekke enn å reagere med en gang.",
+                "Tenk på hvilket valg som gir deg mer tid til å undersøke videre.",
+                "Hva bør du gjøre først?",
+                "Velg reaksjonen som hjelper deg å finne ut mer før du deler.",
+                media(SOCIAL_GOOD_TIPS_IMAGE),
+                "Et innlegg med tips om å være skeptisk til sosiale medier-trender",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Vent og sjekk"),
-                    new MultipleChoiceContent.Option("b", "Del med en gang")
+                    new MultipleChoiceContent.Option("a", "Stoppe opp og sjekke om andre troverdige kilder sier det samme"),
+                    new MultipleChoiceContent.Option("b", "Dele innlegget videre og spørre etterpå om det stemmer"),
+                    new MultipleChoiceContent.Option("c", "Tro på innlegget hvis mange har kommentert det")
                 ),
                 "a"
             ),
             xOrYTask(
-                "Velg reaksjonen som viser best digital drommekraft.",
-                "Riktig. Den beste reaksjonen gir deg tid til a sjekke innholdet for du sprer det videre.",
-                "Se etter valget som bremser delingen og gir rom for sjekk.",
-                "Hva er smartest a gjore?",
-                "Velg alternativet som viser mest omtanke.",
-                media(SOCIAL_WARNING_IMAGE),
-                "Innlegg som oppfordrer til rask deling",
-                "Valg X",
-                "Del for sikkerhets skyld",
-                "Du sprer innholdet videre uten a vite om det stemmer.",
-                media(SOCIAL_SAFE_IMAGE),
-                "Rolig vurdering av innlegg for deling",
-                "Valg Y",
-                "Vent og sjekk",
-                "Du stopper opp og sjekker mer for du reagerer.",
+                "Hvilket innlegg virker mest troverdig ved første blikk?",
+                "Bra. Det ene innlegget virker mer som en vanlig faktasjekk, mens det andre prøver hardere å skape reaksjon.",
+                "Se etter hvilket innlegg som virker mest rolig og mest konkret.",
+                "Hvilket innlegg ville du stolt minst på?",
+                "Velg innlegget som virker enklest å kontrollere videre.",
+                media(SOCIAL_BAD_CHIPS_IMAGE),
+                "Et innlegg som sier at farlige chips gjør barn syke og at alle må se det",
+                "",
+                "Innlegg 1",
+                "Et innlegg om at farlige chips gjør barn syke.",
+                media(SOCIAL_GOOD_CHIPS_IMAGE),
+                "Et rolig innlegg som faktasjekker ryktet om farlige chips",
+                "",
+                "Innlegg 2",
+                "Et innlegg som undersøker ryktet om chipsene.",
                 XOrYContent.Choice.Y
             ),
             multipleChoiceTask(
-                "Velg det smarteste neste steget nar et innlegg spiller pa sterke foleser.",
-                "Bra. Nar et innlegg gjor deg sint eller redd, er det lurt a roe ned og sjekke kilden.",
-                "Tenk pa hva som hjelper deg a undersoke innholdet, ikke bare reagere pa det.",
-                "Hva bor du gjore hvis du blir sint?",
-                "Du ser et innlegg som prover a gjore deg opprort. Velg det beste neste steget.",
-                media(DETECTIVE_HUB_IMAGE),
-                "Illustrasjon av et barn som stopper opp for deling",
+                "Hva er det beste tegnet på at et innlegg bør sjekkes ekstra før du deler det?",
+                "Bra. Når et innlegg vil at alle skal dele med en gang og bruker sterke ord, bør du være ekstra forsiktig.",
+                "Se etter det som gjør at innlegget prøver å styre følelsene dine raskt.",
+                "Hva er det sterkeste faresignalet?",
+                "Velg det som gjør innlegget mest mistenkelig.",
+                media(SOCIAL_BAD_SHARE_IMAGE),
+                "Et innlegg som sier at alle må dele fordi læreren skjuler sannheten",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Puste litt og sjekke hvem som star bak innlegget"),
-                    new MultipleChoiceContent.Option("b", "Kommentere med en gang mens du er sint"),
-                    new MultipleChoiceContent.Option("c", "Dele det i alle gruppechattene dine")
+                    new MultipleChoiceContent.Option("a", "Innlegget ber alle dele raskt og spiller på sinne eller frykt"),
+                    new MultipleChoiceContent.Option("b", "Innlegget handler om noe på skolen"),
+                    new MultipleChoiceContent.Option("c", "Innlegget har et stort bilde og mye tekst")
                 ),
                 "a"
             )
