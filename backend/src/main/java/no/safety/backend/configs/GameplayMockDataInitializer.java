@@ -60,6 +60,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   public static final UUID NEWSSTAND_EXERCISE_2_UID = stableUuid("exercise:newsstand-exercise-2");
   public static final UUID PHOTOGRAPH_EXERCISE_1_UID = stableUuid("exercise:photograph-exercise-1");
   public static final UUID PHOTOGRAPH_EXERCISE_2_UID = stableUuid("exercise:photograph-exercise-2");
+  public static final UUID PHOTOGRAPH_EXERCISE_3_UID = stableUuid("exercise:photograph-exercise-3");
   public static final UUID POSTOFFICE_EXERCISE_1_UID = stableUuid("exercise:postoffice-exercise-1");
   public static final UUID POSTOFFICE_EXERCISE_2_UID = stableUuid("exercise:postoffice-exercise-2");
   public static final UUID PASSWORDBANK_EXERCISE_1_UID = stableUuid("exercise:passwordbank-exercise-1");
@@ -96,6 +97,15 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   private static final String NEWSSTAND_WARNING_PHONE_IMAGE = "seed/tasks/nyhetskvartalet/warning-gratis-mobil.png";
   private static final String NEWSSTAND_WARNING_SCHOOL_IMAGE = "seed/tasks/nyhetskvartalet/warning-skoler-stenger.png";
   private static final String NEWSSTAND_WARNING_PLAYGROUND_IMAGE = "seed/tasks/nyhetskvartalet/warning-bot-lekeplass.png";
+
+  private static final String PHOTOGRAPH_REAL_DOG_IMAGE = "seed/tasks/fotografen/real-dog-frisbee.png";
+  private static final String PHOTOGRAPH_REAL_FOOTBALL_IMAGE = "seed/tasks/fotografen/real-football-player-kicking-ball.jpeg";
+  private static final String PHOTOGRAPH_REAL_PEOPLE_IMAGE = "seed/tasks/fotografen/real-people-holding-hands.png";
+  private static final String PHOTOGRAPH_AI_HANDS_IMAGE = "seed/tasks/fotografen/ai-folded-hands-many-fingers.jpeg";
+  private static final String PHOTOGRAPH_AI_BANANA_IMAGE = "seed/tasks/fotografen/ai-kid-giant-banana.jpeg";
+  private static final String PHOTOGRAPH_AI_SIGNS_IMAGE = "seed/tasks/fotografen/ai-road-sign-arrows-both-ways.png";
+  private static final String PHOTOGRAPH_AI_MARS_IMAGE = "seed/tasks/fotografen/ai-eiffel-tower-mars-landscape.jpeg";
+  private static final String PHOTOGRAPH_AI_SKY_IMAGE = "seed/tasks/fotografen/ai-sunset-spiral-clouds.jpeg";
 
   private final ExerciseRepository exerciseRepository;
   private final StationRepository stationRepository;
@@ -147,14 +157,14 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Velg saken du ville stolt mest på ved første blikk.",
                 media(NEWSSTAND_WARNING_PHONE_IMAGE),
                 "Dramatisk nyhet om gratis mobil uten tydelig avsender",
-                "Sak X",
+                "",
                 "Gratis mobil til alle elever",
-                "Overskriften lover mye, men sier lite om hvem som faktisk har sagt dette.",
+                "Utsnitt fra en nyhetssak om skole og mobilbruk.",
                 media(NEWSSTAND_SAFE_READING_IMAGE),
                 "Rolig overskrift med tydelig avsender",
-                "Sak Y",
+                "",
                 "Barn leser mer etter nytt lesehjørne på skolebiblioteket",
-                "Overskriften er konkret og gir deg noe du kan undersøke videre.",
+                "Utsnitt fra en nyhetssak om skolebiblioteket.",
                 XOrYContent.Choice.Y
             ),
             sortIntoBucketsTask(
@@ -219,14 +229,14 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Velg den som virker mest ryddig og pålitelig.",
                 media(NEWSSTAND_WARNING_SCHOOL_IMAGE),
                 "Nyhetssak med vag overskrift og ingen tydelig kilde",
-                "Sak X",
+                "",
                 "Det skjer noe stort ved skolen i morgen",
-                "Saken bruker sterke ord, men sier lite om hvem som faktisk vet noe.",
+                "Utsnitt fra en nyhetssak om skolen.",
                 media(NEWSSTAND_SAFE_READING_IMAGE),
                 "Nyhetssak med rolig overskrift og tydelig kilde",
-                "Sak Y",
+                "",
                 "Barn leser mer etter nytt lesehjørne på skolebiblioteket",
-                "Saken viser til lærere og elever, og forklarer hva som faktisk er observert.",
+                "Utsnitt fra en nyhetssak om lesehjørnet på skolen.",
                 XOrYContent.Choice.Y
             ),
             multipleChoiceTask(
@@ -248,108 +258,116 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     );
 
     upsertExercise(PHOTOGRAPH_EXERCISE_1_UID, "Bildeblikk", "Lett",
-        "Laer a kjenne igjen ekte, KI-genererte og manipulerte bilder.",
+        "Se etter tydelige tegn på at et bilde kan være laget eller endret.",
         List.of(
             multipleChoiceTask(
-                "Se pa bildet og velg den beste forklaringen.",
-                "Bra. Rare detaljer i hender, tekst eller bakgrunn kan avslore at bildet ikke er ekte.",
-                "Se etter rare detaljer som ikke passer naturlig sammen.",
-                "Hva slags bilde ser du?",
-                "Velg den forklaringen som passer best til bildet.",
-                media(PHOTO_WARNING_IMAGE),
-                "Skjermbilde av et mistenkelig bilde",
+                "Hva bør du se nærmere på i dette bildet?",
+                "Bra. Når en detalj ikke passer helt med resten av bildet, er det lurt å dobbeltsjekke.",
+                "Se etter ting som virker litt rare eller som ikke henger helt sammen.",
+                "Hva er det beste tegnet på at bildet bør sjekkes nærmere?",
+                "Velg det du ville lagt mest merke til først.",
+                media(PHOTOGRAPH_AI_HANDS_IMAGE),
+                "En hånd med flere fingre enn forventet",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Et helt vanlig ekte bilde"),
-                    new MultipleChoiceContent.Option("b", "Et bilde med detaljer som virker manipulerte")
-                ),
-                "b"
-            ),
-            xOrYTask(
-                "Sammenlign to bilder og velg det som virker mest ekte.",
-                "Bra. Det ekte bildet har detaljer som passer bedre naturlig sammen.",
-                "Se etter rare hender, skjev tekst eller bakgrunner som ikke henger sammen.",
-                "Hvilket bilde virker mest ekte?",
-                "Velg bildet du stoler mest pa etter a ha sett pa detaljene.",
-                media(PHOTO_WARNING_IMAGE),
-                "Bilde med unaturlige hender og forvrengt tekst",
-                "Bilde X",
-                "Mange rare detaljer",
-                "Flere detaljer ser ut som de ikke passer sammen naturlig.",
-                media(PHOTO_SAFE_IMAGE),
-                "Bilde av en vanlig skolegard med naturlige detaljer",
-                "Bilde Y",
-                "Naturlig skolemiljo",
-                "Detaljene ser jevne og naturlige ut.",
-                XOrYContent.Choice.Y
-            ),
-            sortIntoBucketsTask(
-                "Sorter detaljene du oppdager i bildet.",
-                "Riktig. Du fant hvilke detaljer som virker naturlige og hvilke som bor sjekkes ekstra.",
-                "Se etter hvilke detaljer som ser vanlige ut, og hvilke som virker rare eller feil.",
-                "Hva skurrer i bildet?",
-                "Legg hvert kort i riktig boks.",
-                "Detaljer som skal sorteres",
-                List.of(
-                    new SortIntoBucketsContent.Bucket("ok", "Ser naturlig ut", "Detaljer som ikke vekker mistanke.", "#dbeafe"),
-                    new SortIntoBucketsContent.Bucket("check", "Bor sjekkes", "Detaljer som kan avslore manipulering.", "#fee2e2")
-                ),
-                List.of(
-                    new SortIntoBucketsContent.Item("photo-1", "Rett skilt med lesbar tekst", "ok", "Lesbar tekst er et godt tegn."),
-                    new SortIntoBucketsContent.Item("photo-2", "Hand med seks fingre", "check", "Rare hender er et vanlig faresignal."),
-                    new SortIntoBucketsContent.Item("photo-3", "Skygger som peker samme vei", "ok", "Like skygger passer bedre med ekte lys."),
-                    new SortIntoBucketsContent.Item("photo-4", "Bakgrunn som flyter inn i jakken", "check", "Nar former glir sammen, kan bildet vaere manipulert.")
-                )
-            )
-        )
-    );
-
-    upsertExercise(PHOTOGRAPH_EXERCISE_2_UID, "Bildedetektiv", "Middels",
-        "Sammenlign bilder og oppdag tegn pa at noe er generert eller manipulert.",
-        List.of(
-            multipleChoiceTask(
-                "Velg det smarteste sporsmalet a starte med.",
-                "Ja. Start med a se etter detaljer som ser unaturlige eller feil ut.",
-                "Tenk pa hva som hjelper deg a undersoke bildet i stedet for a gjette raskt.",
-                "Hva bor du sporre deg selv om forst?",
-                "Du ser et bilde som virker litt rart. Hva er det beste forste sporsmalet?",
-                media(PHOTO_WARNING_IMAGE),
-                "Skjermbilde av et bilde med rare detaljer",
-                List.of(
-                    new MultipleChoiceContent.Option("a", "Ser detaljer som hender, tekst og bakgrunn naturlige ut?"),
-                    new MultipleChoiceContent.Option("b", "Har bildet mange fine farger?")
+                    new MultipleChoiceContent.Option("a", "Hendene har for mange fingre"),
+                    new MultipleChoiceContent.Option("b", "Bakgrunnen er litt uskarp"),
+                    new MultipleChoiceContent.Option("c", "Bildet er tatt i dagslys")
                 ),
                 "a"
             ),
             xOrYTask(
-                "Velg bildet som virker mest troverdig etter at du har studert detaljene.",
-                "Bra. Det tryggeste valget er bildet med mest naturlige detaljer og minst rare feil.",
-                "Se etter tekst, lys, ansikter og bakgrunner som henger sammen.",
-                "Hvilket bilde ville du stolt mest pa?",
-                "Sammenlign de to bildene og velg det mest troverdige.",
-                media(PHOTO_WARNING_IMAGE),
-                "Bilde med ujevn tekst og unaturlig lys",
+                "Hvilket bilde virker mest naturlig ved første blikk?",
+                "Bra. Det ene bildet har flere små ting som skurrer, mens det andre virker mer vanlig.",
+                "Se etter om kropp, lys og ting i bildet passer sammen på en naturlig måte.",
+                "Hvilket bilde virker mest troverdig?",
+                "Velg bildet som virker mest vanlig og rolig.",
+                media(PHOTOGRAPH_AI_BANANA_IMAGE),
+                "Barn holder en veldig stor banan",
+                "",
                 "Bilde X",
-                "Mange sma feil",
-                "Teksten er skjev og lyset passer ikke helt med resten av scenen.",
-                media(PHOTO_SAFE_IMAGE),
-                "Klassebilde med naturlige detaljer",
+                "Et barn holder noe over hodet.",
+                media(PHOTOGRAPH_REAL_DOG_IMAGE),
+                "Hund som fanger en frisbee",
+                "",
                 "Bilde Y",
-                "Ryddig og naturlig",
-                "Ansikter, bakgrunn og skygger virker mer naturlige sammen.",
+                "En hund er ute i aktivitet.",
+                XOrYContent.Choice.Y
+            )
+        )
+    );
+
+    upsertExercise(PHOTOGRAPH_EXERCISE_2_UID, "Foto eller fiks?", "Middels",
+        "Sammenlign bilder og se etter små ting som gjør at noe føles feil.",
+        List.of(
+            sortIntoBucketsTask(
+                "Sorter detaljene i riktig boks.",
+                "Riktig. Du skilte mellom detaljer som passer godt inn, og detaljer som bør sjekkes nærmere.",
+                "Se etter små ting som ikke helt passer sammen i bildet.",
+                "Hva virker mest trygt å stole på?",
+                "Dra kortene til riktig kategori.",
+                "Detaljer som skal sorteres",
+                List.of(
+                    new SortIntoBucketsContent.Bucket("ok", "Virker naturlig", "Ting som passer godt inn i et ekte bilde.", "#dbeafe"),
+                    new SortIntoBucketsContent.Bucket("check", "Bør sjekkes", "Ting som ofte avslører at noe er laget eller endret.", "#fee2e2")
+                ),
+                List.of(
+                    new SortIntoBucketsContent.Item("photo-1", "Skygger peker samme vei", "ok", "Det passer bedre med ekte lys."),
+                    new SortIntoBucketsContent.Item("photo-2", "Skilt med piler som peker begge veier", "check", "Retningen virker ikke helt logisk."),
+                    new SortIntoBucketsContent.Item("photo-3", "Ansikter og klær ser jevne ut", "ok", "Det gir mindre grunn til mistanke."),
+                    new SortIntoBucketsContent.Item("photo-4", "Utydelig kant rundt motivet", "check", "Når kanter blir rare, bør du bli skeptisk.")
+                )
+            ),
+            multipleChoiceTask(
+                "Hva bør du se nærmere på i skiltet?",
+                "Bra. Når retningen ikke virker helt logisk, er det et tegn på at noe bør sjekkes.",
+                "Tenk på hva som ikke helt stemmer med det du forventer å se på et skilt.",
+                "Hva virker mest usikkert?",
+                "Velg det som bør få deg til å stoppe opp.",
+                media(PHOTOGRAPH_AI_SIGNS_IMAGE),
+                "Et veiskilt med piler i to retninger",
+                List.of(
+                    new MultipleChoiceContent.Option("a", "Retningen på pilene virker ikke helt logisk"),
+                    new MultipleChoiceContent.Option("b", "Skiltet har tydelige farger"),
+                    new MultipleChoiceContent.Option("c", "Det står ved en vei")
+                ),
+                "a"
+            )
+        )
+    );
+
+    upsertExercise(PHOTOGRAPH_EXERCISE_3_UID, "Bildedetektiv", "Vanskelig",
+        "Undersøk bilder som ser nesten ekte ut, men som har små detaljer som ikke stemmer.",
+        List.of(
+            xOrYTask(
+                "Hvilket bilde virker mest troverdig ved første blikk?",
+                "Riktig. Det ene motivet passer dårlig sammen, mens det andre virker mer som et vanlig bilde av noe på himmelen.",
+                "Se etter hvilket bilde som virker mest naturlig og minst kunstig.",
+                "Hvilket bilde ville du sjekket minst først?",
+                "Velg bildet som virker mest vanlig og minst overraskende.",
+                media(PHOTOGRAPH_AI_MARS_IMAGE),
+                "Eiffeltårnet står på Mars",
+                "",
+                "Bilde X",
+                "Et kjent tårn i et rødt landskap.",
+                media(PHOTOGRAPH_AI_SKY_IMAGE),
+                "Sære skyer over en solnedgang",
+                "",
+                "Bilde Y",
+                "Solnedgang med skyer i himmelen.",
                 XOrYContent.Choice.Y
             ),
             multipleChoiceTask(
-                "Velg den beste forklaringen pa hvorfor du bor vaere skeptisk til et bilde.",
-                "Riktig. Nar flere detaljer ikke henger sammen, bor du stoppe opp og sjekke bildet mer.",
-                "Se etter forklaringen som peker pa unaturlige detaljer, ikke bare stil eller farger.",
-                "Hva er det tydeligste faresignalet?",
-                "Et bilde kan virke ekte ved forste blikk. Velg tegnet som bor fa deg til a sjekke mer.",
-                media(DETECTIVE_HUB_IMAGE),
-                "Illustrasjon av et barn som gransker et bilde",
+                "Hva bør du undersøke først i dette bildet?",
+                "Bra. Når bevegelse og kropp ikke helt henger sammen, er det lurt å se nærmere på bildet.",
+                "Se etter noe som virker litt feil i måten motivet er satt sammen på.",
+                "Hva er det beste spørsmålet å stille?",
+                "Velg det som hjelper deg å vurdere om bildet er ekte.",
+                media(PHOTOGRAPH_REAL_FOOTBALL_IMAGE),
+                "En spiller som sparker ballen i en kamp",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Hender, tekst og bakgrunn passer ikke helt sammen"),
-                    new MultipleChoiceContent.Option("b", "Bildet bruker klare farger"),
-                    new MultipleChoiceContent.Option("c", "Det er flere personer i bildet")
+                    new MultipleChoiceContent.Option("a", "Ser bevegelsen og kroppen naturlig ut?"),
+                    new MultipleChoiceContent.Option("b", "Har bildet mange ulike farger?"),
+                    new MultipleChoiceContent.Option("c", "Er bildet tatt ute på en bane?")
                 ),
                 "a"
             )
@@ -1044,7 +1062,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
         "Normal, manipulert og KI-genererte bilder.",
         "Se ekstra nøye pa detaljer som hender, tekst, skygger og bakgrunn nar du vurderer bilder.",
         media(PHOTOGRAPH_STATION_IMAGE), "#5F5F5F",
-        List.of(PHOTOGRAPH_EXERCISE_1_UID, PHOTOGRAPH_EXERCISE_2_UID), false);
+        List.of(PHOTOGRAPH_EXERCISE_1_UID, PHOTOGRAPH_EXERCISE_2_UID, PHOTOGRAPH_EXERCISE_3_UID), false);
 
     upsertStation(POSTOFFICE_STATION_UID, "Postkontoret",
         "Klikkbare e-posttester med avsendere, lenker og vedlegg.",

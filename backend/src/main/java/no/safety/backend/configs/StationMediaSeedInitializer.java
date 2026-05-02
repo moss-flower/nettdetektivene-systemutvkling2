@@ -31,6 +31,15 @@ public class StationMediaSeedInitializer implements ApplicationRunner {
   private static final String NEWSSTAND_WARNING_SCHOOL_IMAGE = "seed/tasks/nyhetskvartalet/warning-skoler-stenger.png";
   private static final String NEWSSTAND_WARNING_PLAYGROUND_IMAGE = "seed/tasks/nyhetskvartalet/warning-bot-lekeplass.png";
 
+  private static final String PHOTOGRAPH_REAL_DOG_IMAGE = "seed/tasks/fotografen/real-dog-frisbee.png";
+  private static final String PHOTOGRAPH_REAL_FOOTBALL_IMAGE = "seed/tasks/fotografen/real-football-player-kicking-ball.jpeg";
+  private static final String PHOTOGRAPH_REAL_PEOPLE_IMAGE = "seed/tasks/fotografen/real-people-holding-hands.png";
+  private static final String PHOTOGRAPH_AI_HANDS_IMAGE = "seed/tasks/fotografen/ai-folded-hands-many-fingers.jpeg";
+  private static final String PHOTOGRAPH_AI_BANANA_IMAGE = "seed/tasks/fotografen/ai-kid-giant-banana.jpeg";
+  private static final String PHOTOGRAPH_AI_SIGNS_IMAGE = "seed/tasks/fotografen/ai-road-sign-arrows-both-ways.png";
+  private static final String PHOTOGRAPH_AI_MARS_IMAGE = "seed/tasks/fotografen/ai-eiffel-tower-mars-landscape.jpeg";
+  private static final String PHOTOGRAPH_AI_SKY_IMAGE = "seed/tasks/fotografen/ai-sunset-spiral-clouds.jpeg";
+
   private final MediaStorageService mediaStorageService;
 
   @Override
@@ -51,7 +60,15 @@ public class StationMediaSeedInitializer implements ApplicationRunner {
         NEWSSTAND_SAFE_READING_IMAGE,
         NEWSSTAND_WARNING_PHONE_IMAGE,
         NEWSSTAND_WARNING_SCHOOL_IMAGE,
-        NEWSSTAND_WARNING_PLAYGROUND_IMAGE
+        NEWSSTAND_WARNING_PLAYGROUND_IMAGE,
+        PHOTOGRAPH_REAL_DOG_IMAGE,
+        PHOTOGRAPH_REAL_FOOTBALL_IMAGE,
+        PHOTOGRAPH_REAL_PEOPLE_IMAGE,
+        PHOTOGRAPH_AI_HANDS_IMAGE,
+        PHOTOGRAPH_AI_BANANA_IMAGE,
+        PHOTOGRAPH_AI_SIGNS_IMAGE,
+        PHOTOGRAPH_AI_MARS_IMAGE,
+        PHOTOGRAPH_AI_SKY_IMAGE
     ).forEach(image -> mediaStorageService.uploadPublicClasspathImage(image, image, PNG));
   }
 }
