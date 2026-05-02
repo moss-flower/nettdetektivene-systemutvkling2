@@ -256,34 +256,31 @@ watch(stationCards, () => {
 <style scoped>
 .stationsPage {
   --stations-eyebrow: var(--palette-cork-580);
-  --stations-title: var(--palette-cream-200);
-  --stations-summary: var(--palette-gray-300);
-
-  background-image: url("~/assets/images/background_2_blurred.png");
-  background-attachment: fixed;
-  background-size: cover;
-  background-position: center;
+  --stations-title: var(--color-brand-primary);
+  --stations-summary: var(--palette-gray-900);
+  min-height: fit-content;
   display: grid;
   gap: var(--space-5);
+  align-content: start;
   padding: var(--layout-page-padding);
-}
-
-.stationsPage::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background-image: 
-    linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
-    url("~/assets/images/background_2_blurred.png");
-  background-size: cover;
-  background-position: center;
+  border-radius: var(--radius-3);
+  background:
+    linear-gradient(var(--palette-overlay-dark-strong), var(--palette-overlay-dark-strong)),
+    linear-gradient(var(--palette-overlay-dark-medium), var(--palette-overlay-dark-medium )),
+    url("~/assets/images/background_2_blurred.png") center / cover no-repeat;
+  background-attachment: fixed;
 }
 
 
 .pageIntro {
   display: grid;
   gap: var(--space-3);
+  align-content: start;
+  justify-self: start;
+  max-width: 60ch;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-2);
+  background: var(--palette-cream-100);
 }
 
 .pageEyebrow {
@@ -362,7 +359,7 @@ watch(stationCards, () => {
   padding: var(--space-5);
   border: var(--border-width-hairline) solid var(--palette-gray-200);
   border-radius: var(--radius-3);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--palette-overlay-light-soft);
 }
 
 .emptyState h2,
@@ -380,5 +377,4 @@ watch(stationCards, () => {
     margin-right: 0;
   }
 }
-
 </style>
