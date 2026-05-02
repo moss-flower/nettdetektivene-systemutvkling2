@@ -29,6 +29,10 @@ import no.safety.backend.auth.filter.JwtAuthenticationFilter;
 
 import org.springframework.security.authentication.AuthenticationManager;
 
+/**
+ * Security configuration for the application.
+ * Configures HTTP security, CORS, CSRF, and authentication filters.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -41,6 +45,13 @@ public class SecurityConfig {
     @Value("${application.security.jwt.cookie.refresh.durationMillis}")
     private long refreshCookieDurationMillis;
 
+    /**
+     * Configures the security filter chain for HTTP requests.
+     * Sets up CORS, CSRF, authorization rules, and JWT filter.
+     * @param http the HttpSecurity to configure
+     * @return the configured SecurityFilterChain
+     * @throws Exception if configuration fails
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -81,11 +92,20 @@ public class SecurityConfig {
 
     }
 
+    /**
+     * Creates a BCrypt password encoder bean for hashing passwords.
+     * @return a BCryptPasswordEncoder instance
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Configures CORS (Cross-Origin Resource Sharing) settings.
+     * Sets allowed origins, methods, headers, and credentials.
+     * @return the configured CorsConfigurationSource
+     */
     private CookieCsrfTokenRepository csrfTokenRepository() {
         CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         long maxAgeSeconds = refreshCookieDurationMillis / 1000;
@@ -112,6 +132,12 @@ public class SecurityConfig {
         return source;
     }
 
+    /**
+     * Creates an AuthenticationManager bean from the authentication configuration.
+     * @param config the AuthenticationConfiguration to get the manager from
+     * @return the AuthenticationManager instance
+     * @throws Exception if unable to get the authentication manager
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();

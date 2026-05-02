@@ -6,7 +6,8 @@ import lombok.Setter;
 
 
 /**
- * Internal DTO for conveying necessry information to Notification Service.
+ * Base event class for notification-related events.
+ * Contains sender ID, message, and priority for creating notifications.
  */
 @Getter
 @Setter

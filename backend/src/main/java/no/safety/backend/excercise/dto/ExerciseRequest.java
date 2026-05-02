@@ -8,6 +8,16 @@ import java.util.List;
 import no.safety.backend.notepad.dto.NotepadEntryCreateRequest;
 import no.safety.backend.task.dto.TaskRequest;
 
+/**
+ * DTO for creating or updating an exercise.
+ *
+ * @param title the exercise title (required, max 100 chars)
+ * @param difficultyName the difficulty level name (required, max 50 chars)
+ * @param description the exercise description (max 2000 chars)
+ * @param hint the hint text for the exercise (required, max 2000 chars)
+ * @param notepadEntry optional notepad entry to create with the exercise
+ * @param tasks the list of tasks for this exercise (must have at least one)
+ */
 public record ExerciseRequest(
     @NotBlank(message = "title is required.")
     @Size(max = 100, message = "title cannot exceed 100 characters.")
