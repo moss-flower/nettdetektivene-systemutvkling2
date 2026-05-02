@@ -191,6 +191,7 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     assignPendingMember(klasse7c, vildePendingElev);
 
     seedNotifications(lisaLaerer, perLaerer, adaElev, eliasElev, miaElev, lukasElev);
+    seedAdaDemoProgress(adaElev);
   }
 
     /**
@@ -342,7 +343,32 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
             lukasElev,
             "Lukas Elev fullforte dagens stasjonskart i 7-trinn C.",
             1,
-            LocalDateTime.now().minusMinutes(4))));
+        LocalDateTime.now().minusMinutes(4))));
+  }
+
+  private void seedAdaDemoProgress(StudentUser adaElev) {
+    if (adaElev == null) {
+      return;
+    }
+
+    seedCompletedExercise(adaElev, GameplayMockDataInitializer.NEWSSTAND_EXERCISE_1_UID);
+    seedCompletedExercise(adaElev, GameplayMockDataInitializer.NEWSSTAND_EXERCISE_2_UID);
+    seedCompletedExercise(adaElev, GameplayMockDataInitializer.PHOTOGRAPH_EXERCISE_1_UID);
+    seedCompletedExercise(adaElev, GameplayMockDataInitializer.PHOTOGRAPH_EXERCISE_2_UID);
+
+    adaElev.setScore(400);
+    studentRepository.save(adaElev);
+  }
+
+  private void seedCompletedExercise(StudentUser student, UUID exerciseUid) {
+    if (completedExerciseRepository.existsByStudentUidAndExerciseUid(student.getPublicUuid(), exerciseUid)) {
+      return;
+    }
+
+    CompletedExercise completedExercise = new CompletedExercise();
+    completedExercise.setStudentUid(student.getPublicUuid());
+    completedExercise.setExerciseUid(exerciseUid);
+    completedExerciseRepository.save(completedExercise);
   }
 
   private Notification seededNotification(

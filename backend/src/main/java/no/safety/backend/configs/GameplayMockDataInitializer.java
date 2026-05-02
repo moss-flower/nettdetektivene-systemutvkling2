@@ -284,13 +284,13 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 media(PHOTOGRAPH_AI_BANANA_IMAGE),
                 "Barn holder en veldig stor banan",
                 "",
-                "Bilde X",
-                "Et barn holder noe over hodet.",
+                "Den store banenen",
+                "En gutt holder en kjempestor banan over hodet.",
                 media(PHOTOGRAPH_REAL_DOG_IMAGE),
                 "Hund som fanger en frisbee",
                 "",
-                "Bilde Y",
-                "En hund er ute i aktivitet.",
+                "Hund med frisbee",
+                "En hund som hopper etter en frisbee",
                 XOrYContent.Choice.Y
             )
         )
@@ -347,13 +347,13 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 media(PHOTOGRAPH_AI_MARS_IMAGE),
                 "Eiffeltårnet står på Mars",
                 "",
-                "Bilde X",
+                "Alternativ 1",
                 "Et kjent tårn i et rødt landskap.",
-                media(PHOTOGRAPH_AI_SKY_IMAGE),
-                "Sære skyer over en solnedgang",
+                media(PHOTOGRAPH_REAL_PEOPLE_IMAGE),
+                "To personer som går sammen",
                 "",
-                "Bilde Y",
-                "Solnedgang med skyer i himmelen.",
+                "Alternativ 2",
+                "To personer går ute sammen.",
                 XOrYContent.Choice.Y
             ),
             multipleChoiceTask(
