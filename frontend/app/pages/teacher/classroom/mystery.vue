@@ -22,10 +22,10 @@ const { data: classroom } = await useAsyncData(
 
     <div class="card">
       <div class="mysteryHeader">
-        <h2>Ingen publisert mysteriedata ennå</h2>
+        <h2>Ukens mysterium er ikke klart ennå</h2>
       </div>
-      <p>Frontend viser ikke lenger mockede mysterier for klasserom.</p>
-      <p>Backend har foreløpig ikke et endepunkt for å hente ukens mysterium per klasserom.</p>
+      <p>Det er ikke publisert noe mysterium for dette klasserommet ennå.</p>
+      <p>Her vil ukens mysterium vises når det er tilgjengelig.</p>
     </div>
   </section>
 </template>
