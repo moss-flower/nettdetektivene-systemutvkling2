@@ -102,16 +102,18 @@ const handleLogout = async () => {
         </aside>
 
         <div class="rightColumn">
-          <NuxtLink
-            class="panel settingsButton settingsButtonNotifications"
-            :to="routePaths.teacherNotifications"
-          >
-            <Bell :size="48" class="settingsIcon" />
-            <span class="settingsButtonLabel">Varslinger</span>
-            <span v-if="notificationCount > 0" class="notificationBadge">
-              {{ notificationCount }}
-            </span>
-          </NuxtLink>
+          <div class="topActionRow topActionRowSingle">
+            <NuxtLink
+              class="panel settingsButton settingsButtonNotifications"
+              :to="routePaths.teacherNotifications"
+            >
+              <Bell :size="48" class="settingsIcon" />
+              <span class="settingsButtonLabel">Varslinger</span>
+              <span v-if="notificationCount > 0" class="notificationBadge">
+                {{ notificationCount }}
+              </span>
+            </NuxtLink>
+          </div>
 
           <article class="panel panelHighlight">
             <h2>Hurtig tilgang</h2>
@@ -271,13 +273,26 @@ h1 {
   box-shadow: var(--shadow-1);
 }
 
+.topActionRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.topActionRowSingle {
+  grid-template-columns: minmax(132px, 164px);
+  justify-content: end;
+}
+
 .settingsButton {
   position: relative;
   display: grid;
-  justify-items: start;
-  gap: var(--space-4);
+  justify-items: center;
+  align-items: center;
+  gap: var(--space-2);
   color: inherit;
   text-decoration: none;
+  text-align: center;
   transition: transform var(--transition-fast), border-color var(--transition-fast);
 }
 
@@ -287,20 +302,39 @@ h1 {
 }
 
 .settingsIcon {
-  /* deliberate exception, decorative icon, no token covers 56px */
   width: 3.5rem;
   height: 3.5rem;
   border-radius: var(--radius-1);
 }
 
 .settingsButtonLabel {
-  font-size: var(--font-size-16);
+  font-size: var(--font-size-14);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
 }
 
+.notificationBadge {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  display: grid;
+  place-items: center;
+  min-width: var(--size-icon-md);
+  height: var(--size-icon-md);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-semantic-error);
+  color: var(--color-text-onDark);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+}
+
 .settingsButtonNotifications {
-  min-height: 100%;
+  width: 100%;
+  min-height: 132px;
+  aspect-ratio: 1 / 1;
+  padding: var(--space-3);
 }
 
 .classesPanel {
@@ -437,6 +471,10 @@ h2 {
 
 @media (max-width: 900px) {
   .dashboardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .topActionRowSingle {
     grid-template-columns: 1fr;
   }
 
