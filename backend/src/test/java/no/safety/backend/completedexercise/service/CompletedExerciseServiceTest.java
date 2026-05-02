@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import no.safety.backend.achievements.service.AchievementService;
+import no.safety.backend.achievements.model.AchievementCategory;
 import no.safety.backend.completedexercise.dto.CompletedExerciseRequest;
 import no.safety.backend.completedexercise.dto.CompletedExerciseResponse;
 import no.safety.backend.completedexercise.model.CompletedExercise;
@@ -153,6 +154,40 @@ class CompletedExerciseServiceTest {
     completedExerciseService.create(request, student);
 
     verify(notepadEntryService).create(any(), any());
+  }
+
+  @Test
+  void create_whenBossStationComplete_unlocksSpecialAchievementOnly() {
+    UUID studentUid = UUID.randomUUID();
+    UUID exerciseUid = UUID.randomUUID();
+    StudentUser student = StudentUser.builder().publicUuid(studentUid).build();
+    CompletedExerciseRequest request = new CompletedExerciseRequest(exerciseUid);
+    Exercise exercise = new Exercise();
+    exercise.setPublicId(exerciseUid);
+    Station station = new Station();
+    station.setBoss(true);
+    station.setTitle("Boss station");
+    station.setExerciseUids(List.of(exerciseUid));
+
+    when(progressValidationService.isLocked(student, exerciseUid)).thenReturn(false);
+    when(completedExerciseRepository.existsByStudentUidAndExerciseUid(studentUid, exerciseUid))
+        .thenReturn(false);
+    when(completedExerciseRepository.save(any(CompletedExercise.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    when(completedExerciseRepository.findAllByStudentUidOrderByExerciseUidAsc(studentUid))
+        .thenAnswer(invocation -> {
+          CompletedExercise completed = new CompletedExercise();
+          completed.setStudentUid(studentUid);
+          completed.setExerciseUid(exerciseUid);
+          return List.of(completed);
+        });
+    when(stationRepository.findByExerciseUid(exerciseUid)).thenReturn(Optional.of(station));
+    when(exerciseRepository.findByPublicId(exerciseUid)).thenReturn(Optional.of(exercise));
+
+    completedExerciseService.create(request, student);
+
+    verify(achievementService).unlockAchievementForStudent(student, "Boss station", AchievementCategory.SPECIAL);
+    verify(achievementService, never()).unlockAchievementForStudent(student, "Boss station", AchievementCategory.STOP);
   }
 
   @Test

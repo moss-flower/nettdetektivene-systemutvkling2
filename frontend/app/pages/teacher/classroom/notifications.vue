@@ -23,8 +23,8 @@ const { data: classroom } = await useAsyncData(
     <div class="stack">
       <article class="card">
         <h2>Ingen klasseromsvarsler ennå</h2>
-        <p>Frontend bruker ikke lenger mockede varsler her.</p>
-        <span>Backend har foreløpig ingen lese-endepunkt for klasseromsvarsler.</span>
+        <p>Det er ingen varsler å vise for dette klasserommet akkurat nå.</p>
+        <span>Nye varsler vil dukke opp her når de blir tilgjengelige.</span>
       </article>
     </div>
   </section>

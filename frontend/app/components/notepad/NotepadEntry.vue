@@ -14,6 +14,16 @@ const titlePrefix = computed(() => {
   return "";
 });
 
+const formattedDate = computed(() => {
+  return new Date(props.entry.date).toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+});
+
 </script>
 
 <template>
@@ -28,7 +38,7 @@ const titlePrefix = computed(() => {
     ]"
   >
     <div class="meta">
-      <h3 class="date">{{ entry.date }}</h3>
+      <h3 class="date">{{ formattedDate }}</h3>
       <h3 class="source">{{ entry.source }}</h3>
     </div>
     <h4 class="title">{{ titlePrefix }} {{ props.entry.title }}</h4>
@@ -116,6 +126,9 @@ const titlePrefix = computed(() => {
   font-family: var(--font-family-body), sans-serif;
   font-size: var(--font-size-16);
   line-height: var(--font-leading-16);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
 }
 
 .tip {

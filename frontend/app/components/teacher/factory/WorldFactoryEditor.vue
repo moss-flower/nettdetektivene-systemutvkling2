@@ -156,7 +156,7 @@ const editorTitle = computed(() => {
 	}
 
 	if (parsedSelection.value.kind === "draft") {
-		return payloadPreview.value.title ? `Lokalt stasjonskart: ${payloadPreview.value.title}` : "Nytt lokalt stasjonskart";
+		return payloadPreview.value.title ? `Utkast til stasjonskart: ${payloadPreview.value.title}` : "Nytt utkast til stasjonskart";
 	}
 
 	return "Nytt stasjonskart";
@@ -164,14 +164,14 @@ const editorTitle = computed(() => {
 
 const editorDescription = computed(() => {
 	if (parsedSelection.value.kind === "existing") {
-		return "Du redigerer et eksisterende stasjonskart. Lokal lagring fungerer som en override over mock-dataen til backend finnes.";
+		return "Du redigerer et eksisterende stasjonskart.";
 	}
 
 	if (parsedSelection.value.kind === "draft") {
-		return "Dette er et lokalt stasjonskart uten backend-kobling. Det kan senere velges når klasserom-oppretting får valg av stasjonskart.";
+		return "Dette er et utkast som du kan fortsette å redigere senere.";
 	}
 
-	return "Opprett et nytt stasjonskart lokalt. Det kan lagres uten stasjoner, så lenge det har en unik id.";
+	return "Opprett et nytt stasjonskart og legg til innhold når du er klar.";
 });
 
 const applyDraft = (payload: WorldFactoryPayload) => {
@@ -382,7 +382,10 @@ watch(payloadPreviewText, () => {
 									<img :src="station.image" :alt="station.title" class="stationCardImage" :style="{ backgroundColor: station.backgroundColor }" >
 									<div class="selectedCardContent">
 										<p class="cardEyebrow">Plass {{ station.order }}</p>
-										<h3>{{ station.title }}</h3>
+										<h3>
+											{{ station.title }}
+											<span v-if="knownStationMap.get(station.uid)?.isBoss" class="bossPill" aria-hidden="true">Boss</span>
+										</h3>
 										<span :class="['statusPill', { 'statusPill--manual': !station.isKnown }]">
 											{{ station.isKnown ? "Tilgjengelig" : 'Ikke tilgjengelig' }}
 										</span>
@@ -427,10 +430,12 @@ watch(payloadPreviewText, () => {
 									<span class="dragHandle" aria-hidden="true">Grip</span>
 									<img :src="station.image" :alt="station.title" class="stationCardImage" :style="{ backgroundColor: station.backgroundColor }" >
 									<div class="selectedCardContent">
-										<p class="cardEyebrow">{{ station.uid }}</p>
-										<h3>{{ station.title }}</h3>
+										<h3>
+											{{ station.title }}
+											<span v-if="knownStationMap.get(station.uid)?.isBoss" class="bossPill" aria-hidden="true">Skurk</span>
+										</h3>
 										<div v-if="station.usageTags.length > 0" class="usageTags" aria-label="Brukt i stasjonskart">
-                      <p class="small">Brukt i:</p>
+					  <p class="small">Brukt i:</p>
 											<span v-for="tag in station.usageTags" :key="tag" class="usageTag">{{ tag }}</span>
 										</div>
 									</div>
@@ -501,16 +506,16 @@ watch(payloadPreviewText, () => {
 
 			<section class="panelSection debugSection">
 				<details>
-					<summary class="debugSummary">Debug: payload</summary>
+					<summary class="debugSummary">Dataoversikt</summary>
 					<div class="debugContent">
 						<div class="sectionHeading sectionHeading--inline">
 							<div>
-								<h2>Payload</h2>
-								<p>Dette er objektet du senere kan sende med POST til backend.</p>
+								<h2>JSON-data</h2>
+								<p>Her kan du se dataene som er knyttet til stasjonskartet.</p>
 							</div>
 
 							<button type="button" class="ghostButton" @click="copyPayload">
-								{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier JSON' }}
+								{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier data' }}
 							</button>
 						</div>
 
@@ -549,6 +554,18 @@ watch(payloadPreviewText, () => {
   grid-template-columns: 1fr;
   gap: var(--space-5);
   align-items: start;
+}
+
+.bossPill {
+	display: inline-block;
+	margin-left: 0.6rem;
+	padding: 0.15rem 0.5rem;
+	font-size: 0.72rem;
+	font-weight: 700;
+	color: var(--palette-white);
+	background: #b00020;
+	border-radius: 999px;
+	line-height: 1;
 }
 
 .editorPanel,
@@ -612,11 +629,12 @@ watch(payloadPreviewText, () => {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--space-4);
-  align-items: start;
+  align-items: stretch;
 }
 
 .stationColumn {
   display: grid;
+  grid-template-rows: auto 1fr;
   gap: var(--space-3);
 }
 
@@ -715,7 +733,9 @@ watch(payloadPreviewText, () => {
 .knownStations,
 .selectedList {
   margin-top: 0;
-  min-height: 5rem; /* deliberate: minimum drop zone height */
+  height: 100%;
+  min-height: 12rem; /* deliberate: keep both drop zones easy to target */
+  align-content: start;
 }
 
 .selectedCardContent {

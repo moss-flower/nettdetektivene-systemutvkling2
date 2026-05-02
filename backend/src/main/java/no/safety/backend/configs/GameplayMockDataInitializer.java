@@ -1101,18 +1101,18 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     int variant = Math.floorMod(publicId.hashCode(), 3);
     switch (variant) {
       case 0 -> {
-        notepadEntry.setTitle("Tips");
+        notepadEntry.setTitle(title);
         notepadEntry.setType(NotepadEntryType.TIP);
         notepadEntry.setContent(limitTo256(hint));
       }
       case 1 -> {
-        notepadEntry.setTitle(title + " - fakta");
+        notepadEntry.setTitle(title);
         notepadEntry.setType(NotepadEntryType.INFO);
         notepadEntry.setContent(limitTo256("Dette trener du pa: " + description));
       }
       default -> {
-        notepadEntry.setTitle(title + " - observasjon");
-        notepadEntry.setType(NotepadEntryType.OBSERVATION);
+        notepadEntry.setTitle(title);
+        notepadEntry.setType(NotepadEntryType.TIP);
         notepadEntry.setContent(limitTo256("Husk dette fra oppgaven: " + description + " Se etter: " + hint));
       }
     }

@@ -1,6 +1,6 @@
 package no.safety.backend.notepad.dto;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import no.safety.backend.notepad.model.NotepadEntry;
@@ -9,7 +9,7 @@ import no.safety.backend.notepad.model.NotepadEntryType;
 public record NotepadEntryResponse (
     UUID publicUuid,
     String title,
-    LocalDate dateCreated,
+    ZonedDateTime dateCreated,
     String source,
     NotepadEntryType type,
     String content

@@ -131,7 +131,7 @@ const editorTitle = computed(() => {
 	}
 
 	if (parsedSelection.value.kind === "draft") {
-		return payloadPreview.value.title ? `Lokal stasjon: ${payloadPreview.value.title}` : "Ny lokal stasjon";
+		return payloadPreview.value.title ? `Utkast til stasjon: ${payloadPreview.value.title}` : "Nytt utkast til stasjon";
 	}
 
 	return "Ny stasjon";
@@ -139,14 +139,14 @@ const editorTitle = computed(() => {
 
 const editorDescription = computed(() => {
 	if (parsedSelection.value.kind === "existing") {
-		return "Du redigerer en eksisterende stasjon. Lokal lagring fungerer som en override over mock-dataen til backend finnes.";
+		return "Du redigerer en eksisterende stasjon.";
 	}
 
 	if (parsedSelection.value.kind === "draft") {
-		return "Dette er en lokal stasjon som du kan fortsette å redigere senere fra listen.";
+		return "Dette er et utkast som du kan fortsette å redigere senere fra listen.";
 	}
 
-	return "Opprett en ny stasjon lokalt. Etter første lagring dukker den opp i listen og kan redigeres videre.";
+	return "Opprett en ny stasjon. Etter første lagring dukker den opp i listen og kan redigeres videre.";
 	});
 
 const applyDraft = (payload: StationFactoryPayload) => {
@@ -483,16 +483,16 @@ watch(payloadPreviewText, () => {
 
 			<section class="panelSection debugSection">
 				<details>
-					<summary class="debugSummary">Debug: payload</summary>
+					<summary class="debugSummary">Dataoversikt</summary>
 					<div class="debugContent">
 						<div class="sectionHeading sectionHeading--inline">
 							<div>
-								<h2>Payload</h2>
-								<p>Dette er objektet du senere kan sende med POST til backend.</p>
+								<h2>JSON-data</h2>
+								<p>Her kan du se dataene som er knyttet til stasjonen.</p>
 							</div>
 
 							<button type="button" class="ghostButton" @click="copyPayload">
-								{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier JSON' }}
+								{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier data' }}
 							</button>
 						</div>
 
@@ -582,10 +582,11 @@ watch(payloadPreviewText, () => {
    display: grid;
    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
    gap: var(--space-4);
-   align-items: start;
+   align-items: stretch;
 }
 .exerciseColumn {
    display: grid;
+   grid-template-rows: auto 1fr;
    gap: var(--space-3);
 }
 .fieldGrid {
@@ -687,8 +688,10 @@ watch(payloadPreviewText, () => {
 }
 .knownExercises,
 .selectedList {
-   margin-top: 0;
-   min-height: 5rem; /* deliberate: minimum drop zone height */
+    margin-top: 0;
+    height: 100%;
+    min-height: 12rem; /* deliberate: keep both drop zones easy to target */
+    align-content: start;
 }
 .knownExercises--columns {
    margin-top: 0;

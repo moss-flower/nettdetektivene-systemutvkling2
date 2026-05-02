@@ -171,7 +171,7 @@ const deleteClassroom = async () => {
       </div>
       <p class="eyebrow">Klasseromsdetaljer</p>
       <h1>{{ classroom?.name ?? 'Ukjent klasserom' }}</h1>
-      <p class="subtitle">Viser klasserommet slik det ligger i backend akkurat nå.</p>
+      <p class="subtitle">Her finner du oversikt over elever, tilgang og innhold i klasserommet.</p>
     </header>
 
     <div v-if="classroom" class="actionGrid">
@@ -221,7 +221,7 @@ const deleteClassroom = async () => {
     <section v-if="classroom" class="pendingCard">
       <div class="pendingCardHeader">
         <h2>Stasjonskart</h2>
-        <p>Klasserommet bruker stasjonskartet som er koblet til i backend.</p>
+        <p>Dette stasjonskartet er koblet til klasserommet.</p>
       </div>
 
       <p class="pendingEmpty">{{ world?.title ?? classroom.worldUid }}</p>
@@ -237,7 +237,6 @@ const deleteClassroom = async () => {
         <article v-for="student in pendingMembers" :key="student.publicUuid" class="pendingStudent">
           <div>
             <strong>{{ student.username }}</strong>
-            <span>{{ student.publicUuid }}</span>
           </div>
           <button
             class="approveButton"

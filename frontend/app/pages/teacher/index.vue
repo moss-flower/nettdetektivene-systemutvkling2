@@ -113,11 +113,10 @@ const handleLogout = async () => {
             <NuxtLink
               class="panel settingsButton settingsButtonNotifications"
               :to="routePaths.teacherNotifications"
-            >
-              <Bell :size="48" class="settingsIcon" />
-              <span class="settingsButtonLabel">Varslinger</span>
-              <span class="notificationBadge">1</span>
-            </NuxtLink>
+             >
+               <Bell :size="48" class="settingsIcon" />
+               <span class="settingsButtonLabel">Varslinger</span>
+             </NuxtLink>
           </div>
 
           <article class="panel panelHighlight">
@@ -310,21 +309,6 @@ h1 {
   font-size: var(--font-size-16);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
-}
-
-.notificationBadge {
-  position: absolute;
-  top: var(--space-4);
-  right: var(--space-4);
-  display: grid;
-  place-items: center;
-  width: var(--size-icon-md);
-  height: var(--size-icon-md);
-  border-radius: var(--radius-pill);
-  background: var(--color-semantic-error);
-  color: var(--color-text-onDark);
-  font-size: var(--font-size-12);
-  font-weight: var(--font-weight-semibold);
 }
 
 .classesPanel {
