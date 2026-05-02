@@ -192,6 +192,7 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
 
     seedNotifications(lisaLaerer, perLaerer, adaElev, eliasElev, miaElev, lukasElev);
     seedAdaDemoProgress(adaElev);
+    seedEliasDemoProgress(eliasElev);
   }
 
     /**
@@ -358,6 +359,27 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
 
     adaElev.setScore(400);
     studentRepository.save(adaElev);
+  }
+
+  private void seedEliasDemoProgress(StudentUser eliasElev) {
+    if (eliasElev == null) {
+      return;
+    }
+
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.NEWSSTAND_EXERCISE_1_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.NEWSSTAND_EXERCISE_2_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.PHOTOGRAPH_EXERCISE_1_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.PHOTOGRAPH_EXERCISE_2_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.PHOTOGRAPH_EXERCISE_3_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.POSTOFFICE_EXERCISE_1_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.POSTOFFICE_EXERCISE_2_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.PASSWORDBANK_EXERCISE_1_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.PASSWORDBANK_EXERCISE_2_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.MARKETPLACE_EXERCISE_1_UID);
+    seedCompletedExercise(eliasElev, GameplayMockDataInitializer.MARKETPLACE_EXERCISE_2_UID);
+
+    eliasElev.setScore(1100);
+    studentRepository.save(eliasElev);
   }
 
   private void seedCompletedExercise(StudentUser student, UUID exerciseUid) {

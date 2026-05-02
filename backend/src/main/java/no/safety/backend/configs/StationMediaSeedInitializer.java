@@ -1,6 +1,7 @@
 package no.safety.backend.configs;
 
 import java.util.List;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.media.service.MediaStorageService;
 import org.springframework.boot.ApplicationArguments;
@@ -15,8 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Order(4)
 @RequiredArgsConstructor
 public class StationMediaSeedInitializer implements ApplicationRunner {
-
-  private static final String PNG = "image/png";
 
   private static final String NEWSSTAND_STATION_IMAGE = "seed/stations/nyhetskvtartalet.png";
   private static final String PHOTOGRAPH_STATION_IMAGE = "seed/stations/fotografen.png";
@@ -46,6 +45,12 @@ public class StationMediaSeedInitializer implements ApplicationRunner {
   private static final String POSTOFFICE_REAL_HIKE_IMAGE = "seed/tasks/postkontoret/real-hike-reminder.jpeg";
   private static final String POSTOFFICE_REAL_TIMETABLE_IMAGE = "seed/tasks/postkontoret/real-timeplan-next-week.png";
   private static final String POSTOFFICE_REAL_LIBRARY_IMAGE = "seed/tasks/postkontoret/real-welcome-to-library.jpeg";
+
+  private static final String MARKETPLACE_FAKE_BIKE_IMAGE = "seed/tasks/markedsplassen/fake-bike-ad.jpeg";
+  private static final String MARKETPLACE_FAKE_IPHONE_IMAGE = "seed/tasks/markedsplassen/fake-iphone-ad.jpeg";
+  private static final String MARKETPLACE_FAKE_LAPTOP_IMAGE = "seed/tasks/markedsplassen/fake-laptop-ad.jpeg";
+  private static final String MARKETPLACE_REAL_BIKE_IMAGE = "seed/tasks/markedsplassen/real-bike-ad.jpeg";
+  private static final String MARKETPLACE_REAL_LAPTOP_IMAGE = "seed/tasks/markedsplassen/real-laptop-ad.jpeg";
 
   private final MediaStorageService mediaStorageService;
 
@@ -81,7 +86,25 @@ public class StationMediaSeedInitializer implements ApplicationRunner {
         POSTOFFICE_REAL_BOOK_IMAGE,
         POSTOFFICE_REAL_HIKE_IMAGE,
         POSTOFFICE_REAL_TIMETABLE_IMAGE,
-        POSTOFFICE_REAL_LIBRARY_IMAGE
-    ).forEach(image -> mediaStorageService.uploadPublicClasspathImage(image, image, PNG));
+        POSTOFFICE_REAL_LIBRARY_IMAGE,
+        MARKETPLACE_FAKE_BIKE_IMAGE,
+        MARKETPLACE_FAKE_IPHONE_IMAGE,
+        MARKETPLACE_FAKE_LAPTOP_IMAGE,
+        MARKETPLACE_REAL_BIKE_IMAGE,
+        MARKETPLACE_REAL_LAPTOP_IMAGE
+    ).forEach(image -> mediaStorageService.uploadPublicClasspathImage(image, image, contentTypeFor(image)));
+  }
+
+  private String contentTypeFor(String path) {
+    String normalizedPath = path.toLowerCase(Locale.ROOT);
+    if (normalizedPath.endsWith(".png")) {
+      return "image/png";
+    }
+
+    if (normalizedPath.endsWith(".jpg") || normalizedPath.endsWith(".jpeg")) {
+      return "image/jpeg";
+    }
+
+    throw new IllegalStateException("Unsupported seed media type: " + path);
   }
 }

@@ -114,6 +114,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   private static final String POSTOFFICE_REAL_TIMETABLE_IMAGE = "seed/tasks/postkontoret/real-timeplan-next-week.png";
   private static final String POSTOFFICE_REAL_LIBRARY_IMAGE = "seed/tasks/postkontoret/real-welcome-to-library.jpeg";
 
+  private static final String MARKETPLACE_FAKE_BIKE_IMAGE = "seed/tasks/markedsplassen/fake-bike-ad.jpeg";
+  private static final String MARKETPLACE_FAKE_IPHONE_IMAGE = "seed/tasks/markedsplassen/fake-iphone-ad.jpeg";
+  private static final String MARKETPLACE_FAKE_LAPTOP_IMAGE = "seed/tasks/markedsplassen/fake-laptop-ad.jpeg";
+  private static final String MARKETPLACE_REAL_BIKE_IMAGE = "seed/tasks/markedsplassen/real-bike-ad.jpeg";
+  private static final String MARKETPLACE_REAL_LAPTOP_IMAGE = "seed/tasks/markedsplassen/real-laptop-ad.jpeg";
+
   private final ExerciseRepository exerciseRepository;
   private final StationRepository stationRepository;
   private final WorldRepository worldRepository;
@@ -619,109 +625,111 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     );
 
     upsertExercise(MARKETPLACE_EXERCISE_1_UID, "Trygg handel", "Lett",
-        "Laer a vurdere om nettsider og nettbutikker er trygge eller mistenkelige.",
+        "Lær å oppdage de første tegnene på at en annonse eller butikk kan være mistenkelig.",
         List.of(
             multipleChoiceTask(
-                "Velg det tydeligste faresignalet pa nettsiden.",
-                "Riktig. En rar nettadresse er ofte et faresignal.",
-                "Se etter noe som gjor at siden virker mindre troverdig.",
-                "Hva er det tydeligste faresignalet?",
-                "Velg det som skurrer mest.",
-                media(SHOP_WARNING_IMAGE),
-                "Skjermbilde av en tvilsom nettbutikk",
+                "Hva bør få deg til å stoppe opp i denne annonsen?",
+                "Bra. Når en annonse virker altfor god til å være sann, bør du sjekke mer før du trykker.",
+                "Se etter det som gjør annonsen vanskelig å stole på med en gang.",
+                "Hva skurrer mest?",
+                "Velg det tydeligste faresignalet i annonsen.",
+                media(MARKETPLACE_FAKE_IPHONE_IMAGE),
+                "En annonse for en iPhone som virker mistenkelig",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Butikken bruker en rar nettadresse som ikke ser norsk ut"),
-                    new MultipleChoiceContent.Option("b", "Produktbildet er stort og fargerikt")
+                    new MultipleChoiceContent.Option("a", "Prisen og tilbudet virker altfor gode til å være sanne"),
+                    new MultipleChoiceContent.Option("b", "Annonsen viser et tydelig produktbilde"),
+                    new MultipleChoiceContent.Option("c", "Det står hva varen heter")
                 ),
                 "a"
             ),
             xOrYTask(
-                "Sammenlign to butikker og velg den som virker mest troverdig.",
-                "Bra. Den tryggeste butikken gir deg kontaktinfo og en nettadresse som virker ryddig.",
-                "Se etter kjent navn, kontaktinfo og trygg betalingsinformasjon.",
-                "Hvilken butikk virker tryggest?",
-                "Velg butikken du ville stolt mest pa.",
-                media(SHOP_WARNING_IMAGE),
-                "Tvilsom butikk med rar nettadresse",
-                "Butikk X",
-                "Supertilbud pa alt",
-                "Butikken lover veldig mye, men nettadressen og informasjonen virker rare.",
-                media(SHOP_SAFE_IMAGE),
-                "Ryddig butikk med tydelig informasjon",
-                "Butikk Y",
-                "Tydelig og ryddig",
-                "Butikken viser kontaktinfo og virker lettere a kontrollere.",
+                "Hvilken annonse virker mest som en vanlig salgsannonse?",
+                "Riktig. Den ene annonsen virker mer vanlig, mens den andre lover mye uten å virke like ryddig.",
+                "Se etter hvilken annonse som virker mest rolig og vanlig.",
+                "Hvilken annonse ville du sett nærmere på først?",
+                "Velg den som virker minst mistenkelig ved første blikk.",
+                media(MARKETPLACE_FAKE_BIKE_IMAGE),
+                "En sykkelannonse som virker mistenkelig",
+                "",
+                "Annonse 1",
+                "En sykkel ligger til salgs.",
+                media(MARKETPLACE_REAL_BIKE_IMAGE),
+                "En vanlig sykkelannonse",
+                "",
+                "Annonse 2",
+                "En annen sykkel ligger til salgs.",
                 XOrYContent.Choice.Y
             ),
             sortIntoBucketsTask(
-                "Sorter tegnene fra nettbutikken i riktig boks.",
-                "Riktig. Du fant hvilke tegn som gjor en butikk tryggere og hvilke som vekker mistanke.",
-                "Se etter hva som hjelper deg a stole pa butikken, og hva som virker pressende eller uklart.",
-                "Trygge tegn eller faresignaler?",
+                "Sorter tegnene i riktig boks.",
+                "Riktig. Du skilte mellom ting som gjør en annonse lettere å stole på, og ting som bør sjekkes nærmere.",
+                "Tenk på hvilke detaljer som virker ryddige, og hvilke som virker pressende eller uklare.",
+                "Hva er greit, og hva bør sjekkes?",
                 "Legg hvert kort i riktig kategori.",
                 "Kort som skal sorteres",
                 List.of(
-                    new SortIntoBucketsContent.Bucket("shop-safe", "Trygge tegn", "Detaljer som styrker troverdigheten.", "#d9fbe6"),
-                    new SortIntoBucketsContent.Bucket("shop-warn", "Faresignaler", "Detaljer som bor gjore deg skeptisk.", "#fee2e2")
+                    new SortIntoBucketsContent.Bucket("shop-safe", "Trygge tegn", "Detaljer som ofte gjør en annonse lettere å kontrollere.", "#d9fbe6"),
+                    new SortIntoBucketsContent.Bucket("shop-warn", "Faresignaler", "Detaljer som bør få deg til å stoppe opp.", "#fee2e2")
                 ),
                 List.of(
-                    new SortIntoBucketsContent.Item("shop-1", "Tydelig kontaktinformasjon", "shop-safe", "Kontaktinfo gjor butikken lettere a sjekke."),
-                    new SortIntoBucketsContent.Item("shop-2", "Rar nettadresse", "shop-warn", "Rare nettadresser kan vaere et faresignal."),
-                    new SortIntoBucketsContent.Item("shop-3", "Trygg betalingslosning", "shop-safe", "Kjent betaling virker ofte mer troverdig."),
-                    new SortIntoBucketsContent.Item("shop-4", "Nedtelling som presser deg til a kjope na", "shop-warn", "Press kan brukes for a fa deg til a handle fort.")
+                    new SortIntoBucketsContent.Item("shop-1", "Tydelig informasjon om varen", "shop-safe", "Da blir annonsen lettere å forstå og sjekke."),
+                    new SortIntoBucketsContent.Item("shop-2", "Pris som virker altfor lav", "shop-warn", "Et ekstremt godt tilbud kan være et faresignal."),
+                    new SortIntoBucketsContent.Item("shop-3", "Selger svarer rolig og konkret", "shop-safe", "Rolige og tydelige svar gjør det lettere å vurdere annonsen."),
+                    new SortIntoBucketsContent.Item("shop-4", "Melding om at du må betale med en gang", "shop-warn", "Press brukes ofte for å få deg til å handle for fort.")
                 )
             )
         )
     );
 
     upsertExercise(MARKETPLACE_EXERCISE_2_UID, "Nettbutikksjekk", "Middels",
-        "Sammenlign nettbutikker og finn tegn pa om du bor stole pa dem eller ikke.",
+        "Sammenlign annonser og kjøpssituasjoner, og finn tegn som hjelper deg å vurdere dem bedre.",
         List.of(
             multipleChoiceTask(
-                "Velg butikken som virker mest troverdig.",
-                "Bra. Kjent navn, ryddig informasjon og trygg betaling er gode tegn.",
-                "Se etter tydelig informasjon og trygg betaling, ikke bare tilbudspris.",
-                "Hvilken butikk virker mest troverdig?",
-                "Velg butikken du ville stolt mest pa.",
-                media(SHOP_SAFE_IMAGE),
-                "Sammenligning av to nettbutikker",
+                "Hva gjør denne annonsen lettere å stole på?",
+                "Bra. Tydelig informasjon og en vanlig pris gjør det lettere å vurdere annonsen.",
+                "Se etter konkrete ting som gjør annonsen lettere å kontrollere.",
+                "Hva styrker tilliten mest?",
+                "Velg det beste tegnet på at annonsen virker grei.",
+                media(MARKETPLACE_REAL_LAPTOP_IMAGE),
+                "En vanlig annonse for en brukt laptop",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Spillbutikk.no med tydelig kontaktinfo og kjent betaling"),
-                    new MultipleChoiceContent.Option("b", "Superdeal-game-click.biz med pressende tilbud")
+                    new MultipleChoiceContent.Option("a", "Annonsen forklarer varen rolig og med vanlige detaljer"),
+                    new MultipleChoiceContent.Option("b", "Annonsen sier at tilbudet forsvinner om to minutter"),
+                    new MultipleChoiceContent.Option("c", "Annonsen bruker store bokstaver i overskriften")
                 ),
                 "a"
             ),
             multipleChoiceTask(
-                "Velg den beste grunnen til at en butikk virker tryggere enn en annen.",
-                "Riktig. Kontaktinfo, kjent betaling og ryddig informasjon er bedre tegn enn bare lave priser.",
-                "Se etter konkrete ting du kan kontrollere, ikke bare hvor billig varen er.",
-                "Hva styrker tilliten mest?",
-                "To butikker selger samme vare. Velg det tegnet som gjor en av dem mest troverdig.",
-                media(SHOP_SAFE_IMAGE),
-                "Illustrasjon av trygg nettbutikk med kontaktinfo",
+                "Hva er det tydeligste faresignalet i denne annonsen?",
+                "Riktig. Når en annonse prøver å lokke med veldig lav pris uten å virke ryddig, bør du være forsiktig.",
+                "Se etter det som gjør annonsen vanskelig å stole på.",
+                "Hva skurrer mest?",
+                "Velg det sterkeste faresignalet i annonsen.",
+                media(MARKETPLACE_FAKE_LAPTOP_IMAGE),
+                "En laptopannonse som virker mistenkelig",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Butikken viser tydelig kontaktinfo og kjent betalingsmate"),
-                    new MultipleChoiceContent.Option("b", "Butikken lover at tilbudet varer bare i to minutter"),
-                    new MultipleChoiceContent.Option("c", "Butikken bruker veldig sterke farger")
+                    new MultipleChoiceContent.Option("a", "Annonsen virker altfor billig uten å forklare godt hvorfor"),
+                    new MultipleChoiceContent.Option("b", "Annonsen viser hva slags vare som selges"),
+                    new MultipleChoiceContent.Option("c", "Annonsen har et bilde av produktet")
                 ),
                 "a"
             ),
             xOrYTask(
-                "Velg kassen som virker mest trygg nar du skal betale.",
-                "Bra. Den tryggeste kassen forklarer betalingen tydelig og virker mindre stressende.",
-                "Se etter tydelig betaling, ryddig informasjon og minst mulig press.",
-                "Hvilken betaling virker tryggest?",
-                "Velg kassen du ville brukt.",
-                media(SHOP_WARNING_IMAGE),
-                "Kasseside med pressende tekst og lite informasjon",
-                "Kasse X",
-                "Handle fort",
-                "Siden stresser deg og gir lite informasjon om hvem du betaler til.",
-                media(SHOP_SAFE_IMAGE),
-                "Ryddig kasseside med kontaktinfo og ordresammendrag",
-                "Kasse Y",
-                "Ryddig betaling",
-                "Siden viser hva du kjoper og hvordan du kan kontakte butikken.",
+                "Hvilken annonse ville du vært minst skeptisk til?",
+                "Bra. Den ene annonsen virker mer vanlig, mens den andre prøver hardere å lokke deg raskt.",
+                "Se etter hvilken annonse som virker mest rolig og mest mulig som et vanlig salg.",
+                "Hvilken annonse virker mest troverdig?",
+                "Velg den som virker enklest å kontrollere videre.",
+                media(MARKETPLACE_FAKE_IPHONE_IMAGE),
+                "En mistenkelig annonse for en iPhone",
+                "",
+                "Alternativ 1",
+                "En telefon ligger ute til salgs.",
+                media(MARKETPLACE_REAL_LAPTOP_IMAGE),
+                "En vanlig annonse for en brukt laptop",
+                "",
+                "Alternativ 2",
+                "En datamaskin ligger ute til salgs.",
                 XOrYContent.Choice.Y
             )
         )
