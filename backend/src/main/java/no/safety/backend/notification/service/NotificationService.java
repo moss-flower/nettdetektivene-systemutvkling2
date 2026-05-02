@@ -19,6 +19,10 @@ import no.safety.backend.user.model.TeacherUser;
 import no.safety.backend.user.model.User;
 import no.safety.backend.user.service.UserService;
 
+/**
+ * Service for managing notifications.
+ * Handles notification events, delivers notifications via SSE, and manages notification persistence.
+ */
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
@@ -29,9 +33,10 @@ public class NotificationService {
     private final Logger logger = LoggerFactory.getLogger(NotificationService.class);
     
     /**
-     * Captures events linked to Notifications emitted by other files and routes them
-     * to the correct recipient.
-     * @param event a NotificationEvent type object, include sender ID for mapping to correct targets.
+     * Handles notification events emitted by other parts of the application.
+     * Creates and sends notifications to the appropriate teachers based on the event sender's classroom.
+     *
+     * @param event the notification event containing message, sender ID, and priority
      */
     @EventListener
     public void handleNotificationEvent(NotificationEvent event) {
@@ -60,10 +65,9 @@ public class NotificationService {
     }
 
     /**
-     * A method for immediately notifying a user of any unread notifications.
-     * Called only when a user establishes a connection.
-     * Might lead to spam.
-     * @param userId internal ID for a given User, not the public facing UUID.
+     * Sends all pending notifications to a user who has just established an SSE connection.
+     *
+     * @param userId the internal ID of the user to flush notifications for
      */
     public void flushPending(Long userId) {
         logger.debug("Flush pending messages called for user id " + userId);
@@ -77,6 +81,12 @@ public class NotificationService {
         }
     }
 
+    /**
+     * Deletes a notification if the requesting user is the target of the notification.
+     *
+     * @param notificationUuid the UUID of the notification to delete
+     * @param requestingUserId the internal ID of the user requesting the deletion
+     */
     public void deleteNotification(UUID notificationUuid, Long requestingUserId) {
         Notification notification = repository.findByPublicId(notificationUuid)
             .orElseThrow(() -> new EntityNotFoundException("Notification not found"));

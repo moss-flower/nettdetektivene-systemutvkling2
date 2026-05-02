@@ -15,6 +15,10 @@ import no.safety.backend.auth.dto.TokenPairResponse;
 import no.safety.backend.auth.model.UserPrincipal;
 import no.safety.backend.user.model.User;
 
+/**
+ * Service class that handles authentication-related business logic.
+ * Provides methods for user login authentication and session refresh operations.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -25,6 +29,11 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
+    /**
+     * Authenticates a user login request and generates access and refresh tokens.
+     * @param request the user login request containing email and password
+     * @return a UserLoginTokenResponse containing user details and JWT tokens
+     */
     public UserLoginTokenResponse authenticateLogin(UserLoginRequest request){
         log.info("AUTHSERVICE: Login Request");
 
@@ -47,6 +56,12 @@ public class AuthenticationService {
         return new UserLoginTokenResponse(userLoginResponse, accessToken, refreshToken);
     }
 
+    /**
+     * Refreshes an authentication session using a valid refresh token.
+     * Generates new access and refresh token pairs for the user.
+     * @param refreshToken the refresh token to validate and use for generating new tokens
+     * @return a TokenPairResponse containing new access and refresh tokens
+     */
     public TokenPairResponse refreshSession(String refreshToken) {
         if (refreshToken == null || !jwtService.isTokenValid(refreshToken) || !jwtService.isRefreshToken(refreshToken)) {
             throw new IllegalArgumentException("Invalid refresh token.");

@@ -6,7 +6,7 @@ const { teacher } = useClassrooms();
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
 const { data: classroom, refresh: refreshClassroom } = await useAsyncData(
   'teacher-classroom-students',
-  () => (classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : null),
+  () => classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : Promise.resolve(null),
   { watch: [classroomId] },
 );
 
@@ -37,7 +37,7 @@ const renameStudent = async (studentId: string, currentName: string) => {
 <template>
   <section class="pageShell">
     <header class="pageHeader">
-      <NuxtLink class="backLink" :to="routePathsWithString(routePaths.teacherClassroomOverview, `?classroomId=${classroomId}`)">Tilbake til klasserommet</NuxtLink>
+      <NuxtLink class="backLink" :to="routePathsWithString(routePaths.teacherClassroomOverview, { classroomId: classroomId })">Tilbake til klasserommet</NuxtLink>
       <p class="eyebrow">Elevoversikt</p>
       <h1>{{ classroom?.name ?? 'Ukjent klasserom' }}</h1>
       <p class="subtitle">Klikk på en elev for å se progresjonen.</p>
@@ -55,7 +55,7 @@ const renameStudent = async (studentId: string, currentName: string) => {
         <tbody>
           <tr v-for="student in students" :key="student.publicUuid">
             <td>
-              <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, `?classroomId=${classroomId}&studentId=${student.publicUuid}`)">{{ student.username }}</NuxtLink>
+              <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, { classroomId: classroomId, studentId: student.publicUuid })">{{ student.username }}</NuxtLink>
             </td>
             <td>{{ student.publicUuid }}</td>
             <td class="actionColumn">

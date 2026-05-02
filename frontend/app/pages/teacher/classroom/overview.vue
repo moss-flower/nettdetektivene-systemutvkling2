@@ -23,7 +23,7 @@ const classroomId = computed(() => String(route.query.classroomId ?? ''));
 
 const { data: classroom, refresh: refreshClassroom } = await useAsyncData(
   'teacher-classroom-overview',
-  () => (classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : null),
+  () => classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : Promise.resolve(null),
   { watch: [classroomId] },
 );
 
@@ -31,7 +31,7 @@ const worldUid = computed(() => classroom.value?.worldUid ?? '');
 
 const { data: world } = await useAsyncData(
   'teacher-classroom-world',
-  () => (worldUid.value ? World.backendFetchWorldByUid(worldUid.value) : null),
+  () => worldUid.value ? World.backendFetchWorldByUid(worldUid.value) : Promise.resolve(null),
   { watch: [worldUid] },
 );
 
@@ -43,6 +43,8 @@ const { data: exercises } = await useAsyncData(
 
 const classroomExerciseUids = computed(() => new Set((exercises.value ?? []).map((exercise) => exercise.uid)));
 const totalExercises = computed(() => classroomExerciseUids.value.size);
+const classroomMembers = computed(() => Array.isArray(classroom.value?.members) ? classroom.value.members : []);
+const classroomOwners = computed(() => Array.isArray(classroom.value?.owners) ? classroom.value.owners : []);
 const pendingMembers = computed(() => classroom.value?.pendingMembers ?? []);
 
 const { data: progressByStudent, refresh: refreshProgress } = await useAsyncData(
@@ -52,7 +54,7 @@ const { data: progressByStudent, refresh: refreshProgress } = await useAsyncData
       return {};
     }
 
-    const entries = await Promise.all(classroom.value.members.map(async (student) => {
+    const entries = await Promise.all(classroomMembers.value.map(async (student) => {
       const completedExercises = await $api<CompletedExerciseResponse[]>(`/completed-exercises/students/${student.publicUuid}`, {
         method: 'GET',
       }).catch(() => []);
@@ -73,6 +75,7 @@ const { data: progressByStudent, refresh: refreshProgress } = await useAsyncData
 const removingStudentId = ref('');
 const renamingStudentId = ref('');
 const approvingStudentId = ref('');
+const decliningStudentId = ref('');
 const deletingClassroom = ref(false);
 
 const getStudentProgress = (studentId: string): StudentProgress => progressByStudent.value?.[studentId] ?? {
@@ -111,6 +114,26 @@ const approveStudent = async (studentId: string) => {
     await refreshProgress();
   } finally {
     approvingStudentId.value = '';
+  }
+};
+
+const declineStudent = async (studentId: string, studentName: string) => {
+  if (!classroom.value || decliningStudentId.value) {
+    return;
+  }
+
+  if (!window.confirm(`Avslå forespørselen fra ${studentName}?`)) {
+    return;
+  }
+
+  decliningStudentId.value = studentId;
+
+  try {
+    await teacher.declineMember(classroom.value.uid, studentId);
+    await refreshClassroom();
+    await refreshProgress();
+  } finally {
+    decliningStudentId.value = '';
   }
 };
 
@@ -169,11 +192,11 @@ const deleteClassroom = async () => {
       </div>
       <p class="eyebrow">Klasseromsdetaljer</p>
       <h1>{{ classroom?.name ?? 'Ukjent klasserom' }}</h1>
-      <p class="subtitle">Viser klasserommet slik det ligger i backend akkurat nå.</p>
+      <p class="subtitle">Her finner du oversikt over elever, tilgang og innhold i klasserommet.</p>
     </header>
 
     <div v-if="classroom" class="actionGrid">
-      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomNotifications, `?classroomId=${classroom.uid}`)" class="actionCard">
+      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomNotifications, { classroomId: classroom.uid })" class="actionCard">
         <span class="actionCardTitle">Varslingssenter</span>
         <Bell :size="48" class="actionCardIcon" />
       </NuxtLink>
@@ -188,7 +211,7 @@ const deleteClassroom = async () => {
         <Play :size="48" class="actionCardIcon" />
       </NuxtLink>
 
-      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomMystery, `?classroomId=${classroom.uid}`)" class="actionCard">
+      <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomMystery, { classroomId: classroom.uid })" class="actionCard">
         <span class="actionCardTitle">Ukens mysterium</span>
         <Search :size="48" class="actionCardIcon" />
       </NuxtLink>
@@ -197,7 +220,7 @@ const deleteClassroom = async () => {
     <div v-if="classroom" class="summaryRow">
       <article class="summaryCard">
         <span class="summaryCardLabel">Elever</span>
-        <strong>{{ classroom.members.length }}</strong>
+        <strong>{{ classroomMembers.length }}</strong>
       </article>
 
       <article class="summaryCard">
@@ -207,7 +230,7 @@ const deleteClassroom = async () => {
 
       <article class="summaryCard">
         <span class="summaryCardLabel">Eiere</span>
-        <strong>{{ classroom.owners.length }}</strong>
+        <strong>{{ classroomOwners.length }}</strong>
       </article>
 
       <article class="summaryCard">
@@ -219,7 +242,7 @@ const deleteClassroom = async () => {
     <section v-if="classroom" class="pendingCard">
       <div class="pendingCardHeader">
         <h2>Stasjonskart</h2>
-        <p>Klasserommet bruker stasjonskartet som er koblet til i backend.</p>
+        <p>Dette stasjonskartet er koblet til klasserommet.</p>
       </div>
 
       <p class="pendingEmpty">{{ world?.title ?? classroom.worldUid }}</p>
@@ -233,18 +256,27 @@ const deleteClassroom = async () => {
 
       <div v-if="pendingMembers.length" class="pendingList">
         <article v-for="student in pendingMembers" :key="student.publicUuid" class="pendingStudent">
-          <div>
+          <div class="pendingStudentInfo">
             <strong>{{ student.username }}</strong>
-            <span>{{ student.publicUuid }}</span>
           </div>
-          <button
-            class="approveButton"
-            type="button"
-            :disabled="approvingStudentId === student.publicUuid"
-            @click="approveStudent(student.publicUuid)"
-          >
-            Godkjenn
-          </button>
+          <div class="pendingActions">
+            <button
+              class="declineButton"
+              type="button"
+              :disabled="decliningStudentId === student.publicUuid || approvingStudentId === student.publicUuid"
+              @click="declineStudent(student.publicUuid, student.username)"
+            >
+              Avslå
+            </button>
+            <button
+              class="approveButton"
+              type="button"
+              :disabled="approvingStudentId === student.publicUuid || decliningStudentId === student.publicUuid"
+              @click="approveStudent(student.publicUuid)"
+            >
+              Godkjenn
+            </button>
+          </div>
         </article>
       </div>
 
@@ -263,9 +295,9 @@ const deleteClassroom = async () => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="student in classroom.members" :key="student.publicUuid">
+          <tr v-for="student in classroomMembers" :key="student.publicUuid">
             <td>
-              <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, `?classroomId=${classroomId}&studentId=${student.publicUuid}`)" class="studentLink">
+              <NuxtLink :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, { classroomId: classroomId, studentId: student.publicUuid })" class="studentLink">
                 {{ student.username }}
               </NuxtLink>
             </td>
@@ -492,15 +524,24 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-1);
+  gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   background: var(--color-bg-canvas);
   border-radius: var(--radius-2);
+  flex-wrap: nowrap;
 }
 
-.pendingStudent div {
+.pendingStudentInfo {
   display: grid;
   gap: var(--space-1);
+}
+
+.pendingActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 
 .approveButton {
@@ -513,7 +554,22 @@ h1 {
   font-weight: 700;
 }
 
+.declineButton {
+  padding: 0.55rem 1rem;
+  border: var(--border-width-hairline) solid var(--color-semantic-error);
+  border-radius: var(--radius-2);
+  background: var(--palette-overlay-red-soft);
+  color: var(--color-semantic-error);
+  cursor: pointer;
+  font-weight: 700;
+}
+
 .approveButton:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.declineButton:disabled {
   cursor: wait;
   opacity: 0.55;
 }

@@ -16,6 +16,7 @@ import {
 } from "~/composables/useWorldFactory";
 
 import type { Station } from "~/composables/types/StationTypes";
+import { useFactoryImageUpload } from "~/composables/useFactoryImageUpload";
 import { useStations } from "~/composables/useStations";
 import type { World } from "~/composables/types/WorldTypes";
 import { useFactorySessionCache } from "~/composables/useFactorySessionCache";
@@ -25,10 +26,11 @@ const props = defineProps<{
 }>();
 
 const { getAllStations } = useStations();
+const { uploadImage } = useFactoryImageUpload();
 
 const emit = defineEmits<{
 	(event: "selection-updated", selectionKey: string): void;
-	(event: "saved"): void;
+	(event: "saved", payload: { returnTarget?: string | null }): void;
 	(event: "deleted"): void;
 }>();
 
@@ -42,6 +44,8 @@ const loadedLocalId = ref("");
 const availableStations = ref<Station[]>([]);
 const availableWorlds = ref<World[]>([]);
 const knownExistingUids = ref<Set<string>>(new Set());
+const imageUploadState = ref<"idle" | "uploading">("idle");
+const imageUploadError = ref("");
 
 const knownStationMap = computed(() => new Map(availableStations.value.map((station) => [station.uid, station])));
 const parsedSelection = computed(() => parseWorldFactorySelectionKey(props.selectionKey));
@@ -152,7 +156,7 @@ const editorTitle = computed(() => {
 	}
 
 	if (parsedSelection.value.kind === "draft") {
-		return payloadPreview.value.title ? `Lokalt stasjonskart: ${payloadPreview.value.title}` : "Nytt lokalt stasjonskart";
+		return payloadPreview.value.title ? `Utkast til stasjonskart: ${payloadPreview.value.title}` : "Nytt utkast til stasjonskart";
 	}
 
 	return "Nytt stasjonskart";
@@ -160,14 +164,14 @@ const editorTitle = computed(() => {
 
 const editorDescription = computed(() => {
 	if (parsedSelection.value.kind === "existing") {
-		return "Du redigerer et eksisterende stasjonskart. Lokal lagring fungerer som en override over mock-dataen til backend finnes.";
+		return "Du redigerer et eksisterende stasjonskart.";
 	}
 
 	if (parsedSelection.value.kind === "draft") {
-		return "Dette er et lokalt stasjonskart uten backend-kobling. Det kan senere velges når klasserom-oppretting får valg av stasjonskart.";
+		return "Dette er et utkast som du kan fortsette å redigere senere.";
 	}
 
-	return "Opprett et nytt stasjonskart lokalt. Det kan lagres uten stasjoner, så lenge det har en unik id.";
+	return "Opprett et nytt stasjonskart og legg til innhold når du er klar.";
 });
 
 const applyDraft = (payload: WorldFactoryPayload) => {
@@ -221,7 +225,7 @@ const editStation = (uid: string) => {
 
 const finishSave = (selectionKey: string) => {
 	emit("selection-updated", selectionKey);
-	emit("saved");
+	emit("saved", { returnTarget: null });
 };
 
 const savePayload = async () => {
@@ -242,7 +246,8 @@ const savePayload = async () => {
 	const returnTarget = returnTo ? { fullPath: returnTo } : factorySessionCache.popReturnTarget();
 
 	if (returnTarget) {
-		await navigateTo(returnTarget.fullPath);
+		emit("selection-updated", saved.selectionKey);
+		emit("saved", { returnTarget: returnTarget.fullPath });
 		return;
 	}
 
@@ -250,6 +255,10 @@ const savePayload = async () => {
 };
 
 const deleteSelection = async () => {
+	if (!window.confirm("Er du sikker på at du vil slette dette elementet?")) {
+		return;
+	}
+
 	await deleteWorldFactorySelection(props.selectionKey);
 	emit("deleted");
 };
@@ -260,6 +269,30 @@ const copyPayload = async () => {
 		copyState.value = "copied";
 	} catch {
 		copyState.value = "failed";
+	}
+};
+
+const handleImageSelected = async (event: Event) => {
+	const input = event.target as HTMLInputElement | null;
+	const file = input?.files?.[0];
+
+	if (!file) {
+		return;
+	}
+
+	imageUploadState.value = "uploading";
+	imageUploadError.value = "";
+
+	try {
+		const uploaded = await uploadImage(file, "uploads/factory/worlds");
+		draft.image = uploaded.url;
+	} catch (error) {
+		imageUploadError.value = error instanceof Error ? error.message : "Bildet kunne ikke lastes opp.";
+	} finally {
+		imageUploadState.value = "idle";
+		if (input) {
+			input.value = "";
+		}
 	}
 };
 
@@ -315,8 +348,10 @@ watch(payloadPreviewText, () => {
 					</label>
 
 					<label class="field">
-						<span>Bilde-URL</span>
-						<input v-model="draft.image" type="url" placeholder="https://..." >
+						<span>Bilde</span>
+						<input type="file" accept="image/*" :disabled="imageUploadState === 'uploading'" @change="handleImageSelected" >
+						<small class="fieldHint">{{ imageUploadState === "uploading" ? "Laster opp..." : "Velg et bilde til stasjonskartet." }}</small>
+						<p v-if="imageUploadError" class="fieldError">{{ imageUploadError }}</p>
 					</label>
 
 					<label class="field field--full">
@@ -352,7 +387,10 @@ watch(payloadPreviewText, () => {
 									<img :src="station.image" :alt="station.title" class="stationCardImage" :style="{ backgroundColor: station.backgroundColor }" >
 									<div class="selectedCardContent">
 										<p class="cardEyebrow">Plass {{ station.order }}</p>
-										<h3>{{ station.title }}</h3>
+										<h3>
+											{{ station.title }}
+											<span v-if="knownStationMap.get(station.uid)?.isBoss" class="bossPill" aria-hidden="true">Boss</span>
+										</h3>
 										<span :class="['statusPill', { 'statusPill--manual': !station.isKnown }]">
 											{{ station.isKnown ? "Tilgjengelig" : 'Ikke tilgjengelig' }}
 										</span>
@@ -362,7 +400,7 @@ watch(payloadPreviewText, () => {
 									</div>
 									<div class="selectedCardActions">
 										<button type="button" class="iconButton" :disabled="!station.isKnown" @click="editStation(station.uid)">
-											<img src="https://placehold.co/80x80?text=E&color=6b7280" alt="Rediger stasjon" class="selectedCardActionIcon" >
+										<img :src="'/images/placeholders/action-edit.svg'" alt="Rediger stasjon" class="selectedCardActionIcon" >
 										</button>
 									</div>
 								</article>
@@ -397,16 +435,18 @@ watch(payloadPreviewText, () => {
 									<span class="dragHandle" aria-hidden="true">Grip</span>
 									<img :src="station.image" :alt="station.title" class="stationCardImage" :style="{ backgroundColor: station.backgroundColor }" >
 									<div class="selectedCardContent">
-										<p class="cardEyebrow">{{ station.uid }}</p>
-										<h3>{{ station.title }}</h3>
+										<h3>
+											{{ station.title }}
+											<span v-if="knownStationMap.get(station.uid)?.isBoss" class="bossPill" aria-hidden="true">Skurk</span>
+										</h3>
 										<div v-if="station.usageTags.length > 0" class="usageTags" aria-label="Brukt i stasjonskart">
-                      <p class="small">Brukt i:</p>
+					  <p class="small">Brukt i:</p>
 											<span v-for="tag in station.usageTags" :key="tag" class="usageTag">{{ tag }}</span>
 										</div>
 									</div>
 									<div class="selectedCardActions">
 										<button type="button" class="iconButton" :disabled="!station.isKnown" @click="editStation(station.uid)">
-											<img src="https://placehold.co/80x80?text=E&color=6b7280" alt="Rediger stasjon" class="selectedCardActionIcon" >
+										<img :src="'/images/placeholders/action-edit.svg'" alt="Rediger stasjon" class="selectedCardActionIcon" >
 										</button>
 									</div>
 								</article>
@@ -471,16 +511,16 @@ watch(payloadPreviewText, () => {
 
 			<section class="panelSection debugSection">
 				<details>
-					<summary class="debugSummary">Debug: payload</summary>
+					<summary class="debugSummary">Dataoversikt</summary>
 					<div class="debugContent">
 						<div class="sectionHeading sectionHeading--inline">
 							<div>
-								<h2>Payload</h2>
-								<p>Dette er objektet du senere kan sende med POST til backend.</p>
+								<h2>JSON-data</h2>
+								<p>Her kan du se dataene som er knyttet til stasjonskartet.</p>
 							</div>
 
 							<button type="button" class="ghostButton" @click="copyPayload">
-								{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier JSON' }}
+								{{ copyState === 'copied' ? 'Kopiert' : copyState === 'failed' ? 'Kopiering feilet' : 'Kopier data' }}
 							</button>
 						</div>
 
@@ -519,6 +559,18 @@ watch(payloadPreviewText, () => {
   grid-template-columns: 1fr;
   gap: var(--space-5);
   align-items: start;
+}
+
+.bossPill {
+	display: inline-block;
+	margin-left: 0.6rem;
+	padding: 0.15rem 0.5rem;
+	font-size: 0.72rem;
+	font-weight: 700;
+	color: var(--palette-white);
+	background: #b00020;
+	border-radius: 999px;
+	line-height: 1;
 }
 
 .editorPanel,
@@ -605,6 +657,17 @@ watch(payloadPreviewText, () => {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
+}
+
+.fieldHint {
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
+.fieldError {
+	margin: 0;
+	color: #fca5a5;
+	font-size: 0.9rem;
 }
 
 .field {

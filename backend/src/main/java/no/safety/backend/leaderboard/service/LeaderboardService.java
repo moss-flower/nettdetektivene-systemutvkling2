@@ -21,8 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 /**
- * A service to handle leaderboards for all {@link StudentUser}'s in a
- * {@link Classroom}
+ * Service class for managing leaderboard data.
+ * Handles retrieval of classroom rankings and student leaderboard statistics.
  */
 @Service
 @RequiredArgsConstructor
@@ -35,10 +35,10 @@ public class LeaderboardService {
     private final ClassroomLeaderboardRepository classroomLeaderboardRepository;
 
     /**
-     * Gets the leaderboard of all {@link Classroom}s based on pagination.
-     * 
-     * @param pageable
-     * @return
+     * Retrieves a paginated leaderboard of all classrooms ranked by total score.
+     *
+     * @param pageable pagination information
+     * @return a page of classroom leaderboard responses
      */
     @NonNull
     @Transactional(readOnly = true)
@@ -52,11 +52,12 @@ public class LeaderboardService {
     }
 
     /**
-     * Gets the leaderboard stats for a single {@link StudentUser}
-     * 
-     * @param userInternalId
-     * @param classroomPublicUuid
-     * @return
+     * Retrieves leaderboard statistics for a specific student.
+     * Returns the student's score and rank within their classroom.
+     *
+     * @param userInternalId the internal ID of the student
+     * @return the user's leaderboard response with score and rank
+     * @throws NotFoundException if the user or classroom is not found
      */
     @NonNull
     @Transactional(readOnly = true)
@@ -78,11 +79,15 @@ public class LeaderboardService {
     }
 
     /**
-     * Gets the leaderboard of all {@link StudentUser}s in the {@link Classroom}
-     * based on pagination.
-     * 
-     * @param pageable
-     * @return
+     * Retrieves a paginated leaderboard of all students in a classroom.
+     * Only the classroom owner (teacher) can access this data.
+     *
+     * @param callerUserInternalId the internal ID of the calling teacher
+     * @param classroomUid the public UUID of the classroom
+     * @param pageable pagination information
+     * @return a page of student leaderboard responses
+     * @throws NotFoundException if the classroom is not found
+     * @throws ForbiddenException if the caller is not the classroom owner
      */
     @NonNull
     @Transactional(readOnly = true)

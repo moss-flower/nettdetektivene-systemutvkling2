@@ -1,6 +1,6 @@
 package no.safety.backend.notepad.model;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -19,7 +19,9 @@ import no.safety.backend.notepad.dto.NotepadEntryUpdateRequest;
 import no.safety.backend.user.model.User;
 
 /**
- * Defines a notepadentry in the system.
+ * Represents a notepad entry in the system.
+ * Contains information such as title, content, type, source, and creation date.
+ * Multiple users can have access to the same entry (e.g., student and teacher).
  */
 @Builder
 @Entity
@@ -48,7 +50,7 @@ public class NotepadEntry {
     /* The date the entry was created */
     @NotNull
     @Column(nullable = false)
-    private LocalDate dateCreated;
+    private ZonedDateTime dateCreated;
 
     /* The source of the entry. */
     @Size(max = 128)
@@ -67,8 +69,8 @@ public class NotepadEntry {
     private String content;
 
     /**
-     * Creates a many to many database relation between {@link NotepadEntry} and {@link User}.
-     * Allows multiple users to have access to the same note. e.g. student and teacher.
+     * Creates a many-to-many relationship between {@link NotepadEntry} and {@link User}.
+     * Allows multiple users to have access to the same note (e.g., student and teacher).
      */
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinTable(
@@ -77,6 +79,7 @@ public class NotepadEntry {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
 
+    @Builder.Default
     private Set<User> users = new HashSet<>();
 
     @PrePersist
@@ -85,7 +88,7 @@ public class NotepadEntry {
             this.publicUuid = UUID.randomUUID();
         }
         if (this.dateCreated == null) {
-            this.dateCreated = LocalDate.now();
+            this.dateCreated = ZonedDateTime.now();
         }
     }
 
@@ -98,7 +101,10 @@ public class NotepadEntry {
     }
 
     /**
-     * Equality based on publicUUID.
+     * Checks equality based on the public UUID.
+     *
+     * @param o the object to compare with
+     * @return true if the objects have the same public UUID, false otherwise
      */
     @Override
     public boolean equals(Object o) {
@@ -113,8 +119,9 @@ public class NotepadEntry {
     }
 
     /**
-     * Sets the values of this instance based on the {@link NotepadEntryUpdateRequest}.
-     * @param request
+     * Updates the fields of this entry from the provided update request.
+     *
+     * @param request the update request containing new values
      */
     public void updateValuesFrom(NotepadEntryUpdateRequest request) {
         this.title = request.title();
@@ -123,6 +130,13 @@ public class NotepadEntry {
         this.source = request.source();
     }
 
+    /**
+     * Creates a new notepad entry from the provided request and assigns it to the specified user.
+     *
+     * @param request the create request containing entry details
+     * @param user the user to assign the entry to
+     * @return a new notepad entry instance
+     */
     public static NotepadEntry createFrom(NotepadEntryCreateRequest request, User user) {
         return NotepadEntry.builder()
             .title(request.title())

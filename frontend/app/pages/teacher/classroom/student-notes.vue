@@ -13,14 +13,14 @@ const studentId = computed(() => String(route.query.studentId ?? ''));
 
 const { data: classroom } = await useAsyncData(
   'teacher-classroom-for-student-notes',
-  () => (classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : null),
+  () => classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : Promise.resolve(null),
   { watch: [classroomId] },
 );
 
 const { data: notesPage, error: notesError } = await useAsyncData(
   'teacher-student-notes',
   () => {
-    if (!studentId.value) return null;
+    if (!studentId.value) return Promise.resolve(null);
     return getStudentNotes(studentId.value);
   },
   { watch: [studentId] },
@@ -37,7 +37,7 @@ const notes = computed(() => {
     <header class="pageHeader">
       <NuxtLink 
         class="backLink"
-        :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, `?classroomId=${classroomId}&studentId=${studentId}`)"
+        :to="routePathsWithString(routePaths.teacherClassroomStudentProgress, { classroomId: classroomId, studentId: studentId })"
       >
         ← Tilbake til elevprogresjon
       </NuxtLink>
@@ -69,7 +69,22 @@ const notes = computed(() => {
 
 <style scoped>
 .studentNotesPage {
+  --notes-bg-top: var(--palette-cream-100);
+  --notes-bg-bottom: var(--palette-cream-200);
+  --notes-border: var(--palette-overlay-cork-shadow);
+  --notes-eyebrow: var(--palette-cork-580);
+  --notes-title: var(--palette-cork-900);
+  --notes-summary: var(--palette-cork-700);
+  --notes-missing-bg: var(--palette-red-100);
+  --notes-missing-border: var(--palette-red-200);
+
+  display: grid;
+  gap: var(--space-5);
+  /* fluid outer padding, deliberate exception (token system)*/
+  min-height: 100dvh;
   width: 100%;
+  display: grid;
+  place-items: center;
   max-width: var(--layout-max-width);
   margin: 0 auto;
   padding: var(--layout-page-padding);
@@ -109,22 +124,37 @@ h1 {
   color: var(--color-text-primary);
 }
 
+.eyebrow {
+  color: var(--notes-eyebrow);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-2);
+}
+
+h1 {
+  margin: 0 0 var(--space-2) 0;
+  color: var(--notes-title);
+}
+
 .subtitle {
   margin: 0;
-  color: var(--color-text-secondary);
+  color: var(--notes-summary);
 }
 
 .errorMessage,
 .emptyMessage {
-  padding: var(--space-4);
+  padding: var(--space-5);
   border-radius: var(--radius-3);
-  background: var(--color-bg-surface);
-  color: var(--color-text-secondary);
+  background: var(--notes-missing-bg);
+  border: var(--border-width-hairline) solid var(--notes-missing-border);
 }
 
 .notesList {
   display: grid;
   gap: var(--space-4);
+  width: 100%;
+  max-width: 1180px;
 }
 
 .noteCard {

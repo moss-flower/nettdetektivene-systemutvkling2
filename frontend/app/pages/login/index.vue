@@ -111,7 +111,7 @@ async function handleLogin() {
       </header>
 
       <article class="shellContent">
-        <p class="mockBadge">Mock Feide</p>
+        <p class="mockBadge">Feide</p>
         <h1>Logg inn med Feide</h1>
 
         <section class="summaryPanels" aria-label="Innloggingsinformasjon">
@@ -135,7 +135,7 @@ async function handleLogin() {
           </div>
         </section>
 
-        <section class="mainCard" aria-label="Mock Feide-innlogging">
+        <section class="mainCard" aria-label="Feide-innlogging">
           <div class="providerList">
             <button
               v-for="provider in providerOptions"
@@ -154,7 +154,7 @@ async function handleLogin() {
           </div>
 
           <div class="formDivider">
-            <span>eller bruk testinnlogging</span>
+            <span>eller logg inn med e-post og passord</span>
           </div>
 
           <form class="mockForm" @submit.prevent="handleLogin">
@@ -207,16 +207,14 @@ async function handleLogin() {
         <details class="helpPanel">
           <summary>Trenger du hjelp?</summary>
           <div class="helpContent">
-            <p>Dette er en prototype av Feide-innloggingen deres.</p>
-            <p>
-              Logg inn med en backend-bruker. Rollen fra backend bestemmer om du sendes til elev- eller lærerflaten.
-            </p>
+              <p>Dersom du trenger hjelp med innlogging, kontakt læreren eller administratoren din.</p>
+              <p>Etter innlogging blir du sendt videre til riktig del av løsningen.</p>
           </div>
         </details>
       </article>
 
       <footer class="shellFooter">
-        <p>Feide leveres normalt av Sikt. Denne siden er kun en lokal mock.</p>
+        <p>Logg inn for å fortsette til Nettdetektivene.</p>
         <p class="footerMeta">
           <span>Terms of use</span>
           <span>&bull;</span>

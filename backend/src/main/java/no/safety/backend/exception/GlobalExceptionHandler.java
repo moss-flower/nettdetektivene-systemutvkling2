@@ -22,34 +22,42 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
 import java.util.stream.Collectors;
 
-
-
 /**
- * Defines a global exception handler to catch and handle custom exceptions from all sources.
- * Allows for control over which error messages and data reach the user, so unintended information is not leaked from the backend.
+ * Global exception handler that catches and handles exceptions from all controllers.
+ * Provides consistent error responses using RFC 7807 Problem Detail format.
+ * Ensures sensitive information is not leaked to clients.
  */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     /**
-     * Handles {@link BadCredentialsException} exceptions.
-     * @param ex
-     * @return Returns a {@link ProblemDetail} with HTTP status code: 401 UNAUTHORIZED.
+     * Handles BadCredentialsException thrown during authentication.
+     *
+     * @param ex the BadCredentialsException thrown
+     * @return a ProblemDetail with HTTP 401 UNAUTHORIZED status
      */
     @ExceptionHandler(BadCredentialsException.class)
     public ProblemDetail handleBadCredentials(BadCredentialsException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Invalid email or password");
     }
 
+    /**
+     * Handles IllegalArgumentException for invalid arguments.
+     *
+     * @param ex the IllegalArgumentException thrown
+     * @return a ProblemDetail with HTTP 401 UNAUTHORIZED status
+     */
     @ExceptionHandler(IllegalArgumentException.class)
     public ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 
     /**
-     * Handles {@link UserAlreadyExistsException} exceptions.
-     * @return Returns a {@link ProblemDetail} with HTTP status code: 409 Conflict.
+     * Handles UserAlreadyExistsException when attempting to register a duplicate user.
+     *
+     * @param ex the UserAlreadyExistsException thrown
+     * @return a ProblemDetail with HTTP 409 CONFLICT status
      */
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ProblemDetail handleUserAlreadyExists(UserAlreadyExistsException ex) {
@@ -60,8 +68,10 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles {@link UserNotFoundException} exceptions.
-     * @return Returns a {@link ProblemDetail} with HTTP status code: 404 Conflict.
+     * Handles UserNotFoundException when a requested user is not found.
+     *
+     * @param ex the UserNotFoundException thrown
+     * @return a ProblemDetail with HTTP 404 NOT_FOUND status
      */
     @ExceptionHandler(UserNotFoundException.class)
     public ProblemDetail handleUserNotFound(UserNotFoundException ex) {
@@ -72,8 +82,11 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles {@link RoleNotFoundException} exceptions.
-     * @return Returns a {@link ProblemDetail} with HTTP status code: 500 INTERNAL_SERVER_ERROR.
+     * Handles RoleNotFoundException when a requested role is not found in the system.
+     *
+     * @param ex the RoleNotFoundException thrown
+     * @param request the HTTP servlet request
+     * @return a ProblemDetail with HTTP 500 INTERNAL_SERVER_ERROR status
      */
     @ExceptionHandler(RoleNotFoundException.class)
     public ProblemDetail handleRoleNotFound(RoleNotFoundException ex, HttpServletRequest request) {
@@ -87,8 +100,10 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles {@link MethodArgumentNotValidException} exceptions.
-     * @return Returns a {@link ProblemDetail} with HTTP status code: 500 INTERNAL_SERVER_ERROR.
+     * Handles MethodArgumentNotValidException for @Valid annotation validation failures.
+     *
+     * @param ex the MethodArgumentNotValidException thrown
+     * @return a ProblemDetail with HTTP 400 BAD_REQUEST status containing validation errors
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidationErrors(MethodArgumentNotValidException ex) {
@@ -102,9 +117,19 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    public ProblemDetail handleBadRequest(BadRequestException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setTitle("Bad Request");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
     /**
-     * Handles {@link NotFoundException} exceptions.
-     * @return Returns a {@link ProblemDetail} with HTTP status code: 404 Not Found.
+     * Handles NotFoundException when a requested resource is not found.
+     *
+     * @param ex the NotFoundException thrown
+     * @return a ProblemDetail with HTTP 404 NOT_FOUND status
      */
     @ExceptionHandler(NotFoundException.class)
     public ProblemDetail handleNotFoundException(NotFoundException ex) {
@@ -115,8 +140,10 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles {@link NotepadEntryNotFoundException} exceptions.
-     * @return Returns a {@link ProblemDetail} with HTTP status code: 404 Not Found.
+     * Handles NotepadEntryNotFoundException when a requested notepad entry is not found.
+     *
+     * @param ex the NotepadEntryNotFoundException thrown
+     * @return a ProblemDetail with HTTP 404 NOT_FOUND status
      */
     @ExceptionHandler(NotepadEntryNotFoundException.class)
     public ProblemDetail handleNotepadEntryNotFoundException(NotFoundException ex) {
@@ -127,8 +154,10 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles {@link ConflictException} exceptions.
-     * @return Returns a {@link ProblemDetail} with HTTP status code: 409 Conflict.
+     * Handles ConflictException when a request conflicts with the current resource state.
+     *
+     * @param ex the ConflictException thrown
+     * @return a ProblemDetail with HTTP 409 CONFLICT status
      */
     @ExceptionHandler(ConflictException.class)
     public ProblemDetail handleConflict(ConflictException ex) {
@@ -139,8 +168,10 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles {@link ForbiddenException} exceptions.
-     * @return Returns a {@link ProblemDetail} with HTTP status code: 403 Forbidden.
+     * Handles ForbiddenException when a user is forbidden from performing an action.
+     *
+     * @param ex the ForbiddenException thrown
+     * @return a ProblemDetail with HTTP 403 FORBIDDEN status
      */
     @ExceptionHandler(ForbiddenException.class)
     public ProblemDetail handleForbidden(ForbiddenException ex) {
@@ -150,6 +181,12 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    /**
+     * Handles Spring Security AuthorizationDeniedException when authorization fails.
+     *
+     * @param ex the AuthorizationDeniedException thrown
+     * @return a ProblemDetail with HTTP 403 FORBIDDEN status
+     */
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ProblemDetail handleAuthorizationDenied(AuthorizationDeniedException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Access denied");
@@ -158,6 +195,12 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    /**
+     * Handles NoResourceFoundException when a requested resource is not found.
+     *
+     * @param ex the NoResourceFoundException thrown
+     * @return a ProblemDetail with HTTP 404 NOT_FOUND status
+     */
     @ExceptionHandler(NoResourceFoundException.class)
     public ProblemDetail handleNoResourceFound(NoResourceFoundException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Resource not found");
@@ -167,8 +210,10 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles {@link NotClassroomOwnerException} exceptions.
-     * @return Returns a {@link ProblemDetail} with HTTP status code: 403 Forbidden.
+     * Handles NotClassroomOwnerException when a user is not the owner of a classroom.
+     *
+     * @param ex the NotClassroomOwnerException thrown
+     * @return a ProblemDetail with HTTP 403 FORBIDDEN status
      */
     @ExceptionHandler(NotClassroomOwnerException.class)
     public ProblemDetail handleNotClassroomOwner(NotClassroomOwnerException ex) {
@@ -179,8 +224,10 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles custom {@link no.safety.backend.exception.AccessDeniedException} exceptions.
-     * @return Returns a {@link ProblemDetail} with HTTP status code: 403 Forbidden.
+     * Handles custom AccessDeniedException when a user is denied access to a resource.
+     *
+     * @param ex the AccessDeniedException thrown
+     * @return a ProblemDetail with HTTP 403 FORBIDDEN status
      */
     @ExceptionHandler(AccessDeniedException.class)
     public ProblemDetail handleAccessDeniedException(AccessDeniedException ex) {
@@ -191,8 +238,10 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles {@link StudentNotInClassException} exceptions.
-     * @return Returns a {@link ProblemDetail} with HTTP status code: 404 Not Found.
+     * Handles StudentNotInClassException when a student is not enrolled in a classroom.
+     *
+     * @param ex the StudentNotInClassException thrown
+     * @return a ProblemDetail with HTTP 404 NOT_FOUND status
      */
     @ExceptionHandler(StudentNotInClassException.class)
     public ProblemDetail handleStudentNotInClass(StudentNotInClassException ex) {
@@ -203,8 +252,10 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles Spring Security {@link org.springframework.security.access.AccessDeniedException} exceptions.
-     * @return Returns a {@link ProblemDetail} with HTTP status code: 403 Forbidden.
+     * Handles Spring Security AccessDeniedException when access is denied.
+     *
+     * @param ex the AccessDeniedException thrown
+     * @return a ProblemDetail with HTTP 403 FORBIDDEN status
      */
     @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
     public ProblemDetail handleSpringAccessDenied(org.springframework.security.access.AccessDeniedException ex) {
@@ -219,9 +270,11 @@ public class GlobalExceptionHandler {
 
 
     /**
-     * Handles all {@link Exception} that are not specifically defined in this handler.
-     * Catches unhandled exceptions to protect against data leaks.
-     * @return Returns a {@link ProblemDetail} with HTTP status code: 500 INTERNAL_SERVER_ERROR.
+     * Fallback handler for any unhandled exceptions.
+     * Logs the full exception and returns a generic error response to prevent information leakage.
+     *
+     * @param ex the unhandled Exception
+     * @return a ProblemDetail with HTTP 500 INTERNAL_SERVER_ERROR status
      */
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleGeneralError(Exception ex) {

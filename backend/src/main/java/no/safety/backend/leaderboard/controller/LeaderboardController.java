@@ -18,14 +18,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import no.safety.backend.auth.model.UserPrincipal;
-import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.leaderboard.dto.UserLeaderboardResponse;
 import no.safety.backend.leaderboard.dto.ClassroomLeaderboardResponse;
 import no.safety.backend.leaderboard.service.LeaderboardService;
-import no.safety.backend.user.model.StudentUser;
 
 /**
- * Leaderboard controller that defines API endpoints for getting leaderboards.
+ * REST controller for leaderboard endpoints.
+ * Provides endpoints for retrieving classroom rankings and student leaderboard statistics.
  */
 @RestController
 @RequestMapping("/api/v1/leaderboard")
@@ -36,9 +35,10 @@ public class LeaderboardController {
     private final LeaderboardService leaderboardService;
 
     /**
-     * Gets the sorted leaderboard of all {@link Classroom}s based on pagination.
-     * @param pageable
-     * @return
+     * Retrieves a paginated leaderboard of all classrooms ranked by total score.
+     *
+     * @param pageable pagination information (default size 20, sorted by score descending)
+     * @return a page of classroom leaderboard responses
      */
     @GetMapping("/classroom")
     @PreAuthorize("hasAnyRole('STUDENT','TEACHER')")
@@ -52,9 +52,11 @@ public class LeaderboardController {
     }
 
     /**
-     * Gets the rank of the logged in {@link StudentUser} relative to the other students in their {@link Classroom}.
-     * @param userPrincipal
-     * @return
+     * Retrieves the leaderboard statistics for the authenticated student.
+     * Returns the student's score and rank within their classroom.
+     *
+     * @param userPrincipal the authenticated user principal
+     * @return the user's leaderboard response with score and rank
      */
     @GetMapping("/user")
     @PreAuthorize("hasRole('STUDENT')")
@@ -67,9 +69,13 @@ public class LeaderboardController {
     }
 
     /**
-     * Gets the rank of the logged in {@link StudentUser} relative to the other students in their {@link Classroom}.
-     * @param userPrincipal
-     * @return
+     * Retrieves a paginated leaderboard of all students in a specific classroom.
+     * Only the classroom owner (teacher) can access this endpoint.
+     *
+     * @param userPrincipal the authenticated teacher principal
+     * @param classroomUid the public UUID of the classroom
+     * @param pageable pagination information (default size 20, sorted by score descending)
+     * @return a page of student leaderboard responses
      */
     @GetMapping("/{classroomUid}/students")
     @PreAuthorize("hasRole('TEACHER')")

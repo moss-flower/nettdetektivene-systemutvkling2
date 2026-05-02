@@ -16,6 +16,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import no.safety.backend.excercise.model.Exercise;
 import no.safety.backend.user.model.TeacherUser;
 
 
@@ -51,6 +52,10 @@ public class WeeklyMysteryPrompt {
 
     @Column
     private String clue;
+
+    @ManyToOne
+    @JoinColumn(name = "exercise_id")
+    private Exercise exercise;
 
     @ManyToOne
     @JoinColumn(name = "teacher_id")

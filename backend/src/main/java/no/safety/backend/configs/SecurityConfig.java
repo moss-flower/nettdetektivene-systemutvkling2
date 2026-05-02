@@ -1,10 +1,12 @@
 package no.safety.backend.configs;
 
+import java.time.Duration;
 import java.util.List;
 
+import no.safety.backend.auth.filter.CsrfCookieFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -27,6 +29,10 @@ import no.safety.backend.auth.filter.JwtAuthenticationFilter;
 
 import org.springframework.security.authentication.AuthenticationManager;
 
+/**
+ * Security configuration for the application.
+ * Configures HTTP security, CORS, CSRF, and authentication filters.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -34,22 +40,29 @@ import org.springframework.security.authentication.AuthenticationManager;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CsrfCookieFilter csrfCookieFilter;
 
+    @Value("${application.security.jwt.cookie.refresh.durationMillis}")
+    private long refreshCookieDurationMillis;
+
+    /**
+     * Configures the security filter chain for HTTP requests.
+     * Sets up CORS, CSRF, authorization rules, and JWT filter.
+     * @param http the HttpSecurity to configure
+     * @return the configured SecurityFilterChain
+     * @throws Exception if configuration fails
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        System.out.println("Welcome to security filter chain");
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
             .csrf(csrf -> csrf
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .csrfTokenRepository(csrfTokenRepository())
                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-
-                //This is for swagger ui testing of endpoints, since swagger does add an XSRF token
-                // header on requests (everything other than GETs responds 401). We do not want
-                // this in the final product.
-                //TODO: Remove eventually.
-                .ignoringRequestMatchers("/api/v1/auth/**", "/api/v1/register/**", "/api/v1/classrooms/**", "/api/v1/exercises/**", "/api/v1/stations/**", "/api/v1/worlds/**", "/api/v1/notepad/**", "/api/v1/avatar/**", "/api/v1/achievements/**", "/api/v1/completed-exercises/**", "/api/v1/leaderboard/**", "/api/v1/users/**")
+                //the browser hasnt recieved a xsrf token by the time one logs in or registers so it
+                //can't send back an X-XSRF-TOKEN header.
+                .ignoringRequestMatchers("/api/v1/auth/login", "/api/v1/register/**")
             )
 
             .headers(headers -> headers
@@ -65,22 +78,44 @@ public class SecurityConfig {
             )
 
             .exceptionHandling(ex -> ex
-                .authenticationEntryPoint((request, response, authException) -> 
+                .authenticationEntryPoint((request, response, authException) ->
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"))
             )
 
-            .sessionManagement(session -> 
+            .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
 
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(csrfCookieFilter, JwtAuthenticationFilter.class);
         return http.build();
-    
+
     }
 
+    /**
+     * Creates a BCrypt password encoder bean for hashing passwords.
+     * @return a BCryptPasswordEncoder instance
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * Configures CORS (Cross-Origin Resource Sharing) settings.
+     * Sets allowed origins, methods, headers, and credentials.
+     * @return the configured CorsConfigurationSource
+     */
+    private CookieCsrfTokenRepository csrfTokenRepository() {
+        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        long maxAgeSeconds = refreshCookieDurationMillis / 1000;
+        repository.setCookieCustomizer(cookie -> cookie
+            .secure(true)
+            .sameSite("Strict")
+            .path("/")
+            .maxAge(Duration.ofSeconds(maxAgeSeconds))
+        );
+        return repository;
     }
 
     @Bean
@@ -88,15 +123,21 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
         configuration.setAllowCredentials(true);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
+    /**
+     * Creates an AuthenticationManager bean from the authentication configuration.
+     * @param config the AuthenticationConfiguration to get the manager from
+     * @return the AuthenticationManager instance
+     * @throws Exception if unable to get the authentication manager
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();

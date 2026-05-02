@@ -39,7 +39,7 @@ export const stationFactoryNewSelectionKey = "__new_station__";
 
 const storageKey = "teacher.stationFactory.records";
 const previousStorageKey = "teacher.stationFactory.payloads";
-const defaultImage = "https://placehold.co/1200x720?text=Stasjon";
+const defaultImage = "/images/placeholders/station.svg";
 
 export const stationFactoryDefaultImage = defaultImage;
 

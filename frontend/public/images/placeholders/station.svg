@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#eefcf8"/>
+  <rect x="140" y="120" width="920" height="480" rx="42" fill="#ffffff"/>
+  <circle cx="370" cy="360" r="120" fill="#84d8c3"/>
+  <rect x="560" y="260" width="260" height="46" rx="18" fill="#bdeee2"/>
+  <rect x="560" y="340" width="340" height="34" rx="16" fill="#d6f7ef"/>
+  <text x="600" y="170" text-anchor="middle" font-size="64" font-family="Arial, sans-serif" fill="#2b6b5d">Stasjon</text>
+</svg>
