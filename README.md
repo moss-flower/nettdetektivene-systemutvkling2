@@ -15,6 +15,9 @@ Oppmøtetid: 09:00 - 15:00
 - **Wayan Satria Krabseth**
 - **Sasha Unruh**
 
+## Test coverage
+To view test coverage reports for frontend and backend, visit the GitHub-pages site found at: https://pages.git.ntnu.no/hectome/idatt2106_2026_02/site/
+
 ## Developer Setup
 
 ### Requirements
