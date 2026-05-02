@@ -17,7 +17,7 @@ const studentId = computed(() => String(route.query.studentId ?? ''));
 
 const { data: classroom } = await useAsyncData(
   'teacher-classroom-selected-student-classroom',
-  () => (classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : null),
+  () => classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : Promise.resolve(null),
   { watch: [classroomId] },
 );
 
@@ -25,19 +25,19 @@ const student = computed(() => getClassroomMemberById(classroom.value, studentId
 
 const { data: studentProfile } = await useAsyncData(
   'teacher-classroom-selected-student-profile',
-  () => (studentId.value ? $api<StudentProfileResponse>(`/students/${studentId.value}/profile`, { method: 'GET' }).catch(() => null) : null),
+  () => studentId.value ? $api<StudentProfileResponse>(`/students/${studentId.value}/profile`, { method: 'GET' }).catch(() => null) : Promise.resolve(null),
   { watch: [studentId] },
 );
 
 const { data: completedExercises } = await useAsyncData(
   'teacher-classroom-selected-student-completed-exercises',
-  () => (studentId.value ? $api<CompletedExerciseResponse[]>(`/completed-exercises/students/${studentId.value}`, { method: 'GET' }).catch(() => []) : []),
+  () => studentId.value ? $api<CompletedExerciseResponse[]>(`/completed-exercises/students/${studentId.value}`, { method: 'GET' }).catch(() => []) : Promise.resolve([]),
   { watch: [studentId] },
 );
 
 const { data: classroomExercises } = await useAsyncData(
   'teacher-classroom-selected-student-exercises',
-  () => getClassroomExercises(classroom.value ?? null),
+  () => classroom.value ? getClassroomExercises(classroom.value) : Promise.resolve([]),
   { watch: [classroom] },
 );
 
@@ -78,7 +78,7 @@ const completedStations = computed(() => stationProgress.value.filter((station) 
 <template>
   <section class="pageShell">
     <header class="pageHeader">
-      <NuxtLink class="backLink" :to="routePathsWithString(routePaths.teacherClassroomOverview, `?classroomId=${classroomId}`)">Tilbake til klasserommet</NuxtLink>
+      <NuxtLink class="backLink" :to="routePathsWithString(routePaths.teacherClassroomOverview, { classroomId: classroomId })">Tilbake til klasserommet</NuxtLink>
       <p class="eyebrow">Enkeltelev</p>
       <h1>{{ studentProfile?.studentName ?? student?.username ?? 'Ukjent elev' }}</h1>
       <p class="subtitle">{{ classroom?.name ?? 'Ukjent klasserom' }}</p>
@@ -110,7 +110,7 @@ const completedStations = computed(() => stationProgress.value.filter((station) 
         <strong>{{ completedStations }} / {{ stationProgress.length }}</strong>
       </article>
       <NuxtLink 
-        :to="routePathsWithString(routePaths.teacherClassroomStudentNotes, `?classroomId=${classroomId}&studentId=${studentId}`)" 
+        :to="routePathsWithString(routePaths.teacherClassroomStudentNotes, { classroomId: classroomId, studentId: studentId })" 
         class="summaryCard summaryCard--link"
       >
         <span class="summaryLabel">Se notater</span>
