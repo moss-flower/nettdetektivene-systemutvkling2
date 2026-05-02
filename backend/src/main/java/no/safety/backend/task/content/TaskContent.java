@@ -3,6 +3,12 @@ package no.safety.backend.task.content;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+/**
+ * Sealed marker interface for the payload of a task. Each permitted variant
+ * corresponds to a {@link no.safety.backend.task.model.TemplateKind}, and the
+ * {@code templateKind} JSON property selects the type when
+ * serialising or deserialising.
+ */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "templateKind")
 @JsonSubTypes({
     @JsonSubTypes.Type(value = XOrYContent.class, name = "x-or-y"),
