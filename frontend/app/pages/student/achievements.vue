@@ -181,6 +181,17 @@ function closeAchievement() {
 
 .specialSection :deep(.medalGrid) {
   width: 100%;
+  height: auto;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 14rem));
+  grid-auto-rows: minmax(0, 14rem);
+  justify-content: center;
+  justify-items: center;
+  align-content: start;
+  margin: 0 auto;
+}
+
+.specialSection :deep(.medalElement) {
+  width: min(100%, 14rem);
 }
 
 
