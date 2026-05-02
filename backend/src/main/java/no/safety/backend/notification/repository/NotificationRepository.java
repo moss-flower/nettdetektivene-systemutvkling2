@@ -9,7 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import no.safety.backend.notification.model.Notification;
 
 /**
- * Defines a JPA repository for Notifications
+ * Repository for managing notification persistence.
+ * Provides methods for finding notifications by target user and public ID.
  */
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     Set<Notification> findByTarget_InternalId(long id);

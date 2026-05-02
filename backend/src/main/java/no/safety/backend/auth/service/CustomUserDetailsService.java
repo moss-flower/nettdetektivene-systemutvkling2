@@ -9,12 +9,22 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Custom implementation of UserDetailsService that loads user-specific data.
+ * Used by Spring Security to retrieve user details during authentication.
+ */
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
+    /**
+     * Loads user details by username (email) for authentication.
+     * @param email the user's email address used as the username
+     * @return UserDetails containing user information and authorities
+     * @throws UsernameNotFoundException if no user is found with the given email
+     */
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

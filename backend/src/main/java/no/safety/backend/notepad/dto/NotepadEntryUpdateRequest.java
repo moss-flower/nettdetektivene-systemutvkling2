@@ -11,7 +11,8 @@ import org.jspecify.annotations.Nullable;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * Defines a {@link NotepadEntry} request for PUT requests.
+ * DTO for notepad entry update requests.
+ * Contains the fields that can be updated on an existing notepad entry.
  */
 public record NotepadEntryUpdateRequest(
     @NotBlank 

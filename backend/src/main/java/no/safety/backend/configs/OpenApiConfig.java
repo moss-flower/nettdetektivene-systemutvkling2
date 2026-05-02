@@ -11,12 +11,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuration for OpenAPI/Swagger documentation.
+ * Sets up API info, contact details, and JWT cookie security scheme.
+ */
 @Configuration
 public class OpenApiConfig {
 
     @Value("${application.security.jwt.cookie.access.name}")
     private String jwtCookieName;
 
+    /**
+     * Creates and configures the OpenAPI bean for API documentation.
+     * Sets up API title, version, description, contact info, and JWT cookie security.
+     * @return the configured OpenAPI instance
+     */
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()

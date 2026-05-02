@@ -12,11 +12,22 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import no.safety.backend.notification.dto.NotificationDto;
 import no.safety.backend.notification.model.Notification;
 
+/**
+ * Registry for managing SSE emitters mapped to user IDs.
+ * Handles registration, sending notifications, and cleanup of emitters.
+ */
 @Service
 public class SseRegistry {
     private final Logger logger = LoggerFactory.getLogger(SseRegistry.class);
     private Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
 
+    /**
+     * Registers a new SSE emitter for the specified user.
+     * The emitter will be automatically removed on completion, error, or timeout.
+     *
+     * @param userId the internal ID of the user to register the emitter for
+     * @return a new SseEmitter with no timeout
+     */
     public SseEmitter register(Long userId) {
         logger.info("JARJAR: SSE Register reached");
         logger.debug("Registering emitter for userId " + userId);
@@ -36,6 +47,12 @@ public class SseRegistry {
         return emitter;
     }
 
+    /**
+     * Sends a notification to the specified user via their registered SSE emitter.
+     *
+     * @param userId the internal ID of the target user
+     * @param payload the notification to send
+     */
     public void send(Long userId, Notification payload) {
         logger.debug("Sending message to user with internal id: " + userId);
 

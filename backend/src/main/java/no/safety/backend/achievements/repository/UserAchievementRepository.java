@@ -7,11 +7,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
+/**
+ * Repository for managing user-achievement associations, tracking which
+ * students have unlocked which achievements.
+ */
 public interface UserAchievementRepository extends JpaRepository<UserAchievement, Long> {
 
-  boolean existsByStudentAndAchievement(StudentUser student, Achievement achievement);
+    boolean existsByStudentAndAchievement(StudentUser student, Achievement achievement);
 
-  List<UserAchievement> findByStudent(StudentUser student);
+    List<UserAchievement> findByStudent(StudentUser student);
 
-  long countByStudent(StudentUser student);
+    long countByStudent(StudentUser student);
 }
