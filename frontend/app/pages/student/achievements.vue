@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import AchievementPopup from "~/components/medals/AchievementPopup.vue";
 import MedalGrid from "~/components/medals/MedalGrid.vue";
-import MedalElement from "~/components/medals/MedalElement.vue";
 import type { AchievementResponse } from "~/composables/types/AchievementTypes";
 import { useAchievements } from "~/composables/useAchievements";
 
@@ -16,8 +15,8 @@ const regularMedals = computed(() =>
   medals.value.filter((medal) => medal.category !== "special"),
 );
 
-const specialMedal = computed(() =>
-  medals.value.find((medal) => medal.category === "special") ?? null,
+const specialMedals = computed(() =>
+  medals.value.filter((medal) => medal.category === "special"),
 );
 
 onMounted(async () => {
@@ -69,13 +68,8 @@ function closeAchievement() {
       </div>
 
       <div class="specialSection">
-        <h1 class="sectionTitle">Spesialmedalje</h1>
-        <MedalElement
-          v-if="specialMedal"
-          class="specialMedal"
-          :medal="specialMedal"
-          @select="openAchievement"
-        />
+        <h1 class="sectionTitle">Spesialmedaljer</h1>
+        <MedalGrid :medals="specialMedals" @select="openAchievement" />
       </div>
     </template>
 
@@ -175,8 +169,6 @@ function closeAchievement() {
 .specialSection {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
   gap: var(--space-6);
   padding: var(--space-6) var(--space-5);
   border-radius: var(--radius-1);
@@ -185,6 +177,21 @@ function closeAchievement() {
     radial-gradient(ellipse 70% 90% at 95% 95%, var(--trophy-shadow), transparent 65%),
     var(--trophy-canvas);
   box-shadow: 0 var(--space-2) var(--space-5) var(--palette-overlay-dark-deep);
+}
+
+.specialSection :deep(.medalGrid) {
+  width: 100%;
+  height: auto;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 14rem));
+  grid-auto-rows: minmax(0, 14rem);
+  justify-content: center;
+  justify-items: center;
+  align-content: start;
+  margin: 0 auto;
+}
+
+.specialSection :deep(.medalElement) {
+  width: min(100%, 14rem);
 }
 
 

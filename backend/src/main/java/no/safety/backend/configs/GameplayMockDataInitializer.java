@@ -1231,7 +1231,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
 
     stationRepository.save(station);
 
-    createStationAchievement(title, description, isBoss);
+    createStationAchievement(uid, title, description, isBoss);
   }
 
     /**
@@ -1240,8 +1240,8 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
      * @param description the description of the station (used as achievement description)
      * @param isBoss whether this is a boss station (affects achievement category)
      */
-    private void createStationAchievement(String title, String description, boolean isBoss) {
-    if (achievementRepository.findByTitle(title).isPresent()) {
+  private void createStationAchievement(UUID stationUid, String title, String description, boolean isBoss) {
+    if (achievementRepository.findBySource(stationUid.toString()).isPresent()) {
       return;
     }
 
@@ -1250,7 +1250,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     achievement.setTitle(title);
     achievement.setDescription(description);
     achievement.setCategory(isBoss ? AchievementCategory.SPECIAL : AchievementCategory.STOP);
-    achievement.setSource(title);
+    achievement.setSource(stationUid.toString());
     achievement.setReward(isBoss ? "Spesialmedalje for å ha slått bossen" : null);
 
     achievementRepository.save(achievement);

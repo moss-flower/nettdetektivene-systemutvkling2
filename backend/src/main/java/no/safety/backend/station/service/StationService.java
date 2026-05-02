@@ -4,9 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import no.safety.backend.achievements.model.Achievement;
-import no.safety.backend.achievements.model.AchievementCategory;
-import no.safety.backend.achievements.repository.AchievementRepository;
+import no.safety.backend.achievements.service.AchievementService;
 import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
 import no.safety.backend.excercise.model.Exercise;
 import no.safety.backend.excercise.repository.ExerciseRepository;
@@ -33,7 +31,7 @@ public class StationService {
   private final WorldRepository worldRepository;
   private final ExerciseRepository exerciseRepository;
   private final CompletedExerciseRepository completedExerciseRepository;
-  private final AchievementRepository achievementRepository;
+  private final AchievementService achievementService;
 
   @Transactional
   public StationResponse create(StationRequest request) {
@@ -42,21 +40,9 @@ public class StationService {
     applyFields(station, request);
     Station saved = stationRepository.save(station);
 
-    createStationAchievement(saved);
+    achievementService.syncStationAchievement(saved, null);
 
     return StationResponse.from(saved);
-  }
-
-  private void createStationAchievement(Station station) {
-    Achievement achievement = new Achievement();
-    achievement.setUUID(UUID.randomUUID());
-    achievement.setTitle(station.getTitle());
-    achievement.setDescription("Fullførte " + station.getTitle() + ".");
-    achievement.setCategory(station.isBoss() ? AchievementCategory.SPECIAL : AchievementCategory.STOP);
-    achievement.setSource(station.getTitle());
-    achievement.setReward(station.isBoss() ? "Spesialmedalje for å ha slått bossen" : null);
-
-    achievementRepository.save(achievement);
   }
 
   @Transactional(readOnly = true)
@@ -140,8 +126,10 @@ public class StationService {
   @Transactional
   public StationResponse update(UUID uid, StationRequest request) {
     Station station = require(uid);
+    String previousTitle = station.getTitle();
 
     applyFields(station, request);
+    achievementService.syncStationAchievement(station, previousTitle);
     return StationResponse.from(station);
   }
 

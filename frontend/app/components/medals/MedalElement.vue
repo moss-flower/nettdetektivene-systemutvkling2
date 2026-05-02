@@ -3,8 +3,6 @@ import type { AchievementResponse } from "~/composables/types/AchievementTypes";
 import filledStar from "~/assets/images/star/spStarFilled.png";
 import emptyStar from "~/assets/images/star/spStarEmpty.png";
 
-const paths = ["~/assets/images/star/spStarFilled.png", "~/assets/images/star/spStarEmpty.png"]
-
 const props = defineProps<{
   medal: AchievementResponse;
 }>();
@@ -12,12 +10,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: "select", medal: AchievementResponse): void;
 }>();
-
-const categoryLabel = computed(() => {
-  if (props.medal.category === "stop") return "Stoppested";
-  if (props.medal.category === "mystery") return "Ukens mysterium";
-  return "Spesial";
-});
 
 const medalImage = (): string => {
   return props.medal.unlocked ? filledStar : emptyStar;
@@ -28,7 +20,7 @@ const medalImage = (): string => {
 <template>
   <button
     type="button"
-    :class="['medalElement', { locked: !props.medal.unlocked }]"
+    :class="['medalElement', props.medal.category, { locked: !props.medal.unlocked }]"
     @click="emit('select', props.medal)"
   >
     <img class="medalImage" :src="medalImage()" :alt="props.medal.title" />
@@ -57,11 +49,20 @@ const medalImage = (): string => {
   cursor: pointer;
 }
 
+.medalElement.special {
+  --medal-chip-bg: var(--palette-blue-800);
+  --medal-chip-lift: color-mix(in srgb, var(--palette-blue-900) 75%, transparent);
+}
+
 .medalImage {
   width: 100%;
   height: 100%;
   object-fit: contain;
   display: block;
+}
+
+.medalElement.special .medalImage {
+  filter: hue-rotate(185deg) saturate(1.35) brightness(1.02);
 }
 
 .title {
