@@ -6,6 +6,10 @@ import java.util.stream.Collectors;
 
 import no.safety.backend.user.model.User;
 
+/**
+ * DTO record representing the user login response data.
+ * Contains user details and a message for the client.
+ */
 public record UserLoginResponse(
     UUID publicUuid,
     String username,
@@ -15,7 +19,10 @@ public record UserLoginResponse(
 ) {
 
     /**
-     * Static factory method to map the Entity to the Response DTO.
+     * Static factory method to map the User entity to the Response DTO.
+     * @param user the User entity to convert
+     * @param message a message to include in the response
+     * @return a UserLoginResponse containing user details
      */
     public static UserLoginResponse fromEntity(User user, String message) {
         return new UserLoginResponse(

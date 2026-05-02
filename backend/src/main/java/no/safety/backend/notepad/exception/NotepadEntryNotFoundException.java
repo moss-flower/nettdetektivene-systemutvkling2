@@ -1,7 +1,8 @@
 package no.safety.backend.notepad.exception;
 
 /**
- * Thrown when a {@link NotepadEntry} is not found in the database.
+ * Exception thrown when a notepad entry is not found.
+ * Used when attempting to access or modify a non-existent entry.
  */
 public class NotepadEntryNotFoundException extends RuntimeException {
     public NotepadEntryNotFoundException(String message){

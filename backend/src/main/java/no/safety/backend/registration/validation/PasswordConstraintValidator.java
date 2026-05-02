@@ -10,8 +10,8 @@ import org.passay.*;
 import java.util.List;
 
 /**
- * Vaidates a password using the Passay library.
- * Handles the annotation @ValidPassword.
+ * Validator for the {@link ValidPassword} annotation.
+ * Validates password length and checks against compromised password databases.
  */
 @RequiredArgsConstructor
 public class PasswordConstraintValidator implements ConstraintValidator<ValidPassword, String> {
@@ -21,6 +21,13 @@ public class PasswordConstraintValidator implements ConstraintValidator<ValidPas
     private static final PasswordValidator VALIDATOR = new DefaultPasswordValidator(
             List.of(new LengthRule(15, 128)));
 
+    /**
+     * Validates a password against length rules and compromised password checks.
+     *
+     * @param password the password to validate
+     * @param context the constraint validator context for setting custom messages
+     * @return true if the password is valid, false otherwise
+     */
     @Override
     public boolean isValid(String password, ConstraintValidatorContext context) {
         if (password == null)
@@ -44,6 +51,12 @@ public class PasswordConstraintValidator implements ConstraintValidator<ValidPas
         return true;
     }
 
+    /**
+     * Sets a custom error message in the constraint validation context.
+     *
+     * @param context the constraint validator context
+     * @param message the error message to set
+     */
     private void setMessage(ConstraintValidatorContext context, String message) {
         context.disableDefaultConstraintViolation();
         context.buildConstraintViolationWithTemplate(message)

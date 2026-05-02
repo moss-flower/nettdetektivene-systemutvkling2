@@ -7,7 +7,8 @@ import java.util.stream.Collectors;
 import no.safety.backend.user.model.StudentUser;
 
 /**
- * Defines a {@link StudentUser} reponse DTO for delivering user information to client.
+ * DTO for student user registration responses.
+ * Contains the registered user details and a success message to return to the client.
  */
 public record StudentUserRegistrationResponse(
     UUID publicUuid,
@@ -17,7 +18,11 @@ public record StudentUserRegistrationResponse(
     String message
 ) {
     /**
-     * Static factory method to map the Entity to the Response DTO.
+     * Converts a {@link StudentUser} entity to a response DTO.
+     *
+     * @param user the student user entity to convert
+     * @param message the success message to include in the response
+     * @return the corresponding student registration response DTO
      */
     public static StudentUserRegistrationResponse fromEntity(StudentUser user, String message) {
         return new StudentUserRegistrationResponse(

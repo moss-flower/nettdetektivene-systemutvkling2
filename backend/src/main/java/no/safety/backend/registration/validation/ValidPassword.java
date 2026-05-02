@@ -5,7 +5,8 @@ import jakarta.validation.Payload;
 import java.lang.annotation.*;
 
 /**
- * Annotation to validate that a password satisfies the password security policy.
+ * Custom validation annotation for password constraints.
+ * Validates that a password meets length requirements and is not compromised.
  */
 @Documented
 @Constraint(validatedBy = PasswordConstraintValidator.class)

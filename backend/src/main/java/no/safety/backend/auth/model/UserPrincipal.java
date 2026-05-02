@@ -15,6 +15,12 @@ import java.util.stream.Collectors;
  */
 public record UserPrincipal(User user, Collection<? extends GrantedAuthority> authorities) implements UserDetails {
     
+    /**
+     * Creates a UserPrincipal from a User entity.
+     * Converts user roles to Spring Security GrantedAuthority objects.
+     * @param user the User entity to convert
+     * @return a UserPrincipal instance wrapping the user and their authorities
+     */
     public static UserPrincipal fromEntity(User user) {
         Set<SimpleGrantedAuthority> authorities = java.util.Optional.ofNullable(user.getRoles())
                 .orElse(java.util.Collections.emptySet())
@@ -46,10 +52,17 @@ public record UserPrincipal(User user, Collection<? extends GrantedAuthority> au
     @Override
     public boolean isEnabled() { return true;}
 
-    /* Returns the {@link User} internal ID (primary key). This should be used for database lookups. */
+    /**
+     * Returns the {@link User} internal ID (primary key).
+     * This should be used for database lookups.
+     * @return the internal ID of the wrapped User entity
+     */
     public Long getUserInternalId() { return user.getInternalId(); }
 
-    /* Returns the {@link User} public UUID */
+    /**
+     * Returns the {@link User} public UUID.
+     * @return the public UUID of the wrapped User entity
+     */
     public UUID getUserPublicUuid() { return user.getPublicUuid(); } 
     
 }

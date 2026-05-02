@@ -25,6 +25,11 @@ import no.safety.backend.user.repository.StudentUserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Service class for managing completed exercises.
+ * Handles business logic for marking exercises as completed, retrieving completed exercises,
+ * and triggering related actions like achievements and notepad entries.
+ */
 @Service
 @RequiredArgsConstructor
 public class CompletedExerciseService {
@@ -37,6 +42,16 @@ public class CompletedExerciseService {
   private final ExerciseRepository exerciseRepository;
   private final NotepadEntryService notepadEntryService;
 
+  /**
+   * Marks an exercise as completed for a student.
+   * Validates that the exercise is not locked, updates the student's score,
+   * and triggers related actions like achievements and notepad entries.
+   *
+   * @param request the request containing the exercise ID to complete
+   * @param student the student completing the exercise
+   * @return the response containing the completed exercise information
+   * @throws ForbiddenException if the exercise is locked due to progress validation
+   */
   @Transactional
   public CompletedExerciseResponse create(CompletedExerciseRequest request, StudentUser student) {
     UUID studentUid = student.getPublicUuid();
@@ -58,8 +73,8 @@ public class CompletedExerciseService {
     CompletedExercise completedExercise = new CompletedExercise();
     completedExercise.setStudentUid(studentUid);
     completedExercise.setExerciseUid(exerciseUid);
- 
   
+   
     CompletedExercise saved = completedExerciseRepository.save(completedExercise);
 
     checkAndUnlockStationAchievement(student, exerciseUid);
@@ -68,6 +83,12 @@ public class CompletedExerciseService {
     return CompletedExerciseResponse.from(saved);
   }
 
+  /**
+   * Retrieves all completed exercises for a student, ordered by exercise UID.
+   *
+   * @param student the student whose completed exercises to retrieve
+   * @return list of completed exercise responses
+   */
   @Transactional(readOnly = true)
   public List<CompletedExerciseResponse> getMyCompletedExercises(StudentUser student) {
     return completedExerciseRepository.findAllByStudentUidOrderByExerciseUidAsc(student.getPublicUuid())
@@ -76,6 +97,12 @@ public class CompletedExerciseService {
         .toList();
   }
 
+  /**
+   * Retrieves all completed exercises for a specific student by their public UUID.
+   *
+   * @param studentUid the public UUID of the student
+   * @return list of completed exercise responses for the student
+   */
   @Transactional(readOnly = true)
   public List<CompletedExerciseResponse> getCompletedExercisesForStudent(UUID studentUid) {
     return completedExerciseRepository.findAllByStudentUidOrderByExerciseUidAsc(studentUid)
@@ -84,6 +111,12 @@ public class CompletedExerciseService {
         .toList();
   }
 
+  /**
+   * Checks if all exercises in a station are completed and unlocks station achievements if so.
+   *
+   * @param student the student to check achievements for
+   * @param exerciseUid the exercise UID that was just completed
+   */
   private void checkAndUnlockStationAchievement(StudentUser student, UUID exerciseUid) {
     Optional<Station> stationOpt = stationRepository.findByExerciseUid(exerciseUid);
     if (stationOpt.isEmpty()) {
@@ -107,6 +140,12 @@ public class CompletedExerciseService {
     achievementService.unlockStationAchievement(student, station);
   }
 
+  /**
+   * Creates a notepad entry for the completed exercise if configured in the exercise settings.
+   *
+   * @param student the student to create the notepad entry for
+   * @param exerciseUid the completed exercise UID
+   */
   private void createExerciseNotepadEntryIfConfigured(StudentUser student, UUID exerciseUid) {
     Exercise exercise = exerciseRepository.findByPublicId(exerciseUid)
         .orElseThrow(() -> new NotFoundException("Exercise not found"));

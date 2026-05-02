@@ -13,6 +13,10 @@ import no.safety.backend.world.repository.WorldRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Service for validating student progress and determining if exercises are locked.
+ * Checks that previous exercises and stations are completed before allowing new ones.
+ */
 @Service
 @RequiredArgsConstructor
 public class ProgressValidationService {
@@ -21,6 +25,16 @@ public class ProgressValidationService {
   private final WorldRepository worldRepository;
   private final CompletedExerciseRepository completedExerciseRepository;
 
+  /**
+   * Checks if an exercise is locked for a student based on their progress.
+   * An exercise is locked if the previous exercise in the station is not completed,
+   * or if the previous station has not been fully completed.
+   *
+   * @param student the student attempting to complete the exercise
+   * @param exerciseUid the UUID of the exercise to check
+   * @return true if the exercise is locked, false otherwise
+   * @throws NotFoundException if the exercise or station is not found in the student's world
+   */
   @Transactional(readOnly = true)
   public boolean isLocked(StudentUser student, UUID exerciseUid) {
     if (student.getClassroom() == null) {
@@ -70,6 +84,13 @@ public class ProgressValidationService {
     return false;
   }
 
+  /**
+   * Retrieves the world assigned to the student's classroom.
+   *
+   * @param student the student whose world to retrieve
+   * @return the World entity
+   * @throws NotFoundException if the classroom has no world or the world is not found
+   */
   private World getStudentWorld(StudentUser student) {
     UUID worldUid = student.getClassroom().getWorldUid();
     if (worldUid == null) {
@@ -80,6 +101,14 @@ public class ProgressValidationService {
         .orElseThrow(() -> new NotFoundException("World not found with uid: " + worldUid));
   }
 
+  /**
+   * Finds the station that contains the specified exercise in the student's world.
+   *
+   * @param world the world to search in
+   * @param exerciseUid the exercise UUID to find
+   * @return the Station containing the exercise
+   * @throws NotFoundException if no station contains the exercise
+   */
   private Station findStationInWorld(World world, UUID exerciseUid) {
     for (UUID stationUid : world.getStationUids()) {
       Station station = stationRepository.findByUid(stationUid)
