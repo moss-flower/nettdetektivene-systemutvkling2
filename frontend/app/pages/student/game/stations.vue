@@ -259,10 +259,27 @@ watch(stationCards, () => {
   --stations-title: var(--palette-cream-200);
   --stations-summary: var(--palette-gray-300);
 
+  background-image: url("~/assets/images/background_2_blurred.png");
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
   display: grid;
   gap: var(--space-5);
   padding: var(--layout-page-padding);
 }
+
+.stationsPage::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
+    url("~/assets/images/background_2_blurred.png");
+  background-size: cover;
+  background-position: center;
+}
+
 
 .pageIntro {
   display: grid;
