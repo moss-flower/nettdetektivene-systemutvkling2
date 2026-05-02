@@ -13,7 +13,7 @@ const closePopup = () => {
 		<section class="popupCard" role="dialog" aria-modal="true" aria-labelledby="popup-title">
 			<h2 id="popup-title">Lagret</h2>
 			<p>
-				Endringene er lagret i backend.
+				Endringene er lagret.
 			</p>
 			<button type="button" class="primaryButton" @click="closePopup">
 				Lukk

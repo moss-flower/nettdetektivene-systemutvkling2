@@ -96,7 +96,7 @@ const createClassroom = async () => {
         <section class="panelSection">
           <div class="sectionHeading">
             <h2>Klasserom</h2>
-            <p>Oppretter klasserom mot backend.</p>
+            <p>Fyll inn informasjonen for å opprette et nytt klasserom.</p>
           </div>
 
           <div class="fieldGrid">
