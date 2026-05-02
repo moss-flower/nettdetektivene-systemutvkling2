@@ -3,7 +3,6 @@ package no.safety.backend.notepad.dto;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.PositiveOrZero;
-import no.safety.backend.notepad.model.NotepadEntry;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 

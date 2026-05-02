@@ -1,6 +1,6 @@
 package no.safety.backend.notepad.model;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -50,7 +50,7 @@ public class NotepadEntry {
     /* The date the entry was created */
     @NotNull
     @Column(nullable = false)
-    private LocalDate dateCreated;
+    private ZonedDateTime dateCreated;
 
     /* The source of the entry. */
     @Size(max = 128)
@@ -79,6 +79,7 @@ public class NotepadEntry {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
 
+    @Builder.Default
     private Set<User> users = new HashSet<>();
 
     @PrePersist
@@ -87,7 +88,7 @@ public class NotepadEntry {
             this.publicUuid = UUID.randomUUID();
         }
         if (this.dateCreated == null) {
-            this.dateCreated = LocalDate.now();
+            this.dateCreated = ZonedDateTime.now();
         }
     }
 

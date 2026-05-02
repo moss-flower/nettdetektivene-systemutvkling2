@@ -5,28 +5,8 @@ export default defineEventHandler(async (event) => {
   const api = getBackendAPI(event);
   const body = await readBody<LoginRequest>(event);
 
-  try {
-    const response = await api.raw<AuthResponse>("/auth/login", {
-
-      method: "POST",
-      body,
-    });
-
-    const setCookies =
-      typeof response.headers.getSetCookie === "function"
-        ? response.headers.getSetCookie()
-        : [];
-
-    for (const cookie of setCookies) {
-      appendResponseHeader(event, "set-cookie", cookie);
-    }
-
-    return response._data;
-  } catch (error: any) {
-    throw createError({
-      statusCode: error?.response?.status ?? error?.statusCode ?? 500,
-      statusMessage: error?.data?.detail ?? error?.statusMessage ?? "Login failed",
-      data: error?.data,
-    });
-  }
+  return await api<AuthResponse>("/auth/login", {
+    method: "POST",
+    body,
+  });
 });

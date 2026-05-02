@@ -138,11 +138,11 @@ public class CompletedExerciseService {
       return;
     }
 
-    achievementService.unlockAchievementForStudent(student, station.getTitle(), AchievementCategory.STOP);
+    AchievementCategory stationAchievementCategory = station.isBoss()
+        ? AchievementCategory.SPECIAL
+        : AchievementCategory.STOP;
 
-    if (station.isBoss()) {
-      achievementService.unlockAchievementForStudent(student, station.getTitle(), AchievementCategory.SPECIAL);
-    }
+    achievementService.unlockAchievementForStudent(student, station.getTitle(), stationAchievementCategory);
   }
 
   /**

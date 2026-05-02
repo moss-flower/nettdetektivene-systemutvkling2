@@ -88,9 +88,10 @@ public class AuthenticationController {
     public ResponseEntity<Void> logout(){
         ResponseCookie accessCookie = jwtCookieService.createEmptyAccessCookie();
         ResponseCookie refreshCookie = jwtCookieService.createEmptyRefreshCookie();
+        ResponseCookie csrfCookie = jwtCookieService.createEmptyCsrfCookie();
 
         return ResponseEntity.noContent()
-            .header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())
+            .header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString(), csrfCookie.toString())
             .build();
     }
 

@@ -82,4 +82,14 @@ public class JwtCookieService {
                 .sameSite("Strict")
                 .build();
     }
+
+    public ResponseCookie createEmptyCsrfCookie() {
+        return ResponseCookie.from("XSRF-TOKEN", "")
+                .httpOnly(false)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Strict")
+                .build();
+    }
 }

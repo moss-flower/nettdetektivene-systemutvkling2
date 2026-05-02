@@ -10,6 +10,7 @@ import {
 
 const route = useRoute();
 const showSavedPopup = ref(false);
+const pendingSavedNavigationTarget = ref<string | null>(null);
 const returnTo = computed(() => typeof route.query.returnTo === "string" ? route.query.returnTo : "");
 const lockedExerciseUid = computed(() => {
 	const uid = route.query.uid;
@@ -38,7 +39,8 @@ const handleSelectionUpdated = async (selectionKey: string) => {
 	}
 };
 
-const handleSaved = () => {
+const handleSaved = (payload?: { returnTarget?: string | null }) => {
+	pendingSavedNavigationTarget.value = payload?.returnTarget ?? null;
 	showSavedPopup.value = true;
 };
 
@@ -51,6 +53,12 @@ const handleDeleted = async () => {
 
 const closeSavedPopup = () => {
 	showSavedPopup.value = false;
+
+	if (pendingSavedNavigationTarget.value) {
+		const nextTarget = pendingSavedNavigationTarget.value;
+		pendingSavedNavigationTarget.value = null;
+		void navigateTo(nextTarget);
+	}
 };
 
 </script>
@@ -68,7 +76,12 @@ const closeSavedPopup = () => {
 			@deleted="handleDeleted"
 		/>
 
-		<PopupFactorySaved v-if="showSavedPopup" @close="closeSavedPopup" />
+		<PopupFactorySaved
+			v-if="showSavedPopup"
+			button-label="Lukk"
+			message="Endringene er lagret."
+			@close="closeSavedPopup"
+		/>
 	</section>
 </template>
 

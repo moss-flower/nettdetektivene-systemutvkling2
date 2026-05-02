@@ -7,7 +7,7 @@ const { teacher } = useClassrooms();
 const classroomId = computed(() => String(route.query.classroomId ?? ''));
 const { data: classroom } = await useAsyncData(
   'teacher-classroom-mystery',
-  () => (classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : null),
+  () => classroomId.value ? teacher.getClassroomById(classroomId.value).catch(() => null) : Promise.resolve(null),
   { watch: [classroomId] },
 );
 </script>
@@ -15,17 +15,17 @@ const { data: classroom } = await useAsyncData(
 <template>
   <section class="pageShell">
     <header class="pageHeader">
-      <NuxtLink class="backLink" :to="routePathsWithString(routePaths.teacherClassroomOverview, `?classroomId=${classroomId}`)">Tilbake til klasserommet</NuxtLink>
+      <NuxtLink class="backLink" :to="routePathsWithString(routePaths.teacherClassroomOverview, { classroomId: classroomId })">Tilbake til klasserommet</NuxtLink>
       <p class="eyebrow">Ukens mysterium</p>
       <h1>{{ classroom?.name ?? 'Ukjent klasserom' }}</h1>
     </header>
 
     <div class="card">
       <div class="mysteryHeader">
-        <h2>Ingen publisert mysteriedata ennå</h2>
+        <h2>Ukens mysterium er ikke klart ennå</h2>
       </div>
-      <p>Frontend viser ikke lenger mockede mysterier for klasserom.</p>
-      <p>Backend har foreløpig ikke et endepunkt for å hente ukens mysterium per klasserom.</p>
+      <p>Det er ikke publisert noe mysterium for dette klasserommet ennå.</p>
+      <p>Her vil ukens mysterium vises når det er tilgjengelig.</p>
     </div>
   </section>
 </template>

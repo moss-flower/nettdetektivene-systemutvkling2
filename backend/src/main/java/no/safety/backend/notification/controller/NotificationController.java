@@ -44,9 +44,12 @@ public class NotificationController {
      * @return an SseEmitter for maintaining a one-way connection from server to
      *         client
      */
-    @Operation(summary = "Create a new Unidirectional connection from the server to client", description = "Creates a new connection mapped to the caller. Connection lives until closed.", tags = {
-            "Notification management for Teachers" })
-    @GetMapping(value = "/stream")
+    @Operation(
+        summary = "Create a new Unidirectional connection from the server to client",
+        description = "Creates a new connection mapped to the caller. Connection lives until closed.",
+        tags = { "Notification management for Teachers" }
+    )
+    @GetMapping(value = "/sse")
     public SseEmitter stream(
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
         logger.info("Controller - principal: " + userPrincipal);
@@ -58,6 +61,7 @@ public class NotificationController {
         SseEmitter emitter = sseRegistry.register(userId);
 
         notificationService.flushPending(userId);
+        System.out.println("Responding with emitter " + emitter);
         return emitter;
     }
 

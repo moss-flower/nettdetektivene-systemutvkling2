@@ -40,5 +40,5 @@ export enum routePaths {
     editAvatar = "/student/editavatar"
 }
 
-export const routePathsWithString = (path: routePaths, string: string) => `${path}${string}`;
-export const routePathsWithUid = (path: routePaths, uid: string) => `${path}?uid=${uid}`;
+export const routePathsWithString = (path: routePaths, query: Record<string, string>) => ({ path, query });
+export const routePathsWithUid = (path: routePaths, uid: string) => ({ path, query: { uid } });
