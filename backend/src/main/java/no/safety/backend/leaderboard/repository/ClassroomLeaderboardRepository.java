@@ -17,7 +17,7 @@ public interface ClassroomLeaderboardRepository extends JpaRepository<Classroom,
                 COALESCE(SUM(m.score), 0L) as score,
                 DENSE_RANK() OVER (ORDER BY COALESCE(SUM(m.score), 0L) DESC) as rank
             FROM Classroom c
-            LEFT JOIN c.members m
+            LEFT JOIN c.members m WITH m.classroomPending = false
             GROUP BY c.internalId, c.uid, c.name
             ORDER BY COALESCE(SUM(m.score), 0L) DESC, c.name ASC
             """, countQuery = "SELECT COUNT(c) FROM Classroom c")

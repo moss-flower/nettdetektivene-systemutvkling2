@@ -53,6 +53,17 @@ describe("useClassrooms", () => {
     });
   });
 
+  it("teacher.approveMember calls approve member endpoint", async () => {
+    apiMock.mockResolvedValueOnce({});
+    const { teacher } = useClassrooms();
+
+    await teacher.approveMember("class-1", "student-1");
+
+    expect(apiMock).toHaveBeenCalledWith("/classrooms/class-1/members/student-1/approve", {
+      method: "POST",
+    });
+  });
+
   it("student.getMyClassroom calls me endpoint", async () => {
     apiMock.mockResolvedValueOnce({ uid: "class-1" });
     const { student } = useClassrooms();
@@ -75,4 +86,3 @@ describe("useClassrooms", () => {
     });
   });
 });
-

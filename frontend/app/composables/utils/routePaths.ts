@@ -3,6 +3,7 @@ export enum routePaths {
     studentLevels = '/student/game/stations',
     login = '/login',
     join = '/login/join',
+    pending = '/login/pending',
     register = '/login/register',
     teacherOverview = '/teacher',
     teacherSettings = '/teacher/settings',

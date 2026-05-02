@@ -20,13 +20,13 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   try {
-    await $fetch("/api/v1/classrooms/me", {
+    const classroom = await $fetch<{ pendingEntry?: boolean }>("/api/v1/classrooms/me", {
       method: "GET",
       credentials: "include",
       headers: authHeaders(),
     });
 
-    return navigateTo(routePaths.studentHome);
+    return navigateTo(classroom.pendingEntry ? routePaths.pending : routePaths.studentHome);
   } catch {
     return;
   }

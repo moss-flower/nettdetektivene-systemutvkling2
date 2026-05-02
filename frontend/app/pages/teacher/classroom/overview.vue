@@ -42,6 +42,7 @@ const { data: exercises } = await useAsyncData(
 
 const classroomExerciseUids = computed(() => new Set((exercises.value ?? []).map((exercise) => exercise.uid)));
 const totalExercises = computed(() => classroomExerciseUids.value.size);
+const pendingMembers = computed(() => classroom.value?.pendingMembers ?? []);
 
 const { data: progressByStudent, refresh: refreshProgress } = await useAsyncData(
   'teacher-classroom-student-progress',
@@ -70,6 +71,7 @@ const { data: progressByStudent, refresh: refreshProgress } = await useAsyncData
 
 const removingStudentId = ref('');
 const renamingStudentId = ref('');
+const approvingStudentId = ref('');
 const deletingClassroom = ref(false);
 
 const getStudentProgress = (studentId: string): StudentProgress => progressByStudent.value?.[studentId] ?? {
@@ -92,6 +94,22 @@ const removeStudent = async (studentId: string, studentName: string) => {
     await refreshProgress();
   } finally {
     removingStudentId.value = '';
+  }
+};
+
+const approveStudent = async (studentId: string) => {
+  if (!classroom.value || approvingStudentId.value) {
+    return;
+  }
+
+  approvingStudentId.value = studentId;
+
+  try {
+    await teacher.approveMember(classroom.value.uid, studentId);
+    await refreshClassroom();
+    await refreshProgress();
+  } finally {
+    approvingStudentId.value = '';
   }
 };
 
@@ -182,6 +200,11 @@ const deleteClassroom = async () => {
       </article>
 
       <article class="summaryCard">
+        <span class="summaryCardLabel">Venter</span>
+        <strong>{{ pendingMembers.length }}</strong>
+      </article>
+
+      <article class="summaryCard">
         <span class="summaryCardLabel">Eiere</span>
         <strong>{{ classroom.owners.length }}</strong>
       </article>
@@ -201,7 +224,34 @@ const deleteClassroom = async () => {
       <p class="pendingEmpty">{{ world?.title ?? classroom.worldUid }}</p>
     </section>
 
+    <section v-if="classroom" class="pendingCard">
+      <div class="pendingCardHeader">
+        <h2>Pending</h2>
+        <p>Elever som har bedt om å bli med i klasserommet.</p>
+      </div>
+
+      <div v-if="pendingMembers.length" class="pendingList">
+        <article v-for="student in pendingMembers" :key="student.publicUuid" class="pendingStudent">
+          <div>
+            <strong>{{ student.username }}</strong>
+            <span>{{ student.publicUuid }}</span>
+          </div>
+          <button
+            class="approveButton"
+            type="button"
+            :disabled="approvingStudentId === student.publicUuid"
+            @click="approveStudent(student.publicUuid)"
+          >
+            Godkjenn
+          </button>
+        </article>
+      </div>
+
+      <p v-else class="pendingEmpty">Ingen elever venter på godkjenning.</p>
+    </section>
+
     <div v-if="classroom" class="tableCard">
+      <h2 class="tableTitle">Students</h2>
       <table>
         <thead>
           <tr>
@@ -331,7 +381,7 @@ h1 {
 .summaryRow {
   display: grid;
   gap: var(--space-4);
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   margin-bottom: var(--space-4);
 }
 
@@ -422,12 +472,34 @@ h1 {
 }
 
 .pendingStudent {
-  display: grid;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--space-1);
   padding: 0.85rem var(--space-4);
   border: var(--border-width-hairline) solid var(--color-border-default);
   border-radius: calc(var(--radius-3) - 0.2rem);
   background: color-mix(in srgb, var(--color-bg-surface) 94%, var(--color-semantic-info) 6%);
+}
+
+.pendingStudent div {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.approveButton {
+  padding: 0.55rem 1rem;
+  border: 0;
+  border-radius: var(--radius-2);
+  background: var(--color-brand-primary);
+  color: var(--color-text-onDark);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.approveButton:disabled {
+  cursor: wait;
+  opacity: 0.55;
 }
 
 .tableCard {
@@ -436,6 +508,11 @@ h1 {
   background: var(--color-bg-surface);
   overflow: auto;
   box-shadow: var(--shadow-1);
+}
+
+.tableTitle {
+  margin: 0;
+  padding: var(--space-4) var(--space-4) 0;
 }
 
 table {
