@@ -196,36 +196,71 @@ const submit = () => {
 
 <style scoped>
 .passwordStrengthTemplate {
+  /* header */
+  --ps-title: var(--palette-cork-900);
+  --ps-muted: var(--palette-cork-580);
+
+  /* panel card */
+  --ps-panel-bg-top: var(--palette-cream-100);
+  --ps-panel-border: var(--palette-overlay-cork-medium);
+  --ps-panel-shadow: var(--palette-overlay-dark-soft);
+  --ps-panel-text: var(--palette-cork-900);
+
+  /* starting password callout */
+  --ps-callout-bg: var(--palette-cream-200);
+  --ps-callout-text: var(--palette-cork-700);
+
+  /* input field */
+  --ps-input-bg: var(--palette-white);
+  --ps-input-border: var(--palette-gray-200);
+  --ps-input-border-focus: var(--palette-navy-700);
+  --ps-input-text: var(--palette-cork-900);
+
+  /* label */
+  --ps-label: var(--palette-cork-900);
+
+  /* helper text */
+  --ps-helper: var(--palette-cork-580);
+
+  /* submit button */
+  --ps-submit-bg: var(--palette-navy-900);
+  --ps-submit-text: var(--palette-cream-100);
+
+  /* disabled */
+  --ps-disabled-opacity: 0.6;
+
   display: grid;
   gap: var(--space-4);
-  color: var(--palette-gray-900);
+  color: var(--ps-panel-text);
 }
 
 .strengthTemplateHeader {
   display: grid;
-  gap: 0.45rem;
+  gap: var(--space-1);
 }
 
 .strengthTemplateTitle {
+  /* fluid title scale, deliberate exception */
   font-size: clamp(1.35rem, 2.4vw, 2rem);
   line-height: 1.1;
-  color: var(--color-text-primary);
+  color: var(--ps-title);
 }
 
 .strengthTemplateText {
-  max-width: 58rem;
-  line-height: 1.5;
-  color: var(--color-text-secondary);
+  max-width: 58ch;
+  font-size: var(--font-size-16);
+  line-height: var(--font-leading-16);
+  color: var(--ps-muted);
 }
 
 .strengthTemplatePanel {
   display: grid;
   gap: var(--space-4);
-  padding: clamp(var(--space-4), 2vw, var(--space-6));
-  border-radius: 1.6rem;
-  border: var(--border-width-thin) solid var(--color-border-default);
-  background: linear-gradient(180deg, var(--color-bg-surface) 0%, var(--palette-white) 100%);
-  box-shadow: 0 14px 26px rgba(52, 77, 115, 0.08);
+  padding: var(--space-5);
+  border-radius: var(--radius-3);
+  border: var(--border-width-thin) solid var(--ps-panel-border);
+  background: var(--ps-panel-bg-top);
+  box-shadow: 0 var(--space-3) var(--space-5) var(--ps-panel-shadow);
 }
 
 .templateStartingPassword,
@@ -234,38 +269,39 @@ const submit = () => {
 }
 
 .templateStartingPassword {
-  padding: 0.85rem var(--space-4);
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-2);
-  background: var(--palette-cream-200);
-  color: var(--palette-cork-700);
+  background: var(--ps-callout-bg);
+  color: var(--ps-callout-text);
 }
 
 .strengthTemplateField {
   display: grid;
-  gap: 0.45rem;
+  gap: var(--space-1);
 }
 
 .strengthTemplateField span {
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
+  color: var(--ps-label);
 }
 
 .strengthTemplateInput {
   width: 100%;
-  padding: var(--space-4) 1.1rem;
-  border: var(--border-width-thin) solid var(--color-border-default);
+  padding: var(--space-4) var(--space-3);
+  border: var(--border-width-thin) solid var(--ps-input-border);
   border-radius: var(--radius-2);
-  background: var(--palette-white);
-  color: var(--color-text-primary);
+  background: var(--ps-input-bg);
+  color: var(--ps-input-text);
   font: inherit;
 }
 
 .strengthTemplateInput:focus {
   outline: none;
-  border-color: #4c7bb0;
+  border-color: var(--ps-input-border-focus);
 }
 
 .strengthTemplateHelper {
-  color: var(--color-text-secondary);
+  color: var(--ps-helper);
 }
 
 .strengthTemplateActions {
@@ -274,18 +310,18 @@ const submit = () => {
 }
 
 .strengthTemplateSubmit {
-  padding: 0.9rem 1.15rem;
+  padding: var(--space-3) var(--space-3);
   border: 0;
   border-radius: var(--radius-pill);
-  background: var(--color-brand-primary);
-  color: #f9fbff;
-  font-weight: 700;
+  background: var(--ps-submit-bg);
+  color: var(--ps-submit-text);
+  font-weight: var(--font-weight-bold);
 }
 
 .strengthTemplateSubmit:disabled,
 .strengthTemplateInput:disabled {
   cursor: default;
-  opacity: 0.72;
+  opacity: var(--ps-disabled-opacity);
 }
 
 </style>

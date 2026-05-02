@@ -276,23 +276,61 @@ function next() {
 
 <style scoped>
 .mysteryPlayPage {
-  max-width: 72rem;
-  margin: 0 auto;
+  /* "Out and about" field investigation aesthetic  */
+  --play-eyebrow: var(--palette-cork-700);
+  --play-progress: var(--palette-navy-700);
+  --play-title: var(--palette-navy-900);
+  --play-intro: var(--palette-gray-700);
+
+  /* Back pill: cream fill with navy border */
+  --play-back-bg: var(--palette-cream-100);
+  --play-back-bg-hover: var(--palette-white);
+  --play-back-border: var(--palette-navy-900);
+  --play-back-text: var(--palette-navy-900);
+
+  --play-bg-top: var(--palette-ice-200);
+  --play-bg-bottom: var(--palette-navy-200);
+
+  position: relative;
+  min-height: 100%;
+  width: 100%;
   display: grid;
-  gap: var(--space-4);
-  color: #111827;
+  gap: var(--space-6);
+  align-content: start;
+  padding: var(--layout-page-padding);
+  border-radius: var(--radius-2);
+  color: var(--play-title);
+  background: linear-gradient(
+    180deg,
+    var(--play-bg-top) 0%,
+    var(--play-bg-bottom) 100%
+  );
+  overflow-x: hidden;
 }
 
 .playPageHero {
+  width: min(820px, 100%);
+  margin: 0 auto;
   display: grid;
-  gap: 0.85rem;
+  gap: var(--space-3);
 }
 
 .playPageBack {
   width: fit-content;
-  color: var(--color-brand-primary);
+  margin-bottom: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width-thin) solid var(--play-back-border);
+  border-radius: var(--radius-pill);
+  background: var(--play-back-bg);
+  color: var(--play-back-text);
+  font-family: var(--font-family-body), sans-serif;
   font-weight: var(--font-weight-semibold);
   text-decoration: none;
+  transition: background var(--transition-fast);
+}
+
+.playPageBack:hover {
+  background: var(--play-back-bg-hover);
 }
 
 .playPageMeta {
@@ -306,37 +344,56 @@ function next() {
 .playPageEyebrow,
 .playPageProgress {
   margin: 0;
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-family: var(--font-family-body), sans-serif;
+  font-size: var(--font-size-14);
+  line-height: var(--font-leading-14);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--font-tracking-wider);
   text-transform: uppercase;
 }
 
 .playPageEyebrow {
-  color: #6f4c2f;
+  color: var(--play-eyebrow);
 }
 
 .playPageProgress {
-  color: var(--color-brand-primary);
+  color: var(--play-progress);
 }
 
 .mysteryPlayPage h1 {
   margin: 0;
-  font-size: clamp(1.9rem, 4vw, 3rem);
-  line-height: 0.98;
-  color: #1b2b4f;
+  max-width: 22ch;
+  font-family: var(--font-family-serif), sans-serif;
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+  line-height: 1.05;
+  font-weight: var(--font-weight-regular);
+  color: var(--play-title);
 }
 
 .playPageSummary {
   margin: 0;
-  max-width: 54ch;
-  color: #52607a;
-  font-size: 1.05rem;
-  line-height: 1.45;
+  max-width: 60ch;
+  color: var(--play-intro);
+  font-family: var(--font-family-body), sans-serif;
+  font-size: var(--font-size-16);
+  line-height: var(--font-leading-16);
 }
 
 .playPageBoard {
+  width: min(820px, 100%);
+  margin: 0 auto;
   display: grid;
+  gap: var(--space-5);
 }
 
+@media (max-width: 560px) {
+  .mysteryPlayPage {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .playPageMeta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
 </style>
