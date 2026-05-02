@@ -85,12 +85,7 @@ const handleLogout = async () => {
               :key="classroom.id"
               class="classroomCard"
               :class="`classroomCard${(index % 3) + 1}`"
-              :to="
-                routePathsWithString(
-                  routePaths.teacherClassroomOverview,
-                  `?classroomId=${classroom.id}`,
-                )
-              "
+              :to="routePathsWithString(routePaths.teacherClassroomOverview, { classroomId: classroom.id })"
             >
               <span class="classroomName">{{ classroom.name }}</span>
               <span class="classScore"
