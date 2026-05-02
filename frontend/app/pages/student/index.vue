@@ -167,7 +167,6 @@ async function handleLogout() {
   height: 100%;
   overflow: hidden;
   box-sizing: border-box;
-  position: relative;
 }
 
 .student-home__logout {
