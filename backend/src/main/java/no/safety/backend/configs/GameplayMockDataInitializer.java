@@ -22,6 +22,7 @@ import no.safety.backend.task.content.SortIntoBucketsContent;
 import no.safety.backend.task.content.XOrYContent;
 import no.safety.backend.task.dto.TaskRequest;
 import no.safety.backend.task.model.Task;
+import no.safety.backend.task.repository.TaskRepository;
 import no.safety.backend.world.model.World;
 import no.safety.backend.world.repository.WorldRepository;
 import org.springframework.boot.ApplicationArguments;
@@ -132,6 +133,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   private final WorldRepository worldRepository;
   private final MediaStorageService mediaStorageService;
   private final AchievementRepository achievementRepository;
+  private final TaskRepository taskRepository;
 
     /**
      * Runs the mock data initialization on application startup.
@@ -1089,9 +1091,10 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
      * @param hint the hint for the exercise
      * @param taskRequests the list of task requests for the exercise
      */
-    private void upsertExercise(UUID publicId, String title, String difficultyName, String description,
+  private void upsertExercise(UUID publicId, String title, String difficultyName, String description,
         String hint, List<TaskRequest> taskRequests) {
     Exercise exercise = exerciseRepository.findByPublicId(publicId).orElseGet(Exercise::new);
+    boolean existingExercise = exercise.getInternalId() != null;
 
     exercise.setPublicId(publicId);
     exercise.setTitle(title);
@@ -1099,6 +1102,11 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
     exercise.setDescription(description);
     exercise.setHint(hint);
     exercise.setNotepadEntry(defaultNotepadEntry(publicId, title, description, hint));
+
+    if (existingExercise) {
+      taskRepository.deleteByExerciseId(exercise.getInternalId());
+    }
+
     exercise.getTasks().clear();
     exercise.getTasks().addAll(newTasks(exercise, taskRequests));
 
