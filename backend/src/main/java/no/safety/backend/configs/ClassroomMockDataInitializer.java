@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import no.safety.backend.achievements.model.Achievement;
+import no.safety.backend.achievements.model.UserAchievement;
+import no.safety.backend.achievements.repository.AchievementRepository;
+import no.safety.backend.achievements.repository.UserAchievementRepository;
 import no.safety.backend.classroom.model.Classroom;
 import no.safety.backend.classroom.repository.ClassroomRepository;
 import no.safety.backend.completedexercise.model.CompletedExercise;
@@ -81,6 +85,8 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
   private final ClassroomRepository classroomRepository;
   private final RoleRepository roleRepository;
   private final CompletedExerciseRepository completedExerciseRepository;
+  private final AchievementRepository achievementRepository;
+  private final UserAchievementRepository userAchievementRepository;
   private final NotificationRepository notificationRepository;
   private final PasswordEncoder passwordEncoder;
 
@@ -357,7 +363,9 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     seedCompletedExercise(adaElev, GameplayMockDataInitializer.PHOTOGRAPH_EXERCISE_1_UID);
     seedCompletedExercise(adaElev, GameplayMockDataInitializer.PHOTOGRAPH_EXERCISE_2_UID);
 
-    adaElev.setScore(400);
+    seedStationAchievement(adaElev, GameplayMockDataInitializer.NEWSSTAND_STATION_UID);
+
+    adaElev.setScore(450);
     studentRepository.save(adaElev);
   }
 
@@ -378,7 +386,13 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     seedCompletedExercise(eliasElev, GameplayMockDataInitializer.MARKETPLACE_EXERCISE_1_UID);
     seedCompletedExercise(eliasElev, GameplayMockDataInitializer.MARKETPLACE_EXERCISE_2_UID);
 
-    eliasElev.setScore(1100);
+    seedStationAchievement(eliasElev, GameplayMockDataInitializer.NEWSSTAND_STATION_UID);
+    seedStationAchievement(eliasElev, GameplayMockDataInitializer.PHOTOGRAPH_STATION_UID);
+    seedStationAchievement(eliasElev, GameplayMockDataInitializer.POSTOFFICE_STATION_UID);
+    seedStationAchievement(eliasElev, GameplayMockDataInitializer.PASSWORDBANK_STATION_UID);
+    seedStationAchievement(eliasElev, GameplayMockDataInitializer.MARKETPLACE_STATION_UID);
+
+    eliasElev.setScore(1350);
     studentRepository.save(eliasElev);
   }
 
@@ -391,6 +405,18 @@ public class ClassroomMockDataInitializer implements ApplicationRunner {
     completedExercise.setStudentUid(student.getPublicUuid());
     completedExercise.setExerciseUid(exerciseUid);
     completedExerciseRepository.save(completedExercise);
+  }
+
+  private void seedStationAchievement(StudentUser student, UUID stationUid) {
+    Achievement achievement = achievementRepository.findBySource(stationUid.toString()).orElse(null);
+    if (achievement == null || userAchievementRepository.existsByStudentAndAchievement(student, achievement)) {
+      return;
+    }
+
+    UserAchievement userAchievement = new UserAchievement();
+    userAchievement.setStudent(student);
+    userAchievement.setAchievement(achievement);
+    userAchievementRepository.save(userAchievement);
   }
 
   private Notification seededNotification(
