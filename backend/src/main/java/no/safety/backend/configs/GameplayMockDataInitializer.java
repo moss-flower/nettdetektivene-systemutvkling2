@@ -84,6 +84,13 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   private static final String SOCIAL_WARNING_IMAGE = "seed/tasks/social-warning.svg";
   private static final String DETECTIVE_HUB_IMAGE = "seed/tasks/detective-hub.svg";
 
+  private static final String NEWSSTAND_STATION_IMAGE = "seed/stations/nyhetskvtartalet.png";
+  private static final String PHOTOGRAPH_STATION_IMAGE = "seed/stations/fotografen.png";
+  private static final String POSTOFFICE_STATION_IMAGE = "seed/stations/postkontoret.png";
+  private static final String PASSWORDBANK_STATION_IMAGE = "seed/stations/passordbanken.png";
+  private static final String MARKETPLACE_STATION_IMAGE = "seed/stations/markedsplassen.png";
+  private static final String SOCIALMEDIA_STATION_IMAGE = "seed/stations/sosial-moteplassen.png";
+
   private final ExerciseRepository exerciseRepository;
   private final StationRepository stationRepository;
   private final WorldRepository worldRepository;
@@ -1020,41 +1027,41 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
      * Seeds stations into the database with predefined UUIDs.
      * Creates stations and associates them with exercises.
      */
-    private void seedStations() {
+  private void seedStations() {
     upsertStation(NEWSSTAND_STATION_UID, "Nyhetskvartalet",
         "Nyhetsartikler og kildekritikk for skoleelever.",
         "Start med a sjekke hvem som er avsender, og om saken bruker sterke ord for a presse deg til a tro pa den.",
-        media("seed/stations/newsstand.svg"), "#cfe9ff",
+        media(NEWSSTAND_STATION_IMAGE), "#cfe9ff",
         List.of(NEWSSTAND_EXERCISE_1_UID, NEWSSTAND_EXERCISE_2_UID), false);
 
     upsertStation(PHOTOGRAPH_STATION_UID, "Fotografen",
         "Normal, manipulert og KI-genererte bilder.",
         "Se ekstra nøye pa detaljer som hender, tekst, skygger og bakgrunn nar du vurderer bilder.",
-        media("seed/stations/photograph.svg"), "#5F5F5F",
+        media(PHOTOGRAPH_STATION_IMAGE), "#5F5F5F",
         List.of(PHOTOGRAPH_EXERCISE_1_UID, PHOTOGRAPH_EXERCISE_2_UID), false);
 
     upsertStation(POSTOFFICE_STATION_UID, "Postkontoret",
         "Klikkbare e-posttester med avsendere, lenker og vedlegg.",
         "Ikke klikk med en gang. Sjekk avsender, lenkeadresse og om meldingen prover a stresse deg.",
-        media("seed/stations/postoffice.svg"), "#fde68a",
+        media(POSTOFFICE_STATION_IMAGE), "#fde68a",
         List.of(POSTOFFICE_EXERCISE_1_UID, POSTOFFICE_EXERCISE_2_UID), false);
 
     upsertStation(PASSWORDBANK_STATION_UID, "Passordbanken",
         "Passordsjekking og gode passordvaner.",
         "Et sterkt passord er langt, unikt og vanskelig for andre a gjette, men fortsatt mulig for deg a huske.",
-        media("seed/stations/passwordbank.svg"), "#1D5232",
+        media(PASSWORDBANK_STATION_IMAGE), "#1D5232",
         List.of(PASSWORDBANK_EXERCISE_1_UID, PASSWORDBANK_EXERCISE_2_UID), false);
 
     upsertStation(MARKETPLACE_STATION_UID, "Markedsplassen",
         "Reklame, tilbud og e-butikker som ma vurderes.",
         "Hvis et tilbud virker for godt eller haster veldig, bor du stoppe opp og sjekke butikken forst.",
-        media("seed/stations/marketplace.svg"), "#962C2C",
+        media(MARKETPLACE_STATION_IMAGE), "#962C2C",
         List.of(MARKETPLACE_EXERCISE_1_UID, MARKETPLACE_EXERCISE_2_UID), false);
 
     upsertStation(SOCIALMEDIA_STATION_UID, "Den sosiale moteplassen",
         "Deling av innlegg, vurderinger og gruppepress i sosiale medier.",
         "Vent litt for du deler. Sjekk om innholdet har en tydelig kilde og om det prover a gjore deg sint eller redd.",
-        media("seed/stations/socialmedia.svg"), "#fbcfe8",
+        media(SOCIALMEDIA_STATION_IMAGE), "#fbcfe8",
         List.of(SOCIALMEDIA_EXERCISE_1_UID, SOCIALMEDIA_EXERCISE_2_UID), false);
 
     upsertStation(DATACENTER_STATION_UID, "Datasenteret",
