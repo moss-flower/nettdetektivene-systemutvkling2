@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import no.safety.backend.achievements.model.AchievementCategory;
 import no.safety.backend.achievements.service.AchievementService;
 import no.safety.backend.completedexercise.dto.CompletedExerciseRequest;
 import no.safety.backend.completedexercise.dto.CompletedExerciseResponse;
@@ -138,11 +137,7 @@ public class CompletedExerciseService {
       return;
     }
 
-    AchievementCategory stationAchievementCategory = station.isBoss()
-        ? AchievementCategory.SPECIAL
-        : AchievementCategory.STOP;
-
-    achievementService.unlockAchievementForStudent(student, station.getTitle(), stationAchievementCategory);
+    achievementService.unlockStationAchievement(student, station);
   }
 
   /**

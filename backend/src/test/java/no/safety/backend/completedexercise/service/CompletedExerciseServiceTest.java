@@ -13,7 +13,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import no.safety.backend.achievements.service.AchievementService;
-import no.safety.backend.achievements.model.AchievementCategory;
 import no.safety.backend.completedexercise.dto.CompletedExerciseRequest;
 import no.safety.backend.completedexercise.dto.CompletedExerciseResponse;
 import no.safety.backend.completedexercise.model.CompletedExercise;
@@ -186,8 +185,7 @@ class CompletedExerciseServiceTest {
 
     completedExerciseService.create(request, student);
 
-    verify(achievementService).unlockAchievementForStudent(student, "Boss station", AchievementCategory.SPECIAL);
-    verify(achievementService, never()).unlockAchievementForStudent(student, "Boss station", AchievementCategory.STOP);
+    verify(achievementService).unlockStationAchievement(student, station);
   }
 
   @Test

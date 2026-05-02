@@ -64,7 +64,7 @@ const replayHelp = () => {
 
   /* placeholder dashed region */
   --help-placeholder-border: var(--palette-gray-300);
-  --help-placeholder-text: var(--palette-cork-500);
+  --help-placeholder-text: var(--palette-cork-580);
 
   /* Replay button */
   --help-replay-border: var(--palette-cork-900);
@@ -89,15 +89,6 @@ const replayHelp = () => {
       transparent 240px,
       var(--help-wall-seam) 240px,
       var(--help-wall-seam) 241px
-    ),
-    /* receptionist counter surface bottom */
-    linear-gradient(
-      to top,
-      var(--help-counter) 0,
-      var(--help-counter) 90px,
-      var(--help-counter-edge) 90px,
-      var(--help-counter-edge) 94px,
-      transparent 94px
     ),
     var(--help-wall);
   overflow-x: hidden;

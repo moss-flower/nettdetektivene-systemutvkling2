@@ -15,21 +15,75 @@ const password = ref(props.task.startingPassword ?? '')
 const minimumLength = computed(() => props.task.minLength ?? 10)
 const commonPatterns = computed(() => (props.task.commonPatterns ?? []).map((pattern) => pattern.toLowerCase()))
 const normalizedPassword = computed(() => password.value.trim())
-const loweredPassword = computed(() => normalizedPassword.value.toLowerCase())
+const startingPassword = computed(() => props.task.startingPassword ?? '')
+const requiresStartingPassword = computed(() => props.task.mode === 'improve' && startingPassword.value.length > 0)
+const startingPasswordIndex = computed(() => {
+  if (!requiresStartingPassword.value) {
+    return -1
+  }
+
+  return normalizedPassword.value.indexOf(startingPassword.value)
+})
+const includesStartingPassword = computed(() => !requiresStartingPassword.value || startingPasswordIndex.value >= 0)
+const addedCharacters = computed(() => {
+  if (!requiresStartingPassword.value) {
+    return normalizedPassword.value
+  }
+
+  if (startingPasswordIndex.value < 0) {
+    return ''
+  }
+
+  const start = startingPasswordIndex.value
+  const end = start + startingPassword.value.length
+  return `${normalizedPassword.value.slice(0, start)}${normalizedPassword.value.slice(end)}`
+})
+const loweredStrengthSubject = computed(() => addedCharacters.value.toLowerCase())
 const hasUppercase = computed(() => /[A-Z]/.test(normalizedPassword.value))
 const hasLowercase = computed(() => /[a-z]/.test(normalizedPassword.value))
 const hasDigit = computed(() => /\d/.test(normalizedPassword.value))
 const hasSymbol = computed(() => /[^A-Za-z0-9]/.test(normalizedPassword.value))
+const addedHasUppercase = computed(() => /[A-Z]/.test(addedCharacters.value))
+const addedHasLowercase = computed(() => /[a-z]/.test(addedCharacters.value))
+const addedHasDigit = computed(() => /\d/.test(addedCharacters.value))
+const addedHasSymbol = computed(() => /[^A-Za-z0-9]/.test(addedCharacters.value))
 
 const checks = computed(() => {
-  const containsCommonPattern = commonPatterns.value.some((pattern) => pattern.length > 0 && loweredPassword.value.includes(pattern))
-  const containsBirthYear = /(?:^|\D)(?:19\d{2}|20(?:0\d|1\d|2\d))(?!\d)/.test(normalizedPassword.value)
-  const containsRepeatingPattern = /(.{2,})\1+/.test(loweredPassword.value) || /(.)\1{2,}/.test(loweredPassword.value)
-  const startingPassword = props.task.startingPassword ?? ''
-  const requiresStartingPassword = startingPassword.length > 0
-  const includesStartingPassword = !requiresStartingPassword || normalizedPassword.value.includes(startingPassword)
-  const changedFromStart = !requiresStartingPassword || normalizedPassword.value !== startingPassword
+  const containsCommonPattern = commonPatterns.value.some((pattern) => pattern.length > 0 && loweredStrengthSubject.value.includes(pattern))
+  const containsBirthYear = /(?:^|\D)(?:19\d{2}|20(?:0\d|1\d|2\d))(?!\d)/.test(addedCharacters.value)
+  const containsRepeatingPattern = /(.{2,})\1+/.test(loweredStrengthSubject.value) || /(.)\1{2,}/.test(loweredStrengthSubject.value)
+  const changedFromStart = !requiresStartingPassword.value || normalizedPassword.value !== startingPassword.value
   const hasMixedCharacters = [hasUppercase.value, hasLowercase.value, hasDigit.value, hasSymbol.value].filter(Boolean).length >= 3
+  const improveModeChecks = requiresStartingPassword.value
+    ? [
+        {
+          id: 'added-uppercase',
+          label: 'Legg til minst en stor bokstav',
+          passed: addedHasUppercase.value,
+        },
+        {
+          id: 'added-lowercase',
+          label: 'Legg til minst en liten bokstav',
+          passed: addedHasLowercase.value,
+        },
+        {
+          id: 'added-digit',
+          label: 'Legg til minst ett tall',
+          passed: addedHasDigit.value,
+        },
+        {
+          id: 'added-symbol',
+          label: 'Legg til minst ett symbol',
+          passed: addedHasSymbol.value,
+        },
+      ]
+    : [
+        {
+          id: 'mix',
+          label: 'Bland bokstaver, tall eller symbol',
+          passed: hasMixedCharacters,
+        },
+      ]
 
   return [
     {
@@ -37,37 +91,39 @@ const checks = computed(() => {
       label: `Minst ${minimumLength.value} tegn`,
       passed: normalizedPassword.value.length >= minimumLength.value,
     },
-    {
-      id: 'mix',
-      label: 'Bland bokstaver, tall eller symbol',
-      passed: hasMixedCharacters,
-    },
+    ...improveModeChecks,
     {
       id: 'birth-year',
-      label: 'Unnga fodselsar og andre lette arstall',
+      label: requiresStartingPassword.value
+        ? 'Ikke legg til fodselsar eller andre lette arstall'
+        : 'Unnga fodselsar og andre lette arstall',
       passed: !containsBirthYear,
     },
     {
       id: 'common',
-      label: 'Unnga vanlige monster som 123 eller qwerty',
+      label: requiresStartingPassword.value
+        ? 'Ikke legg til vanlige monster som 123 eller qwerty'
+        : 'Unnga vanlige monster som 123 eller qwerty',
       passed: !containsCommonPattern,
     },
     {
       id: 'repeating',
-      label: 'Unnga gjentakende monster som abab eller 1111',
+      label: requiresStartingPassword.value
+        ? 'Ikke legg til gjentakende monster som abab eller 1111'
+        : 'Unnga gjentakende monster som abab eller 1111',
       passed: !containsRepeatingPattern,
     },
     {
       id: 'includes-start',
       label: 'Behold startpassordet som en del av det nye passordet',
-      passed: includesStartingPassword,
-      required: requiresStartingPassword,
+      passed: includesStartingPassword.value,
+      required: requiresStartingPassword.value,
     },
     {
       id: 'changed',
       label: 'Gjor passordet annerledes enn det svake du startet med',
       passed: changedFromStart,
-      required: requiresStartingPassword,
+      required: requiresStartingPassword.value,
     },
   ].filter((check) => check.required !== false)
 })
