@@ -16,12 +16,48 @@ type EditorSection = {
   label: string;
 };
 
+type AvatarValueLabels = {
+  [K in EditableField]: Record<string, string>
+}
+
+const VALUE_LABELS_NB: AvatarValueLabels = {
+  skinColor: {
+    COLOR1: "Hudtone 1",
+    COLOR2: "Hudtone 2",
+    COLOR3: "Hudtone 3",
+    COLOR4: "Hudtone 4",
+    COLOR5: "Hudtone 5",
+    COLOR6: "Hudtone 6",
+  },
+  eyeColor: {
+    BLUE: "Blå",
+    GREEN: "Grønn",
+    BROWN: "Brun",
+    BLACK: "Svart",
+  },
+  hairColor: {
+    BLONDE: "Blond",
+    BROWN: "Brun",
+    ORANGE: "Oransje",
+    BLACK: "Svart",
+  },
+  hairStyle: {
+    LONG: "Lang",
+    SHORT: "Kort",
+    CURLY: "Krøllete",
+  },
+  outfit: {
+    NOIR: "Noir",
+    SHERLOCK: "Sherlock",
+  },
+}
+
 const sections: EditorSection[] = [
-  { key: "skinColor", label: "Skin tone" },
-  { key: "eyeColor", label: "Eye color" },
-  { key: "hairColor", label: "Hair color" },
-  { key: "hairStyle", label: "Hair style" },
-  { key: "outfit", label: "Outfit" },
+  { key: "skinColor", label: "Hud farge" },
+  { key: "eyeColor", label: "Øye farge" },
+  { key: "hairColor", label: "Hår farge" },
+  { key: "hairStyle", label: "Hår stil" },
+  { key: "outfit", label: "Antrekk" },
 ];
 
 const { getMyAvatar, updateMyAvatar, getAvatarOptions } = useAvatar();
@@ -66,6 +102,11 @@ const activeSectionLabel = computed(() => {
 });
 
 const activeValue = computed(() => avatar.value[activeSection.value]);
+const activeValueLabel = computed(() => {
+  const field = activeSection.value
+  const raw = avatar.value[field] as string
+  return VALUE_LABELS_NB[field][raw] ?? raw
+})
 const hasChanges = computed(() => {
   return JSON.stringify(avatar.value) !== JSON.stringify(savedAvatar.value);
 });
@@ -101,7 +142,7 @@ async function saveAvatar() {
   try {
     await updateMyAvatar(avatar.value);
     savedAvatar.value = { ...avatar.value };
-    saveMessage.value = "Avatar saved.";
+    saveMessage.value = "Avatar lagret.";
   } catch {
     saveMessage.value = "Could not save avatar right now.";
   } finally {
@@ -113,14 +154,13 @@ async function saveAvatar() {
 <template>
   <section class="avatarEditorPage">
     <header class="avatarEditorHeader">
-      <UiStudentHomeBackButton class="backButton" />
       <p class="eyebrow">Avatar</p>
-      <h1>Edit Avatar</h1>
+      <h1>Endre Avatar</h1>
       <p class="intro">
-        Use the arrows beside the avatar to cycle through each look.
+        Bruk pil tastene for å bla gjennom stiler.
       </p>
       <p v-if="avatarError" class="statusText">
-        Could not load your saved avatar, so the default look is shown.
+        Kunne ikke laste din lagrede avatar. Bruker standard avatar istedenfor.
       </p>
     </header>
 
@@ -150,8 +190,8 @@ async function saveAvatar() {
       </div>
 
       <div class="selectionInfo">
-        <p class="selectionLabel">Currently editing</p>
-        <p class="selectionValue">{{ activeSectionLabel }}: {{ activeValue }}</p>
+        <p class="selectionLabel">Redigerer nå</p>
+        <p class="selectionValue">{{ activeSectionLabel }}: {{ activeValueLabel }}</p>
       </div>
 
       <div class="sectionGrid">
@@ -169,7 +209,7 @@ async function saveAvatar() {
 
       <div class="actions">
         <p class="saveMessage" :class="{ saveMessageMuted: !saveMessage }">
-          {{ saveMessage || "Changes are only saved when you press Save avatar." }}
+          {{ saveMessage || "Endringer er kun lagret dersom du trykker lagre avatar." }}
         </p>
         <button
           class="saveButton"
@@ -177,7 +217,7 @@ async function saveAvatar() {
           :disabled="!hasChanges || isSaving"
           @click="saveAvatar"
         >
-          {{ isSaving ? "Saving..." : "Save avatar" }}
+          {{ isSaving ? "Lagrer..." : "Lagre avatar" }}
         </button>
       </div>
     </article>
@@ -186,12 +226,13 @@ async function saveAvatar() {
 
 <style scoped>
 .avatarEditorPage {
-  min-height: 100dvh;
+  min-height: 117dvh;
   display: grid;
   gap: var(--space-6);
   align-content: start;
   justify-items: center;
   padding: var(--layout-page-padding);
+  border-radius: var(--radius-3);
   background:
     radial-gradient(ellipse 70% 50% at 50% 20%, var(--palette-overlay-warm-glow), transparent 70%),
     repeating-linear-gradient(
@@ -250,10 +291,15 @@ h1,
   color: var(--palette-gold-400);
 }
 
+h1 {
+  color: var(--palette-cream-100);
+}
+
 .avatarEditorCard {
   --mirror-frame-outer: var(--palette-gold-700);
   --mirror-frame-inner: var(--palette-gold-400);
   --mirror-frame-shadow: var(--palette-overlay-dark-deep);
+  /* deliberate exception */
   --mirror-glass-top: rgba(170, 220, 255, 0.95);
   --mirror-glass-bottom: rgba(149, 187, 214, 0.9);
   --mirror-reflection: rgba(255, 255, 255, 0.34);
