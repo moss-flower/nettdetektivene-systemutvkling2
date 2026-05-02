@@ -21,8 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
- * Handles incoming connections for establishing Event and Notification systems.
- * Passes user information to service layer.
+ * REST controller for notification endpoints.
+ * Provides endpoints for establishing SSE connections and managing
+ * notifications.
  */
 @RestController
 @RequestMapping("/api/v1/notifications")
@@ -30,30 +31,28 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class NotificationController {
 
     private final Logger logger = LoggerFactory.getLogger(
-        NotificationController.class
-    );
+            NotificationController.class);
     private final SseRegistry sseRegistry;
     private final NotificationService notificationService;
 
     /**
-     * Endpoint for establishing an SSE Emitter connection (one way server events).
-     * @param userPrincipal an Authenticated user object that has passed through the JWT filter.
-     * @return an SseEmitter for maintaining a one-way connection from server to client. Recieve with Vue EventSource
+     * Establishes an SSE (Server-Sent Events) connection for the authenticated
+     * user.
+     * Flushes any pending notifications to the client upon connection.
+     *
+     * @param userPrincipal the authenticated user principal
+     * @return an SseEmitter for maintaining a one-way connection from server to
+     *         client
      */
-    @Operation(
-        summary = "Create a new Unidirectional connection from the server to client",
-        description = "Creates a new connection mapped to the caller. Connection lives until closed.",
-        tags = { "Notification management for Teachers" }
-    )
+    @Operation(summary = "Create a new Unidirectional connection from the server to client", description = "Creates a new connection mapped to the caller. Connection lives until closed.", tags = {
+            "Notification management for Teachers" })
     @GetMapping(value = "/stream")
     public SseEmitter stream(
-        @AuthenticationPrincipal UserPrincipal userPrincipal
-    ) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
         logger.info("Controller - principal: " + userPrincipal);
         logger.info(
-            "Controller - context auth: " +
-                SecurityContextHolder.getContext().getAuthentication()
-        );
+                "Controller - context auth: " +
+                        SecurityContextHolder.getContext().getAuthentication());
         logger.info("Controller hit, principal: " + userPrincipal);
         Long userId = userPrincipal.getUserInternalId();
         SseEmitter emitter = sseRegistry.register(userId);
@@ -62,11 +61,17 @@ public class NotificationController {
         return emitter;
     }
 
+    /**
+     * Deletes a notification identified by its UUID.
+     *
+     * @param notificationUuid the UUID of the notification to delete
+     * @param principal        the authenticated user principal
+     * @return a response with no content on successful deletion
+     */
     @DeleteMapping("/{notificationUuid}")
     public ResponseEntity<Void> deleteNotification(
-        @PathVariable UUID notificationUuid,
-        @AuthenticationPrincipal UserPrincipal principal
-    ) {
+            @PathVariable UUID notificationUuid,
+            @AuthenticationPrincipal UserPrincipal principal) {
         notificationService.deleteNotification(notificationUuid, principal.getUserInternalId());
         return ResponseEntity.noContent().build();
     }
