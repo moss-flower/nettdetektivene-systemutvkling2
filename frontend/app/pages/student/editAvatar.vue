@@ -226,7 +226,7 @@ async function saveAvatar() {
 
 <style scoped>
 .avatarEditorPage {
-  min-height: 117dvh;
+  min-height: fit-content;
   display: grid;
   gap: var(--space-6);
   align-content: start;
@@ -245,6 +245,7 @@ async function saveAvatar() {
       var(--palette-overlay-warm-glow) 122px
     ),
     var(--palette-wood-900);
+  background-attachment: fixed;
 }
 
 .avatarEditorHeader,
