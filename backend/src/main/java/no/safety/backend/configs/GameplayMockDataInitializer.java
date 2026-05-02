@@ -91,6 +91,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
   private static final String MARKETPLACE_STATION_IMAGE = "seed/stations/markedsplassen.png";
   private static final String SOCIALMEDIA_STATION_IMAGE = "seed/stations/sosial-moteplassen.png";
 
+  private static final String NEWSSTAND_SAFE_LIBRARY_IMAGE = "seed/tasks/nyhetskvartalet/safe-lesehjorne.png";
+  private static final String NEWSSTAND_SAFE_READING_IMAGE = "seed/tasks/nyhetskvartalet/safe-barn-leser-mer.png";
+  private static final String NEWSSTAND_WARNING_PHONE_IMAGE = "seed/tasks/nyhetskvartalet/warning-gratis-mobil.png";
+  private static final String NEWSSTAND_WARNING_SCHOOL_IMAGE = "seed/tasks/nyhetskvartalet/warning-skoler-stenger.png";
+  private static final String NEWSSTAND_WARNING_PLAYGROUND_IMAGE = "seed/tasks/nyhetskvartalet/warning-bot-lekeplass.png";
+
   private final ExerciseRepository exerciseRepository;
   private final StationRepository stationRepository;
   private final WorldRepository worldRepository;
@@ -117,7 +123,7 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
      */
     private void seedExercises() {
     upsertExercise(NEWSSTAND_EXERCISE_1_UID, "Troverdige nyheter", "Lett",
-        "Undersøk hvilke nyhetssaker som virker ekte og hvilke faresignaler du bør sjekke.",
+        "Undersøk hvilke nyhetssaker som virker ekte, og hvilke faresignaler du bør sjekke.",
         List.of(
             multipleChoiceTask(
                 "Velg den forklaringen som best viser hvorfor saken virker trygg å stole på.",
@@ -125,11 +131,11 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter tegn som hjelper deg å sjekke saken, som tydelig avsender og konkret informasjon.",
                 "Hvilken forklaring passer best?",
                 "Se på skjermbildet og velg det beste tegnet på at saken virker troverdig.",
-                media(NEWS_SAFE_IMAGE),
-                "Skjermbilde av en rolig nyhetssak med tydelig avsender",
+                media(NEWSSTAND_SAFE_LIBRARY_IMAGE),
+                "Skjermbilde av en rolig nyhetssak om et nytt lesehjørne på skolen",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Saken har en tydelig avsender du kan sjekke"),
-                    new MultipleChoiceContent.Option("b", "Saken bruker mange utropstegn og sterke ord")
+                    new MultipleChoiceContent.Option("a", "Saken oppgir hvem som har skrevet den og når den er publisert"),
+                    new MultipleChoiceContent.Option("b", "Saken har et stort bilde som ser ryddig ut")
                 ),
                 "a"
             ),
@@ -139,22 +145,22 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Se etter rolig språk, tydelig avsender og konkrete opplysninger.",
                 "Hvilken overskrift virker tryggest?",
                 "Velg saken du ville stolt mest på ved første blikk.",
-                media(NEWS_WARNING_IMAGE),
-                "Dramatisk overskrift med sterke ord og uklar avsender",
+                media(NEWSSTAND_WARNING_PHONE_IMAGE),
+                "Dramatisk nyhet om gratis mobil uten tydelig avsender",
                 "Sak X",
-                "Sjokkerende avsløring uten kilde",
-                "Overskriften prøver å stresse deg, men forklarer ikke hvem som vet dette.",
-                media(NEWS_SAFE_IMAGE),
+                "Gratis mobil til alle elever",
+                "Overskriften lover mye, men sier lite om hvem som faktisk har sagt dette.",
+                media(NEWSSTAND_SAFE_READING_IMAGE),
                 "Rolig overskrift med tydelig avsender",
                 "Sak Y",
-                "Kommunen forklarer ny regel for skoleveien",
-                "Overskriften sier hvem som informerer og hva saken handler om.",
+                "Barn leser mer etter nytt lesehjørne på skolebiblioteket",
+                "Overskriften er konkret og gir deg noe du kan undersøke videre.",
                 XOrYContent.Choice.Y
             ),
             sortIntoBucketsTask(
                 "Sorter tegnene i riktig boks.",
                 "Riktig. Du skilte mellom gode tegn og faresignaler i en nyhetssak.",
-                "Se en gang til på hvilke kort som hjelper deg a stole på saken, og hvilke som gjør deg mer skeptisk.",
+                "Se en gang til på hvilke kort som hjelper deg å stole på saken, og hvilke som gjør deg mer skeptisk.",
                 "Hva bør du stole på?",
                 "Dra kortene til riktig kategori.",
                 "Kort som skal sorteres",
@@ -163,10 +169,10 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                     new SortIntoBucketsContent.Bucket("warn", "Faresignaler", "Tegn som bør sjekkes ekstra.", "#fee2e2")
                 ),
                 List.of(
-                    new SortIntoBucketsContent.Item("news-1", "Tydelig avsender", "safe", "Da kan du sjekke hvem som står bak."),
-                    new SortIntoBucketsContent.Item("news-2", "Konkret kilde", "safe", "Kilder gjør det lettere a kontrollere innholdet."),
-                    new SortIntoBucketsContent.Item("news-3", "Sjokk-overskrift", "warn", "Sterke ord kan brukes for å lure deg til å klikke."),
-                    new SortIntoBucketsContent.Item("news-4", "Ingen forklaring på hvor informasjonen kommer fra", "warn", "Når kilden mangler, bør du være ekstra skeptisk.")
+                    new SortIntoBucketsContent.Item("news-1", "Navngitt avsender", "safe", "Da kan du sjekke hvem som står bak."),
+                    new SortIntoBucketsContent.Item("news-2", "Dato og klokkeslett", "safe", "Det gjør det lettere å forstå når saken ble skrevet."),
+                    new SortIntoBucketsContent.Item("news-3", "Overskrift som lover mer enn den forklarer", "warn", "Da bør du være ekstra forsiktig."),
+                    new SortIntoBucketsContent.Item("news-4", "Sak uten kilde eller forklaring", "warn", "Når kilden mangler, bør du være ekstra skeptisk.")
                 )
             ),
             multipleChoiceTask(
@@ -175,12 +181,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Tenk på hvilke tegn som faktisk svekker troverdigheten, ikke bare hvordan saken ser ut visuelt.",
                 "Hvorfor virker denne saken falsk?",
                 "Velg forklaringen som passer best til det du ser i skjermbildet.",
-                media(NEWS_WARNING_IMAGE),
-                "Skjermbilde av en tvilsom nyhetsartikkel",
+                media(NEWSSTAND_WARNING_PLAYGROUND_IMAGE),
+                "Skjermbilde av en tvilsom nyhetsartikkel om at lekeplassen skal stenge",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Den har en tydelig avsender og gode kilder"),
-                    new MultipleChoiceContent.Option("b", "Overskriften prover a sjokkere og avsenderen virker ukjent"),
-                    new MultipleChoiceContent.Option("c", "Bildet er stort og fargerikt")
+                    new MultipleChoiceContent.Option("a", "Den har en tydelig avsender og viser til flere kilder"),
+                    new MultipleChoiceContent.Option("b", "Den mangler navn på hvem som står bak saken"),
+                    new MultipleChoiceContent.Option("c", "Den har en stor illustrasjon øverst")
                 ),
                 "b"
             )
@@ -193,15 +199,15 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
             multipleChoiceTask(
                 "Velg saken som virker mest pålitelig når du ser på språk, avsender og forklaringer.",
                 "Riktig. Den gode saken forklarer hva som har skjedd og peker til en kjent avsender.",
-                "Se etter kjent avsender, konkret sprak og om saken forklarer hvor informasjonen kommer fra.",
+                "Se etter kjent avsender, konkret språk og om saken forklarer hvor informasjonen kommer fra.",
                 "Hva er det tydeligste faresignalet?",
                 "Saken ser profesjonell ut, men ett tegn gjør at du bør være ekstra skeptisk.",
-                media(NEWS_WARNING_IMAGE),
-                "Skjermbilde av en nyhetsartikkel uten tydelige kilder",
+                media(NEWSSTAND_WARNING_PHONE_IMAGE),
+                "Skjermbilde av en nyhetsartikkel om gratis mobil uten tydelige kilder",
                 List.of(
-                    new MultipleChoiceContent.Option("a", "Den bruker et bilde ved siden av teksten"),
+                    new MultipleChoiceContent.Option("a", "Den har en kort overskrift og et stort bilde"),
                     new MultipleChoiceContent.Option("b", "Den mangler tydelige kilder eller forklaringer"),
-                    new MultipleChoiceContent.Option("c", "Den er skrevet om et tema mange bryr seg om")
+                    new MultipleChoiceContent.Option("c", "Den handler om noe mange elever er nysgjerrige på")
                 ),
                 "b"
             ),
@@ -210,17 +216,17 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Bra. Den beste saken gir deg nok informasjon til at du kan sjekke mer selv.",
                 "Se etter hvem som står bak og om saken forklarer hvor opplysningene kommer fra.",
                 "Hvilken sak ville du sjekket videre?",
-                "Velg den som virker mest ryddig og palitelig.",
-                media(NEWS_WARNING_IMAGE),
+                "Velg den som virker mest ryddig og pålitelig.",
+                media(NEWSSTAND_WARNING_SCHOOL_IMAGE),
                 "Nyhetssak med vag overskrift og ingen tydelig kilde",
                 "Sak X",
-                "Hemmelig tips skaper kaos",
+                "Det skjer noe stort ved skolen i morgen",
                 "Saken bruker sterke ord, men sier lite om hvem som faktisk vet noe.",
-                media(NEWS_SAFE_IMAGE),
+                media(NEWSSTAND_SAFE_READING_IMAGE),
                 "Nyhetssak med rolig overskrift og tydelig kilde",
                 "Sak Y",
-                "Lokalavis forklarer hendelsen ved idrettshallen",
-                "Saken viser til vitner og forklarer hva som skjedde uten a overdrive.",
+                "Barn leser mer etter nytt lesehjørne på skolebiblioteket",
+                "Saken viser til lærere og elever, og forklarer hva som faktisk er observert.",
                 XOrYContent.Choice.Y
             ),
             multipleChoiceTask(
@@ -229,12 +235,12 @@ public class GameplayMockDataInitializer implements ApplicationRunner {
                 "Tenk på hva som hjelper deg å undersøke saken, ikke hva som sprer den raskest.",
                 "Hva bør du gjøre etterpå?",
                 "Du er usikker på om saken stemmer. Velg det smarteste neste steget.",
-                media(DETECTIVE_HUB_IMAGE),
-                "Illustrasjon av et barn som sammenligner flere nyhetskilder",
+                media(NEWSSTAND_WARNING_PLAYGROUND_IMAGE),
+                "Skjermbilde av en nyhetssak som bør dobbeltsjekkes før den deles",
                 List.of(
                     new MultipleChoiceContent.Option("a", "Sjekke om andre troverdige kilder sier det samme"),
-                    new MultipleChoiceContent.Option("b", "Dele saken videre og be andre vurdere den"),
-                    new MultipleChoiceContent.Option("c", "Tro pa saken hvis bildet ser ekte ut")
+                    new MultipleChoiceContent.Option("b", "Spørre en venn om hva han eller hun tror"),
+                    new MultipleChoiceContent.Option("c", "Lese kommentarfeltet først")
                 ),
                 "a"
             )

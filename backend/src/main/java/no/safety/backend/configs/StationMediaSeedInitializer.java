@@ -25,6 +25,12 @@ public class StationMediaSeedInitializer implements ApplicationRunner {
   private static final String MARKETPLACE_STATION_IMAGE = "seed/stations/markedsplassen.png";
   private static final String SOCIALMEDIA_STATION_IMAGE = "seed/stations/sosial-moteplassen.png";
 
+  private static final String NEWSSTAND_SAFE_LIBRARY_IMAGE = "seed/tasks/nyhetskvartalet/safe-lesehjorne.png";
+  private static final String NEWSSTAND_SAFE_READING_IMAGE = "seed/tasks/nyhetskvartalet/safe-barn-leser-mer.png";
+  private static final String NEWSSTAND_WARNING_PHONE_IMAGE = "seed/tasks/nyhetskvartalet/warning-gratis-mobil.png";
+  private static final String NEWSSTAND_WARNING_SCHOOL_IMAGE = "seed/tasks/nyhetskvartalet/warning-skoler-stenger.png";
+  private static final String NEWSSTAND_WARNING_PLAYGROUND_IMAGE = "seed/tasks/nyhetskvartalet/warning-bot-lekeplass.png";
+
   private final MediaStorageService mediaStorageService;
 
   @Override
@@ -40,7 +46,12 @@ public class StationMediaSeedInitializer implements ApplicationRunner {
         POSTOFFICE_STATION_IMAGE,
         PASSWORDBANK_STATION_IMAGE,
         MARKETPLACE_STATION_IMAGE,
-        SOCIALMEDIA_STATION_IMAGE
+        SOCIALMEDIA_STATION_IMAGE,
+        NEWSSTAND_SAFE_LIBRARY_IMAGE,
+        NEWSSTAND_SAFE_READING_IMAGE,
+        NEWSSTAND_WARNING_PHONE_IMAGE,
+        NEWSSTAND_WARNING_SCHOOL_IMAGE,
+        NEWSSTAND_WARNING_PLAYGROUND_IMAGE
     ).forEach(image -> mediaStorageService.uploadPublicClasspathImage(image, image, PNG));
   }
 }

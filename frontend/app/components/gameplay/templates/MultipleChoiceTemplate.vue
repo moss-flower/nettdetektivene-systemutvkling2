@@ -108,7 +108,8 @@ const choose = (choice: MultipleChoiceOptionKey) => {
 .choiceTemplateImage {
   width: 100%;
   max-height: min(48dvh, 34rem);
-  object-fit: cover;
+  object-fit: contain;
+  background: #fff;
   display: block;
   border-radius: var(--radius-2);
 }

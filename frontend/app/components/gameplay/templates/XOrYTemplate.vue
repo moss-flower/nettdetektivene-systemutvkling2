@@ -171,7 +171,8 @@ const choose = (choice: XOrYChoice) => {
   width: 100%;
   aspect-ratio: 1.2 / 0.68;
   max-height: min(25vh, 13rem);
-  object-fit: cover;
+  object-fit: contain;
+  background: #fff;
   border-radius: var(--radius-2) var(--radius-2) 0 0;
   display: block;
 }
