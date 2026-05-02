@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MediaStorageService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.media.service</a> &gt; <span class="el_source">MediaStorageService.java</span></div><h1>MediaStorageService.java</h1><pre class="source lang-java linenums">package no.safety.backend.media.service;
+
+import io.minio.MinioClient;
+import io.minio.RemoveObjectArgs;
+import io.minio.PutObjectArgs;
+import java.io.InputStream;
+import java.util.Locale;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import no.safety.backend.exception.BadRequestException;
+import no.safety.backend.media.config.MediaProperties;
+import no.safety.backend.media.dto.MediaUploadResponse;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+@Service
+@RequiredArgsConstructor
+public class MediaStorageService {
+
+	private static final long MAX_UPLOAD_BYTES = 10L * 1024L * 1024L;
+
+	private final MinioClient minioClient;
+	private final MediaProperties mediaProperties;
+
+	public MediaUploadResponse uploadPublicImage(MultipartFile file, String folder) {
+<span class="nc" id="L27">		validateFile(file);</span>
+
+<span class="nc" id="L29">		String objectKey = buildObjectKey(folder, file.getOriginalFilename(), file.getContentType());</span>
+
+<span class="nc" id="L31">		try (InputStream inputStream = file.getInputStream()) {</span>
+<span class="nc" id="L32">			uploadPublicObject(objectKey, inputStream, file.getSize(), file.getContentType());</span>
+<span class="nc" id="L33">		} catch (Exception ex) {</span>
+<span class="nc" id="L34">			throw new IllegalStateException(&quot;Could not upload media file.&quot;, ex);</span>
+<span class="nc" id="L35">		}</span>
+
+<span class="nc" id="L37">		return new MediaUploadResponse(objectKey, publicUrl(objectKey), file.getContentType(), file.getSize());</span>
+	}
+
+	public String uploadPublicClasspathImage(String objectKey, String classpathResourcePath, String contentType) {
+<span class="nc" id="L41">		ClassPathResource resource = new ClassPathResource(classpathResourcePath);</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">		if (!resource.exists()) {</span>
+<span class="nc" id="L43">			throw new IllegalStateException(&quot;Could not find seed media file: &quot; + classpathResourcePath);</span>
+		}
+
+<span class="nc" id="L46">		try (InputStream inputStream = resource.getInputStream()) {</span>
+<span class="nc" id="L47">			uploadPublicObject(objectKey, inputStream, resource.contentLength(), contentType);</span>
+<span class="nc" id="L48">		} catch (Exception ex) {</span>
+<span class="nc" id="L49">			throw new IllegalStateException(&quot;Could not upload media file.&quot;, ex);</span>
+<span class="nc" id="L50">		}</span>
+
+<span class="nc" id="L52">		return publicUrl(objectKey);</span>
+	}
+
+	public String publicUrl(String objectKey) {
+<span class="fc" id="L56">		String normalizedBase = mediaProperties.getPublicBaseUrl().replaceAll(&quot;/+$&quot;, &quot;&quot;);</span>
+<span class="fc" id="L57">		String normalizedKey = objectKey.replaceFirst(&quot;^/+&quot;, &quot;&quot;);</span>
+<span class="fc" id="L58">		return normalizedBase + &quot;/&quot; + mediaProperties.getPublicBucket() + &quot;/&quot; + normalizedKey;</span>
+	}
+
+	public void deletePublicObject(String objectKey) {
+		try {
+<span class="nc" id="L63">			minioClient.removeObject(</span>
+<span class="nc" id="L64">				RemoveObjectArgs.builder()</span>
+<span class="nc" id="L65">					.bucket(mediaProperties.getPublicBucket())</span>
+<span class="nc" id="L66">					.object(objectKey)</span>
+<span class="nc" id="L67">					.build()</span>
+			);
+<span class="nc" id="L69">		} catch (Exception ex) {</span>
+<span class="nc" id="L70">			throw new IllegalStateException(&quot;Could not delete media file.&quot;, ex);</span>
+<span class="nc" id="L71">		}</span>
+<span class="nc" id="L72">	}</span>
+
+	private void uploadPublicObject(String objectKey, InputStream inputStream, long size, String contentType)
+		throws Exception {
+<span class="nc" id="L76">		minioClient.putObject(</span>
+<span class="nc" id="L77">			PutObjectArgs.builder()</span>
+<span class="nc" id="L78">				.bucket(mediaProperties.getPublicBucket())</span>
+<span class="nc" id="L79">				.object(objectKey)</span>
+<span class="nc" id="L80">				.stream(inputStream, size, -1)</span>
+<span class="nc" id="L81">				.contentType(contentType)</span>
+<span class="nc" id="L82">				.build()</span>
+		);
+<span class="nc" id="L84">	}</span>
+
+	private void validateFile(MultipartFile file) {
+<span class="nc bnc" id="L87" title="All 4 branches missed.">		if (file == null || file.isEmpty()) {</span>
+<span class="nc" id="L88">			throw new BadRequestException(&quot;file is required.&quot;);</span>
+		}
+
+<span class="nc" id="L91">		String contentType = file.getContentType();</span>
+<span class="nc bnc" id="L92" title="All 4 branches missed.">		if (contentType == null || !contentType.startsWith(&quot;image/&quot;)) {</span>
+<span class="nc" id="L93">			throw new BadRequestException(&quot;Only image uploads are supported.&quot;);</span>
+		}
+
+<span class="nc bnc" id="L96" title="All 2 branches missed.">		if (file.getSize() &gt; MAX_UPLOAD_BYTES) {</span>
+<span class="nc" id="L97">			throw new BadRequestException(&quot;Image files cannot exceed 10 MB.&quot;);</span>
+		}
+<span class="nc" id="L99">	}</span>
+
+	private String buildObjectKey(String folder, String originalFilename, String contentType) {
+<span class="nc" id="L102">		String normalizedFolder = normalizeFolder(folder);</span>
+<span class="nc" id="L103">		String extension = resolveExtension(originalFilename, contentType);</span>
+<span class="nc" id="L104">		return normalizedFolder + UUID.randomUUID() + extension;</span>
+	}
+
+	private String normalizeFolder(String folder) {
+<span class="nc bnc" id="L108" title="All 4 branches missed.">		if (folder == null || folder.isBlank()) {</span>
+<span class="nc" id="L109">			return &quot;uploads/general/&quot;;</span>
+		}
+
+<span class="nc" id="L112">		String normalized = folder.trim().toLowerCase(Locale.ROOT).replace('\\', '/');</span>
+<span class="nc" id="L113">		normalized = normalized.replaceAll(&quot;[^a-z0-9/_-]&quot;, &quot;-&quot;);</span>
+<span class="nc" id="L114">		normalized = normalized.replaceAll(&quot;/{2,}&quot;, &quot;/&quot;);</span>
+<span class="nc" id="L115">		normalized = normalized.replaceAll(&quot;^/+&quot;, &quot;&quot;);</span>
+<span class="nc" id="L116">		normalized = normalized.replaceAll(&quot;/+$&quot;, &quot;&quot;);</span>
+
+<span class="nc bnc" id="L118" title="All 2 branches missed.">		if (normalized.isBlank()) {</span>
+<span class="nc" id="L119">			return &quot;uploads/general/&quot;;</span>
+		}
+
+<span class="nc" id="L122">		return normalized + &quot;/&quot;;</span>
+	}
+
+	private String resolveExtension(String originalFilename, String contentType) {
+<span class="nc bnc" id="L126" title="All 2 branches missed.">		if (originalFilename != null) {</span>
+<span class="nc" id="L127">			int extensionIndex = originalFilename.lastIndexOf('.');</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">			if (extensionIndex &gt;= 0) {</span>
+<span class="nc" id="L129">				String extension = originalFilename.substring(extensionIndex).toLowerCase(Locale.ROOT);</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">				if (extension.matches(&quot;\\.(png|jpg|jpeg|webp|gif|svg)&quot;)) {</span>
+<span class="nc" id="L131">					return extension;</span>
+				}
+			}
+		}
+
+<span class="nc bnc" id="L136" title="All 6 branches missed.">		return switch (contentType) {</span>
+<span class="nc" id="L137">			case &quot;image/png&quot; -&gt; &quot;.png&quot;;</span>
+<span class="nc" id="L138">			case &quot;image/jpeg&quot; -&gt; &quot;.jpg&quot;;</span>
+<span class="nc" id="L139">			case &quot;image/webp&quot; -&gt; &quot;.webp&quot;;</span>
+<span class="nc" id="L140">			case &quot;image/gif&quot; -&gt; &quot;.gif&quot;;</span>
+<span class="nc" id="L141">			case &quot;image/svg+xml&quot; -&gt; &quot;.svg&quot;;</span>
+<span class="nc" id="L142">			default -&gt; throw new BadRequestException(&quot;Unsupported image type.&quot;);</span>
+		};
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

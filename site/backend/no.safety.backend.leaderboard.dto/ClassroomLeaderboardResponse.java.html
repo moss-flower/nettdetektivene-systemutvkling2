@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClassroomLeaderboardResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.leaderboard.dto</a> &gt; <span class="el_source">ClassroomLeaderboardResponse.java</span></div><h1>ClassroomLeaderboardResponse.java</h1><pre class="source lang-java linenums">package no.safety.backend.leaderboard.dto;
+
+import java.util.UUID;
+
+/**
+ * DTO for returning classroom leaderboard data.
+ *
+ * @param classroomPublicUuid the public UUID of the classroom
+ * @param className the name of the classroom
+ * @param score the total score of all students in the classroom
+ * @param rank the rank of the classroom based on total score
+ */
+<span class="fc" id="L13">public record ClassroomLeaderboardResponse(</span>
+    UUID classroomPublicUuid,
+    String className,
+    Long score,
+    Long rank
+) {
+    /**
+     * Compact constructor that handles null Number values by converting them to 0L.
+     *
+     * @param classroomPublicUuid the classroom public UUID
+     * @param className the classroom name
+     * @param score the total score (can be null)
+     * @param rank the rank (can be null)
+     */
+    public ClassroomLeaderboardResponse(UUID classroomPublicUuid, String className, Number score, Number rank) {
+<span class="nc" id="L28">        this(</span>
+            classroomPublicUuid,
+            className,
+<span class="nc bnc" id="L31" title="All 2 branches missed.">            score == null ? 0L : score.longValue(),</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">            rank == null ? 0L : rank.longValue()</span>
+        );
+<span class="nc" id="L34">    }</span>
+
+    /**
+     * Creates a ClassroomLeaderboardResponse from individual values.
+     *
+     * @param classroomPublicUuid the classroom public UUID
+     * @param className the classroom name
+     * @param totalScore the total score of the classroom
+     * @param rank the rank of the classroom
+     * @return a new ClassroomLeaderboardResponse
+     */
+    public static ClassroomLeaderboardResponse from(UUID classroomPublicUuid, String className, Long totalScore, Long rank) {
+<span class="nc" id="L46">        return new ClassroomLeaderboardResponse(</span>
+            classroomPublicUuid,
+            className,
+            totalScore,
+            rank
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

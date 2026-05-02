@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>User.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.user.model</a> &gt; <span class="el_source">User.java</span></div><h1>User.java</h1><pre class="source lang-java linenums">package no.safety.backend.user.model;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+import no.safety.backend.role.model.Role;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
+/**
+ * Defines a user entity in the system.
+ */
+@Entity
+@Table(name = &quot;users&quot;)
+@Inheritance(strategy = InheritanceType.JOINED)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
+public class User {
+
+    /* The internal user id used by the database */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(updatable = false, nullable = false)
+    private Long internalId;
+
+    /* The public UUID for the user sent to the client, should be used in API calls */
+    @Column(updatable = false, nullable = false, unique = true, columnDefinition = &quot;BINARY(16)&quot;)
+    private UUID publicUuid;
+
+    @Column(nullable = false, unique = false, length = 50)
+    private String username;
+
+    @Column(nullable = false, unique = true, length = 255)
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+
+    /**
+     * Generates a random UUID for the user upon instance creation.
+     */
+    @PrePersist
+    protected void onCreate() {
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">        if (this.publicUuid == null) {</span>
+<span class="fc" id="L54">            this.publicUuid = UUID.randomUUID();</span>
+        }
+<span class="fc" id="L56">    }</span>
+
+    /**
+     * Creates a many to many database relation between users and roles.
+     */
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
+    @JoinTable(
+            name = &quot;user_roles&quot;,
+            joinColumns = @JoinColumn(name = &quot;user_id&quot;),
+            inverseJoinColumns = @JoinColumn(name = &quot;role_id&quot;)
+    )
+
+    /* The set of roles the user has. */
+    @Builder.Default
+    private Set&lt;Role&gt; roles = new HashSet&lt;&gt;();
+
+    /**
+     * Override equals definition to ensure two different objects for the same user are considered equal by the system.
+     */
+    @Override
+    public boolean equals(Object o) {
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">        if (this == o) return true;</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        if (!(o instanceof User user)) return false;</span>
+<span class="pc bpc" id="L79" title="2 of 4 branches missed.">        return email != null &amp;&amp; email.equals(user.getEmail());</span>
+    }
+
+    /**
+     * JPA safe hashcode pattern
+     */
+    @Override
+    public int hashCode() {
+<span class="fc" id="L87">        return getClass().hashCode();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Notification.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.notification.model</a> &gt; <span class="el_source">Notification.java</span></div><h1>Notification.java</h1><pre class="source lang-java linenums">package no.safety.backend.notification.model;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import no.safety.backend.user.model.User;
+
+/**
+ * Represents a notification in the system.
+ * Contains message, priority, sender information, and target user.
+ * Notifications are created when events are triggered and sent to users via SSE.
+ */
+@Entity
+@Table(name = &quot;notifications&quot;)
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Notification {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+    
+    @Column(nullable = false)
+    private String message;
+
+    @Column
+    private int priority;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column
+    private UUID publicId;
+
+    @Column
+    private String senderName;
+
+    @Column
+    private UUID senderId;
+
+    @ManyToOne
+    @JoinColumn(name = &quot;target_id&quot;, nullable = false)
+    private User target;
+
+    /**
+     * Sets creation timestamp and generates a public UUID before persisting.
+     */
+    @PrePersist
+    protected void onCreate(){
+<span class="nc" id="L66">        this.createdAt = LocalDateTime.now();</span>
+<span class="nc" id="L67">        this.publicId = UUID.randomUUID();</span>
+<span class="nc" id="L68">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

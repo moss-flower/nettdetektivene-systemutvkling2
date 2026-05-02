@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WorldService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.world.service</a> &gt; <span class="el_source">WorldService.java</span></div><h1>WorldService.java</h1><pre class="source lang-java linenums">package no.safety.backend.world.service;
+
+import java.util.List;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import no.safety.backend.exception.NotFoundException;
+import no.safety.backend.world.dto.WorldRequest;
+import no.safety.backend.world.dto.WorldResponse;
+import no.safety.backend.world.model.World;
+import no.safety.backend.world.repository.WorldRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class WorldService {
+
+  private final WorldRepository worldRepository;
+
+  @Transactional
+  public WorldResponse create(WorldRequest request) {
+<span class="fc" id="L22">    World world = new World();</span>
+
+<span class="fc" id="L24">    applyFields(world, request);</span>
+<span class="fc" id="L25">    return WorldResponse.from(worldRepository.save(world));</span>
+  }
+
+  @Transactional(readOnly = true)
+  public List&lt;WorldResponse&gt; getAllWorlds() {
+<span class="nc" id="L30">    return worldRepository.findAll().stream()</span>
+<span class="nc" id="L31">        .map(WorldResponse::from)</span>
+<span class="nc" id="L32">        .toList();</span>
+  }
+
+  @Transactional(readOnly = true)
+  public WorldResponse getWorldByUid(UUID uid) {
+<span class="nc" id="L37">    return worldRepository.findByUid(uid)</span>
+<span class="nc" id="L38">        .map(WorldResponse::from)</span>
+<span class="nc" id="L39">        .orElseThrow(() -&gt; new NotFoundException(&quot;World not found with uid: &quot; + uid));</span>
+  }
+
+  @Transactional
+  public WorldResponse update(UUID uid, WorldRequest request) {
+<span class="fc" id="L44">    World world = require(uid);</span>
+
+<span class="fc" id="L46">    applyFields(world, request);</span>
+<span class="fc" id="L47">    return WorldResponse.from(world);</span>
+  }
+
+  @Transactional
+  public void delete(UUID uid) {
+<span class="fc" id="L52">    worldRepository.delete(require(uid));</span>
+<span class="fc" id="L53">  }</span>
+
+  private void applyFields(World world, WorldRequest request) {
+<span class="fc" id="L56">    world.setTitle(request.title());</span>
+<span class="fc" id="L57">    world.setDescription(request.description());</span>
+<span class="fc" id="L58">    world.setImage(request.image());</span>
+<span class="fc" id="L59">    world.setStationUids(request.stationUids());</span>
+<span class="fc" id="L60">  }</span>
+
+  private World require(UUID uid) {
+<span class="fc" id="L63">    return worldRepository.findByUid(uid)</span>
+<span class="pc" id="L64">        .orElseThrow(() -&gt; new NotFoundException(&quot;World not found with uid: &quot; + uid));</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

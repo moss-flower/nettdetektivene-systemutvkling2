@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NotificationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.notification.service</a> &gt; <span class="el_source">NotificationService.java</span></div><h1>NotificationService.java</h1><pre class="source lang-java linenums">package no.safety.backend.notification.service;
+
+import java.util.Set;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Service;
+
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import no.safety.backend.exception.AccessDeniedException;
+import no.safety.backend.notification.dto.NotificationEvent;
+import no.safety.backend.notification.model.Notification;
+import no.safety.backend.notification.repository.NotificationRepository;
+import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.model.TeacherUser;
+import no.safety.backend.user.model.User;
+import no.safety.backend.user.service.UserService;
+
+/**
+ * Service for managing notifications.
+ * Handles notification events, delivers notifications via SSE, and manages notification persistence.
+ */
+@Service
+@RequiredArgsConstructor
+public class NotificationService {
+    private final SseRegistry registry;
+    private final NotificationRepository repository;
+    private final UserService userService;
+
+    private final Logger logger = LoggerFactory.getLogger(NotificationService.class);
+    
+    /**
+     * Handles notification events emitted by other parts of the application.
+     * Creates and sends notifications to the appropriate teachers based on the event sender's classroom.
+     *
+     * @param event the notification event containing message, sender ID, and priority
+     */
+    @EventListener
+    public void handleNotificationEvent(NotificationEvent event) {
+<span class="fc" id="L43">        logger.debug(&quot;Notification event Triggered with event&quot; + event);</span>
+<span class="fc" id="L44">        StudentUser sender = userService.findStudentByInternalId(event.getSenderInternalId()).get();</span>
+<span class="fc" id="L45">        Set&lt;TeacherUser&gt; targets = sender.getClassroom().getOwners();</span>
+
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        for (User user : targets) {</span>
+<span class="fc" id="L48">            Notification notification = new Notification();</span>
+            
+<span class="fc" id="L50">            notification = Notification.builder()</span>
+<span class="fc" id="L51">            .message(event.getMessage())</span>
+<span class="fc" id="L52">            .target(user)</span>
+<span class="fc" id="L53">            .senderId(sender.getPublicUuid())</span>
+<span class="fc" id="L54">            .priority(event.getPriority())</span>
+<span class="fc" id="L55">            .senderName(sender.getUsername())</span>
+<span class="fc" id="L56">            .build();</span>
+
+<span class="fc" id="L58">            repository.save(notification);</span>
+            try {
+<span class="fc" id="L60">                registry.send(user.getInternalId(), notification);</span>
+<span class="fc" id="L61">            } catch (Exception e) {</span>
+<span class="fc" id="L62">                logger.debug(&quot;Error: Failed to send&quot;);</span>
+<span class="fc" id="L63">            }</span>
+<span class="fc" id="L64">        }</span>
+<span class="fc" id="L65">    }</span>
+
+    /**
+     * Sends all pending notifications to a user who has just established an SSE connection.
+     *
+     * @param userId the internal ID of the user to flush notifications for
+     */
+    public void flushPending(Long userId) {
+<span class="nc" id="L73">        logger.debug(&quot;Flush pending messages called for user id &quot; + userId);</span>
+<span class="nc" id="L74">        Set&lt;Notification&gt; notifications = repository.findByTarget_InternalId(userId);</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if(notifications.isEmpty()) {</span>
+<span class="nc" id="L76">            logger.debug(&quot;No notifications found for user id &quot; + userId);</span>
+<span class="nc" id="L77">            return;</span>
+        }
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        for (Notification notification : notifications) {</span>
+<span class="nc" id="L80">            registry.send(userId, notification);</span>
+<span class="nc" id="L81">        }</span>
+<span class="nc" id="L82">    }</span>
+
+    /**
+     * Deletes a notification if the requesting user is the target of the notification.
+     *
+     * @param notificationUuid the UUID of the notification to delete
+     * @param requestingUserId the internal ID of the user requesting the deletion
+     */
+    public void deleteNotification(UUID notificationUuid, Long requestingUserId) {
+<span class="nc" id="L91">        Notification notification = repository.findByPublicId(notificationUuid)</span>
+<span class="nc" id="L92">            .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Notification not found&quot;));</span>
+
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        if (!notification.getTarget().getInternalId().equals(requestingUserId)) {</span>
+<span class="nc" id="L95">            throw new AccessDeniedException(&quot;Not authorized to delete this notification&quot;);</span>
+        }
+
+<span class="nc" id="L98">        repository.delete(notification);</span>
+<span class="nc" id="L99">    }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

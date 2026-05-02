@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExerciseController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.excercise.controller</a> &gt; <span class="el_source">ExerciseController.java</span></div><h1>ExerciseController.java</h1><pre class="source lang-java linenums">package no.safety.backend.excercise.controller;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import no.safety.backend.excercise.dto.ExerciseReadRequest;
+import no.safety.backend.excercise.dto.ExerciseRequest;
+import no.safety.backend.excercise.dto.ExerciseResponse;
+import no.safety.backend.excercise.service.ExerciseService;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * REST controller for managing exercises.
+ * Provides endpoints for creating, reading, updating, and deleting exercises.
+ * All write operations require TEACHER role.
+ */
+@RestController
+@RequestMapping(&quot;/api/v1/exercises&quot;)
+@RequiredArgsConstructor
+@Tag(name = &quot;Exercise management&quot;)
+public class ExerciseController {
+
+  private final ExerciseService exerciseService;
+
+  /**
+   * Creates a new exercise with the provided tasks.
+   *
+   * @param request the exercise request containing title, difficulty, tasks, etc.
+   * @return the created exercise response
+   */
+  @Operation(
+      summary = &quot;Create a new exercise&quot;,
+      description = &quot;Creates a new exercise with its tasks.&quot;
+  )
+  @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+  @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
+  public ExerciseResponse create(@Valid @RequestBody ExerciseRequest request) {
+<span class="fc" id="L53">    return exerciseService.create(request);</span>
+  }
+
+  /**
+   * Retrieves a single exercise by its public UUID.
+   *
+   * @param uid the public UUID of the exercise to retrieve
+   * @return the exercise response containing all exercise details
+   */
+  @Operation(
+      summary = &quot;Get an exercise&quot;,
+      description = &quot;Gets an exercise by its UUID.&quot;
+  )
+  @GetMapping(&quot;/{uid}&quot;)
+  public ExerciseResponse get(@PathVariable UUID uid) {
+<span class="fc" id="L68">    return exerciseService.get(uid);</span>
+  }
+
+  /**
+   * Retrieves a paginated list of all exercises.
+   *
+   * @param req the read request containing pagination parameters (page, size)
+   * @return a page of exercise responses
+   */
+  @Operation(
+      summary = &quot;Get all exercises&quot;,
+      description = &quot;Gets a paginated list of all exercises. Accepts standard Spring Data page/size/sort query params.&quot;
+  )
+  @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+  @GetMapping
+  public Page&lt;ExerciseResponse&gt; getAll(@Valid ExerciseReadRequest req) {
+<span class="fc" id="L84">    return exerciseService.list(</span>
+        req);
+  }
+
+  /**
+   * Updates an existing exercise by replacing all fields and tasks.
+   * Existing tasks are removed and replaced with the new set.
+   *
+   * @param uid the public UUID of the exercise to update
+   * @param request the exercise request containing updated fields and tasks
+   * @return the updated exercise response
+   */
+  @Operation(
+      summary = &quot;Update an exercise&quot;,
+      description = &quot;Replaces an exercise's fields and tasks. Existing tasks are removed and replaced with the submitted set.&quot;
+  )
+  @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+  @PutMapping(&quot;/{uid}&quot;)
+  public ExerciseResponse update(
+      @PathVariable UUID uid,
+      @Valid @RequestBody ExerciseRequest request) {
+<span class="fc" id="L105">    return exerciseService.update(uid, request);</span>
+  }
+
+  /**
+   * Deletes an exercise and all its associated tasks.
+   *
+   * @param uid the public UUID of the exercise to delete
+   * @return HTTP 204 No Content on successful deletion
+   */
+  @Operation(
+      summary = &quot;Delete an exercise&quot;,
+      description = &quot;Deletes an exercise and its tasks.&quot;
+  )
+  @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+  @DeleteMapping(&quot;/{uid}&quot;)
+  public ResponseEntity&lt;Void&gt; delete(@PathVariable UUID uid) {
+<span class="fc" id="L121">    exerciseService.delete(uid);</span>
+<span class="fc" id="L122">    return ResponseEntity.noContent().build();</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

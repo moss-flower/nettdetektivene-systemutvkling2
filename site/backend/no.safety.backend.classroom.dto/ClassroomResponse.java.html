@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClassroomResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.classroom.dto</a> &gt; <span class="el_source">ClassroomResponse.java</span></div><h1>ClassroomResponse.java</h1><pre class="source lang-java linenums">package no.safety.backend.classroom.dto;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import no.safety.backend.classroom.model.Classroom;
+
+<span class="fc" id="L8">public record ClassroomResponse(</span>
+    UUID uid,
+    String name,
+    String description,
+    UUID worldUid,
+    String code,
+    List&lt;OwnerSummary&gt; owners,
+    List&lt;MemberSummary&gt; members,
+    List&lt;MemberSummary&gt; pendingMembers,
+    boolean pendingEntry
+) {
+
+  public static ClassroomResponse from(Classroom c) {
+<span class="fc" id="L21">    List&lt;OwnerSummary&gt; owners = c.getOwners().stream()</span>
+<span class="fc" id="L22">        .map(u -&gt; new OwnerSummary(u.getPublicUuid(), u.getUsername()))</span>
+<span class="fc" id="L23">        .collect(Collectors.toList());</span>
+
+<span class="fc" id="L25">    List&lt;MemberSummary&gt; members = c.getMembers().stream()</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">        .filter(u -&gt; !u.isClassroomPending())</span>
+<span class="fc" id="L27">        .map(u -&gt; new MemberSummary(u.getPublicUuid(), u.getUsername(), u.getScore()))</span>
+<span class="fc" id="L28">        .collect(Collectors.toList());</span>
+
+<span class="fc" id="L30">    List&lt;MemberSummary&gt; pendingMembers = c.getMembers().stream()</span>
+<span class="fc" id="L31">        .filter(u -&gt; u.isClassroomPending())</span>
+<span class="fc" id="L32">        .map(u -&gt; new MemberSummary(u.getPublicUuid(), u.getUsername(), u.getScore()))</span>
+<span class="fc" id="L33">        .collect(Collectors.toList());</span>
+
+<span class="fc" id="L35">    return new ClassroomResponse(c.getUid(), c.getName(), c.getDescription(), c.getWorldUid(), c.getCode(), owners,</span>
+        members, pendingMembers, false);
+  }
+
+  public static ClassroomResponse from(Classroom c, boolean pendingEntry) {
+<span class="fc" id="L40">    ClassroomResponse response = from(c);</span>
+<span class="fc" id="L41">    return new ClassroomResponse(response.uid(), response.name(), response.description(), response.worldUid(),</span>
+<span class="fc" id="L42">        response.code(), response.owners(), response.members(), response.pendingMembers(), pendingEntry);</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

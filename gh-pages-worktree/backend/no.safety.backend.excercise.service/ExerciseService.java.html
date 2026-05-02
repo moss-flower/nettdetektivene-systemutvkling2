@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExerciseService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.excercise.service</a> &gt; <span class="el_source">ExerciseService.java</span></div><h1>ExerciseService.java</h1><pre class="source lang-java linenums">package no.safety.backend.excercise.service;
+
+import java.util.List;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import no.safety.backend.exception.NotFoundException;
+import no.safety.backend.excercise.dto.ExerciseReadRequest;
+import no.safety.backend.excercise.dto.ExerciseRequest;
+import no.safety.backend.excercise.dto.ExerciseResponse;
+import no.safety.backend.excercise.model.Exercise;
+import no.safety.backend.excercise.repository.ExerciseRepository;
+import no.safety.backend.notepad.dto.NotepadEntryCreateRequest;
+import no.safety.backend.notepad.model.NotepadEntry;
+import no.safety.backend.task.dto.TaskRequest;
+import no.safety.backend.task.model.Task;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * Service class for managing exercises.
+ * Handles business logic for creating, reading, updating, and deleting exercises and their tasks.
+ */
+@Service
+@RequiredArgsConstructor
+public class ExerciseService {
+
+  private final ExerciseRepository exerciseRepo;
+
+  /**
+   * Creates a new exercise with the provided tasks.
+   *
+   * @param req the exercise request containing title, difficulty, tasks, etc.
+   * @return the created exercise response
+   */
+  @Transactional
+  public ExerciseResponse create(ExerciseRequest req) {
+<span class="fc" id="L38">    Exercise e = new Exercise();</span>
+<span class="fc" id="L39">    applyScalarFields(e, req);</span>
+<span class="fc" id="L40">    List&lt;Task&gt; fresh = req.tasks().stream()</span>
+<span class="fc" id="L41">        .map(tr -&gt; newTask(e, tr))</span>
+<span class="fc" id="L42">        .toList();</span>
+<span class="fc" id="L43">    e.getTasks().addAll(fresh);</span>
+<span class="fc" id="L44">    return ExerciseResponse.from(exerciseRepo.save(e));</span>
+  }
+
+  /**
+   * Retrieves a single exercise by its public UUID.
+   *
+   * @param uid the public UUID of the exercise
+   * @return the exercise response
+   * @throws NotFoundException if the exercise is not found
+   */
+  @Transactional(readOnly = true)
+  public ExerciseResponse get(UUID uid) {
+<span class="nc" id="L56">    return ExerciseResponse.from(require(uid));</span>
+  }
+
+  /**
+   * Retrieves a paginated list of all exercises.
+   *
+   * @param req the read request containing pagination parameters
+   * @return a page of exercise responses
+   */
+  @Transactional(readOnly = true)
+  public Page&lt;ExerciseResponse&gt; list(ExerciseReadRequest req) {
+<span class="nc" id="L67">    return exerciseRepo.findAll(req.toPageable()).map(ExerciseResponse::from);</span>
+  }
+
+  /**
+   * Updates an existing exercise by replacing all fields and tasks.
+   * Existing tasks are cleared and replaced with the new set.
+   *
+   * @param uid the public UUID of the exercise to update
+   * @param req the exercise request containing updated fields and tasks
+   * @return the updated exercise response
+   * @throws NotFoundException if the exercise is not found
+   */
+  @Transactional
+  public ExerciseResponse update(UUID uid, ExerciseRequest req) {
+<span class="fc" id="L81">    Exercise e = require(uid);</span>
+<span class="fc" id="L82">    applyScalarFields(e, req);</span>
+
+<span class="fc" id="L84">    e.getTasks().clear();</span>
+<span class="fc" id="L85">    List&lt;Task&gt; updatedTasks = req.tasks().stream()</span>
+<span class="fc" id="L86">        .map(tr -&gt; newTask(e, tr))</span>
+<span class="fc" id="L87">        .toList();</span>
+<span class="fc" id="L88">    e.getTasks().addAll(updatedTasks);</span>
+
+<span class="fc" id="L90">    return ExerciseResponse.from(exerciseRepo.save(e));</span>
+  }
+
+  /**
+   * Deletes an exercise and all its associated tasks.
+   *
+   * @param uid the public UUID of the exercise to delete
+   * @throws NotFoundException if the exercise is not found
+   */
+  @Transactional
+  public void delete(UUID uid) {
+<span class="nc" id="L101">    exerciseRepo.delete(require(uid));</span>
+<span class="nc" id="L102">  }</span>
+
+  /**
+   * Applies scalar field values from the request to the exercise entity.
+   *
+   * @param e the exercise entity to update
+   * @param req the exercise request containing the new values
+   */
+  private void applyScalarFields(Exercise e, ExerciseRequest req) {
+<span class="fc" id="L111">    e.setTitle(req.title());</span>
+<span class="fc" id="L112">    e.setDifficultyName(req.difficultyName());</span>
+<span class="fc" id="L113">    e.setDescription(req.description());</span>
+<span class="fc" id="L114">    e.setHint(req.hint());</span>
+<span class="fc" id="L115">    applyNotepadEntryFields(e, req.notepadEntry());</span>
+<span class="fc" id="L116">  }</span>
+
+  /**
+   * Applies notepad entry fields from the request to the exercise's notepad entry.
+   * Creates a new notepad entry if one doesn't exist.
+   *
+   * @param exercise the exercise entity to update
+   * @param request the notepad entry create request (can be null)
+   */
+  private void applyNotepadEntryFields(Exercise exercise, NotepadEntryCreateRequest request) {
+<span class="fc bfc" id="L126" title="All 2 branches covered.">    if (request == null) {</span>
+<span class="fc" id="L127">      exercise.setNotepadEntry(null);</span>
+<span class="fc" id="L128">      return;</span>
+    }
+
+<span class="fc" id="L131">    NotepadEntry notepadEntry = exercise.getNotepadEntry();</span>
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">    if (notepadEntry == null) {</span>
+<span class="fc" id="L133">      notepadEntry = new NotepadEntry();</span>
+<span class="fc" id="L134">      exercise.setNotepadEntry(notepadEntry);</span>
+    }
+
+<span class="fc" id="L137">    notepadEntry.setTitle(request.title());</span>
+<span class="fc" id="L138">    notepadEntry.setType(request.type());</span>
+<span class="fc" id="L139">    notepadEntry.setContent(request.content());</span>
+<span class="fc" id="L140">    notepadEntry.setSource(request.source());</span>
+<span class="fc" id="L141">  }</span>
+
+  /**
+   * Creates a new Task entity from a TaskRequest and associates it with an exercise.
+   *
+   * @param e the exercise to associate the task with
+   * @param tr the task request containing task data
+   * @return a new Task entity
+   */
+  private Task newTask(Exercise e, TaskRequest tr) {
+<span class="fc" id="L151">    Task t = new Task();</span>
+<span class="fc" id="L152">    t.setExercise(e);</span>
+<span class="fc" id="L153">    copyTaskFields(t, tr);</span>
+<span class="fc" id="L154">    return t;</span>
+  }
+
+  /**
+   * Copies fields from a TaskRequest to a Task entity.
+   *
+   * @param t the task entity to update
+   * @param tr the task request containing the new values
+   */
+  private void copyTaskFields(Task t, TaskRequest tr) {
+<span class="fc" id="L164">    t.setIntroText(tr.introText());</span>
+<span class="fc" id="L165">    t.setFeedbackCorrect(tr.feedbackCorrect());</span>
+<span class="fc" id="L166">    t.setFeedbackIncorrect(tr.feedbackIncorrect());</span>
+<span class="fc" id="L167">    t.setContent(tr.content());</span>
+<span class="fc" id="L168">    t.setTemplateKind(null);</span>
+<span class="fc" id="L169">  }</span>
+
+  /**
+   * Finds an exercise by its public UUID or throws NotFoundException.
+   *
+   * @param uid the public UUID of the exercise
+   * @return the Exercise entity
+   * @throws NotFoundException if the exercise is not found
+   */
+  private Exercise require(UUID uid) {
+<span class="fc" id="L179">    return exerciseRepo.findByPublicId(uid)</span>
+<span class="pc" id="L180">        .orElseThrow(() -&gt; new NotFoundException(&quot;Exercise not found&quot;));</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

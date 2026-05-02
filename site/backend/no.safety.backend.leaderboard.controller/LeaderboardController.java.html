@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LeaderboardController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.leaderboard.controller</a> &gt; <span class="el_source">LeaderboardController.java</span></div><h1>LeaderboardController.java</h1><pre class="source lang-java linenums">package no.safety.backend.leaderboard.controller;
+
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import no.safety.backend.auth.model.UserPrincipal;
+import no.safety.backend.leaderboard.dto.UserLeaderboardResponse;
+import no.safety.backend.leaderboard.dto.ClassroomLeaderboardResponse;
+import no.safety.backend.leaderboard.service.LeaderboardService;
+
+/**
+ * REST controller for leaderboard endpoints.
+ * Provides endpoints for retrieving classroom rankings and student leaderboard statistics.
+ */
+@RestController
+@RequestMapping(&quot;/api/v1/leaderboard&quot;)
+@RequiredArgsConstructor
+@Tag(name = &quot;Leaderboard&quot;)
+public class LeaderboardController {
+
+    private final LeaderboardService leaderboardService;
+
+    /**
+     * Retrieves a paginated leaderboard of all classrooms ranked by total score.
+     *
+     * @param pageable pagination information (default size 20, sorted by score descending)
+     * @return a page of classroom leaderboard responses
+     */
+    @GetMapping(&quot;/classroom&quot;)
+    @PreAuthorize(&quot;hasAnyRole('STUDENT','TEACHER')&quot;)
+    @Operation(summary = &quot;Get rankings of classrooms&quot;, description = &quot;Returns a paginated list of the total scores for all classrooms&quot;)
+    public ResponseEntity&lt;Page&lt;ClassroomLeaderboardResponse&gt;&gt; getTopRankings(
+            @PageableDefault(size = 20, direction = Sort.Direction.DESC) Pageable pageable
+        ) {
+
+<span class="nc" id="L50">        Page&lt;ClassroomLeaderboardResponse&gt; rankings = leaderboardService.getClassroomRankings(pageable);</span>
+<span class="nc" id="L51">        return ResponseEntity.ok(rankings);</span>
+    }
+
+    /**
+     * Retrieves the leaderboard statistics for the authenticated student.
+     * Returns the student's score and rank within their classroom.
+     *
+     * @param userPrincipal the authenticated user principal
+     * @return the user's leaderboard response with score and rank
+     */
+    @GetMapping(&quot;/user&quot;)
+    @PreAuthorize(&quot;hasRole('STUDENT')&quot;)
+    @Operation(summary = &quot;Get rank of the calling user.&quot;, description = &quot;Returns the leaderboard stats for the user.&quot;)
+    public ResponseEntity&lt;UserLeaderboardResponse&gt; getCallerUserRanking(
+            @AuthenticationPrincipal UserPrincipal userPrincipal
+        ) {
+
+<span class="nc" id="L68">        return ResponseEntity.ok(leaderboardService.getUserStats(userPrincipal.getUserInternalId()));</span>
+    }
+
+    /**
+     * Retrieves a paginated leaderboard of all students in a specific classroom.
+     * Only the classroom owner (teacher) can access this endpoint.
+     *
+     * @param userPrincipal the authenticated teacher principal
+     * @param classroomUid the public UUID of the classroom
+     * @param pageable pagination information (default size 20, sorted by score descending)
+     * @return a page of student leaderboard responses
+     */
+    @GetMapping(&quot;/{classroomUid}/students&quot;)
+    @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+    @Operation(summary = &quot;Get leaderboard of all students in classroom.&quot;, description = &quot;Returns the leaderboard ranking the students in the given class.&quot;)
+    public ResponseEntity&lt;Page&lt;UserLeaderboardResponse&gt;&gt; getCallerUserRanking(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable UUID classroomUid,
+            @PageableDefault(size = 20, sort = &quot;score&quot;, direction = Sort.Direction.DESC) Pageable pageable
+        ) {
+
+<span class="nc" id="L89">        return ResponseEntity.ok(leaderboardService.getStudentRankings(userPrincipal.getUserInternalId(), classroomUid, pageable));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

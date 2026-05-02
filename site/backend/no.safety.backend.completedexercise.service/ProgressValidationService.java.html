@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProgressValidationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.completedexercise.service</a> &gt; <span class="el_source">ProgressValidationService.java</span></div><h1>ProgressValidationService.java</h1><pre class="source lang-java linenums">package no.safety.backend.completedexercise.service;
+
+import java.util.List;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
+import no.safety.backend.exception.NotFoundException;
+import no.safety.backend.station.model.Station;
+import no.safety.backend.station.repository.StationRepository;
+import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.world.model.World;
+import no.safety.backend.world.repository.WorldRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * Service for validating student progress and determining if exercises are locked.
+ * Checks that previous exercises and stations are completed before allowing new ones.
+ */
+@Service
+@RequiredArgsConstructor
+public class ProgressValidationService {
+
+  private final StationRepository stationRepository;
+  private final WorldRepository worldRepository;
+  private final CompletedExerciseRepository completedExerciseRepository;
+
+  /**
+   * Checks if an exercise is locked for a student based on their progress.
+   * An exercise is locked if the previous exercise in the station is not completed,
+   * or if the previous station has not been fully completed.
+   *
+   * @param student the student attempting to complete the exercise
+   * @param exerciseUid the UUID of the exercise to check
+   * @return true if the exercise is locked, false otherwise
+   * @throws NotFoundException if the exercise or station is not found in the student's world
+   */
+  @Transactional(readOnly = true)
+  public boolean isLocked(StudentUser student, UUID exerciseUid) {
+<span class="fc bfc" id="L40" title="All 2 branches covered.">    if (student.getClassroom() == null) {</span>
+<span class="fc" id="L41">      return false;</span>
+    }
+
+<span class="fc" id="L44">    UUID studentUid = student.getPublicUuid();</span>
+<span class="fc" id="L45">    World world = getStudentWorld(student);</span>
+<span class="fc" id="L46">    Station station = findStationInWorld(world, exerciseUid);</span>
+
+<span class="fc" id="L48">    List&lt;UUID&gt; exercisesInStation = station.getExerciseUids();</span>
+<span class="fc" id="L49">    int exerciseIndex = exercisesInStation.indexOf(exerciseUid);</span>
+
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">    if (exerciseIndex &lt; 0) {</span>
+<span class="nc" id="L52">      throw new NotFoundException(&quot;Exercise not found in student's world: &quot; + exerciseUid);</span>
+    }
+
+<span class="fc bfc" id="L55" title="All 2 branches covered.">    if (exerciseIndex &gt; 0) {</span>
+<span class="fc" id="L56">      UUID previousExerciseUid = exercisesInStation.get(exerciseIndex - 1);</span>
+<span class="fc" id="L57">      boolean prevCompleted = completedExerciseRepository.existsByStudentUidAndExerciseUid(studentUid, previousExerciseUid);</span>
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">      if (!prevCompleted) {</span>
+<span class="fc" id="L59">        return true;</span>
+      }
+<span class="nc" id="L61">    } else {</span>
+<span class="fc" id="L62">      List&lt;UUID&gt; stationsInWorld = world.getStationUids();</span>
+<span class="fc" id="L63">      int stationIndex = stationsInWorld.indexOf(station.getUid());</span>
+
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">      if (stationIndex &lt; 0) {</span>
+<span class="nc" id="L66">        throw new NotFoundException(&quot;Station not found in student's world: &quot; + station.getUid());</span>
+      }
+
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">      if (stationIndex &gt; 0) {</span>
+<span class="fc" id="L70">        UUID previousStationUid = stationsInWorld.get(stationIndex - 1);</span>
+<span class="fc" id="L71">        Station previousStation = stationRepository.findByUid(previousStationUid)</span>
+<span class="pc" id="L72">            .orElseThrow(() -&gt; new NotFoundException(&quot;Previous station not found: &quot; + previousStationUid));</span>
+
+<span class="fc" id="L74">        List&lt;UUID&gt; prevExercises = previousStation.getExerciseUids();</span>
+<span class="pc bpc" id="L75" title="1 of 2 branches missed.">        if (!prevExercises.isEmpty()) {</span>
+<span class="fc" id="L76">          long completedCount = completedExerciseRepository.countByStudentUidAndExerciseUidIn(studentUid, prevExercises);</span>
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">          if (completedCount &lt; prevExercises.size()) {</span>
+<span class="nc" id="L78">            return true;</span>
+          }
+        }
+      }
+    }
+
+<span class="fc" id="L84">    return false;</span>
+  }
+
+  /**
+   * Retrieves the world assigned to the student's classroom.
+   *
+   * @param student the student whose world to retrieve
+   * @return the World entity
+   * @throws NotFoundException if the classroom has no world or the world is not found
+   */
+  private World getStudentWorld(StudentUser student) {
+<span class="fc" id="L95">    UUID worldUid = student.getClassroom().getWorldUid();</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">    if (worldUid == null) {</span>
+<span class="nc" id="L97">      throw new NotFoundException(&quot;Classroom has no assigned world&quot;);</span>
+    }
+
+<span class="fc" id="L100">    return worldRepository.findByUid(worldUid)</span>
+<span class="pc" id="L101">        .orElseThrow(() -&gt; new NotFoundException(&quot;World not found with uid: &quot; + worldUid));</span>
+  }
+
+  /**
+   * Finds the station that contains the specified exercise in the student's world.
+   *
+   * @param world the world to search in
+   * @param exerciseUid the exercise UUID to find
+   * @return the Station containing the exercise
+   * @throws NotFoundException if no station contains the exercise
+   */
+  private Station findStationInWorld(World world, UUID exerciseUid) {
+<span class="fc bfc" id="L113" title="All 2 branches covered.">    for (UUID stationUid : world.getStationUids()) {</span>
+<span class="fc" id="L114">      Station station = stationRepository.findByUid(stationUid)</span>
+<span class="pc" id="L115">          .orElseThrow(() -&gt; new NotFoundException(&quot;Station not found with uid: &quot; + stationUid));</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">      if (station.getExerciseUids().contains(exerciseUid)) {</span>
+<span class="fc" id="L117">        return station;</span>
+      }
+<span class="fc" id="L119">    }</span>
+
+<span class="fc" id="L121">    throw new NotFoundException(&quot;No station found for exercise in student's world: &quot; + exerciseUid);</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

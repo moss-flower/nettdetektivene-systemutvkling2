@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.configs</a> &gt; <span class="el_source">SecurityConfig.java</span></div><h1>SecurityConfig.java</h1><pre class="source lang-java linenums">package no.safety.backend.configs;
+
+import java.time.Duration;
+import java.util.List;
+
+import no.safety.backend.auth.filter.CsrfCookieFilter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.header.writers.XXssProtectionHeaderWriter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import no.safety.backend.auth.filter.JwtAuthenticationFilter;
+
+import org.springframework.security.authentication.AuthenticationManager;
+
+/**
+ * Security configuration for the application.
+ * Configures HTTP security, CORS, CSRF, and authentication filters.
+ */
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CsrfCookieFilter csrfCookieFilter;
+
+    @Value(&quot;${application.security.jwt.cookie.refresh.durationMillis}&quot;)
+    private long refreshCookieDurationMillis;
+
+    /**
+     * Configures the security filter chain for HTTP requests.
+     * Sets up CORS, CSRF, authorization rules, and JWT filter.
+     * @param http the HttpSecurity to configure
+     * @return the configured SecurityFilterChain
+     * @throws Exception if configuration fails
+     */
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+<span class="fc" id="L57">        http</span>
+<span class="fc" id="L58">            .cors(cors -&gt; cors.configurationSource(corsConfigurationSource()))</span>
+
+<span class="fc" id="L60">            .csrf(csrf -&gt; csrf</span>
+<span class="fc" id="L61">                .csrfTokenRepository(csrfTokenRepository())</span>
+<span class="fc" id="L62">                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())</span>
+                //the browser hasnt recieved a xsrf token by the time one logs in or registers so it
+                //can't send back an X-XSRF-TOKEN header.
+<span class="fc" id="L65">                .ignoringRequestMatchers(&quot;/api/v1/auth/login&quot;, &quot;/api/v1/register/**&quot;)</span>
+            )
+
+<span class="fc" id="L68">            .headers(headers -&gt; headers</span>
+<span class="fc" id="L69">                .frameOptions(frame -&gt; frame.deny())</span>
+<span class="fc" id="L70">                .xssProtection(xss -&gt; xss.headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))</span>
+            )
+
+<span class="fc" id="L73">            .authorizeHttpRequests(auth -&gt; auth</span>
+<span class="fc" id="L74">                .requestMatchers(&quot;/api/v1/auth/**&quot;, &quot;/api/v1/register/**&quot;).permitAll()</span>
+<span class="fc" id="L75">                .requestMatchers(&quot;/v3/api-docs/**&quot;, &quot;/swagger-ui/**&quot;, &quot;/swagger-ui.html&quot;).permitAll()</span>
+<span class="fc" id="L76">                .requestMatchers(&quot;/api/v1/admin/**&quot;).hasRole(&quot;ADMIN&quot;)</span>
+<span class="fc" id="L77">                .anyRequest().authenticated()</span>
+            )
+
+<span class="fc" id="L80">            .exceptionHandling(ex -&gt; ex</span>
+<span class="fc" id="L81">                .authenticationEntryPoint((request, response, authException) -&gt;</span>
+<span class="nc" id="L82">                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, &quot;Unauthorized&quot;))</span>
+            )
+
+<span class="fc" id="L85">            .sessionManagement(session -&gt;</span>
+<span class="fc" id="L86">                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)</span>
+            )
+
+<span class="fc" id="L89">            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)</span>
+<span class="fc" id="L90">            .addFilterAfter(csrfCookieFilter, JwtAuthenticationFilter.class);</span>
+<span class="fc" id="L91">        return http.build();</span>
+
+    }
+
+    /**
+     * Creates a BCrypt password encoder bean for hashing passwords.
+     * @return a BCryptPasswordEncoder instance
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+<span class="fc" id="L101">        return new BCryptPasswordEncoder();</span>
+    }
+
+    /**
+     * Configures CORS (Cross-Origin Resource Sharing) settings.
+     * Sets allowed origins, methods, headers, and credentials.
+     * @return the configured CorsConfigurationSource
+     */
+    private CookieCsrfTokenRepository csrfTokenRepository() {
+<span class="fc" id="L110">        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();</span>
+<span class="fc" id="L111">        long maxAgeSeconds = refreshCookieDurationMillis / 1000;</span>
+<span class="fc" id="L112">        repository.setCookieCustomizer(cookie -&gt; cookie</span>
+<span class="fc" id="L113">            .secure(true)</span>
+<span class="fc" id="L114">            .sameSite(&quot;Strict&quot;)</span>
+<span class="fc" id="L115">            .path(&quot;/&quot;)</span>
+<span class="fc" id="L116">            .maxAge(Duration.ofSeconds(maxAgeSeconds))</span>
+        );
+<span class="fc" id="L118">        return repository;</span>
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+<span class="fc" id="L123">        CorsConfiguration configuration = new CorsConfiguration();</span>
+
+<span class="fc" id="L125">        configuration.setAllowedOrigins(List.of(&quot;http://localhost:3000&quot;));</span>
+<span class="fc" id="L126">        configuration.setAllowedMethods(List.of(&quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;PATCH&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;));</span>
+<span class="fc" id="L127">        configuration.setAllowedHeaders(List.of(&quot;Authorization&quot;, &quot;Content-Type&quot;, &quot;X-XSRF-TOKEN&quot;));</span>
+<span class="fc" id="L128">        configuration.setAllowCredentials(true);</span>
+
+<span class="fc" id="L130">        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();</span>
+<span class="fc" id="L131">        source.registerCorsConfiguration(&quot;/**&quot;, configuration);</span>
+<span class="fc" id="L132">        return source;</span>
+    }
+
+    /**
+     * Creates an AuthenticationManager bean from the authentication configuration.
+     * @param config the AuthenticationConfiguration to get the manager from
+     * @return the AuthenticationManager instance
+     * @throws Exception if unable to get the authentication manager
+     */
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+<span class="fc" id="L143">        return config.getAuthenticationManager();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

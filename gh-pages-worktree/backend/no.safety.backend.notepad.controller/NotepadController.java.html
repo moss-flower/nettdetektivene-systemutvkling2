@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NotepadController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.notepad.controller</a> &gt; <span class="el_source">NotepadController.java</span></div><h1>NotepadController.java</h1><pre class="source lang-java linenums">package no.safety.backend.notepad.controller;
+
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import no.safety.backend.auth.model.UserPrincipal;
+import no.safety.backend.notepad.dto.NotepadEntryCreateRequest;
+import no.safety.backend.notepad.dto.NotepadEntryReadRequest;
+import no.safety.backend.notepad.dto.NotepadEntryResponse;
+import no.safety.backend.notepad.dto.NotepadEntryUpdateRequest;
+import no.safety.backend.notepad.model.NotepadEntry;
+import no.safety.backend.notepad.service.NotepadEntryService;
+
+/**
+ * REST controller for notepad endpoints.
+ * Provides CRUD operations for notepad entries belonging to users.
+ */
+@RestController
+@RequestMapping(&quot;/api/v1/notepad&quot;)
+@RequiredArgsConstructor
+@Tag(name = &quot;Notepad&quot;, description = &quot;CRUD Endpoints for notes&quot;)
+public class NotepadController {
+
+    private final NotepadEntryService notepadEntryService;
+
+    /**
+     * Retrieves a paginated list of notepad entries for the authenticated user.
+     *
+     * @param userPrincipal the authenticated user principal
+     * @param request the read request containing pagination parameters
+     * @return a page of notepad entry responses
+     */
+    @Operation(
+        summary = &quot;Get user notes&quot;,
+        description = &quot;Retrieves a paginated list of notepad entries belonging to the authenticated user.&quot;
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Successfully retrieved notes&quot;),
+        @ApiResponse(responseCode = &quot;401&quot;, description = &quot;Unauthorized&quot;, content = @Content)
+    })
+    @GetMapping(value = &quot;notes&quot;)
+    public Page&lt;NotepadEntryResponse&gt; getNotepadEntries(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @Valid NotepadEntryReadRequest request) {
+<span class="nc" id="L66">        return notepadEntryService.readCallerNotes(userPrincipal.getUserInternalId(), request);</span>
+    }
+
+    /**
+     * Retrieves a paginated list of notepad entries for a specific student.
+     * Requires TEACHER role to access student notes.
+     *
+     * @param userPrincipal the authenticated teacher principal
+     * @param studentUuid the UUID of the student whose notes to retrieve
+     * @param request the read request containing pagination parameters
+     * @return a page of notepad entry responses for the specified student
+     */
+    @Operation(
+        summary = &quot;Get student notes&quot;,
+        description = &quot;Retrieves a paginated list of notes for a specific student. Requires TEACHER role.&quot;
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Successfully retrieved student notes&quot;),
+        @ApiResponse(responseCode = &quot;403&quot;, description = &quot;Forbidden - Insufficient permissions&quot;, content = @Content),
+        @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Student not found&quot;, content = @Content)
+    })
+    @GetMapping(value = &quot;/students/{studentUuid}/notes/&quot;)
+    @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+    public Page&lt;NotepadEntryResponse&gt; getNotepadEntriesForStudent(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable UUID studentUuid, 
+            @Valid NotepadEntryReadRequest request) {
+<span class="nc" id="L93">        return notepadEntryService.readStudentNotes(userPrincipal.getUserInternalId(), studentUuid, request);</span>
+    }
+
+    /**
+     * Creates a new notepad entry for the authenticated user.
+     *
+     * @param userPrincipal the authenticated user principal
+     * @param request the create request containing entry details
+     * @return the created notepad entry response
+     */
+    @Operation(
+        summary = &quot;Create note&quot;,
+        description = &quot;Creates a new notepad entry for the authenticated user.&quot;
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = &quot;201&quot;, description = &quot;Note successfully created&quot;),
+        @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Invalid input data&quot;, content = @Content)
+    })
+    @PostMapping(value = &quot;create&quot;, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public NotepadEntryResponse createNotepadEntry(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @Valid @RequestBody NotepadEntryCreateRequest request){
+<span class="nc" id="L116">        return notepadEntryService.create(userPrincipal.getUserInternalId(), request);</span>
+    }
+
+    /**
+     * Updates an existing notepad entry identified by its UUID.
+     *
+     * @param userPrincipal the authenticated user principal
+     * @param uuid the UUID of the notepad entry to update
+     * @param request the update request containing new entry details
+     * @return the updated notepad entry response
+     */
+    @Operation(
+        summary = &quot;Update note&quot;,
+        description = &quot;Updates an existing notepad entry identified by UUID.&quot;
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Note successfully updated&quot;),
+        @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Note not found&quot;, content = @Content)
+    })
+    @PutMapping(value = &quot;update/{uuid}&quot;, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public NotepadEntryResponse updateNotepadEntry(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable UUID uuid, 
+            @Valid @RequestBody NotepadEntryUpdateRequest request){
+<span class="nc" id="L140">        return notepadEntryService.update(userPrincipal.getUserInternalId(), uuid, request);</span>
+    }
+
+    /**
+     * Deletes a notepad entry identified by its UUID.
+     *
+     * @param userPrincipal the authenticated user principal
+     * @param uuid the UUID of the notepad entry to delete
+     */
+    @Operation(
+        summary = &quot;Delete note&quot;,
+        description = &quot;Permanently deletes a notepad entry.&quot;
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = &quot;204&quot;, description = &quot;Note successfully deleted&quot;),
+        @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Note not found&quot;, content = @Content)
+    })
+    @DeleteMapping(&quot;/{uuid}&quot;)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteNotepadEntry(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable UUID uuid) {
+<span class="nc" id="L162">        notepadEntryService.delete(userPrincipal.getUserInternalId(), uuid);</span>
+<span class="nc" id="L163">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

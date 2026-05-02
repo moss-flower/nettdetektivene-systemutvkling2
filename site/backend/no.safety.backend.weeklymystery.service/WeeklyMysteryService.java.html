@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WeeklyMysteryService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.weeklymystery.service</a> &gt; <span class="el_source">WeeklyMysteryService.java</span></div><h1>WeeklyMysteryService.java</h1><pre class="source lang-java linenums">package no.safety.backend.weeklymystery.service;
+
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import no.safety.backend.classroom.model.ClassroomWeeklyMystery;
+import no.safety.backend.classroom.repository.ClassroomWeeklyMysteryRepository;
+
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import no.safety.backend.classroom.model.Classroom;
+import no.safety.backend.exception.AccessDeniedException;
+import no.safety.backend.exception.domain.FilePersistenceException;
+import no.safety.backend.excercise.model.Exercise;
+import no.safety.backend.excercise.repository.ExerciseRepository;
+import no.safety.backend.media.dto.MediaUploadResponse;
+import no.safety.backend.media.service.MediaStorageService;
+import no.safety.backend.notification.dto.NotificationEvent;
+import no.safety.backend.notification.dto.WeeklyMysterySubmissionEvent;
+import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.model.TeacherUser;
+import no.safety.backend.user.service.UserService;
+import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptResponse;
+import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptCreateRequest;
+import no.safety.backend.weeklymystery.dto.WeeklyMysterySubmissionCreateRequest;
+import no.safety.backend.weeklymystery.dto.WeeklyMysterySubmissionResponse;
+import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
+import no.safety.backend.weeklymystery.model.WeeklyMysterySubmission;
+import no.safety.backend.weeklymystery.repository.WeeklyMysteryPromptRepository;
+import no.safety.backend.weeklymystery.repository.WeeklyMysterySubmissionRepository;
+
+<span class="fc" id="L38">@Slf4j</span>
+@Service
+@RequiredArgsConstructor
+public class WeeklyMysteryService {
+
+    private final WeeklyMysteryPromptRepository promptRepository;
+    private final WeeklyMysterySubmissionRepository submissionRepository;
+    private final MediaStorageService mediaStorageService;
+    private final UserService userService;
+    private final ApplicationEventPublisher eventPublisher;
+    private final ClassroomWeeklyMysteryRepository classroomWeeklyMysteryRepository;
+    private final ExerciseRepository exerciseRepository;
+
+    /**
+     * Saves a student's submission for a Weekly Mystery prompt.
+     * Persists the attached file to storage, then saves the submission entity.
+     * If the database save fails, the file is deleted from storage to avoid orphaned files.
+     *
+     * @param request   the submission request containing the prompt UUID, message, and file
+     * @param studentId the internal ID of the submitting student
+     * @throws FilePersistenceException if the submission cannot be saved
+     */
+    public void saveStudentSubmission(WeeklyMysterySubmissionCreateRequest request, Long studentId) {
+<span class="nc" id="L61">        log.debug(&quot;Save student submission called with request {}&quot;, request);</span>
+
+<span class="nc" id="L63">        WeeklyMysteryPrompt prompt = promptRepository.findByPublicUuid(request.weeklyMysterPromptUuid());</span>
+<span class="nc" id="L64">        StudentUser sender = (StudentUser) userService.findByInternalId(studentId);</span>
+
+        // getOriginalFilename() is safer than getName(), which can return the full path on some systems
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        String fileName = request.file().getOriginalFilename() != null</span>
+<span class="nc" id="L68">                ? request.file().getOriginalFilename()</span>
+<span class="nc" id="L69">                : &quot;unknown_file&quot;;</span>
+<span class="nc" id="L70">        String folder = generateStorageFolder(studentId, prompt.getInternalId());</span>
+<span class="nc" id="L71">        MediaUploadResponse uploadedFile = mediaStorageService.uploadPublicImage(request.file(), folder);</span>
+<span class="nc" id="L72">        String storageKey = uploadedFile.objectKey();</span>
+
+<span class="nc" id="L74">        WeeklyMysterySubmission submission = WeeklyMysterySubmission.builder()</span>
+<span class="nc" id="L75">                .message(request.message())</span>
+<span class="nc" id="L76">                .fileName(fileName)</span>
+<span class="nc" id="L77">                .storageKey(storageKey)</span>
+<span class="nc" id="L78">                .submitterStudentUser(sender)</span>
+<span class="nc" id="L79">                .weeklyMysteryPrompt(prompt)</span>
+<span class="nc" id="L80">                .build();</span>
+
+        try {
+<span class="nc" id="L83">            submissionRepository.save(submission);</span>
+<span class="nc" id="L84">            NotificationEvent event = new WeeklyMysterySubmissionEvent(</span>
+                    studentId,
+<span class="nc" id="L86">                    &quot;Elev &quot; + sender.getUsername() + &quot; har lastet opp et nytt innlegg på Ukens Mysterium&quot;</span>
+            );
+<span class="nc" id="L88">            eventPublisher.publishEvent(event);</span>
+<span class="nc" id="L89">        } catch (Exception e) {</span>
+<span class="nc" id="L90">            log.error(&quot;Error storing submission {}&quot;, submission, e);</span>
+<span class="nc" id="L91">            mediaStorageService.deletePublicObject(storageKey);</span>
+<span class="nc" id="L92">            throw new FilePersistenceException(&quot;Error persisting file, please try again.&quot;);</span>
+<span class="nc" id="L93">        }</span>
+<span class="nc" id="L94">    }</span>
+
+    /**
+     * Retrieves all submissions for a given Weekly Mystery prompt,
+     * mapping each to a {@link WeeklyMysterySubmissionResponse} including the associated file.
+     *
+     * @param promptUid the public UUID of the Weekly Mystery prompt
+     * @return a set of submission responses, or an empty set if none exist
+     */
+    public Set&lt;WeeklyMysterySubmissionResponse&gt; getWeeklyMysterySubmissionResponses(UUID promptUid) {
+<span class="nc" id="L104">        return submissionRepository.getByWeeklyMysteryPrompt_publicUuid(promptUid)</span>
+<span class="nc" id="L105">                .stream()</span>
+<span class="nc" id="L106">                .map(submission -&gt; new WeeklyMysterySubmissionResponse(</span>
+<span class="nc" id="L107">                        submission.getPublicUuid(),</span>
+<span class="nc" id="L108">                        submission.getMessage(),</span>
+<span class="nc" id="L109">                        submission.getSubmitterStudentUser().getPublicUuid(),</span>
+<span class="nc" id="L110">                        submission.getFileName(),</span>
+<span class="nc" id="L111">                        mediaStorageService.publicUrl(submission.getStorageKey())</span>
+                ))
+<span class="nc" id="L113">                .collect(Collectors.toSet());</span>
+    }
+
+    /**
+     * Deletes a student's submission if the requesting user is either the submitting student
+     * or a teacher with access to the classroom the prompt is assigned to.
+     * Removes the associated file from storage and the submission entity from the database.
+     * If the database deletion fails, the file is left intact to avoid data loss.
+     *
+     * @param submissionUid the public UUID of the submission to delete
+     * @param requesterId   the internal ID of the requesting user
+     * @throws AccessDeniedException   if the requester is neither the submitter nor an authorized teacher
+     * @throws EntityNotFoundException if no submission is found for the given UUID
+     */
+    @Transactional
+    public void deleteSubmission(UUID submissionUid, Long requesterId) {
+<span class="nc" id="L129">        WeeklyMysterySubmission submission = submissionRepository.findByPublicUuid(submissionUid)</span>
+<span class="nc" id="L130">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Submission not found: &quot; + submissionUid));</span>
+<span class="nc" id="L131">        boolean isSubmitter = submission.getSubmitterStudentUser().getInternalId().equals(requesterId);</span>
+<span class="nc" id="L132">        boolean isAuthorizedTeacher = classroomWeeklyMysteryRepository</span>
+<span class="nc" id="L133">                .existsByWeeklyMysteryPrompt_AndClassroom_Owners_InternalId(</span>
+<span class="nc" id="L134">                    submission.getWeeklyMysteryPrompt(), requesterId</span>
+                );
+
+<span class="nc bnc" id="L137" title="All 4 branches missed.">        if (!isSubmitter &amp;&amp; !isAuthorizedTeacher) {</span>
+<span class="nc" id="L138">            throw new AccessDeniedException(&quot;User does not have permission to delete this submission.&quot;);</span>
+        }
+
+        try {
+<span class="nc" id="L142">            submissionRepository.delete(submission);</span>
+<span class="nc" id="L143">            mediaStorageService.deletePublicObject(submission.getStorageKey());</span>
+<span class="nc" id="L144">        } catch (Exception e) {</span>
+<span class="nc" id="L145">            log.error(&quot;Error deleting submission {}&quot;, submissionUid, e);</span>
+<span class="nc" id="L146">            throw new FilePersistenceException(&quot;Error deleting submission, please try again.&quot;);</span>
+<span class="nc" id="L147">        }</span>
+<span class="nc" id="L148">    }</span>
+
+    /**
+     * Saves a new Weekly Mystery prompt created by a teacher.
+     *
+     * @param request  the prompt creation request containing title, prompt text, and clue
+     * @param senderId the internal ID of the creating teacher
+     * @return a response DTO representing the saved prompt
+     */
+    public WeeklyMysteryPromptResponse savePrompt(WeeklyMysteryPromptCreateRequest request, Long senderId) {
+<span class="nc" id="L158">        TeacherUser sender = (TeacherUser) userService.findByInternalId(senderId);</span>
+
+<span class="nc" id="L160">        WeeklyMysteryPrompt prompt = WeeklyMysteryPrompt.builder()</span>
+<span class="nc" id="L161">                .weekLabel(&quot;&quot;)</span>
+<span class="nc" id="L162">                .title(request.title())</span>
+<span class="nc" id="L163">                .prompt(request.prompt())</span>
+<span class="nc" id="L164">                .clue(request.clue())</span>
+<span class="nc" id="L165">                .teacherUser(sender)</span>
+<span class="nc" id="L166">                .build();</span>
+<span class="nc" id="L167">        promptRepository.save(prompt);</span>
+
+<span class="nc" id="L169">        return WeeklyMysteryPromptResponse.fromEntity(prompt);</span>
+    }
+
+    /**
+     * Fetches all Weekly Mystery prompts created by a given teacher.
+     *
+     * @param internalUserId the internal ID of the teacher
+     * @return a set of prompt response DTOs
+     */
+    public HashSet&lt;WeeklyMysteryPromptResponse&gt; fetchUsersPrompts(Long internalUserId) {
+<span class="nc" id="L179">        HashSet&lt;WeeklyMysteryPrompt&gt; prompts = promptRepository.findAllByTeacherUser_internalId(internalUserId);</span>
+
+<span class="nc" id="L181">        HashSet&lt;WeeklyMysteryPromptResponse&gt; responses = new HashSet&lt;&gt;();</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        for (WeeklyMysteryPrompt prompt : prompts) {</span>
+<span class="nc" id="L183">            responses.add(WeeklyMysteryPromptResponse.fromEntity(prompt));</span>
+<span class="nc" id="L184">        }</span>
+<span class="nc" id="L185">        return responses;</span>
+    }
+
+    /**
+     * Fetches a single Weekly Mystery prompt by its public UUID.
+     *
+     * @param promptId the public UUID of the prompt
+     * @return the matching {@link WeeklyMysteryPrompt} entity
+     */
+    public WeeklyMysteryPrompt fetch(UUID promptId) {
+<span class="nc" id="L195">        return promptRepository.findByPublicUuid(promptId);</span>
+    }
+
+    /**
+     * Links a saved exercise to a Weekly Mystery prompt owned by the requesting teacher.
+     *
+     * @param promptId   the public UUID of the prompt
+     * @param exerciseId the public UUID of the exercise
+     * @param teacherId  the internal ID of the requesting teacher
+     * @return the updated prompt response
+     */
+    @Transactional
+    public WeeklyMysteryPromptResponse linkExercise(UUID promptId, UUID exerciseId, Long teacherId) {
+<span class="nc" id="L208">        WeeklyMysteryPrompt prompt = promptRepository.findByPublicUuid(promptId);</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">        if (prompt == null) {</span>
+<span class="nc" id="L210">            throw new EntityNotFoundException(&quot;Weekly mystery prompt not found: &quot; + promptId);</span>
+        }
+
+<span class="nc bnc" id="L213" title="All 2 branches missed.">        if (!prompt.getTeacherUser().getInternalId().equals(teacherId)) {</span>
+<span class="nc" id="L214">            throw new AccessDeniedException(&quot;User does not have permission to update this prompt.&quot;);</span>
+        }
+
+<span class="nc" id="L217">        Exercise exercise = exerciseRepository.findByPublicId(exerciseId)</span>
+<span class="nc" id="L218">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Exercise not found: &quot; + exerciseId));</span>
+
+<span class="nc" id="L220">        prompt.setExercise(exercise);</span>
+<span class="nc" id="L221">        return WeeklyMysteryPromptResponse.fromEntity(promptRepository.save(prompt));</span>
+    }
+
+    /**
+     * Deletes a Weekly Mystery prompt, verifying that it belongs to the requesting teacher.
+     * No-op if the prompt is not found or does not belong to the teacher.
+     *
+     * @param promptId  the public UUID of the prompt to delete
+     * @param teacherId the internal ID of the requesting teacher
+     */
+    @Transactional
+    public void delete(UUID promptId, Long teacherId) {
+<span class="nc" id="L233">        Set&lt;WeeklyMysteryPrompt&gt; teacherPrompts = promptRepository.findAllByTeacherUser_internalId(teacherId);</span>
+
+        // Fixed: was using == for UUID comparison, which compares references not values
+<span class="nc" id="L236">        teacherPrompts.stream()</span>
+<span class="nc" id="L237">                .filter(p -&gt; p.getPublicUuid().equals(promptId))</span>
+<span class="nc" id="L238">                .findFirst()</span>
+<span class="nc" id="L239">                .ifPresent(promptRepository::delete);</span>
+<span class="nc" id="L240">    }</span>
+
+    /**
+     * Assigns a Weekly Mystery prompt to a classroom, recording the assignment date.
+     *
+     * @param classroom the classroom to assign the prompt to
+     * @param prompt    the prompt to assign
+     */
+    @Transactional
+    public void updateWeeklyMystery(Classroom classroom, WeeklyMysteryPrompt prompt) {
+<span class="nc" id="L250">        ClassroomWeeklyMystery mystery = new ClassroomWeeklyMystery();</span>
+<span class="nc" id="L251">        mystery.setWeeklyMysteryPrompt(prompt);</span>
+<span class="nc" id="L252">        mystery.setClassroom(classroom);</span>
+<span class="nc" id="L253">        mystery.setAssignedDate(LocalDate.now());</span>
+<span class="nc" id="L254">        classroomWeeklyMysteryRepository.save(mystery);</span>
+<span class="nc" id="L255">    }</span>
+
+    /**
+     * Generates a storage key for a file based on the user ID, prompt ID, and file name.
+     * Format: /{userId}/{promptId}/{fileName}
+     *
+     * @param userId   the internal ID of the user
+     * @param promptId the internal ID of the prompt
+     * @param fileName the name of the file
+     * @return the generated storage key
+     */
+    private String generateStorageFolder(Long userId, Long promptId) {
+<span class="nc" id="L267">        return &quot;uploads/mysteries/submissions/&quot; + userId + &quot;/&quot; + promptId;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

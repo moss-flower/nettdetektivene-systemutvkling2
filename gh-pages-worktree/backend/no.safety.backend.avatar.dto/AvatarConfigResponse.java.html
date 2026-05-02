@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AvatarConfigResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.avatar.dto</a> &gt; <span class="el_source">AvatarConfigResponse.java</span></div><h1>AvatarConfigResponse.java</h1><pre class="source lang-java linenums">package no.safety.backend.avatar.dto;
+
+import java.util.Objects;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
+import no.safety.backend.avatar.enums.EyeColor;
+import no.safety.backend.avatar.enums.HairColor;
+import no.safety.backend.avatar.enums.HairStyle;
+import no.safety.backend.avatar.enums.Outfit;
+import no.safety.backend.avatar.enums.SkinColor;
+import no.safety.backend.avatar.model.AvatarConfig;
+
+/**
+ * Data Transfer Object (DTO) for sending avatar configuration data to the client.
+ * Contains all avatar customization attributes that define a student's avatar appearance.
+ *
+ * @param hairStyle the selected hairstyle for the avatar
+ * @param hairColor the selected hair color for the avatar
+ * @param outfit the selected outfit for the avatar
+ * @param eyeColor the selected eye color for the avatar
+ * @param skinColor the selected skin color for the avatar
+ */
+@Schema(description = &quot;Avatar configuration returned to the frontend&quot;)
+<span class="fc" id="L25">public record AvatarConfigResponse(</span>
+    @NotNull
+    @Schema(description = &quot;Selected hairstyle&quot;, example = &quot;SHORT&quot;)
+    HairStyle hairStyle,
+
+    @NotNull
+    @Schema(description = &quot;Selected hair color&quot;, example = &quot;BROWN&quot;)
+    HairColor hairColor,
+
+    @NotNull
+    @Schema(description = &quot;Selected outfit&quot;, example = &quot;SHERLOCK&quot;)
+    Outfit outfit,
+
+    @NotNull
+    @Schema(description = &quot;Selected eye color&quot;, example = &quot;BROWN&quot;)
+    EyeColor eyeColor,
+
+    @NotNull
+    @Schema(description = &quot;Selected skin color&quot;, example = &quot;COLOR1&quot;)
+    SkinColor skinColor
+) {
+    /**
+     * Creates an AvatarConfigResponse from an AvatarConfig entity.
+     * If the provided entity is null, returns a response with default configuration values.
+     *
+     * @param avatarConfig the avatar configuration entity to convert (can be null)
+     * @return a new AvatarConfigResponse with values from the entity or defaults
+     */
+    public static AvatarConfigResponse fromEntity(AvatarConfig avatarConfig) {
+<span class="fc" id="L54">        AvatarConfig config = Objects.requireNonNullElseGet(avatarConfig, AvatarConfig::defaultConfig);</span>
+
+<span class="fc" id="L56">        return new AvatarConfigResponse(</span>
+<span class="fc" id="L57">            config.getHairStyle(),</span>
+<span class="fc" id="L58">            config.getHairColor(),</span>
+<span class="fc" id="L59">            config.getOutfit(),</span>
+<span class="fc" id="L60">            config.getEyeColor(),</span>
+<span class="fc" id="L61">            config.getSkinColor()</span>
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

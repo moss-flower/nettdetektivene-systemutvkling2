@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WeeklyMysteryMockDataInitializer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.configs</a> &gt; <span class="el_source">WeeklyMysteryMockDataInitializer.java</span></div><h1>WeeklyMysteryMockDataInitializer.java</h1><pre class="source lang-java linenums">package no.safety.backend.configs;
+
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.List;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.UUID;
+
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import no.safety.backend.classroom.model.Classroom;
+import no.safety.backend.classroom.model.ClassroomWeeklyMystery;
+import no.safety.backend.classroom.repository.ClassroomRepository;
+import no.safety.backend.classroom.repository.ClassroomWeeklyMysteryRepository;
+import no.safety.backend.excercise.model.Exercise;
+import no.safety.backend.excercise.repository.ExerciseRepository;
+import no.safety.backend.notepad.model.NotepadEntry;
+import no.safety.backend.notepad.model.NotepadEntryType;
+import no.safety.backend.media.service.MediaStorageService;
+import no.safety.backend.task.content.MultipleChoiceContent;
+import no.safety.backend.task.content.TaskContent;
+import no.safety.backend.task.content.XOrYContent;
+import no.safety.backend.task.model.Task;
+import no.safety.backend.task.repository.TaskRepository;
+import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.model.TeacherUser;
+import no.safety.backend.user.repository.StudentUserRepository;
+import no.safety.backend.user.repository.TeacherUserRepository;
+import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
+import no.safety.backend.weeklymystery.model.WeeklyMysterySubmission;
+import no.safety.backend.weeklymystery.repository.WeeklyMysteryPromptRepository;
+import no.safety.backend.weeklymystery.repository.WeeklyMysterySubmissionRepository;
+
+/**
+ * Demo data for ukens mysterium: prompts, classroom assignment, history rows, and a few student submissions.
+ * Targets Lisa's seeded classrooms 3-trinn A (Ada + Elias) and 7-trinn A (Ingrid + Emil).
+ * Must run after ClassroomMockDataInitializer and GameplayMockDataInitializer (explicit {@code @Order} chain).
+ * Uses the same public media object keys as gameplay seed tasks so image URLs resolve when MinIO is populated.
+ */
+@Component
+@Profile(&quot;!test&quot;)
+@Order(20)
+@RequiredArgsConstructor
+<span class="nc" id="L53">@Slf4j</span>
+public class WeeklyMysteryMockDataInitializer implements ApplicationRunner {
+
+<span class="nc" id="L56">  public static final UUID SEED_PROMPT_ACTIVE_3A = stableUuid(&quot;weekly-mystery-seed:active-3a&quot;);</span>
+<span class="nc" id="L57">  public static final UUID SEED_PROMPT_ARCHIVED_3A = stableUuid(&quot;weekly-mystery-seed:archived-3a&quot;);</span>
+<span class="nc" id="L58">  public static final UUID SEED_PROMPT_LIBRARY_LISA = stableUuid(&quot;weekly-mystery-seed:library-lisa&quot;);</span>
+
+<span class="nc" id="L60">  public static final UUID SEED_SUB_ADA_NEWS = stableUuid(&quot;weekly-mystery-seed:sub-ada-news&quot;);</span>
+<span class="nc" id="L61">  public static final UUID SEED_SUB_ELIAS_PHOTO = stableUuid(&quot;weekly-mystery-seed:sub-elias-photo&quot;);</span>
+<span class="nc" id="L62">  public static final UUID SEED_SUB_ADA_SOCIAL = stableUuid(&quot;weekly-mystery-seed:sub-ada-social&quot;);</span>
+
+<span class="nc" id="L64">  public static final UUID SEED_PROMPT_ACTIVE_7A = stableUuid(&quot;weekly-mystery-seed:active-7a&quot;);</span>
+<span class="nc" id="L65">  public static final UUID SEED_PROMPT_ARCHIVED_7A = stableUuid(&quot;weekly-mystery-seed:archived-7a&quot;);</span>
+<span class="nc" id="L66">  public static final UUID SEED_SUB_INGRID_7A = stableUuid(&quot;weekly-mystery-seed:sub-ingrid-7a&quot;);</span>
+<span class="nc" id="L67">  public static final UUID SEED_SUB_EMIL_7A = stableUuid(&quot;weekly-mystery-seed:sub-emil-7a&quot;);</span>
+
+<span class="nc" id="L69">  public static final UUID SEED_EXERCISE_3A = stableUuid(&quot;weekly-mystery-seed:exercise-3a&quot;);</span>
+<span class="nc" id="L70">  public static final UUID SEED_EXERCISE_7A = stableUuid(&quot;weekly-mystery-seed:exercise-7a&quot;);</span>
+
+  private static final String SEED_IMAGE_NEWS = &quot;seed/tasks/nyhetskvartalet/warning-gratis-mobil.png&quot;;
+  private static final String SEED_IMAGE_PHOTO = &quot;seed/tasks/fotografen/ai-folded-hands-many-fingers.jpeg&quot;;
+  private static final String SEED_IMAGE_SOCIAL = &quot;seed/tasks/sosiale-moteplassen/bad-alle-skoler-stenger-neste-uke.jpeg&quot;;
+  private static final String SEED_IMAGE_SOCIAL_FACT = &quot;seed/tasks/sosiale-moteplassen/good-udir-skoler-stenger-ikke.jpeg&quot;;
+  private static final String SEED_IMAGE_EMAIL = &quot;seed/tasks/postkontoret/fake-your-account-will-be-closed.jpeg&quot;;
+  private static final String SEED_IMAGE_EMAIL_SAFE = &quot;seed/tasks/postkontoret/real-timeplan-next-week.png&quot;;
+
+  private final TeacherUserRepository teacherUserRepository;
+  private final StudentUserRepository studentUserRepository;
+  private final ClassroomRepository classroomRepository;
+  private final WeeklyMysteryPromptRepository promptRepository;
+  private final WeeklyMysterySubmissionRepository submissionRepository;
+  private final ClassroomWeeklyMysteryRepository classroomWeeklyMysteryRepository;
+  private final ExerciseRepository exerciseRepository;
+  private final TaskRepository taskRepository;
+  private final MediaStorageService mediaStorageService;
+
+  @Override
+  @Transactional
+  public void run(ApplicationArguments args) {
+<span class="nc" id="L92">    log.info(&quot;WeeklyMysteryMockDataInitializer: running (expects klasserom and ovinger seeded first).&quot;);</span>
+
+<span class="nc" id="L94">    Optional&lt;TeacherUser&gt; lisa = teacherUserRepository.findByEmail(&quot;lisa.laerer@test.com&quot;);</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">    if (lisa.isEmpty()) {</span>
+<span class="nc" id="L96">      log.warn(&quot;WeeklyMysteryMockDataInitializer: demo teacher lisa.laerer@test.com not found — skipping weekly mystery seed.&quot;);</span>
+<span class="nc" id="L97">      return;</span>
+    }
+
+<span class="nc" id="L100">    TeacherUser teacher = lisa.get();</span>
+<span class="nc" id="L101">    Exercise classroom3aExercise = upsertExercise3a();</span>
+<span class="nc" id="L102">    Exercise classroom7aExercise = upsertExercise7a();</span>
+
+<span class="nc" id="L104">    upsertPrompt(</span>
+        SEED_PROMPT_LIBRARY_LISA,
+        teacher,
+        &quot;Kladd&quot;,
+        &quot;Mistenkelig chat&quot;,
+        &quot;Be elevene sende inn et skjermbilde av en chat som virker mistenkelig, og forklare hvorfor.&quot;,
+        &quot;Se etter ukjente navn, lenker og press for å svare fort.&quot;,
+<span class="nc" id="L111">        Optional.empty()</span>
+    );
+
+<span class="nc" id="L114">    seedKlasse3a(teacher, classroom3aExercise);</span>
+<span class="nc" id="L115">    seedKlasse7a(teacher, classroom7aExercise);</span>
+<span class="nc" id="L116">  }</span>
+
+  private void seedKlasse3a(TeacherUser teacher, Exercise mysteryExercise) {
+<span class="nc" id="L119">    Optional&lt;Classroom&gt; classroomOpt = classroomRepository.findByUid(ClassroomMockDataInitializer.KLASSE_3A_UID);</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">    if (classroomOpt.isEmpty()) {</span>
+<span class="nc" id="L121">      log.warn(&quot;WeeklyMysteryMockDataInitializer: demo classroom 3-trinn A not found — skipping.&quot;);</span>
+<span class="nc" id="L122">      return;</span>
+    }
+
+<span class="nc" id="L125">    Classroom classroom = classroomOpt.get();</span>
+<span class="nc" id="L126">    StudentUser ada = studentUserRepository.findByEmail(&quot;ada.elev@test.com&quot;).orElse(null);</span>
+<span class="nc" id="L127">    StudentUser elias = studentUserRepository.findByEmail(&quot;elias.elev@test.com&quot;).orElse(null);</span>
+
+<span class="nc" id="L129">    WeeklyMysteryPrompt archived = upsertPrompt(</span>
+        SEED_PROMPT_ARCHIVED_3A,
+        teacher,
+        &quot;Uke 12&quot;,
+        &quot;Tenk før du klikker&quot;,
+        &quot;Hva er det smarteste du kan gjøre hvis en melding virker for god til å være sann?&quot;,
+        &quot;Tenk på avsender, språk og om noen prøver å skynde på deg.&quot;,
+<span class="nc" id="L136">        Optional.empty()</span>
+    );
+
+<span class="nc" id="L139">    WeeklyMysteryPrompt active = upsertPrompt(</span>
+        SEED_PROMPT_ACTIVE_3A,
+        teacher,
+        &quot;Uke 13&quot;,
+        &quot;Skolene stenger neste uke?&quot;,
+        &quot;Se på innlegg om at skolene stenger neste uke. Finn ut hva som gjør at du bør sjekke saken før du tror på den.&quot;,
+        &quot;Se etter hvem som står bak, og om noen prøver å få deg til å reagere raskt.&quot;,
+<span class="nc" id="L146">        Optional.of(mysteryExercise)</span>
+    );
+
+<span class="nc" id="L149">    recordHistoryIfMissing(classroom, archived, LocalDate.now().minusWeeks(1));</span>
+<span class="nc" id="L150">    recordHistoryIfMissing(classroom, active, LocalDate.now().minusDays(2));</span>
+
+    /*
+     * Always point the klasserom at the seeded active prompt. Earlier we only did this when the field was
+     * null, which left old assignments in place while submissions were tied to the demo prompt UUID — then
+     * the teacher UI (which loads innleveranser for the current prompt) showed nothing.
+     */
+<span class="nc" id="L157">    classroom.setWeeklyMysteryPrompt(active);</span>
+<span class="nc" id="L158">    classroomRepository.save(classroom);</span>
+
+<span class="nc bnc" id="L160" title="All 2 branches missed.">    if (ada != null) {</span>
+<span class="nc" id="L161">      upsertSubmission(SEED_SUB_ADA_NEWS, active, ada,</span>
+          &quot;Dette innlegget sier at skolene stenger, men jeg vil sjekke om det faktisk kommer fra noen jeg kan stole på.&quot;,
+          &quot;skolene-stenger.jpeg&quot;,
+<span class="nc" id="L164">          seedSubmissionImage(&quot;uploads/mysteries/submissions/seed/ada/skolene-stenger.jpeg&quot;, SEED_IMAGE_SOCIAL));</span>
+<span class="nc" id="L165">      upsertSubmission(SEED_SUB_ADA_SOCIAL, active, ada,</span>
+          &quot;Jeg reagerte på at innlegget vil at alle skal dele fort, i stedet for å forklare rolig hva som skjer.&quot;,
+          &quot;udir-faktasjekk.jpeg&quot;,
+<span class="nc" id="L168">          seedSubmissionImage(&quot;uploads/mysteries/submissions/seed/ada/udir-faktasjekk.jpeg&quot;, SEED_IMAGE_SOCIAL_FACT));</span>
+    } else {
+<span class="nc" id="L170">      log.warn(&quot;WeeklyMysteryMockDataInitializer: ada.elev@test.com not found — no Ada submissions seeded.&quot;);</span>
+    }
+
+<span class="nc bnc" id="L173" title="All 2 branches missed.">    if (elias != null) {</span>
+<span class="nc" id="L174">      upsertSubmission(SEED_SUB_ELIAS_PHOTO, active, elias,</span>
+          &quot;Jeg la merke til at dette virker mer som et rykte enn en vanlig beskjed fra skolen.&quot;,
+          &quot;skole-rykte.jpeg&quot;,
+<span class="nc" id="L177">          seedSubmissionImage(&quot;uploads/mysteries/submissions/seed/elias/skole-rykte.jpeg&quot;, SEED_IMAGE_SOCIAL));</span>
+    } else {
+<span class="nc" id="L179">      log.warn(&quot;WeeklyMysteryMockDataInitializer: elias.elev@test.com not found — no Elias submissions seeded.&quot;);</span>
+    }
+
+<span class="nc bnc" id="L182" title="All 4 branches missed.">    int submissionRows = (ada != null ? 2 : 0) + (elias != null ? 1 : 0);</span>
+<span class="nc" id="L183">    log.info(&quot;WeeklyMysteryMockDataInitializer: demo data for {} — aktivt oppdrag «{}» ({} innlevering(er)).&quot;,</span>
+<span class="nc" id="L184">        classroom.getName(), active.getTitle(), submissionRows);</span>
+<span class="nc" id="L185">  }</span>
+
+  private void seedKlasse7a(TeacherUser teacher, Exercise mysteryExercise) {
+<span class="nc" id="L188">    Optional&lt;Classroom&gt; classroomOpt = classroomRepository.findByUid(ClassroomMockDataInitializer.KLASSE_7A_UID);</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">    if (classroomOpt.isEmpty()) {</span>
+<span class="nc" id="L190">      log.warn(&quot;WeeklyMysteryMockDataInitializer: demo classroom 7-trinn A not found — skipping.&quot;);</span>
+<span class="nc" id="L191">      return;</span>
+    }
+
+<span class="nc" id="L194">    Classroom classroom = classroomOpt.get();</span>
+<span class="nc" id="L195">    StudentUser ingrid = studentUserRepository.findByEmail(&quot;ingrid.elev@test.com&quot;).orElse(null);</span>
+<span class="nc" id="L196">    StudentUser emil = studentUserRepository.findByEmail(&quot;emil.elev@test.com&quot;).orElse(null);</span>
+
+<span class="nc" id="L198">    WeeklyMysteryPrompt archived = upsertPrompt(</span>
+        SEED_PROMPT_ARCHIVED_7A,
+        teacher,
+        &quot;Uke 11&quot;,
+        &quot;Nett og personvern&quot;,
+        &quot;Hva kan du gjøre hvis noen ber om passordet ditt i en melding?&quot;,
+        &quot;Et trygt tips er å si nei og spørre en voksen du stoler på.&quot;,
+<span class="nc" id="L205">        Optional.empty()</span>
+    );
+
+<span class="nc" id="L208">    WeeklyMysteryPrompt active = upsertPrompt(</span>
+        SEED_PROMPT_ACTIVE_7A,
+        teacher,
+        &quot;Uke 12&quot;,
+        &quot;Melding fra skolekontoen&quot;,
+        &quot;Se på en melding som sier at skolekontoen må oppdateres. Finn ut hvilke detaljer som gjør den trygg eller mistenkelig.&quot;,
+        &quot;Se etter avsender, press og om meldingen prøver å få deg til å handle fort.&quot;,
+<span class="nc" id="L215">        Optional.of(mysteryExercise)</span>
+    );
+
+<span class="nc" id="L218">    recordHistoryIfMissing(classroom, archived, LocalDate.now().minusWeeks(2));</span>
+<span class="nc" id="L219">    recordHistoryIfMissing(classroom, active, LocalDate.now().minusDays(1));</span>
+
+<span class="nc" id="L221">    classroom.setWeeklyMysteryPrompt(active);</span>
+<span class="nc" id="L222">    classroomRepository.save(classroom);</span>
+
+<span class="nc bnc" id="L224" title="All 2 branches missed.">    if (ingrid != null) {</span>
+<span class="nc" id="L225">      upsertSubmission(SEED_SUB_INGRID_7A, active, ingrid,</span>
+          &quot;Avsenderen høres skoleaktig ut, men adressen og måten den prøver å stresse meg på gjør meg skeptisk.&quot;,
+          &quot;skolekonto-varsel.jpeg&quot;,
+<span class="nc" id="L228">          seedSubmissionImage(&quot;uploads/mysteries/submissions/seed/ingrid/skolekonto-varsel.jpeg&quot;, SEED_IMAGE_EMAIL));</span>
+    }
+<span class="nc bnc" id="L230" title="All 2 branches missed.">    if (emil != null) {</span>
+<span class="nc" id="L231">      upsertSubmission(SEED_SUB_EMIL_7A, active, emil,</span>
+          &quot;Dette ser mer ut som en vanlig timeplanmelding fordi det ikke prøver å skremme meg til å klikke.&quot;,
+          &quot;timeplan-neste-uke.png&quot;,
+<span class="nc" id="L234">          seedSubmissionImage(&quot;uploads/mysteries/submissions/seed/emil/timeplan-neste-uke.png&quot;, SEED_IMAGE_EMAIL_SAFE));</span>
+    }
+
+<span class="nc" id="L237">    log.info(&quot;WeeklyMysteryMockDataInitializer: demo data for {} — aktivt oppdrag {}.&quot;,</span>
+<span class="nc" id="L238">        classroom.getName(), active.getTitle());</span>
+<span class="nc" id="L239">  }</span>
+
+  private void recordHistoryIfMissing(Classroom classroom, WeeklyMysteryPrompt prompt, LocalDate assignedDate) {
+<span class="nc bnc" id="L242" title="All 2 branches missed.">    if (classroomWeeklyMysteryRepository.existsByClassroom_InternalIdAndWeeklyMysteryPrompt_PublicUuid(</span>
+<span class="nc" id="L243">        classroom.getInternalId(), prompt.getPublicUuid())) {</span>
+<span class="nc" id="L244">      return;</span>
+    }
+<span class="nc" id="L246">    ClassroomWeeklyMystery row = new ClassroomWeeklyMystery();</span>
+<span class="nc" id="L247">    row.setClassroom(classroom);</span>
+<span class="nc" id="L248">    row.setWeeklyMysteryPrompt(prompt);</span>
+<span class="nc" id="L249">    row.setAssignedDate(assignedDate);</span>
+<span class="nc" id="L250">    classroomWeeklyMysteryRepository.save(row);</span>
+<span class="nc" id="L251">  }</span>
+
+  private WeeklyMysteryPrompt upsertPrompt(UUID publicUuid, TeacherUser teacher, String weekLabel,
+      String title, String promptText, String clue, Optional&lt;Exercise&gt; exerciseOpt) {
+    WeeklyMysteryPrompt entity =
+<span class="nc bnc" id="L256" title="All 2 branches missed.">        promptRepository.existsByPublicUuid(publicUuid)</span>
+<span class="nc" id="L257">            ? promptRepository.findByPublicUuid(publicUuid)</span>
+<span class="nc" id="L258">            : WeeklyMysteryPrompt.builder().publicUuid(publicUuid).build();</span>
+
+<span class="nc" id="L260">    entity.setWeekLabel(weekLabel);</span>
+<span class="nc" id="L261">    entity.setTitle(title);</span>
+<span class="nc" id="L262">    entity.setPrompt(promptText);</span>
+<span class="nc" id="L263">    entity.setClue(clue);</span>
+<span class="nc" id="L264">    entity.setTeacherUser(teacher);</span>
+<span class="nc" id="L265">    exerciseOpt.ifPresent(entity::setExercise);</span>
+
+<span class="nc" id="L267">    return promptRepository.save(entity);</span>
+  }
+
+  private Exercise upsertExercise3a() {
+<span class="nc" id="L271">    Exercise exercise = exerciseRepository.findByPublicId(SEED_EXERCISE_3A).orElseGet(Exercise::new);</span>
+<span class="nc" id="L272">    exercise.setPublicId(SEED_EXERCISE_3A);</span>
+<span class="nc" id="L273">    exercise.setTitle(&quot;Ukens mysterium: skoleinnlegg&quot;);</span>
+<span class="nc" id="L274">    exercise.setDifficultyName(&quot;Lett&quot;);</span>
+<span class="nc" id="L275">    exercise.setDescription(&quot;Se på et innlegg om skolen og finn ut hva som gjør at du bør sjekke det nærmere.&quot;);</span>
+<span class="nc" id="L276">    exercise.setHint(&quot;Se etter om noen prøver å få deg til å dele raskt, og om det står tydelig hvem som står bak.&quot;);</span>
+<span class="nc" id="L277">    exercise.setNotepadEntry(defaultNotepadEntry(&quot;Ukens mysterium: skoleinnlegg&quot;,</span>
+        &quot;Stopp opp hvis et innlegg prøver å få deg til å reagere fort.&quot;));
+
+<span class="nc bnc" id="L280" title="All 2 branches missed.">    if (exercise.getInternalId() != null) {</span>
+<span class="nc" id="L281">      taskRepository.deleteByExerciseId(exercise.getInternalId());</span>
+    }
+
+<span class="nc" id="L284">    exercise.getTasks().clear();</span>
+<span class="nc" id="L285">    exercise.getTasks().addAll(new HashSet&lt;&gt;(List.of(</span>
+<span class="nc" id="L286">        multipleChoiceTask(</span>
+            exercise,
+            &quot;Hva bør få deg til å stoppe opp i dette innlegget?&quot;,
+            &quot;Bra. Når et innlegg prøver å få deg til å dele raskt, bør du sjekke mer før du tror på det.&quot;,
+            &quot;Se etter det som prøver å presse fram en rask reaksjon.&quot;,
+            &quot;Hva skurrer mest?&quot;,
+            &quot;Velg det tydeligste faresignalet i innlegget.&quot;,
+            SEED_IMAGE_SOCIAL,
+            &quot;Et innlegg som sier at skolene stenger neste uke&quot;,
+<span class="nc" id="L295">            List.of(</span>
+                new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Innlegget prøver å få deg til å reagere raskt uten å sjekke&quot;),
+                new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Innlegget handler om skolen&quot;),
+                new MultipleChoiceContent.Option(&quot;c&quot;, &quot;Innlegget har et stort bilde&quot;)
+            ),
+            &quot;a&quot;
+        ),
+<span class="nc" id="L302">        xOrYTask(</span>
+            exercise,
+            &quot;Hvilket innlegg virker mest som en faktisk oppklaring?&quot;,
+            &quot;Riktig. Det ene innlegget virker mer som en vanlig oppklaring, mens det andre prøver å få deg til å reagere raskt.&quot;,
+            &quot;Se etter hvilket innlegg som virker mest rolig og konkret.&quot;,
+            &quot;Hvilket innlegg ville du lest først?&quot;,
+            &quot;Velg innlegget som virker minst stressende.&quot;,
+            SEED_IMAGE_SOCIAL,
+            &quot;Et innlegg som sier at skolene stenger neste uke&quot;,
+            &quot;&quot;,
+            &quot;Innlegg 1&quot;,
+            &quot;Et innlegg om at skolene skal stenge neste uke.&quot;,
+            SEED_IMAGE_SOCIAL_FACT,
+            &quot;Et innlegg som forklarer hva som faktisk gjelder for skolene&quot;,
+            &quot;&quot;,
+            &quot;Innlegg 2&quot;,
+            &quot;Et innlegg om hva som faktisk gjelder for skolene.&quot;,
+            XOrYContent.Choice.Y
+        )
+    )));
+
+<span class="nc" id="L323">    return exerciseRepository.save(exercise);</span>
+  }
+
+  private Exercise upsertExercise7a() {
+<span class="nc" id="L327">    Exercise exercise = exerciseRepository.findByPublicId(SEED_EXERCISE_7A).orElseGet(Exercise::new);</span>
+<span class="nc" id="L328">    exercise.setPublicId(SEED_EXERCISE_7A);</span>
+<span class="nc" id="L329">    exercise.setTitle(&quot;Ukens mysterium: skolekonto&quot;);</span>
+<span class="nc" id="L330">    exercise.setDifficultyName(&quot;Middels&quot;);</span>
+<span class="nc" id="L331">    exercise.setDescription(&quot;Sammenlign meldinger om skolekontoen og finn ut hva som gjør dem trygge eller mistenkelige.&quot;);</span>
+<span class="nc" id="L332">    exercise.setHint(&quot;Se etter avsender, press og om meldingen prøver å få deg til å handle fort.&quot;);</span>
+<span class="nc" id="L333">    exercise.setNotepadEntry(defaultNotepadEntry(&quot;Ukens mysterium: skolekonto&quot;,</span>
+        &quot;Ikke stol på en melding bare fordi den ser skoleaktig ut.&quot;));
+
+<span class="nc bnc" id="L336" title="All 2 branches missed.">    if (exercise.getInternalId() != null) {</span>
+<span class="nc" id="L337">      taskRepository.deleteByExerciseId(exercise.getInternalId());</span>
+    }
+
+<span class="nc" id="L340">    exercise.getTasks().clear();</span>
+<span class="nc" id="L341">    exercise.getTasks().addAll(new HashSet&lt;&gt;(List.of(</span>
+<span class="nc" id="L342">        xOrYTask(</span>
+            exercise,
+            &quot;Hvilken melding virker mest som en vanlig skolebeskjed?&quot;,
+            &quot;Bra. Den ene meldingen prøver å stresse deg, mens den andre ligner mer på en vanlig beskjed.&quot;,
+            &quot;Se etter hvilken melding som virker mest rolig og vanlig.&quot;,
+            &quot;Hvilken melding ville du åpnet først?&quot;,
+            &quot;Velg den som virker minst mistenkelig.&quot;,
+            SEED_IMAGE_EMAIL,
+            &quot;En melding som sier at konto må oppdateres nå&quot;,
+            &quot;&quot;,
+            &quot;Melding 1&quot;,
+            &quot;En melding om at skolekontoen må oppdateres raskt.&quot;,
+            SEED_IMAGE_EMAIL_SAFE,
+            &quot;En vanlig melding om neste ukes timeplan&quot;,
+            &quot;&quot;,
+            &quot;Melding 2&quot;,
+            &quot;En vanlig beskjed om neste ukes timeplan.&quot;,
+            XOrYContent.Choice.Y
+        ),
+<span class="nc" id="L361">        multipleChoiceTask(</span>
+            exercise,
+            &quot;Hva er det tydeligste faresignalet i meldingen om skolekontoen?&quot;,
+            &quot;Bra. Når en melding vil at du skal handle raskt og ikke virker helt vanlig, bør du være ekstra forsiktig.&quot;,
+            &quot;Se etter det som prøver å få deg til å klikke eller svare fort.&quot;,
+            &quot;Hva skurrer mest?&quot;,
+            &quot;Velg det sterkeste faresignalet i meldingen.&quot;,
+            SEED_IMAGE_EMAIL,
+            &quot;En melding om at skolekontoen må oppdateres nå&quot;,
+<span class="nc" id="L370">            List.of(</span>
+                new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Meldingen prøver å få deg til å handle raskt&quot;),
+                new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Meldingen handler om skolekontoen&quot;),
+                new MultipleChoiceContent.Option(&quot;c&quot;, &quot;Meldingen har tekst og bilde&quot;)
+            ),
+            &quot;a&quot;
+        )
+    )));
+
+<span class="nc" id="L379">    return exerciseRepository.save(exercise);</span>
+  }
+
+  private NotepadEntry defaultNotepadEntry(String title, String content) {
+<span class="nc" id="L383">    NotepadEntry notepadEntry = new NotepadEntry();</span>
+<span class="nc" id="L384">    notepadEntry.setTitle(title);</span>
+<span class="nc" id="L385">    notepadEntry.setSource(title);</span>
+<span class="nc" id="L386">    notepadEntry.setType(NotepadEntryType.TIP);</span>
+<span class="nc" id="L387">    notepadEntry.setContent(content);</span>
+<span class="nc" id="L388">    return notepadEntry;</span>
+  }
+
+  private Task multipleChoiceTask(Exercise exercise, String introText, String feedbackCorrect,
+      String feedbackIncorrect, String promptTitle, String promptText, String imageUrl,
+      String imageAlt, List&lt;MultipleChoiceContent.Option&gt; options, String correctChoice) {
+<span class="nc" id="L394">    Task task = new Task();</span>
+<span class="nc" id="L395">    task.setExercise(exercise);</span>
+<span class="nc" id="L396">    task.setIntroText(introText);</span>
+<span class="nc" id="L397">    task.setFeedbackCorrect(feedbackCorrect);</span>
+<span class="nc" id="L398">    task.setFeedbackIncorrect(feedbackIncorrect);</span>
+<span class="nc" id="L399">    task.setContent(new MultipleChoiceContent(</span>
+<span class="nc" id="L400">        new MultipleChoiceContent.Prompt(media(imageUrl), imageAlt, promptTitle, promptText),</span>
+        options,
+        correctChoice
+    ));
+<span class="nc" id="L404">    return task;</span>
+  }
+
+  private Task xOrYTask(Exercise exercise, String introText, String feedbackCorrect,
+      String feedbackIncorrect, String promptTitle, String promptText,
+      String xImageUrl, String xImageAlt, String xEyebrow, String xTitle, String xText,
+      String yImageUrl, String yImageAlt, String yEyebrow, String yTitle, String yText,
+      XOrYContent.Choice correctChoice) {
+<span class="nc" id="L412">    Task task = new Task();</span>
+<span class="nc" id="L413">    task.setExercise(exercise);</span>
+<span class="nc" id="L414">    task.setIntroText(introText);</span>
+<span class="nc" id="L415">    task.setFeedbackCorrect(feedbackCorrect);</span>
+<span class="nc" id="L416">    task.setFeedbackIncorrect(feedbackIncorrect);</span>
+<span class="nc" id="L417">    task.setContent(new XOrYContent(</span>
+        new XOrYContent.Prompt(promptTitle, promptText),
+        new XOrYContent.Options(
+<span class="nc" id="L420">            new XOrYContent.Option(media(xImageUrl), xImageAlt, xEyebrow, xTitle, xText),</span>
+<span class="nc" id="L421">            new XOrYContent.Option(media(yImageUrl), yImageAlt, yEyebrow, yTitle, yText)</span>
+        ),
+        correctChoice
+    ));
+<span class="nc" id="L425">    return task;</span>
+  }
+
+  private String media(String objectKey) {
+<span class="nc" id="L429">    return mediaStorageService.publicUrl(objectKey);</span>
+  }
+
+  private void upsertSubmission(UUID publicUuid, WeeklyMysteryPrompt prompt, StudentUser student,
+      String message, String fileName, String storageKey) {
+<span class="nc" id="L434">    WeeklyMysterySubmission entity = submissionRepository.findByPublicUuid(publicUuid)</span>
+<span class="nc" id="L435">        .orElseGet(() -&gt; WeeklyMysterySubmission.builder().publicUuid(publicUuid).build());</span>
+
+<span class="nc" id="L437">    entity.setMessage(message);</span>
+<span class="nc" id="L438">    entity.setFileName(fileName);</span>
+<span class="nc" id="L439">    entity.setStorageKey(storageKey);</span>
+<span class="nc" id="L440">    entity.setSubmitterStudentUser(student);</span>
+<span class="nc" id="L441">    entity.setWeeklyMysteryPrompt(prompt);</span>
+<span class="nc" id="L442">    submissionRepository.save(entity);</span>
+<span class="nc" id="L443">  }</span>
+
+  private String seedSubmissionImage(String objectKey, String classpathResource) {
+<span class="nc" id="L446">    mediaStorageService.uploadPublicClasspathImage(objectKey, classpathResource, contentTypeFor(objectKey));</span>
+<span class="nc" id="L447">    return objectKey;</span>
+  }
+
+  private String contentTypeFor(String path) {
+<span class="nc" id="L451">    String normalizedPath = path.toLowerCase(Locale.ROOT);</span>
+<span class="nc bnc" id="L452" title="All 2 branches missed.">    if (normalizedPath.endsWith(&quot;.png&quot;)) {</span>
+<span class="nc" id="L453">      return &quot;image/png&quot;;</span>
+    }
+
+<span class="nc bnc" id="L456" title="All 4 branches missed.">    if (normalizedPath.endsWith(&quot;.jpg&quot;) || normalizedPath.endsWith(&quot;.jpeg&quot;)) {</span>
+<span class="nc" id="L457">      return &quot;image/jpeg&quot;;</span>
+    }
+
+<span class="nc" id="L460">    throw new IllegalStateException(&quot;Unsupported weekly mystery media type: &quot; + path);</span>
+  }
+
+  private static UUID stableUuid(String value) {
+<span class="nc" id="L464">    return UUID.nameUUIDFromBytes(value.getBytes(StandardCharsets.UTF_8));</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

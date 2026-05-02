@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthenticationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.auth.service</a> &gt; <span class="el_source">AuthenticationService.java</span></div><h1>AuthenticationService.java</h1><pre class="source lang-java linenums">package no.safety.backend.auth.service;
+
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import no.safety.backend.auth.dto.UserLoginRequest;
+import no.safety.backend.auth.dto.UserLoginResponse;
+import no.safety.backend.auth.dto.UserLoginTokenResponse;
+import no.safety.backend.auth.dto.TokenPairResponse;
+import no.safety.backend.auth.model.UserPrincipal;
+import no.safety.backend.user.model.User;
+
+/**
+ * Service class that handles authentication-related business logic.
+ * Provides methods for user login authentication and session refresh operations.
+ */
+@Service
+@RequiredArgsConstructor
+<span class="fc" id="L24">@Slf4j</span>
+public class AuthenticationService {
+
+    private final AuthenticationManager authenticationManager;
+
+    private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
+
+    /**
+     * Authenticates a user login request and generates access and refresh tokens.
+     * @param request the user login request containing email and password
+     * @return a UserLoginTokenResponse containing user details and JWT tokens
+     */
+    public UserLoginTokenResponse authenticateLogin(UserLoginRequest request){
+<span class="fc" id="L38">        log.info(&quot;AUTHSERVICE: Login Request&quot;);</span>
+
+<span class="fc" id="L40">        Authentication authenticationRequest = new UsernamePasswordAuthenticationToken(</span>
+<span class="fc" id="L41">            request.email(), </span>
+<span class="fc" id="L42">            request.password()</span>
+        );
+        
+<span class="fc" id="L45">        Authentication authenticationResponse = authenticationManager.authenticate(authenticationRequest);</span>
+<span class="fc" id="L46">        log.info(&quot;AUTH SERVICE: Authenticated&quot;);</span>
+<span class="fc" id="L47">        UserPrincipal userPrincipal = (UserPrincipal) authenticationResponse.getPrincipal();</span>
+
+<span class="fc" id="L49">        User user = userPrincipal.user();</span>
+<span class="fc" id="L50">        log.info(&quot;AUTHSERVICE: Token Generated&quot;);</span>
+<span class="fc" id="L51">        String accessToken = jwtService.generateAccessToken(user.getEmail());</span>
+<span class="fc" id="L52">        String refreshToken = jwtService.generateRefreshToken(user.getEmail());</span>
+
+<span class="fc" id="L54">        UserLoginResponse userLoginResponse = UserLoginResponse.fromEntity(user, &quot;Login successful.&quot;);</span>
+
+<span class="fc" id="L56">        return new UserLoginTokenResponse(userLoginResponse, accessToken, refreshToken);</span>
+    }
+
+    /**
+     * Refreshes an authentication session using a valid refresh token.
+     * Generates new access and refresh token pairs for the user.
+     * @param refreshToken the refresh token to validate and use for generating new tokens
+     * @return a TokenPairResponse containing new access and refresh tokens
+     */
+    public TokenPairResponse refreshSession(String refreshToken) {
+<span class="nc bnc" id="L66" title="All 6 branches missed.">        if (refreshToken == null || !jwtService.isTokenValid(refreshToken) || !jwtService.isRefreshToken(refreshToken)) {</span>
+<span class="nc" id="L67">            throw new IllegalArgumentException(&quot;Invalid refresh token.&quot;);</span>
+        }
+
+<span class="nc" id="L70">        String email = jwtService.extractUsername(refreshToken);</span>
+<span class="nc" id="L71">        userDetailsService.loadUserByUsername(email);</span>
+
+<span class="nc" id="L73">        String newAccessToken = jwtService.generateAccessToken(email);</span>
+<span class="nc" id="L74">        String newRefreshToken = jwtService.generateRefreshToken(email);</span>
+
+<span class="nc" id="L76">        return new TokenPairResponse(newAccessToken, newRefreshToken);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GlobalExceptionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.exception</a> &gt; <span class="el_source">GlobalExceptionHandler.java</span></div><h1>GlobalExceptionHandler.java</h1><pre class="source lang-java linenums">package no.safety.backend.exception;
+
+import no.safety.backend.exception.domain.NotClassroomOwnerException;
+import no.safety.backend.exception.domain.RoleNotFoundException;
+import no.safety.backend.exception.domain.StudentNotInClassException;
+import no.safety.backend.exception.domain.UserAlreadyExistsException;
+import no.safety.backend.exception.domain.UserNotFoundException;
+import no.safety.backend.notepad.exception.NotepadEntryNotFoundException;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+
+import java.time.Instant;
+import java.util.stream.Collectors;
+
+/**
+ * Global exception handler that catches and handles exceptions from all controllers.
+ * Provides consistent error responses using RFC 7807 Problem Detail format.
+ * Ensures sensitive information is not leaked to clients.
+ */
+<span class="fc" id="L30">@Slf4j</span>
+@RestControllerAdvice
+<span class="fc" id="L32">public class GlobalExceptionHandler {</span>
+
+    /**
+     * Handles BadCredentialsException thrown during authentication.
+     *
+     * @param ex the BadCredentialsException thrown
+     * @return a ProblemDetail with HTTP 401 UNAUTHORIZED status
+     */
+    @ExceptionHandler(BadCredentialsException.class)
+    public ProblemDetail handleBadCredentials(BadCredentialsException ex) {
+<span class="fc" id="L42">        return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, &quot;Invalid email or password&quot;);</span>
+    }
+
+    /**
+     * Handles IllegalArgumentException for invalid arguments.
+     *
+     * @param ex the IllegalArgumentException thrown
+     * @return a ProblemDetail with HTTP 401 UNAUTHORIZED status
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
+<span class="nc" id="L53">        return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());</span>
+    }
+
+    /**
+     * Handles UserAlreadyExistsException when attempting to register a duplicate user.
+     *
+     * @param ex the UserAlreadyExistsException thrown
+     * @return a ProblemDetail with HTTP 409 CONFLICT status
+     */
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ProblemDetail handleUserAlreadyExists(UserAlreadyExistsException ex) {
+<span class="nc" id="L64">        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());</span>
+<span class="nc" id="L65">        problem.setTitle(&quot;Account Conflict: User already exists.&quot;);</span>
+<span class="nc" id="L66">        problem.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="nc" id="L67">        return problem;</span>
+    }
+
+    /**
+     * Handles UserNotFoundException when a requested user is not found.
+     *
+     * @param ex the UserNotFoundException thrown
+     * @return a ProblemDetail with HTTP 404 NOT_FOUND status
+     */
+    @ExceptionHandler(UserNotFoundException.class)
+    public ProblemDetail handleUserNotFound(UserNotFoundException ex) {
+<span class="nc" id="L78">        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());</span>
+<span class="nc" id="L79">        problem.setTitle(&quot;User not found.&quot;);</span>
+<span class="nc" id="L80">        problem.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="nc" id="L81">        return problem;</span>
+    }
+
+    /**
+     * Handles RoleNotFoundException when a requested role is not found in the system.
+     *
+     * @param ex the RoleNotFoundException thrown
+     * @param request the HTTP servlet request
+     * @return a ProblemDetail with HTTP 500 INTERNAL_SERVER_ERROR status
+     */
+    @ExceptionHandler(RoleNotFoundException.class)
+    public ProblemDetail handleRoleNotFound(RoleNotFoundException ex, HttpServletRequest request) {
+<span class="fc" id="L93">        log.error(&quot;Internal Server Error: {}. Path: {}&quot;, ex.getMessage(), request.getRequestURI());</span>
+<span class="fc" id="L94">        ProblemDetail problem = ProblemDetail.forStatusAndDetail(</span>
+            HttpStatus.INTERNAL_SERVER_ERROR, 
+            &quot;An internal server error occured.&quot;);
+<span class="fc" id="L97">        problem.setTitle(&quot;Internal Server Error&quot;);</span>
+<span class="fc" id="L98">        problem.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="fc" id="L99">        return problem;</span>
+    }
+
+    /**
+     * Handles MethodArgumentNotValidException for @Valid annotation validation failures.
+     *
+     * @param ex the MethodArgumentNotValidException thrown
+     * @return a ProblemDetail with HTTP 400 BAD_REQUEST status containing validation errors
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ProblemDetail handleValidationErrors(MethodArgumentNotValidException ex) {
+<span class="fc" id="L110">        String errors = ex.getBindingResult().getFieldErrors().stream()</span>
+<span class="fc" id="L111">                .map(error -&gt; error.getField() + &quot;: &quot; + error.getDefaultMessage())</span>
+<span class="fc" id="L112">                .collect(Collectors.joining(&quot;, &quot;));</span>
+
+<span class="fc" id="L114">        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, errors);</span>
+<span class="fc" id="L115">        problem.setTitle(&quot;Validation Failed&quot;);</span>
+<span class="fc" id="L116">        problem.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="fc" id="L117">        return problem;</span>
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ProblemDetail handleBadRequest(BadRequestException ex) {
+<span class="nc" id="L122">        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());</span>
+<span class="nc" id="L123">        problem.setTitle(&quot;Bad Request&quot;);</span>
+<span class="nc" id="L124">        problem.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="nc" id="L125">        return problem;</span>
+    }
+
+    /**
+     * Handles NotFoundException when a requested resource is not found.
+     *
+     * @param ex the NotFoundException thrown
+     * @return a ProblemDetail with HTTP 404 NOT_FOUND status
+     */
+    @ExceptionHandler(NotFoundException.class)
+    public ProblemDetail handleNotFoundException(NotFoundException ex) {
+<span class="fc" id="L136">        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());</span>
+<span class="fc" id="L137">        problem.setTitle(&quot;Not Found&quot;);</span>
+<span class="fc" id="L138">        problem.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="fc" id="L139">        return problem;</span>
+    }
+
+    /**
+     * Handles NotepadEntryNotFoundException when a requested notepad entry is not found.
+     *
+     * @param ex the NotepadEntryNotFoundException thrown
+     * @return a ProblemDetail with HTTP 404 NOT_FOUND status
+     */
+    @ExceptionHandler(NotepadEntryNotFoundException.class)
+    public ProblemDetail handleNotepadEntryNotFoundException(NotFoundException ex) {
+<span class="nc" id="L150">        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());</span>
+<span class="nc" id="L151">        problem.setTitle(&quot;Not Found&quot;);</span>
+<span class="nc" id="L152">        problem.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="nc" id="L153">        return problem;</span>
+    }
+
+    /**
+     * Handles ConflictException when a request conflicts with the current resource state.
+     *
+     * @param ex the ConflictException thrown
+     * @return a ProblemDetail with HTTP 409 CONFLICT status
+     */
+    @ExceptionHandler(ConflictException.class)
+    public ProblemDetail handleConflict(ConflictException ex) {
+<span class="fc" id="L164">        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());</span>
+<span class="fc" id="L165">        problem.setTitle(&quot;Conflict&quot;);</span>
+<span class="fc" id="L166">        problem.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="fc" id="L167">        return problem;</span>
+    }
+
+    /**
+     * Handles ForbiddenException when a user is forbidden from performing an action.
+     *
+     * @param ex the ForbiddenException thrown
+     * @return a ProblemDetail with HTTP 403 FORBIDDEN status
+     */
+    @ExceptionHandler(ForbiddenException.class)
+    public ProblemDetail handleForbidden(ForbiddenException ex) {
+<span class="nc" id="L178">        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());</span>
+<span class="nc" id="L179">        problem.setTitle(&quot;Forbidden&quot;);</span>
+<span class="nc" id="L180">        problem.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="nc" id="L181">        return problem;</span>
+    }
+
+    /**
+     * Handles Spring Security AuthorizationDeniedException when authorization fails.
+     *
+     * @param ex the AuthorizationDeniedException thrown
+     * @return a ProblemDetail with HTTP 403 FORBIDDEN status
+     */
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ProblemDetail handleAuthorizationDenied(AuthorizationDeniedException ex) {
+<span class="fc" id="L192">        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, &quot;Access denied&quot;);</span>
+<span class="fc" id="L193">        problem.setTitle(&quot;Forbidden&quot;);</span>
+<span class="fc" id="L194">        problem.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="fc" id="L195">        return problem;</span>
+    }
+
+    /**
+     * Handles NoResourceFoundException when a requested resource is not found.
+     *
+     * @param ex the NoResourceFoundException thrown
+     * @return a ProblemDetail with HTTP 404 NOT_FOUND status
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ProblemDetail handleNoResourceFound(NoResourceFoundException ex) {
+<span class="nc" id="L206">        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, &quot;Resource not found&quot;);</span>
+<span class="nc" id="L207">        problem.setTitle(&quot;Not Found&quot;);</span>
+<span class="nc" id="L208">        problem.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="nc" id="L209">        return problem;</span>
+    }
+
+    /**
+     * Handles NotClassroomOwnerException when a user is not the owner of a classroom.
+     *
+     * @param ex the NotClassroomOwnerException thrown
+     * @return a ProblemDetail with HTTP 403 FORBIDDEN status
+     */
+    @ExceptionHandler(NotClassroomOwnerException.class)
+    public ProblemDetail handleNotClassroomOwner(NotClassroomOwnerException ex) {
+<span class="fc" id="L220">        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());</span>
+<span class="fc" id="L221">        problem.setTitle(&quot;Forbidden&quot;);</span>
+<span class="fc" id="L222">        problem.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="fc" id="L223">        return problem;</span>
+    }
+
+    /**
+     * Handles custom AccessDeniedException when a user is denied access to a resource.
+     *
+     * @param ex the AccessDeniedException thrown
+     * @return a ProblemDetail with HTTP 403 FORBIDDEN status
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ProblemDetail handleAccessDeniedException(AccessDeniedException ex) {
+<span class="nc" id="L234">        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());</span>
+<span class="nc" id="L235">        problem.setTitle(&quot;Access Denied&quot;);</span>
+<span class="nc" id="L236">        problem.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="nc" id="L237">        return problem;</span>
+    }
+
+    /**
+     * Handles StudentNotInClassException when a student is not enrolled in a classroom.
+     *
+     * @param ex the StudentNotInClassException thrown
+     * @return a ProblemDetail with HTTP 404 NOT_FOUND status
+     */
+    @ExceptionHandler(StudentNotInClassException.class)
+    public ProblemDetail handleStudentNotInClass(StudentNotInClassException ex) {
+<span class="fc" id="L248">        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());</span>
+<span class="fc" id="L249">        problem.setTitle(&quot;Not Found&quot;);</span>
+<span class="fc" id="L250">        problem.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="fc" id="L251">        return problem;</span>
+    }
+
+    /**
+     * Handles Spring Security AccessDeniedException when access is denied.
+     *
+     * @param ex the AccessDeniedException thrown
+     * @return a ProblemDetail with HTTP 403 FORBIDDEN status
+     */
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ProblemDetail handleSpringAccessDenied(org.springframework.security.access.AccessDeniedException ex) {
+
+<span class="nc" id="L263">        log.error(&quot;AccessDeniedException: {}&quot;, ex.getMessage());</span>
+
+<span class="nc" id="L265">        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, &quot;Access Denied&quot;);</span>
+<span class="nc" id="L266">        problem.setTitle(&quot;Forbidden&quot;);</span>
+<span class="nc" id="L267">        problem.setProperty(&quot;timestamp&quot;, Instant.now());</span>
+<span class="nc" id="L268">        return problem;</span>
+    }
+
+
+    /**
+     * Fallback handler for any unhandled exceptions.
+     * Logs the full exception and returns a generic error response to prevent information leakage.
+     *
+     * @param ex the unhandled Exception
+     * @return a ProblemDetail with HTTP 500 INTERNAL_SERVER_ERROR status
+     */
+    @ExceptionHandler(Exception.class)
+    public ProblemDetail handleGeneralError(Exception ex) {
+<span class="nc" id="L281">        log.error(&quot;Exception: &quot;, ex);</span>
+<span class="nc" id="L282">        ProblemDetail problem = ProblemDetail.forStatusAndDetail(</span>
+            HttpStatus.INTERNAL_SERVER_ERROR, 
+            &quot;An unexpected error occurred.&quot;
+        );
+<span class="nc" id="L286">        problem.setTitle(&quot;Server Error&quot;);</span>
+<span class="nc" id="L287">        return problem;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

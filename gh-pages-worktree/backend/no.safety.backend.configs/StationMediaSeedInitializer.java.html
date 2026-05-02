@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StationMediaSeedInitializer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.configs</a> &gt; <span class="el_source">StationMediaSeedInitializer.java</span></div><h1>StationMediaSeedInitializer.java</h1><pre class="source lang-java linenums">package no.safety.backend.configs;
+
+import java.util.List;
+import java.util.Locale;
+import lombok.RequiredArgsConstructor;
+import no.safety.backend.media.service.MediaStorageService;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+@Component
+@Profile(&quot;!test&quot;)
+@Order(4)
+@RequiredArgsConstructor
+public class StationMediaSeedInitializer implements ApplicationRunner {
+
+  private static final String NEWSSTAND_STATION_IMAGE = &quot;seed/stations/nyhetskvtartalet.png&quot;;
+  private static final String PHOTOGRAPH_STATION_IMAGE = &quot;seed/stations/fotografen.png&quot;;
+  private static final String POSTOFFICE_STATION_IMAGE = &quot;seed/stations/postkontoret.png&quot;;
+  private static final String PASSWORDBANK_STATION_IMAGE = &quot;seed/stations/passordbanken.png&quot;;
+  private static final String MARKETPLACE_STATION_IMAGE = &quot;seed/stations/markedsplassen.png&quot;;
+  private static final String SOCIALMEDIA_STATION_IMAGE = &quot;seed/stations/sosial-moteplassen.png&quot;;
+
+  private static final String NEWSSTAND_SAFE_LIBRARY_IMAGE = &quot;seed/tasks/nyhetskvartalet/safe-lesehjorne.png&quot;;
+  private static final String NEWSSTAND_SAFE_READING_IMAGE = &quot;seed/tasks/nyhetskvartalet/safe-barn-leser-mer.png&quot;;
+  private static final String NEWSSTAND_WARNING_PHONE_IMAGE = &quot;seed/tasks/nyhetskvartalet/warning-gratis-mobil.png&quot;;
+  private static final String NEWSSTAND_WARNING_SCHOOL_IMAGE = &quot;seed/tasks/nyhetskvartalet/warning-skoler-stenger.png&quot;;
+  private static final String NEWSSTAND_WARNING_PLAYGROUND_IMAGE = &quot;seed/tasks/nyhetskvartalet/warning-bot-lekeplass.png&quot;;
+
+  private static final String PHOTOGRAPH_REAL_DOG_IMAGE = &quot;seed/tasks/fotografen/real-dog-frisbee.png&quot;;
+  private static final String PHOTOGRAPH_REAL_FOOTBALL_IMAGE = &quot;seed/tasks/fotografen/real-football-player-kicking-ball.jpeg&quot;;
+  private static final String PHOTOGRAPH_REAL_PEOPLE_IMAGE = &quot;seed/tasks/fotografen/real-people-holding-hands.png&quot;;
+  private static final String PHOTOGRAPH_AI_HANDS_IMAGE = &quot;seed/tasks/fotografen/ai-folded-hands-many-fingers.jpeg&quot;;
+  private static final String PHOTOGRAPH_AI_BANANA_IMAGE = &quot;seed/tasks/fotografen/ai-kid-giant-banana.jpeg&quot;;
+  private static final String PHOTOGRAPH_AI_SIGNS_IMAGE = &quot;seed/tasks/fotografen/ai-road-sign-arrows-both-ways.png&quot;;
+  private static final String PHOTOGRAPH_AI_MARS_IMAGE = &quot;seed/tasks/fotografen/ai-eiffel-tower-mars-landscape.jpeg&quot;;
+  private static final String PHOTOGRAPH_AI_SKY_IMAGE = &quot;seed/tasks/fotografen/ai-sunset-spiral-clouds.jpeg&quot;;
+
+  private static final String POSTOFFICE_FAKE_IPHONE_IMAGE = &quot;seed/tasks/postkontoret/fake-you-won-iphone.jpeg&quot;;
+  private static final String POSTOFFICE_FAKE_ACCOUNT_IMAGE = &quot;seed/tasks/postkontoret/fake-your-account-will-be-closed.jpeg&quot;;
+  private static final String POSTOFFICE_REAL_BOOK_IMAGE = &quot;seed/tasks/postkontoret/real-book-reservation-reminder.png&quot;;
+  private static final String POSTOFFICE_REAL_HIKE_IMAGE = &quot;seed/tasks/postkontoret/real-hike-reminder.jpeg&quot;;
+  private static final String POSTOFFICE_REAL_TIMETABLE_IMAGE = &quot;seed/tasks/postkontoret/real-timeplan-next-week.png&quot;;
+  private static final String POSTOFFICE_REAL_LIBRARY_IMAGE = &quot;seed/tasks/postkontoret/real-welcome-to-library.jpeg&quot;;
+
+  private static final String MARKETPLACE_FAKE_BIKE_IMAGE = &quot;seed/tasks/markedsplassen/fake-bike-ad.jpeg&quot;;
+  private static final String MARKETPLACE_FAKE_IPHONE_IMAGE = &quot;seed/tasks/markedsplassen/fake-iphone-ad.jpeg&quot;;
+  private static final String MARKETPLACE_FAKE_LAPTOP_IMAGE = &quot;seed/tasks/markedsplassen/fake-laptop-ad.jpeg&quot;;
+  private static final String MARKETPLACE_REAL_BIKE_IMAGE = &quot;seed/tasks/markedsplassen/real-bike-ad.jpeg&quot;;
+  private static final String MARKETPLACE_REAL_LAPTOP_IMAGE = &quot;seed/tasks/markedsplassen/real-laptop-ad.jpeg&quot;;
+
+  private static final String SOCIAL_BAD_SHARE_IMAGE = &quot;seed/tasks/sosiale-moteplassen/bad-alle-ma-dele-laerer-skjuler-sannhet.jpeg&quot;;
+  private static final String SOCIAL_BAD_SCHOOL_IMAGE = &quot;seed/tasks/sosiale-moteplassen/bad-alle-skoler-stenger-neste-uke.jpeg&quot;;
+  private static final String SOCIAL_BAD_CHIPS_IMAGE = &quot;seed/tasks/sosiale-moteplassen/bad-farlige-chips-gjor-barn-syke.jpeg&quot;;
+  private static final String SOCIAL_GOOD_TIPS_IMAGE = &quot;seed/tasks/sosiale-moteplassen/good-vaer-skeptisk-til-trender.jpeg&quot;;
+  private static final String SOCIAL_GOOD_CHIPS_IMAGE = &quot;seed/tasks/sosiale-moteplassen/good-faktasjekk-farlige-chips.jpeg&quot;;
+  private static final String SOCIAL_GOOD_SCHOOL_IMAGE = &quot;seed/tasks/sosiale-moteplassen/good-udir-skoler-stenger-ikke.jpeg&quot;;
+
+  private final MediaStorageService mediaStorageService;
+
+  @Override
+  @Transactional
+  public void run(ApplicationArguments args) {
+<span class="nc" id="L67">    seedStationImages();</span>
+<span class="nc" id="L68">  }</span>
+
+  private void seedStationImages() {
+<span class="nc" id="L71">    List.of(</span>
+        NEWSSTAND_STATION_IMAGE,
+        PHOTOGRAPH_STATION_IMAGE,
+        POSTOFFICE_STATION_IMAGE,
+        PASSWORDBANK_STATION_IMAGE,
+        MARKETPLACE_STATION_IMAGE,
+        SOCIALMEDIA_STATION_IMAGE,
+        NEWSSTAND_SAFE_LIBRARY_IMAGE,
+        NEWSSTAND_SAFE_READING_IMAGE,
+        NEWSSTAND_WARNING_PHONE_IMAGE,
+        NEWSSTAND_WARNING_SCHOOL_IMAGE,
+        NEWSSTAND_WARNING_PLAYGROUND_IMAGE,
+        PHOTOGRAPH_REAL_DOG_IMAGE,
+        PHOTOGRAPH_REAL_FOOTBALL_IMAGE,
+        PHOTOGRAPH_REAL_PEOPLE_IMAGE,
+        PHOTOGRAPH_AI_HANDS_IMAGE,
+        PHOTOGRAPH_AI_BANANA_IMAGE,
+        PHOTOGRAPH_AI_SIGNS_IMAGE,
+        PHOTOGRAPH_AI_MARS_IMAGE,
+        PHOTOGRAPH_AI_SKY_IMAGE,
+        POSTOFFICE_FAKE_IPHONE_IMAGE,
+        POSTOFFICE_FAKE_ACCOUNT_IMAGE,
+        POSTOFFICE_REAL_BOOK_IMAGE,
+        POSTOFFICE_REAL_HIKE_IMAGE,
+        POSTOFFICE_REAL_TIMETABLE_IMAGE,
+        POSTOFFICE_REAL_LIBRARY_IMAGE,
+        MARKETPLACE_FAKE_BIKE_IMAGE,
+        MARKETPLACE_FAKE_IPHONE_IMAGE,
+        MARKETPLACE_FAKE_LAPTOP_IMAGE,
+        MARKETPLACE_REAL_BIKE_IMAGE,
+        MARKETPLACE_REAL_LAPTOP_IMAGE,
+        SOCIAL_BAD_SHARE_IMAGE,
+        SOCIAL_BAD_SCHOOL_IMAGE,
+        SOCIAL_BAD_CHIPS_IMAGE,
+        SOCIAL_GOOD_TIPS_IMAGE,
+        SOCIAL_GOOD_CHIPS_IMAGE,
+        SOCIAL_GOOD_SCHOOL_IMAGE
+<span class="nc" id="L108">    ).forEach(image -&gt; mediaStorageService.uploadPublicClasspathImage(image, image, contentTypeFor(image)));</span>
+<span class="nc" id="L109">  }</span>
+
+  private String contentTypeFor(String path) {
+<span class="nc" id="L112">    String normalizedPath = path.toLowerCase(Locale.ROOT);</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">    if (normalizedPath.endsWith(&quot;.png&quot;)) {</span>
+<span class="nc" id="L114">      return &quot;image/png&quot;;</span>
+    }
+
+<span class="nc bnc" id="L117" title="All 4 branches missed.">    if (normalizedPath.endsWith(&quot;.jpg&quot;) || normalizedPath.endsWith(&quot;.jpeg&quot;)) {</span>
+<span class="nc" id="L118">      return &quot;image/jpeg&quot;;</span>
+    }
+
+<span class="nc" id="L121">    throw new IllegalStateException(&quot;Unsupported seed media type: &quot; + path);</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

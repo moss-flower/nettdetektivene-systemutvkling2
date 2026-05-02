@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthenticationController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.auth.controller</a> &gt; <span class="el_source">AuthenticationController.java</span></div><h1>AuthenticationController.java</h1><pre class="source lang-java linenums">package no.safety.backend.auth.controller;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import no.safety.backend.auth.dto.UserLoginRequest;
+import no.safety.backend.auth.dto.UserLoginResponse;
+import no.safety.backend.auth.dto.UserLoginTokenResponse;
+import no.safety.backend.auth.model.UserPrincipal;
+import no.safety.backend.auth.dto.TokenPairResponse;
+import no.safety.backend.auth.service.AuthenticationService;
+import no.safety.backend.auth.service.JwtCookieService;
+import no.safety.backend.exception.AccessDeniedException;
+
+/**
+ * A controller that provides API endpoints for login, registration and authentication requests.
+ * Passes login and registration requests to the service layer.
+ */
+@RestController
+@RequestMapping(&quot;/api/v1/auth&quot;)
+@RequiredArgsConstructor
+<span class="fc" id="L36">@Slf4j</span>
+public class AuthenticationController {
+    private final AuthenticationService authenticationService;
+    private final JwtCookieService jwtCookieService;
+
+    @Value(&quot;${application.security.jwt.cookie.refresh.name}&quot;)
+    private String refreshCookieName;
+
+    /**
+     * API endpoint for user login.
+     * Authenticates user credentials and returns JWT tokens in HTTP-only cookies.
+     * @param request the UserLoginRequest containing email and password
+     * @return ResponseEntity with UserLoginResponse and Set-Cookie headers
+     */
+    @PostMapping(value = &quot;/login&quot;)
+    public ResponseEntity&lt;UserLoginResponse&gt; login(@Valid @RequestBody UserLoginRequest request){
+<span class="fc" id="L52">        log.info(&quot;AuthenticationManager: Login attempt detected&quot;);</span>
+<span class="fc" id="L53">        UserLoginTokenResponse userTokenResponse = authenticationService.authenticateLogin(request);</span>
+
+<span class="fc" id="L55">        ResponseCookie accessCookie = jwtCookieService.createAccessCookie(userTokenResponse.accessToken());</span>
+<span class="fc" id="L56">        ResponseCookie refreshCookie = jwtCookieService.createRefreshCookie(userTokenResponse.refreshToken());</span>
+        
+<span class="fc" id="L58">        return ResponseEntity.status(HttpStatus.OK)</span>
+<span class="fc" id="L59">            .header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())</span>
+<span class="fc" id="L60">            .body(userTokenResponse.userLoginResponse());</span>
+    }
+
+    /**
+     * API endpoint for refresh tokens.
+     * Sends an access and refresh token pair in a cookie.
+     * @param request the HttpServletRequest containing the refresh token cookie
+     * @return ResponseEntity with no content but Set-Cookie headers for new tokens
+     */
+    @PostMapping(value = &quot;/refresh&quot;)
+    public ResponseEntity&lt;Void&gt; refresh(HttpServletRequest request){
+<span class="nc" id="L71">        String refreshToken = extractCookieValue(request, refreshCookieName);</span>
+<span class="nc" id="L72">        TokenPairResponse refreshed = authenticationService.refreshSession(refreshToken);</span>
+
+<span class="nc" id="L74">        ResponseCookie accessCookie = jwtCookieService.createAccessCookie(refreshed.accessToken());</span>
+<span class="nc" id="L75">        ResponseCookie refreshCookie = jwtCookieService.createRefreshCookie(refreshed.refreshToken());</span>
+
+<span class="nc" id="L77">        return ResponseEntity.noContent()</span>
+<span class="nc" id="L78">            .header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())</span>
+<span class="nc" id="L79">            .build();</span>
+    }
+
+    /**
+     * API endpoint for user logout.
+     * Sends an empty cookie to clear the existing cookie in browser.
+     * @return ResponseEntity with no content but Set-Cookie headers to clear tokens
+     */
+    @PostMapping(value = &quot;/logout&quot;)
+    public ResponseEntity&lt;Void&gt; logout(){
+<span class="nc" id="L89">        ResponseCookie accessCookie = jwtCookieService.createEmptyAccessCookie();</span>
+<span class="nc" id="L90">        ResponseCookie refreshCookie = jwtCookieService.createEmptyRefreshCookie();</span>
+<span class="nc" id="L91">        ResponseCookie csrfCookie = jwtCookieService.createEmptyCsrfCookie();</span>
+
+<span class="nc" id="L93">        return ResponseEntity.noContent()</span>
+<span class="nc" id="L94">            .header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString(), csrfCookie.toString())</span>
+<span class="nc" id="L95">            .build();</span>
+    }
+
+    /**
+     * API endpoint to retrieve user details of the logged in user.
+     * @param userPrincipal the authenticated user's principal injected by Spring Security
+     * @return ResponseEntity with UserLoginResponse containing current user details
+     */
+    @GetMapping(value = &quot;/me&quot;)
+    public ResponseEntity&lt;UserLoginResponse&gt; getActiveUserDetails(@AuthenticationPrincipal UserPrincipal userPrincipal){
+<span class="nc bnc" id="L105" title="All 2 branches missed.">        if (userPrincipal == null) {</span>
+<span class="nc" id="L106">            throw new AccessDeniedException(&quot;No active session found.&quot;);</span>
+        }
+        
+<span class="nc" id="L109">        return ResponseEntity.ok(UserLoginResponse.fromEntity(userPrincipal.user(), &quot;User details of logged in user.&quot;));</span>
+    }
+
+    /**
+     * Extracts the cookie value from a request.
+     * @param request the HTTP request containing cookies
+     * @param cookieName the name of the cookie to extract
+     * @return the cookie value if found, null otherwise
+     */
+    private String extractCookieValue(HttpServletRequest request, String cookieName) {
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (request.getCookies() == null) {</span>
+<span class="nc" id="L120">            return null;</span>
+        }
+<span class="nc bnc" id="L122" title="All 2 branches missed.">        for (Cookie cookie : request.getCookies()) {</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">            if (cookieName.equals(cookie.getName())) {</span>
+<span class="nc" id="L124">                return cookie.getValue();</span>
+            }
+        }
+<span class="nc" id="L127">        return null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

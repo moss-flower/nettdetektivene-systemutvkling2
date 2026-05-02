@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AchievementService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.achievements.service</a> &gt; <span class="el_source">AchievementService.java</span></div><h1>AchievementService.java</h1><pre class="source lang-java linenums">package no.safety.backend.achievements.service;
+
+import lombok.RequiredArgsConstructor;
+import no.safety.backend.achievements.dto.AchievementRequest;
+import no.safety.backend.achievements.dto.AchievementResponse;
+import no.safety.backend.achievements.model.Achievement;
+import no.safety.backend.achievements.model.AchievementCategory;
+import no.safety.backend.achievements.model.UserAchievement;
+import no.safety.backend.achievements.repository.AchievementRepository;
+import no.safety.backend.achievements.repository.UserAchievementRepository;
+import no.safety.backend.exception.NotFoundException;
+import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.repository.StudentUserRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import no.safety.backend.station.model.Station;
+
+/**
+ * Service for managing achievement definitions and user achievement state.
+ * Provides CRUD operations for achievements and tracks which students have
+ * unlocked each achievement.
+ */
+@Service
+@RequiredArgsConstructor
+public class AchievementService {
+
+  private final AchievementRepository achievementRepository;
+  private final UserAchievementRepository userAchievementRepository;
+  private final StudentUserRepository studentUserRepository;
+
+  @Transactional(readOnly = true)
+  public List&lt;AchievementResponse&gt; getAchievementsForStudent(StudentUser student) {
+<span class="fc" id="L42">    List&lt;Achievement&gt; allAchievements = achievementRepository.findAll();</span>
+<span class="fc" id="L43">    List&lt;UserAchievement&gt; unlockedAchievements = userAchievementRepository.findByStudent(student);</span>
+
+<span class="fc" id="L45">    Set&lt;Long&gt; unlockedAchievementIds = unlockedAchievements.stream()</span>
+<span class="fc" id="L46">        .map(userAchievement -&gt; userAchievement.getAchievement().getInternalId())</span>
+<span class="fc" id="L47">        .collect(Collectors.toSet());</span>
+
+<span class="fc" id="L49">    return allAchievements.stream()</span>
+<span class="fc" id="L50">        .map(achievement -&gt; AchievementResponse.builder()</span>
+<span class="fc" id="L51">            .UUID(achievement.getUUID())</span>
+<span class="fc" id="L52">            .title(achievement.getTitle())</span>
+<span class="fc" id="L53">            .description(achievement.getDescription())</span>
+<span class="fc" id="L54">            .category(achievement.getCategory().name().toLowerCase())</span>
+<span class="fc" id="L55">            .source(achievement.getSource())</span>
+<span class="fc" id="L56">            .unlocked(unlockedAchievementIds.contains(achievement.getInternalId()))</span>
+<span class="fc" id="L57">            .reward(achievement.getReward())</span>
+<span class="fc" id="L58">            .build())</span>
+<span class="fc" id="L59">        .toList();</span>
+  }
+
+  @Transactional(readOnly = true)
+  public List&lt;AchievementResponse&gt; getAllAchievements() {
+<span class="fc" id="L64">    return achievementRepository.findAll().stream()</span>
+<span class="fc" id="L65">        .map(achievement -&gt; achievementToResponse(achievement, false))</span>
+<span class="fc" id="L66">        .toList();</span>
+  }
+
+  @Transactional(readOnly = true)
+  public AchievementResponse getAchievementByUUID(UUID achievementUUID) {
+<span class="fc" id="L71">    Achievement achievement = achievementRepository.findByUUID(achievementUUID)</span>
+<span class="fc" id="L72">        .orElseThrow(() -&gt; new ResponseStatusException(</span>
+            HttpStatus.NOT_FOUND,
+            &quot;Achievement not found&quot;
+        ));
+
+<span class="fc" id="L77">    return achievementToResponse(achievement, false);</span>
+  }
+
+  @Transactional
+  public AchievementResponse createAchievement(AchievementRequest request) {
+<span class="fc" id="L82">    Achievement achievement = new Achievement();</span>
+<span class="fc" id="L83">    achievement.setUUID(UUID.randomUUID());</span>
+<span class="fc" id="L84">    achievement.setTitle(request.getTitle());</span>
+<span class="fc" id="L85">    achievement.setDescription(request.getDescription());</span>
+<span class="fc" id="L86">    achievement.setCategory(request.getCategory());</span>
+<span class="fc" id="L87">    achievement.setSource(request.getSource());</span>
+<span class="fc" id="L88">    achievement.setReward(request.getReward());</span>
+
+<span class="fc" id="L90">    Achievement saved = achievementRepository.save(achievement);</span>
+<span class="fc" id="L91">    return achievementToResponse(saved, false);</span>
+  }
+
+  @Transactional
+  public AchievementResponse updateAchievement(UUID achievementUUID, AchievementRequest request) {
+<span class="fc" id="L96">    Achievement achievement = achievementRepository.findByUUID(achievementUUID)</span>
+<span class="fc" id="L97">        .orElseThrow(() -&gt; new ResponseStatusException(</span>
+            HttpStatus.NOT_FOUND,
+            &quot;Achievement not found&quot;
+        ));
+
+<span class="fc" id="L102">    achievement.setTitle(request.getTitle());</span>
+<span class="fc" id="L103">    achievement.setDescription(request.getDescription());</span>
+<span class="fc" id="L104">    achievement.setCategory(request.getCategory());</span>
+<span class="fc" id="L105">    achievement.setSource(request.getSource());</span>
+<span class="fc" id="L106">    achievement.setReward(request.getReward());</span>
+
+<span class="fc" id="L108">    Achievement saved = achievementRepository.save(achievement);</span>
+<span class="fc" id="L109">    return achievementToResponse(saved, false);</span>
+  }
+
+  @Transactional
+  public void deleteAchievement(UUID achievementUUID) {
+<span class="fc" id="L114">    Achievement achievement = achievementRepository.findByUUID(achievementUUID)</span>
+<span class="fc" id="L115">        .orElseThrow(() -&gt; new ResponseStatusException(</span>
+            HttpStatus.NOT_FOUND,
+            &quot;Achievement not found&quot;
+        ));
+
+<span class="fc" id="L120">    achievementRepository.delete(achievement);</span>
+<span class="fc" id="L121">  }</span>
+
+  @Transactional
+  public AchievementResponse unlockAchievementForStudent(StudentUser student, String source, AchievementCategory category) {
+<span class="nc" id="L125">    Achievement achievement = achievementRepository.findBySourceAndCategory(source, category)</span>
+<span class="nc" id="L126">        .orElseThrow(() -&gt; new NotFoundException(&quot;Achievement not found for source: &quot; + source));</span>
+
+<span class="nc" id="L128">    return unlockAchievementForStudent(student, achievement);</span>
+  }
+
+  @Transactional
+  public AchievementResponse unlockStationAchievement(StudentUser student, Station station) {
+<span class="fc" id="L133">    Achievement achievement = syncStationAchievement(station, null);</span>
+<span class="fc" id="L134">    return unlockAchievementForStudent(student, achievement);</span>
+  }
+
+  @Transactional
+  public Achievement syncStationAchievement(Station station, String previousTitle) {
+<span class="fc" id="L139">    Achievement achievement = findStationAchievement(station, previousTitle)</span>
+<span class="fc" id="L140">        .orElseGet(Achievement::new);</span>
+
+<span class="fc bfc" id="L142" title="All 2 branches covered.">    if (achievement.getUUID() == null) {</span>
+<span class="fc" id="L143">      achievement.setUUID(UUID.randomUUID());</span>
+    }
+
+<span class="fc" id="L146">    achievement.setTitle(station.getTitle());</span>
+<span class="fc" id="L147">    achievement.setDescription(&quot;Fullførte &quot; + station.getTitle() + &quot;.&quot;);</span>
+<span class="fc bfc" id="L148" title="All 2 branches covered.">    achievement.setCategory(station.isBoss() ? AchievementCategory.SPECIAL : AchievementCategory.STOP);</span>
+<span class="fc" id="L149">    achievement.setSource(station.getUid().toString());</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">    achievement.setReward(station.isBoss() ? &quot;Spesialmedalje for å ha slått bossen&quot; : null);</span>
+
+<span class="fc" id="L152">    return achievementRepository.save(achievement);</span>
+  }
+
+  private Optional&lt;Achievement&gt; findStationAchievement(Station station, String previousTitle) {
+<span class="fc" id="L156">    return achievementRepository.findBySource(station.getUid().toString())</span>
+<span class="fc" id="L157">        .or(() -&gt; findLegacyStationAchievement(previousTitle))</span>
+<span class="fc" id="L158">        .or(() -&gt; findLegacyStationAchievement(station.getTitle()));</span>
+  }
+
+  private Optional&lt;Achievement&gt; findLegacyStationAchievement(String legacyKey) {
+<span class="pc bpc" id="L162" title="1 of 4 branches missed.">    if (legacyKey == null || legacyKey.isBlank()) {</span>
+<span class="fc" id="L163">      return Optional.empty();</span>
+    }
+
+<span class="fc" id="L166">    return achievementRepository.findBySource(legacyKey)</span>
+<span class="fc" id="L167">        .or(() -&gt; achievementRepository.findAllByTitle(legacyKey).stream().findFirst());</span>
+  }
+
+  private AchievementResponse unlockAchievementForStudent(StudentUser student, Achievement achievement) {
+
+<span class="fc" id="L172">    boolean alreadyUnlocked = userAchievementRepository.existsByStudentAndAchievement(student, achievement);</span>
+<span class="pc bpc" id="L173" title="1 of 2 branches missed.">    if (alreadyUnlocked) {</span>
+<span class="nc" id="L174">      return achievementToResponse(achievement, true);</span>
+    }
+
+<span class="fc" id="L177">    UserAchievement userAchievement = new UserAchievement();</span>
+<span class="fc" id="L178">    userAchievement.setStudent(student);</span>
+<span class="fc" id="L179">    userAchievement.setAchievement(achievement);</span>
+<span class="fc" id="L180">    userAchievement.setUnlockedAt(Instant.now());</span>
+<span class="fc" id="L181">    userAchievementRepository.save(userAchievement);</span>
+
+<span class="fc" id="L183">    student.addScore(50);</span>
+<span class="fc" id="L184">    studentUserRepository.save(student);</span>
+
+<span class="fc" id="L186">    return achievementToResponse(achievement, true);</span>
+  }
+
+  private AchievementResponse achievementToResponse(Achievement achievement, boolean unlocked) {
+<span class="fc" id="L190">    return AchievementResponse.builder()</span>
+<span class="fc" id="L191">        .UUID(achievement.getUUID())</span>
+<span class="fc" id="L192">        .title(achievement.getTitle())</span>
+<span class="fc" id="L193">        .description(achievement.getDescription())</span>
+<span class="fc" id="L194">        .category(achievement.getCategory().name().toLowerCase())</span>
+<span class="fc" id="L195">        .source(achievement.getSource())</span>
+<span class="fc" id="L196">        .unlocked(unlocked)</span>
+<span class="fc" id="L197">        .reward(achievement.getReward())</span>
+<span class="fc" id="L198">        .build();</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

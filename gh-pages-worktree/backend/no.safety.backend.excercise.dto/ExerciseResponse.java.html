@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExerciseResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.excercise.dto</a> &gt; <span class="el_source">ExerciseResponse.java</span></div><h1>ExerciseResponse.java</h1><pre class="source lang-java linenums">package no.safety.backend.excercise.dto;
+
+import java.util.List;
+import java.util.UUID;
+import no.safety.backend.excercise.model.Exercise;
+import no.safety.backend.notepad.dto.NotepadEntryCreateRequest;
+import no.safety.backend.notepad.dto.NotepadEntryResponse;
+import no.safety.backend.task.dto.TaskResponse;
+
+/**
+ * DTO for returning exercise data to the client.
+ *
+ * @param uid the public UUID of the exercise
+ * @param title the exercise title
+ * @param difficultyName the difficulty level name
+ * @param description the exercise description
+ * @param hint the hint text for the exercise
+ * @param notepadEntry optional notepad entry associated with the exercise
+ * @param tasks the list of tasks belonging to this exercise
+ */
+<span class="fc" id="L21">public record ExerciseResponse(</span>
+    UUID uid,
+    String title,
+    String difficultyName,
+    String description,
+    String hint,
+    NotepadEntryResponse notepadEntry,
+    List&lt;TaskResponse&gt; tasks
+) {
+
+  /**
+   * Creates an ExerciseResponse from an Exercise entity.
+   *
+   * @param e the Exercise entity to convert
+   * @return a new ExerciseResponse with values from the entity
+   */
+  public static ExerciseResponse from(Exercise e) {
+<span class="fc" id="L38">    List&lt;TaskResponse&gt; tasks = e.getTasks().stream()</span>
+<span class="fc" id="L39">        .map(TaskResponse::from)</span>
+<span class="fc" id="L40">        .toList();</span>
+
+<span class="fc" id="L42">    return new ExerciseResponse(</span>
+<span class="fc" id="L43">        e.getPublicId(),</span>
+<span class="fc" id="L44">        e.getTitle(),</span>
+<span class="fc" id="L45">        e.getDifficultyName(),</span>
+<span class="fc" id="L46">        e.getDescription(),</span>
+<span class="fc" id="L47">        e.getHint(),</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        e.getNotepadEntry() == null ? null : NotepadEntryResponse.fromEntity(e.getNotepadEntry()),</span>
+        tasks
+    );
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

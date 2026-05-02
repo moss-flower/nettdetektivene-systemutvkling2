@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Classroom.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.classroom.model</a> &gt; <span class="el_source">Classroom.java</span></div><h1>Classroom.java</h1><pre class="source lang-java linenums">package no.safety.backend.classroom.model;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.model.TeacherUser;
+import no.safety.backend.user.model.User;
+import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
+
+@Entity
+@Table(name = &quot;classrooms&quot;)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class Classroom {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long internalId;
+
+  @Column(name = &quot;uid&quot;, nullable = false, updatable = false, unique = true, columnDefinition = &quot;BINARY(16)&quot;)
+  private UUID uid;
+
+  @Column(nullable = false, unique = true, length = 40)
+  private String code;
+
+  @Column(nullable = false, length = 100)
+  private String name;
+
+  @Column(length = 1000)
+  private String description;
+
+  @Column(name = &quot;world_uid&quot;, columnDefinition = &quot;BINARY(16)&quot;)
+  private UUID worldUid;
+
+  @ManyToMany(fetch = FetchType.LAZY)
+  @JoinTable(
+      name = &quot;classroom_owners&quot;,
+      joinColumns = @JoinColumn(name = &quot;classroom_uid&quot;, referencedColumnName = &quot;uid&quot;),
+      inverseJoinColumns = @JoinColumn(name = &quot;user_id&quot;)
+  )
+  private Set&lt;TeacherUser&gt; owners = new HashSet&lt;&gt;();
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = &quot;current_weekly_mystery_internal_id&quot;)
+  private WeeklyMysteryPrompt weeklyMysteryPrompt;
+
+  @OneToMany(mappedBy = &quot;classroom&quot;)
+  private Set&lt;StudentUser&gt; members = new HashSet&lt;&gt;();
+
+  @PrePersist
+  private void onCreate() {
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">    if (uid == null) {</span>
+<span class="fc" id="L73">      uid = UUID.randomUUID();</span>
+    }
+<span class="fc" id="L75">  }</span>
+
+  @Override
+  public boolean equals(Object o) {
+<span class="nc bnc" id="L79" title="All 2 branches missed.">    if (this == o) return true;</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">    if (!(o instanceof Classroom classroom)) return false;</span>
+<span class="nc bnc" id="L81" title="All 4 branches missed.">    return uid != null &amp;&amp; uid.equals(classroom.getUid());</span>
+  }
+
+  @Override
+  public int hashCode() {
+<span class="nc" id="L86">    return getClass().hashCode();</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

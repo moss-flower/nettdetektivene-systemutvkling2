@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.auth.service</a> &gt; <span class="el_source">JwtService.java</span></div><h1>JwtService.java</h1><pre class="source lang-java linenums">package no.safety.backend.auth.service;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
+import io.jsonwebtoken.Claims;
+import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+
+/**
+ * Service class responsible for JWT token generation, validation, and extraction.
+ * Handles both access and refresh token operations using JJWT library.
+ */
+@Service
+<span class="fc" id="L20">@Slf4j</span>
+<span class="fc" id="L21">public class JwtService {</span>
+    @Value(&quot;${application.security.jwt.secretKey}&quot;)
+    private String SECRET_KEY;
+
+    @Value(&quot;${application.security.jwt.durationMillis}&quot;)
+    private long jwtDurationMillis;
+
+    @Value(&quot;${application.security.jwt.refreshDurationMillis}&quot;)
+    private long refreshDurationMillis;
+
+    /**
+     * Derives the signing key from the configured secret key.
+     * @return the SecretKey used for signing JWT tokens
+     */
+    private SecretKey getSigningKey() {
+<span class="fc" id="L36">        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET_KEY));</span>
+    }
+
+    /**
+     * Generates a JWT access token for the specified username.
+     * Access tokens have a shorter expiration time configured in application properties.
+     * @param username the username to include as the token subject
+     * @return the generated JWT access token string
+     */
+    public String generateAccessToken(String username) {
+<span class="fc" id="L46">        return Jwts.builder()</span>
+<span class="fc" id="L47">                .subject(username)</span>
+<span class="fc" id="L48">                .issuedAt(new Date())</span>
+<span class="fc" id="L49">                .expiration(new Date(System.currentTimeMillis() + jwtDurationMillis))</span>
+<span class="fc" id="L50">                .claim(&quot;tokenType&quot;, &quot;access&quot;)</span>
+<span class="fc" id="L51">                .signWith(getSigningKey())</span>
+<span class="fc" id="L52">                .compact();</span>
+    }
+
+    /**
+     * Generates a JWT refresh token for the specified username.
+     * Refresh tokens have a longer expiration time configured in application properties.
+     * @param username the username to include as the token subject
+     * @return the generated JWT refresh token string
+     */
+    public String generateRefreshToken(String username) {
+<span class="fc" id="L62">        return Jwts.builder()</span>
+<span class="fc" id="L63">                .subject(username)</span>
+<span class="fc" id="L64">                .issuedAt(new Date())</span>
+<span class="fc" id="L65">                .expiration(new Date(System.currentTimeMillis() + refreshDurationMillis))</span>
+<span class="fc" id="L66">                .claim(&quot;tokenType&quot;, &quot;refresh&quot;)</span>
+<span class="fc" id="L67">                .signWith(getSigningKey())</span>
+<span class="fc" id="L68">                .compact();</span>
+    }
+
+    /**
+     * Extracts the username (subject) from a JWT token.
+     * @param token the JWT token to extract the username from
+     * @return the username stored as the subject in the token
+     */
+    public String extractUsername(String token) {
+<span class="nc" id="L77">        return Jwts.parser()</span>
+<span class="nc" id="L78">                .verifyWith(getSigningKey())</span>
+<span class="nc" id="L79">                .build()</span>
+<span class="nc" id="L80">                .parseSignedClaims(token)</span>
+<span class="nc" id="L81">                .getPayload()</span>
+<span class="nc" id="L82">                .getSubject();</span>
+    }
+
+    /**
+     * Validates a JWT token by verifying its signature and expiration.
+     * @param token the JWT token to validate
+     * @return true if the token is valid, false otherwise
+     */
+    public boolean isTokenValid(String token) {
+        try {
+<span class="nc" id="L92">            Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token);</span>
+<span class="nc" id="L93">            return true;</span>
+<span class="nc" id="L94">        } catch (Exception e) {</span>
+<span class="nc" id="L95">            return false;</span>
+        }
+    }
+
+    /**
+     * Checks if a JWT token is an access token.
+     * @param token the JWT token to check
+     * @return true if the token has tokenType claim set to &quot;access&quot;, false otherwise
+     */
+    public boolean isAccessToken(String token) {
+        try {
+<span class="nc" id="L106">            Claims claims = Jwts.parser()</span>
+<span class="nc" id="L107">                    .verifyWith(getSigningKey())</span>
+<span class="nc" id="L108">                    .build()</span>
+<span class="nc" id="L109">                    .parseSignedClaims(token)</span>
+<span class="nc" id="L110">                    .getPayload();</span>
+<span class="nc" id="L111">            return &quot;access&quot;.equals(claims.get(&quot;tokenType&quot;, String.class));</span>
+<span class="nc" id="L112">        } catch (Exception e) {</span>
+<span class="nc" id="L113">            return false;</span>
+        }
+    }
+
+    /**
+     * Checks if a JWT token is a refresh token.
+     * @param token the JWT token to check
+     * @return true if the token has tokenType claim set to &quot;refresh&quot;, false otherwise
+     */
+    public boolean isRefreshToken(String token) {
+        try {
+<span class="nc" id="L124">            Claims claims = Jwts.parser()</span>
+<span class="nc" id="L125">                    .verifyWith(getSigningKey())</span>
+<span class="nc" id="L126">                    .build()</span>
+<span class="nc" id="L127">                    .parseSignedClaims(token)</span>
+<span class="nc" id="L128">                    .getPayload();</span>
+<span class="nc" id="L129">            return &quot;refresh&quot;.equals(claims.get(&quot;tokenType&quot;, String.class));</span>
+<span class="nc" id="L130">        } catch (Exception e) {</span>
+<span class="nc" id="L131">            return false;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

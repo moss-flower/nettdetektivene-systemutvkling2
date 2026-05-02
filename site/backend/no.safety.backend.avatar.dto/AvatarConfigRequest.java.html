@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AvatarConfigRequest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.avatar.dto</a> &gt; <span class="el_source">AvatarConfigRequest.java</span></div><h1>AvatarConfigRequest.java</h1><pre class="source lang-java linenums">package no.safety.backend.avatar.dto;
+
+import jakarta.validation.constraints.NotNull;
+import no.safety.backend.avatar.enums.EyeColor;
+import no.safety.backend.avatar.enums.HairColor;
+import no.safety.backend.avatar.enums.HairStyle;
+import no.safety.backend.avatar.enums.Outfit;
+import no.safety.backend.avatar.enums.SkinColor;
+import no.safety.backend.avatar.model.AvatarConfig;
+
+/**
+ * Data Transfer Object (DTO) for receiving avatar configuration requests from the client.
+ * Contains all customizable avatar attributes that a student can modify.
+ * All fields are required and validated using Jakarta Validation constraints.
+ *
+ * @param hairStyle the selected hairstyle for the avatar
+ * @param hairColor the selected hair color for the avatar
+ * @param outfit the selected outfit for the avatar
+ * @param eyeColor the selected eye color for the avatar
+ * @param skinColor the selected skin color for the avatar
+ */
+<span class="fc" id="L22">public record AvatarConfigRequest (</span>
+    @NotNull HairStyle hairStyle, 
+    @NotNull HairColor hairColor, 
+    @NotNull Outfit outfit,
+    @NotNull EyeColor eyeColor,
+    @NotNull SkinColor skinColor
+) {
+
+    /**
+     * Converts this DTO to an AvatarConfig entity for persistence.
+     *
+     * @return a new AvatarConfig entity with the values from this request
+     */
+    public AvatarConfig toEntity() {
+<span class="fc" id="L36">        return new AvatarConfig(</span>
+            hairStyle,
+            hairColor,
+            outfit,
+            eyeColor,
+            skinColor
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

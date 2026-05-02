@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NotepadEntryService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.notepad.service</a> &gt; <span class="el_source">NotepadEntryService.java</span></div><h1>NotepadEntryService.java</h1><pre class="source lang-java linenums">package no.safety.backend.notepad.service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import no.safety.backend.exception.AccessDeniedException;
+import no.safety.backend.exception.domain.UserNotFoundException;
+import no.safety.backend.notepad.dto.NotepadEntryCreateRequest;
+import no.safety.backend.notepad.dto.NotepadEntryReadRequest;
+import no.safety.backend.notepad.dto.NotepadEntryResponse;
+import no.safety.backend.notepad.dto.NotepadEntryUpdateRequest;
+import no.safety.backend.notepad.exception.NotepadEntryNotFoundException;
+import no.safety.backend.notepad.model.NotepadEntry;
+import no.safety.backend.notepad.repository.NotepadEntryRepository;
+import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.model.TeacherUser;
+import no.safety.backend.user.model.User;
+import no.safety.backend.user.repository.StudentUserRepository;
+import no.safety.backend.user.repository.TeacherUserRepository;
+import no.safety.backend.user.repository.UserRepository;
+
+import org.jspecify.annotations.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
+
+/**
+ * Service for managing notepad entries.
+ * Provides CRUD operations and access control for notepad entries belonging to users.
+ */
+<span class="fc" id="L32">@Slf4j</span>
+@Service
+@RequiredArgsConstructor
+public class NotepadEntryService {
+
+    private final NotepadEntryRepository notepadEntryRepository;
+    private final UserRepository userRepository;
+    private final StudentUserRepository studentUserRepository;
+    private final TeacherUserRepository teacherUserRepository;
+
+    /**
+     * Retrieves a paginated list of notepad entries for the calling user.
+     *
+     * @param callerUserInternalId the internal ID of the authenticated user
+     * @param request the read request containing pagination parameters
+     * @return a page of notepad entry responses belonging to the user
+     */
+    @Transactional(readOnly = true)
+    public Page&lt;NotepadEntryResponse&gt; readCallerNotes(@NonNull Long callerUserInternalId, @NonNull NotepadEntryReadRequest request) {
+<span class="fc" id="L51">        log.info(&quot;Fetching page of notepad entries for user: {}, request: {}&quot;, callerUserInternalId, request);</span>
+
+<span class="fc" id="L53">        User user = userRepository.findById(callerUserInternalId)</span>
+<span class="pc" id="L54">            .orElseThrow(() -&gt; new UserNotFoundException(&quot;User not found.&quot;));</span>
+
+<span class="fc" id="L56">        return notepadEntryRepository.findAllByUsers_InternalId(user.getInternalId(), request.toPageable())</span>
+<span class="fc" id="L57">                .map(NotepadEntryResponse::fromEntity);</span>
+    }
+
+    /**
+     * Retrieves a paginated list of notepad entries for a specific student.
+     * Only a teacher with access to the student's notes can use this method.
+     *
+     * @param callerUserInternalId the internal ID of the authenticated teacher
+     * @param studentUserUuid the UUID of the student whose notes to retrieve
+     * @param request the read request containing pagination parameters
+     * @return a page of notepad entry responses for the specified student
+     */
+    @Transactional(readOnly = true)
+    public Page&lt;NotepadEntryResponse&gt; readStudentNotes(@NonNull Long callerUserInternalId, @NonNull UUID studentUserUuid, @NonNull NotepadEntryReadRequest request) {
+<span class="fc" id="L71">        log.info(&quot;Fetching page of notepad entries for user: {}, request: {}&quot;, callerUserInternalId, request);</span>
+
+<span class="fc" id="L73">        TeacherUser teacherUser = teacherUserRepository.findById(callerUserInternalId)</span>
+<span class="fc" id="L74">            .orElseThrow(() -&gt; new UserNotFoundException(&quot;Teacher user not found.&quot;));</span>
+
+<span class="fc" id="L76">        StudentUser studentUser = studentUserRepository.findByPublicUuid(studentUserUuid)</span>
+<span class="fc" id="L77">            .orElseThrow(() -&gt; new UserNotFoundException(&quot;Student user not found.&quot;));</span>
+        
+        //TODO: Verify that the teacher has read access to this student's notes. 
+
+<span class="fc" id="L81">        return notepadEntryRepository.findAllByUsers_InternalId(studentUser.getInternalId(), request.toPageable())</span>
+<span class="fc" id="L82">                .map(NotepadEntryResponse::fromEntity);</span>
+    }
+
+    /**
+     * Creates a new notepad entry assigned to the calling user.
+     *
+     * @param callerUserInternalId the internal ID of the authenticated user
+     * @param request the create request containing entry details
+     * @return the created notepad entry response
+     */
+    @Transactional
+    public NotepadEntryResponse create(@NonNull Long callerUserInternalId, @NonNull NotepadEntryCreateRequest request) {
+<span class="fc" id="L94">        log.info(&quot;Creating new notepad entry for user: {}, request: {}&quot;, callerUserInternalId, request);</span>
+
+<span class="fc" id="L96">        User user = userRepository.findById(callerUserInternalId)</span>
+<span class="fc" id="L97">            .orElseThrow(() -&gt; new UserNotFoundException(&quot;User not found.&quot;));</span>
+
+<span class="fc" id="L99">        NotepadEntry entry = NotepadEntry.createFrom(request, user);</span>
+<span class="fc" id="L100">        NotepadEntry savedNotepadEntry = notepadEntryRepository.save(entry);</span>
+
+<span class="fc" id="L102">        log.info(&quot;Successfully created notepad entry with UUID: {}&quot;, savedNotepadEntry.getPublicUuid());</span>
+
+<span class="fc" id="L104">        return NotepadEntryResponse.fromEntity(savedNotepadEntry);</span>
+    }
+
+    /**
+     * Updates an existing notepad entry identified by its UUID.
+     * The caller must have access to the notepad entry to perform this operation.
+     *
+     * @param callerUserInternalId the internal ID of the authenticated user
+     * @param notepadEntryPublicUuid the public UUID of the notepad entry to update
+     * @param request the update request containing new entry details
+     * @return the updated notepad entry response
+     */
+    @Transactional
+    public NotepadEntryResponse update(@NonNull Long callerUserInternalId, @NonNull UUID notepadEntryPublicUuid, @NonNull NotepadEntryUpdateRequest request) {
+<span class="fc" id="L118">        log.info(&quot;Updating notepad entry: {}, called by user: {}, with request {}&quot;, notepadEntryPublicUuid, callerUserInternalId, request);</span>
+
+<span class="fc" id="L120">        NotepadEntry entry = getNotepadEntryFromRepositoryOrThrow(notepadEntryPublicUuid);</span>
+        
+<span class="fc" id="L122">        verifyAccessOrThrow(callerUserInternalId, entry);</span>
+
+<span class="fc" id="L124">        entry.updateValuesFrom(request);</span>
+
+<span class="fc" id="L126">        log.info(&quot;Successfully updated notepad entry: {}&quot;, notepadEntryPublicUuid);</span>
+        
+<span class="fc" id="L128">        return NotepadEntryResponse.fromEntity(notepadEntryRepository.save(entry));</span>
+    }
+
+    /**
+     * Deletes a notepad entry identified by its UUID.
+     * The caller must be the owner of the notepad entry to perform this operation.
+     *
+     * @param callerUserInternalId the internal ID of the authenticated user
+     * @param notepadEntryPublicUuid the public UUID of the notepad entry to delete
+     */
+    @Transactional
+    public void delete(@NonNull Long callerUserInternalId, @NonNull UUID notepadEntryPublicUuid) {
+<span class="fc" id="L140">        log.info(&quot;Deleting notepad entry: {}, called by user: {}&quot;, notepadEntryPublicUuid, callerUserInternalId);</span>
+
+<span class="fc" id="L142">        NotepadEntry entry = getNotepadEntryFromRepositoryOrThrow(notepadEntryPublicUuid);</span>
+        
+<span class="nc" id="L144">        verifyAccessOrThrow(callerUserInternalId, entry);</span>
+        
+<span class="nc" id="L146">        notepadEntryRepository.delete(entry);</span>
+
+<span class="nc" id="L148">        log.info(&quot;Successfully deleted notepad entry: {}&quot;, notepadEntryPublicUuid);</span>
+<span class="nc" id="L149">    }</span>
+
+    /**
+     * Retrieves a notepad entry by its public UUID from the repository.
+     * Throws {@link NotepadEntryNotFoundException} if the entry is not found.
+     *
+     * @param notepadEntryPublicUuid the public UUID of the notepad entry
+     * @return the found notepad entry
+     */
+    private NotepadEntry getNotepadEntryFromRepositoryOrThrow(UUID notepadEntryPublicUuid){
+<span class="fc" id="L159">        NotepadEntry entry = notepadEntryRepository.findByPublicUuid(notepadEntryPublicUuid)</span>
+<span class="fc" id="L160">                .orElseThrow(() -&gt; {</span>
+<span class="fc" id="L161">                    log.debug(&quot;Resource not found: Entry UUID {}&quot;, notepadEntryPublicUuid);</span>
+<span class="fc" id="L162">                    return new NotepadEntryNotFoundException(&quot;Notepad entry not found with ID: &quot; + notepadEntryPublicUuid);</span>
+                });
+<span class="fc" id="L164">        return entry;</span>
+    }
+
+    /**
+     * Verifies that the user has access to the specified notepad entry.
+     * Throws {@link NotepadEntryNotFoundException} if the entry is null.
+     * Throws {@link AccessDeniedException} if the user does not have access.
+     *
+     * @param userInternalId the internal ID of the user to check access for
+     * @param entry the notepad entry to check access against
+     */
+    private void verifyAccessOrThrow(Long userInternalId, NotepadEntry entry){
+<span class="pc bpc" id="L176" title="1 of 2 branches missed.">        if (entry == null){</span>
+<span class="nc" id="L177">            log.debug(&quot;Notepad entry is null.&quot;);</span>
+<span class="nc" id="L178">            throw new NotepadEntryNotFoundException(&quot;Notepad entry not found&quot;);</span>
+        }
+
+<span class="fc" id="L181">        boolean hasAccess = entry.getUsers().stream()</span>
+<span class="fc" id="L182">        .anyMatch(u -&gt; u.getInternalId().equals(userInternalId));</span>
+
+<span class="fc bfc" id="L184" title="All 2 branches covered.">        if (!hasAccess) {</span>
+<span class="fc" id="L185">            log.warn(&quot;Security Violation: User ID {} attempted unauthorized access to Entry UUID {}&quot;, </span>
+<span class="fc" id="L186">                    userInternalId, entry.getPublicUuid());</span>
+<span class="fc" id="L187">            throw new AccessDeniedException(&quot;You do not have permission to access this entry.&quot;);</span>
+        }
+<span class="fc" id="L189">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClassroomController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.classroom.controller</a> &gt; <span class="el_source">ClassroomController.java</span></div><h1>ClassroomController.java</h1><pre class="source lang-java linenums">package no.safety.backend.classroom.controller;
+
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
+
+import no.safety.backend.auth.model.UserPrincipal;
+
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import no.safety.backend.classroom.dto.ClassroomRequest;
+import no.safety.backend.classroom.dto.ClassroomResponse;
+import no.safety.backend.classroom.service.ClassroomService;
+import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptResponse;
+import no.safety.backend.weeklymystery.service.WeeklyMysteryClassroomOrchestrator;
+import no.safety.backend.weeklymystery.service.WeeklyMysteryService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * Classroom controller that defines API endpoints for managing classrooms. All
+ * endpoints require an
+ * authenticated caller, and mutating operations require the caller to be an
+ * owner of the
+ * classroom.
+ */
+@RestController
+@RequestMapping(&quot;/api/v1/classrooms&quot;)
+@RequiredArgsConstructor
+public class ClassroomController {
+
+    private final ClassroomService classroomService;
+    private final WeeklyMysteryClassroomOrchestrator weeklyMysteryClassroomOrchestrator;
+
+    /**
+     * Creates a new classroom owned by the caller. Join code is automatically
+     * generated.
+     *
+     * @param request   the classroom name and description.
+     * @param principal Spring Security principal for the calling user.
+     * @return a response containing the created classroom, including the join code.
+     * @throws no.safety.backend.exception.NotFoundException  if the calling user is
+     *                                                        not found
+     * @throws no.safety.backend.exception.ForbiddenException if the calling user is
+     *                                                        not a teacher
+     */
+    @Operation(summary = &quot;Create a new classroom&quot;, description = &quot;Creates a new classroom owned by the caller. A join code is automatically generated.&quot;, tags = {
+            &quot;Classroom management for teachers&quot; })
+    @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ClassroomResponse create(
+            @Valid @RequestBody ClassroomRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+<span class="fc" id="L59">        return classroomService.create(request, getCallerUuid(principal));</span>
+    }
+
+    /**
+     * Updates the name and description of an existing classroom.
+     *
+     * @param classroomId the id of the classroom to be updated.
+     * @param request     the new name and description of the classroom.
+     * @param principal   Spring Security principal for the calling user.
+     * @return a response containing the updated classroom.
+     * @throws no.safety.backend.exception.NotFoundException  if the classroom is
+     *                                                        not found.
+     * @throws no.safety.backend.exception.ForbiddenException if the calling user is
+     *                                                        not an owner of
+     *                                                        the classroom.
+     */
+    @Operation(summary = &quot;Update a classroom&quot;, description = &quot;Updates the name and description of an existing classroom. Requires the caller to be an owner.&quot;, tags = {
+            &quot;Classroom management for teachers&quot; })
+    @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+    @PutMapping(&quot;/{classroomId}&quot;)
+    public ClassroomResponse update(
+            @PathVariable UUID classroomId,
+            @Valid @RequestBody ClassroomRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+<span class="fc" id="L83">        return classroomService.update(classroomId, request, getCallerUuid(principal));</span>
+    }
+
+    /**
+     * Deletes an existing classroom.
+     *
+     * @param classroomId the id of the classroom to be deleted.
+     * @param principal   Spring Security principal for the calling user.
+     * @return an empty 204 No content response.
+     * @throws no.safety.backend.exception.NotFoundException  if the classroom is
+     *                                                        not found.
+     * @throws no.safety.backend.exception.ForbiddenException if the calling user is
+     *                                                        not an owner of
+     *                                                        the classroom.
+     */
+    @Operation(summary = &quot;Delete a classroom&quot;, description = &quot;Deletes an existing classroom. Requires the caller to be an owner.&quot;, tags = {
+            &quot;Classroom management for teachers&quot; })
+    @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+    @DeleteMapping(&quot;/{classroomId}&quot;)
+    public ResponseEntity&lt;Void&gt; delete(
+            @PathVariable UUID classroomId,
+            @AuthenticationPrincipal UserPrincipal principal) {
+<span class="fc" id="L105">        classroomService.delete(classroomId, getCallerUuid(principal));</span>
+<span class="fc" id="L106">        return ResponseEntity.noContent().build();</span>
+    }
+
+    /**
+     * Adds an owner to the classroom.
+     *
+     * @param classroomId the id of the classroom
+     * @param userUuid    the UUID of the user to be added as an owner.
+     * @param principal   Spring Security principal for the calling user.
+     * @return a response of the classroom including the new owner
+     * @throws no.safety.backend.exception.NotFoundException  if the classroom is
+     *                                                        not found.
+     * @throws no.safety.backend.exception.ForbiddenException if the calling user is
+     *                                                        not an owner of
+     *                                                        the classroom.
+     * @throws no.safety.backend.exception.NotFoundException  if the new owner user
+     *                                                        could not be
+     *                                                        found.
+     * @throws no.safety.backend.exception.ForbiddenException if the new owner user
+     *                                                        is not a teacher.
+     * @throws no.safety.backend.exception.ConflictException  if the new owner user
+     *                                                        is already an
+     *                                                        owner.
+     */
+    @Operation(summary = &quot;Add an owner to a classroom&quot;, description = &quot;Adds a teacher as an owner of the classroom. Requires the caller to be an existing owner.&quot;, tags = {
+            &quot;Classroom management for teachers&quot; })
+    @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+    @PostMapping(&quot;/{classroomId}/owners/{userUuid}&quot;)
+    public ClassroomResponse addOwner(
+            @PathVariable UUID classroomId,
+            @PathVariable UUID userUuid,
+            @AuthenticationPrincipal UserPrincipal principal) {
+<span class="fc" id="L138">        return classroomService.addOwner(classroomId, userUuid, getCallerUuid(principal));</span>
+    }
+
+    /**
+     * Removes an owner from a classroom. It is not possible to remove the last
+     * owner, as the
+     * classroom needs at least one owner.
+     *
+     * @param classroomId id of the classroom.
+     * @param userUuid    the UUID of the owner to remove.
+     * @param principal   Spring Security principal for the calling user.
+     * @return a response containing the classroom excluding the removed owner.
+     * @throws no.safety.backend.exception.NotFoundException  if the classroom is
+     *                                                        not found.
+     * @throws no.safety.backend.exception.ForbiddenException if the calling user is
+     *                                                        not an owner of
+     *                                                        the classroom.
+     * @throws no.safety.backend.exception.ConflictException  if trying to remove
+     *                                                        the last owner.
+     * @throws no.safety.backend.exception.NotFoundException  if the user to remove
+     *                                                        is not an owner of
+     *                                                        the classroom.
+     */
+    @Operation(summary = &quot;Remove an owner from a classroom&quot;, description = &quot;Removes a teacher as an owner of the classroom. The last owner cannot be removed. Requires the caller to be an owner.&quot;, tags = {
+            &quot;Classroom management for teachers&quot; })
+    @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+    @DeleteMapping(&quot;/{classroomId}/owners/{userUuid}&quot;)
+    public ClassroomResponse removeOwner(
+            @PathVariable UUID classroomId,
+            @PathVariable UUID userUuid,
+            @AuthenticationPrincipal UserPrincipal principal) {
+<span class="nc" id="L169">        return classroomService.removeOwner(classroomId, userUuid, getCallerUuid(principal));</span>
+    }
+
+    /**
+     * Generates a new join code for the classroom and updates it.
+     *
+     * @param classroomId id of the classroom.
+     * @param principal   Spring Security principal for the calling user.
+     * @return a response containing the classroom with the new join code.
+     */
+    @Operation(summary = &quot;Regenerate join code&quot;, description = &quot;Generates a new join code for the classroom, replacing the old one. Requires the caller to be an owner.&quot;, tags = {
+            &quot;Classroom management for teachers&quot; })
+    @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+    @PostMapping(&quot;/{classroomId}/code&quot;)
+    public ClassroomResponse regenerateCode(
+            @PathVariable UUID classroomId,
+            @AuthenticationPrincipal UserPrincipal principal) {
+<span class="fc" id="L186">        return classroomService.regenerateCode(classroomId, getCallerUuid(principal));</span>
+    }
+
+    /**
+     * Gets all classrooms owned by the caller.
+     *
+     * @param principal Spring Security principal for the calling user.
+     * @return a set of responses containing classrooms the caller owns.
+     */
+    @Operation(summary = &quot;Get all owned classrooms&quot;, description = &quot;Returns all classrooms owned by the logged-in teacher.&quot;, tags = {
+            &quot;Classroom management for teachers&quot; })
+    @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+    @GetMapping
+    public Set&lt;ClassroomResponse&gt; getOwnedClassrooms(@AuthenticationPrincipal UserPrincipal principal) {
+<span class="nc" id="L200">        return classroomService.getOwnedClassrooms(getCallerUuid(principal));</span>
+    }
+
+    /**
+     * Gets a classroom by its ID.
+     *
+     * @param classroomId of the classroom to get.
+     * @param principal   Spring Security principal for the calling user.
+     * @return a response containing the specified classroom.
+     * @throws no.safety.backend.exception.NotFoundException  if the classroom is
+     *                                                        not found
+     * @throws no.safety.backend.exception.ForbiddenException if the caller does not
+     *                                                        own the
+     *                                                        classroom.
+     */
+    @Operation(summary = &quot;Get a classroom by ID&quot;, description = &quot;Returns a specific classroom by its ID. Requires the caller to be an owner.&quot;, tags = {
+            &quot;Classroom management for teachers&quot; })
+    @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+    @GetMapping(&quot;/{classroomId}&quot;)
+    public ClassroomResponse getClassroom(@PathVariable UUID classroomId,
+            @AuthenticationPrincipal UserPrincipal principal) {
+<span class="nc" id="L221">        return classroomService.getClassroom(classroomId, getCallerUuid(principal));</span>
+    }
+
+    /**
+     * Change the weekly mystery for a classroom.
+     *
+     * @param classroomUid     the Public Id of the classroom, used to resolve a
+     *                         classroom object from database.
+     * @param principal        user info provided by spring.
+     * @param weeklyMysterUuid the public id of the selected Weekly Mystery, for
+     *                         database resolution.
+     * @return an empty response object on success, error on failure.
+     */
+    @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+    @PatchMapping(&quot;/{classroomUid}/ukens-mysterium&quot;)
+    public ResponseEntity&lt;?&gt; updateClassroom(@PathVariable UUID classroomUid,
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestBody UUID weeklyMysterUuid) {
+<span class="nc" id="L239">        weeklyMysteryClassroomOrchestrator.updateWeeklyMysteryForClassroom(classroomUid, weeklyMysterUuid,</span>
+<span class="nc" id="L240">                principal.getUserInternalId());</span>
+<span class="nc" id="L241">        return ResponseEntity.ok(null);</span>
+    }
+
+    /**
+     * Gets a students classroom.
+     *
+     * @param principal Spring Security principal for the calling user.
+     * @return a response containing the classroom of the student.
+     * @throws no.safety.backend.exception.NotFoundException if the student is not
+     *                                                       found or if it is
+     *                                                       not in a classroom.
+     */
+    @Operation(summary = &quot;Get my classroom&quot;, description = &quot;Returns the classroom that the logged-in student is a member of.&quot;, tags = {
+            &quot;Classroom management for students&quot; })
+    @PreAuthorize(&quot;hasRole('STUDENT')&quot;)
+    @GetMapping(&quot;/me&quot;)
+    public ClassroomResponse getMyClassroom(@AuthenticationPrincipal UserPrincipal principal) {
+<span class="nc" id="L258">        return classroomService.getMyClassroom(getCallerUuid(principal));</span>
+    }
+
+    /**
+     * Allows a student to join a classroom using the join code. A student can only
+     * be a member of one
+     * classroom at a time.
+     *
+     * @param code      the join code of the classroom.
+     * @param principal Spring Security principal for the calling user.
+     * @return a response containing the joined classroom.
+     * @throws no.safety.backend.exception.NotFoundException  if the classroom or
+     *                                                        user is not found.
+     * @throws no.safety.backend.exception.ForbiddenException if the caller is not a
+     *                                                        student.
+     * @throws no.safety.backend.exception.ConflictException  if the student is
+     *                                                        already in a
+     *                                                        classroom.
+     */
+    @Operation(summary = &quot;Join a classroom&quot;, description = &quot;Allows a student to join a classroom using a join code. A student can only be a member of one classroom at a time.&quot;, tags = {
+            &quot;Classroom management for students&quot; })
+    @PreAuthorize(&quot;hasRole('STUDENT')&quot;)
+    @PostMapping(&quot;/join/{code}&quot;)
+    public ClassroomResponse joinByCode(
+            @PathVariable String code,
+            @AuthenticationPrincipal UserPrincipal principal) {
+<span class="fc" id="L284">        return classroomService.joinByCode(code, getCallerUuid(principal));</span>
+    }
+
+    /**
+     * Removes a student member from a classroom. Requires the caller to be an
+     * owner.
+     *
+     * @param classroomId the id of the classroom.
+     * @param userUuid    the UUID of the member to remove.
+     * @param principal   Spring Security principal for the calling user.
+     * @return a response containing the classroom without the removed member.
+     * @throws no.safety.backend.exception.NotFoundException  if the classroom or
+     *                                                        member is not
+     *                                                        found.
+     * @throws no.safety.backend.exception.ForbiddenException if the caller is not
+     *                                                        an owner.
+     */
+    @Operation(summary = &quot;Remove a student from a classroom&quot;, description = &quot;Removes a student member from a classroom. Requires the caller to be an owner.&quot;, tags = {
+            &quot;Classroom management for teachers&quot; })
+    @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+    @DeleteMapping(&quot;/{classroomId}/members/{userUuid}&quot;)
+    public ClassroomResponse removeMember(
+            @PathVariable UUID classroomId,
+            @PathVariable UUID userUuid,
+            @AuthenticationPrincipal UserPrincipal principal) {
+<span class="fc" id="L309">        return classroomService.removeMember(classroomId, userUuid, getCallerUuid(principal));</span>
+    }
+
+    @Operation(summary = &quot;Approve a pending student&quot;, description = &quot;Approves a pending classroom membership request. Requires the caller to be an owner.&quot;, tags = {
+            &quot;Classroom management for teachers&quot; })
+    @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+    @PostMapping(&quot;/{classroomId}/members/{userUuid}/approve&quot;)
+    public ClassroomResponse approveMember(
+            @PathVariable UUID classroomId,
+            @PathVariable UUID userUuid,
+            @AuthenticationPrincipal UserPrincipal principal) {
+<span class="fc" id="L320">        return classroomService.approveMember(classroomId, userUuid, getCallerUuid(principal));</span>
+    }
+
+    /**
+     * Allows a student to leave a classroom they are a member of.
+     *
+     * @param classroomId the id of the classroom to leave.
+     * @param principal   Spring Security principal for the calling user.
+     * @return an empty 204 No Content response.
+     * @throws no.safety.backend.exception.NotFoundException if the classroom is not
+     *                                                       found or the
+     *                                                       caller is not a member.
+     */
+    @Operation(summary = &quot;Leave a classroom&quot;, description = &quot;Allows the logged-in student to leave a classroom they are a member of.&quot;, tags = {
+            &quot;Classroom management for students&quot; })
+    @PreAuthorize(&quot;hasRole('STUDENT')&quot;)
+    @DeleteMapping(&quot;/{classroomId}/members/me&quot;)
+    public ResponseEntity&lt;Void&gt; leaveClassroom(
+            @PathVariable UUID classroomId,
+            @AuthenticationPrincipal UserPrincipal principal) {
+<span class="fc" id="L340">        classroomService.leaveClassroom(classroomId, getCallerUuid(principal));</span>
+<span class="fc" id="L341">        return ResponseEntity.noContent().build();</span>
+    }
+
+    /**
+     * Provides api for retreiving the Current Weekly Mystery assigned to a classroom.
+     * @param classroomUuid the public id of a classroom entity.
+     * @return a response entity containing the object on success, or an empty object (204) on failure.
+     */
+    @Operation(
+        summary = &quot;Get current weekly mystery&quot;,
+        description = &quot;Get the weekly mystery assigned to a specific classroom&quot;
+    )
+    @RequestMapping(&quot;/{classroomUuid}/WeeklyMystery&quot;)
+    public ResponseEntity&lt;WeeklyMysteryPromptResponse&gt; getCurrentWeeklyMystery(
+        @PathVariable UUID classroomUuid) {
+<span class="nc" id="L356">            return classroomService.getClassroomWeeklyMystery(classroomUuid)</span>
+<span class="nc" id="L357">            .map(myster -&gt; ResponseEntity.ok(WeeklyMysteryPromptResponse.fromEntity(myster)))</span>
+<span class="nc" id="L358">            .orElse(ResponseEntity.noContent().build());</span>
+    }
+
+    /**
+     * Provide api for requesting the backlog of weekly mystery objects connected to a classroom.
+     * @param classroomUuid public classroom UUID.
+     * @return a response entity containing a list of weekly mystery objects.
+     */
+    @Operation(
+        summary = &quot;Get all weekly mysteries&quot;,
+        description = &quot;Get the weekly mysteries previously assigned to a specific classroom&quot;
+    )
+    @RequestMapping(&quot;/{classroomUuid}/WeeklyMystery/history&quot;)
+    public ResponseEntity&lt;List&lt;WeeklyMysteryPromptResponse&gt;&gt; getWeeklyMysteryHistory(
+        @PathVariable UUID classroomUuid) {
+<span class="nc" id="L373">            return ResponseEntity.ok(classroomService.getWeeklyMysteryHistory(classroomUuid));</span>
+    }
+
+    private UUID getCallerUuid(UserPrincipal principal) {
+<span class="fc" id="L377">        return principal.user().getPublicUuid();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

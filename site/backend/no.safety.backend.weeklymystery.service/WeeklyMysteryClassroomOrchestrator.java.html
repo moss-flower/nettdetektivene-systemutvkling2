@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WeeklyMysteryClassroomOrchestrator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.weeklymystery.service</a> &gt; <span class="el_source">WeeklyMysteryClassroomOrchestrator.java</span></div><h1>WeeklyMysteryClassroomOrchestrator.java</h1><pre class="source lang-java linenums">package no.safety.backend.weeklymystery.service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import no.safety.backend.classroom.model.Classroom;
+import no.safety.backend.classroom.repository.ClassroomRepository;
+import no.safety.backend.classroom.service.ClassroomService;
+import no.safety.backend.exception.AccessDeniedException;
+import no.safety.backend.user.model.TeacherUser;
+import no.safety.backend.user.service.UserService;
+import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
+import org.springframework.stereotype.Service;
+import java.util.Set;
+import java.util.UUID;
+
+/**
+ * Provides an orchestration layer to help coordinate tasks, in place of an event system.
+ */
+@Service
+<span class="fc" id="L20">@Slf4j</span>
+@RequiredArgsConstructor
+public class WeeklyMysteryClassroomOrchestrator {
+
+    private final WeeklyMysteryService weeklyMysteryService;
+    private final ClassroomService classroomService;
+    private final ClassroomRepository classroomRepository;
+    private final UserService userService;
+
+    public void updateWeeklyMysteryForClassroom(UUID classroomPublicId,
+                                                UUID weeklyMysteryPublicId,
+                                                Long callerId) {
+<span class="nc" id="L32">        log.debug(&quot;WeeklyMysteryClassroom Orchestrator: Update called with caller id &quot; + callerId);</span>
+        /*
+        Step 1. Retrieve object(s)
+        step 2. verify that the specific caller *can* modify those objects
+        step 3. update
+         */
+
+<span class="nc" id="L39">        Classroom classroom = classroomService.getFullClassroom(classroomPublicId);</span>
+<span class="nc" id="L40">        WeeklyMysteryPrompt prompt = weeklyMysteryService.fetch(weeklyMysteryPublicId);</span>
+<span class="nc" id="L41">        TeacherUser teacher = (TeacherUser) userService.findByInternalId(callerId);</span>
+        //Note, we could verify here, but verification is handled on the method call in the controller
+        //This means by the time we get here the user is already verified ot be a teacher.
+        //What we do need to verify is that they are in fact allowed to edit this classroom.
+
+<span class="nc" id="L46">        Set&lt;Classroom&gt; teacherClassrooms = classroomRepository.findAllByOwners_PublicUuid(teacher.getPublicUuid());</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">        if(!teacherClassrooms.contains(classroom)) {</span>
+<span class="nc" id="L48">            log.error(&quot;WeeklyMysteryClassroomOrchestrator: Access Denied Error&quot;);</span>
+<span class="nc" id="L49">            throw new AccessDeniedException(&quot;Access denied: Cannot set Weekly Mystery for a classroom you don't own.&quot;);</span>
+        }
+
+<span class="nc" id="L52">        classroom.setWeeklyMysteryPrompt(prompt);</span>
+<span class="nc" id="L53">        classroomService.updateWeeklyMystery(classroom, prompt);</span>
+<span class="nc" id="L54">        weeklyMysteryService.updateWeeklyMystery(classroom, prompt);</span>
+<span class="nc" id="L55">    }</span>
+    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

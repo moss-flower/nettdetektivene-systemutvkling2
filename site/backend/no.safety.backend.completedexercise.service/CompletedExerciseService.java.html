@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CompletedExerciseService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.completedexercise.service</a> &gt; <span class="el_source">CompletedExerciseService.java</span></div><h1>CompletedExerciseService.java</h1><pre class="source lang-java linenums">package no.safety.backend.completedexercise.service;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import no.safety.backend.achievements.service.AchievementService;
+import no.safety.backend.completedexercise.dto.CompletedExerciseRequest;
+import no.safety.backend.completedexercise.dto.CompletedExerciseResponse;
+import no.safety.backend.completedexercise.model.CompletedExercise;
+import no.safety.backend.completedexercise.repository.CompletedExerciseRepository;
+import no.safety.backend.exception.ForbiddenException;
+import no.safety.backend.station.model.Station;
+import no.safety.backend.station.repository.StationRepository;
+import no.safety.backend.exception.NotFoundException;
+import no.safety.backend.excercise.model.Exercise;
+import no.safety.backend.excercise.repository.ExerciseRepository;
+import no.safety.backend.notepad.dto.NotepadEntryCreateRequest;
+import no.safety.backend.notepad.model.NotepadEntry;
+import no.safety.backend.notepad.service.NotepadEntryService;
+import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.repository.StudentUserRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * Service class for managing completed exercises.
+ * Handles business logic for marking exercises as completed, retrieving completed exercises,
+ * and triggering related actions like achievements and notepad entries.
+ */
+@Service
+@RequiredArgsConstructor
+public class CompletedExerciseService {
+
+  private final CompletedExerciseRepository completedExerciseRepository;
+  private final ProgressValidationService progressValidationService;
+  private final StudentUserRepository studentUserRepository;
+  private final StationRepository stationRepository;
+  private final AchievementService achievementService;
+  private final ExerciseRepository exerciseRepository;
+  private final NotepadEntryService notepadEntryService;
+
+  /**
+   * Marks an exercise as completed for a student.
+   * Validates that the exercise is not locked, updates the student's score,
+   * and triggers related actions like achievements and notepad entries.
+   *
+   * @param request the request containing the exercise ID to complete
+   * @param student the student completing the exercise
+   * @return the response containing the completed exercise information
+   * @throws ForbiddenException if the exercise is locked due to progress validation
+   */
+  @Transactional
+  public CompletedExerciseResponse create(CompletedExerciseRequest request, StudentUser student) {
+<span class="fc" id="L57">    UUID studentUid = student.getPublicUuid();</span>
+<span class="fc" id="L58">    UUID exerciseUid = request.exerciseUid();</span>
+
+<span class="fc bfc" id="L60" title="All 2 branches covered.">    if (progressValidationService.isLocked(student, exerciseUid)) {</span>
+<span class="fc" id="L61">      throw new ForbiddenException(&quot;Oppgaven er låst. Fullfør forrige oppgave eller stasjon først.&quot;);</span>
+    }
+
+<span class="fc" id="L64">    boolean hasCompletedExerciseFromBefore = completedExerciseRepository.existsByStudentUidAndExerciseUid(studentUid, exerciseUid);</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">    student.addScore(hasCompletedExerciseFromBefore ? 10 : 100);</span>
+<span class="fc" id="L66">    studentUserRepository.save(student);</span>
+
+<span class="fc bfc" id="L68" title="All 2 branches covered.">    if (hasCompletedExerciseFromBefore) {</span>
+<span class="fc" id="L69">      return CompletedExerciseResponse.from(completedExerciseRepository.findByStudentUidAndExerciseUid(studentUid, exerciseUid)</span>
+<span class="fc" id="L70">          .orElseThrow());</span>
+    }
+
+<span class="fc" id="L73">    CompletedExercise completedExercise = new CompletedExercise();</span>
+<span class="fc" id="L74">    completedExercise.setStudentUid(studentUid);</span>
+<span class="fc" id="L75">    completedExercise.setExerciseUid(exerciseUid);</span>
+  
+   
+<span class="fc" id="L78">    CompletedExercise saved = completedExerciseRepository.save(completedExercise);</span>
+
+<span class="fc" id="L80">    checkAndUnlockStationAchievement(student, exerciseUid);</span>
+<span class="fc" id="L81">    createExerciseNotepadEntryIfConfigured(student, exerciseUid);</span>
+
+<span class="fc" id="L83">    return CompletedExerciseResponse.from(saved);</span>
+  }
+
+  /**
+   * Retrieves all completed exercises for a student, ordered by exercise UID.
+   *
+   * @param student the student whose completed exercises to retrieve
+   * @return list of completed exercise responses
+   */
+  @Transactional(readOnly = true)
+  public List&lt;CompletedExerciseResponse&gt; getMyCompletedExercises(StudentUser student) {
+<span class="fc" id="L94">    return completedExerciseRepository.findAllByStudentUidOrderByExerciseUidAsc(student.getPublicUuid())</span>
+<span class="fc" id="L95">        .stream()</span>
+<span class="fc" id="L96">        .map(CompletedExerciseResponse::from)</span>
+<span class="fc" id="L97">        .toList();</span>
+  }
+
+  /**
+   * Retrieves all completed exercises for a specific student by their public UUID.
+   *
+   * @param studentUid the public UUID of the student
+   * @return list of completed exercise responses for the student
+   */
+  @Transactional(readOnly = true)
+  public List&lt;CompletedExerciseResponse&gt; getCompletedExercisesForStudent(UUID studentUid) {
+<span class="nc" id="L108">    return completedExerciseRepository.findAllByStudentUidOrderByExerciseUidAsc(studentUid)</span>
+<span class="nc" id="L109">        .stream()</span>
+<span class="nc" id="L110">        .map(CompletedExerciseResponse::from)</span>
+<span class="nc" id="L111">        .toList();</span>
+  }
+
+  /**
+   * Checks if all exercises in a station are completed and unlocks station achievements if so.
+   *
+   * @param student the student to check achievements for
+   * @param exerciseUid the exercise UID that was just completed
+   */
+  private void checkAndUnlockStationAchievement(StudentUser student, UUID exerciseUid) {
+<span class="fc" id="L121">    Optional&lt;Station&gt; stationOpt = stationRepository.findByExerciseUid(exerciseUid);</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">    if (stationOpt.isEmpty()) {</span>
+<span class="fc" id="L123">      return;</span>
+    }
+
+<span class="fc" id="L126">    Station station = stationOpt.get();</span>
+
+<span class="fc" id="L128">    Set&lt;UUID&gt; completedUids = completedExerciseRepository</span>
+<span class="fc" id="L129">        .findAllByStudentUidOrderByExerciseUidAsc(student.getPublicUuid()).stream()</span>
+<span class="fc" id="L130">        .map(CompletedExercise::getExerciseUid)</span>
+<span class="fc" id="L131">        .collect(Collectors.toSet());</span>
+
+<span class="fc" id="L133">    boolean isComplete = station.getExerciseUids().stream()</span>
+<span class="fc" id="L134">        .allMatch(completedUids::contains);</span>
+
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">    if (!isComplete) {</span>
+<span class="nc" id="L137">      return;</span>
+    }
+
+<span class="fc" id="L140">    achievementService.unlockStationAchievement(student, station);</span>
+<span class="fc" id="L141">  }</span>
+
+  /**
+   * Creates a notepad entry for the completed exercise if configured in the exercise settings.
+   *
+   * @param student the student to create the notepad entry for
+   * @param exerciseUid the completed exercise UID
+   */
+  private void createExerciseNotepadEntryIfConfigured(StudentUser student, UUID exerciseUid) {
+<span class="fc" id="L150">    Exercise exercise = exerciseRepository.findByPublicId(exerciseUid)</span>
+<span class="pc" id="L151">        .orElseThrow(() -&gt; new NotFoundException(&quot;Exercise not found&quot;));</span>
+
+<span class="fc" id="L153">    NotepadEntry notepadEntry = exercise.getNotepadEntry();</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">    if (notepadEntry == null) {</span>
+<span class="fc" id="L155">      return;</span>
+    }
+
+<span class="fc" id="L158">    notepadEntryService.create(student.getInternalId(), new NotepadEntryCreateRequest(</span>
+<span class="fc" id="L159">        notepadEntry.getTitle(),</span>
+<span class="fc" id="L160">        notepadEntry.getType(),</span>
+<span class="fc" id="L161">        notepadEntry.getContent(),</span>
+<span class="fc" id="L162">        notepadEntry.getSource()</span>
+    ));
+
+<span class="fc" id="L165">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

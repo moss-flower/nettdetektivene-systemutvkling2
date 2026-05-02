@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AvatarController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.avatar.controller</a> &gt; <span class="el_source">AvatarController.java</span></div><h1>AvatarController.java</h1><pre class="source lang-java linenums">package no.safety.backend.avatar.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.RequestBody;
+import lombok.RequiredArgsConstructor;
+import no.safety.backend.auth.model.UserPrincipal;
+import no.safety.backend.avatar.dto.AvatarConfigRequest;
+import no.safety.backend.avatar.dto.AvatarConfigResponse;
+import no.safety.backend.avatar.dto.AvatarOptionsResponse;
+import no.safety.backend.avatar.service.AvatarService;
+
+/**
+ * REST controller for managing student avatar configurations.
+ * Provides endpoints for retrieving, updating, and fetching available options for avatar customization.
+ * All endpoints require the user to have the STUDENT role.
+ */
+@RestController
+@RequestMapping(&quot;/api/v1&quot;)
+@RequiredArgsConstructor
+@Tag(name = &quot;Profile Management for Students&quot;)
+public class AvatarController {
+
+    private final AvatarService avatarService;
+
+    /**
+     * Retrieves the avatar configuration for the currently authenticated student.
+     *
+     * @param principal the authenticated user principal containing user details
+     * @return the avatar configuration response containing the student's current avatar settings
+     */
+    @Operation(
+        summary = &quot;Get student Avatar&quot;,
+        description = &quot;Returns the logged-in student's avatar configuration&quot;,
+        tags = {&quot;Profile Management for Students&quot;}
+    )
+    @PreAuthorize(&quot;hasRole('STUDENT')&quot;)
+    @GetMapping(&quot;/avatar&quot;)
+    public AvatarConfigResponse getAvatar(
+        @AuthenticationPrincipal UserPrincipal principal) {
+<span class="nc" id="L50">            return avatarService.getAvatar(principal.getUserInternalId());</span>
+    }
+
+    /**
+     * Retrieves all available avatar customization options.
+     * Returns lists of available hair styles, hair colors, outfits, eye colors, and skin colors
+     * that students can choose from when customizing their avatar.
+     *
+     * @return response containing all available avatar customization options
+     */
+    @Operation(
+        summary = &quot;Get avatar customization options&quot;,
+        description = &quot;Returns the available enum options for avatar customization&quot;,
+        tags = {&quot;Profile Management for Students&quot;}
+    )
+    @PreAuthorize(&quot;hasRole('STUDENT')&quot;)
+    @GetMapping(&quot;/avatar/options&quot;)
+    public AvatarOptionsResponse getAvatarOptions() {
+<span class="nc" id="L68">        return AvatarOptionsResponse.fromEnums();</span>
+    }
+
+    /**
+     * Updates the avatar configuration for the currently authenticated student.
+     * Validates the request body and saves the new avatar settings to the database.
+     *
+     * @param request the avatar configuration request containing the new avatar settings
+     * @param principal the authenticated user principal containing user details
+     * @return a ResponseEntity with HTTP 200 OK on successful update
+     */
+    @Operation(
+        summary = &quot;Update student Avatar&quot;,
+        description = &quot;Allows a student to save changes made to their user Avatar&quot;,
+        tags = {&quot;Profile Management for Students&quot;}
+    )
+    @PreAuthorize(&quot;hasRole('STUDENT')&quot;)
+    @PostMapping(&quot;/avatar&quot;)
+    public ResponseEntity&lt;Void&gt; updateAvatar(
+        @Valid @RequestBody AvatarConfigRequest request,
+        @AuthenticationPrincipal UserPrincipal principal) {
+<span class="nc" id="L89">            avatarService.updateAvatar(principal.getUserInternalId(), request);</span>
+<span class="nc" id="L90">            return ResponseEntity.ok().build();</span>
+    }
+    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClassroomService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.classroom.service</a> &gt; <span class="el_source">ClassroomService.java</span></div><h1>ClassroomService.java</h1><pre class="source lang-java linenums">package no.safety.backend.classroom.service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import no.safety.backend.classroom.dto.ClassroomRequest;
+import no.safety.backend.classroom.dto.ClassroomResponse;
+import no.safety.backend.classroom.model.Classroom;
+import no.safety.backend.classroom.model.ClassroomWeeklyMystery;
+import no.safety.backend.classroom.repository.ClassroomRepository;
+import no.safety.backend.classroom.repository.ClassroomWeeklyMysteryRepository;
+import no.safety.backend.exception.ConflictException;
+import no.safety.backend.exception.NotFoundException;
+import no.safety.backend.exception.domain.NotClassroomOwnerException;
+import no.safety.backend.exception.domain.StudentNotInClassException;
+import no.safety.backend.user.model.StudentUser;
+import no.safety.backend.user.model.TeacherUser;
+import no.safety.backend.user.repository.StudentUserRepository;
+import no.safety.backend.user.repository.TeacherUserRepository;
+import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptResponse;
+import no.safety.backend.weeklymystery.model.WeeklyMysteryPrompt;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.persistence.EntityNotFoundException;
+
+@Service
+@RequiredArgsConstructor
+public class ClassroomService {
+
+  private final ClassroomRepository classroomRepo;
+  private final TeacherUserRepository teacherRepo;
+  private final StudentUserRepository studentRepo;
+  private final ClassroomCodeGenerator codegen;
+  private final ClassroomWeeklyMysteryRepository classroomWeeklyMysteryRepository;
+
+  @Transactional
+  public ClassroomResponse create(ClassroomRequest req, UUID callerUuid) {
+<span class="fc" id="L42">    TeacherUser owner = requireTeacher(callerUuid);</span>
+
+<span class="fc" id="L44">    Classroom c = new Classroom();</span>
+<span class="fc" id="L45">    c.getOwners().add(owner);</span>
+<span class="fc" id="L46">    c.setName(req.name());</span>
+<span class="fc" id="L47">    c.setDescription(req.description());</span>
+<span class="fc" id="L48">    c.setWorldUid(req.worldUid());</span>
+<span class="fc" id="L49">    c.setCode(codegen.generateUniqueCode());</span>
+<span class="fc" id="L50">    return ClassroomResponse.from(classroomRepo.save(c));</span>
+  }
+
+  @Transactional
+  public ClassroomResponse update(UUID classroomUid, ClassroomRequest req, UUID callerUuid) {
+<span class="fc" id="L55">    Classroom c = requireOwned(classroomUid, callerUuid);</span>
+<span class="fc" id="L56">    c.setName(req.name());</span>
+<span class="fc" id="L57">    c.setDescription(req.description());</span>
+<span class="fc" id="L58">    c.setWorldUid(req.worldUid());</span>
+<span class="fc" id="L59">    classroomRepo.save(c);</span>
+<span class="fc" id="L60">    return ClassroomResponse.from(c);</span>
+  }
+
+  @Transactional
+  public void delete(UUID classroomUid, UUID callerUuid) {
+<span class="fc" id="L65">    Classroom c = requireOwned(classroomUid, callerUuid);</span>
+
+<span class="fc" id="L67">    c.getMembers().forEach(member -&gt; member.setClassroom(null));</span>
+<span class="fc" id="L68">    c.getMembers().clear();</span>
+<span class="fc" id="L69">    c.getOwners().clear();</span>
+<span class="fc" id="L70">    classroomWeeklyMysteryRepository.deleteByClassroom_InternalId(c.getInternalId());</span>
+
+<span class="fc" id="L72">    classroomRepo.delete(c);</span>
+<span class="fc" id="L73">  }</span>
+
+  @Transactional
+  public ClassroomResponse addOwner(UUID classroomUid, UUID newOwnerUuid, UUID callerUuid) {
+<span class="fc" id="L77">    Classroom c = requireOwned(classroomUid, callerUuid);</span>
+<span class="fc" id="L78">    TeacherUser newOwner = requireTeacher(newOwnerUuid);</span>
+
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">    if (classroomRepo.existsByUidAndOwners_PublicUuid(classroomUid, newOwnerUuid)) {</span>
+<span class="nc" id="L81">      throw new ConflictException(&quot;Teacher is already an owner&quot;);</span>
+    }
+
+<span class="fc" id="L84">    c.getOwners().add(newOwner);</span>
+
+<span class="fc" id="L86">    return ClassroomResponse.from(c);</span>
+  }
+
+  @Transactional
+  public ClassroomResponse removeOwner(UUID classroomUid, UUID ownerToRemoveUuid, UUID callerUuid) {
+<span class="nc" id="L91">    Classroom c = requireOwned(classroomUid, callerUuid);</span>
+
+<span class="nc bnc" id="L93" title="All 2 branches missed.">    if (c.getOwners().size() &lt;= 1) {</span>
+<span class="nc" id="L94">      throw new ConflictException(&quot;Cannot remove the last owner of a classroom&quot;);</span>
+    }
+
+<span class="nc" id="L97">    boolean removed = c.getOwners()</span>
+<span class="nc" id="L98">        .removeIf(user -&gt; user.getPublicUuid().equals(ownerToRemoveUuid));</span>
+
+<span class="nc bnc" id="L100" title="All 2 branches missed.">    if (!removed) {</span>
+<span class="nc" id="L101">      throw new NotClassroomOwnerException(&quot;Teacher is not an owner of this classroom&quot;);</span>
+    }
+
+<span class="nc" id="L104">    return ClassroomResponse.from(c);</span>
+  }
+
+  /**
+   * Generates a new code for joining the classroom. Useful when codes are leaked.
+   *
+   * @param classroomUid Classroom uid
+   * @param callerUuid   UUID of the calling user
+   * @return ClassroomResponse
+   */
+  @Transactional
+  public ClassroomResponse regenerateCode(UUID classroomUid, UUID callerUuid) {
+<span class="fc" id="L116">    Classroom c = requireOwned(classroomUid, callerUuid);</span>
+<span class="fc" id="L117">    c.setCode(codegen.generateUniqueCode());</span>
+<span class="fc" id="L118">    classroomRepo.save(c);</span>
+<span class="fc" id="L119">    return ClassroomResponse.from(c);</span>
+  }
+
+  @Transactional
+  public ClassroomResponse joinByCode(String code, UUID callerUuid) {
+<span class="fc" id="L124">    Classroom c = classroomRepo.findByCode(code)</span>
+<span class="fc" id="L125">        .orElseThrow(() -&gt; new NotFoundException(&quot;Classroom not found&quot;));</span>
+
+<span class="fc" id="L127">    StudentUser member = requireStudent(callerUuid);</span>
+
+<span class="fc bfc" id="L129" title="All 2 branches covered.">    if (member.getClassroom() != null) {</span>
+<span class="fc" id="L130">      throw new ConflictException(&quot;Student is already a member of a classroom&quot;);</span>
+    }
+
+<span class="fc" id="L133">    member.setClassroom(c);</span>
+<span class="fc" id="L134">    member.setClassroomPending(true);</span>
+<span class="fc" id="L135">    c.getMembers().add(member);</span>
+<span class="fc" id="L136">    return ClassroomResponse.from(c, true);</span>
+  }
+
+  @Transactional
+  public void updateWeeklyMystery(Classroom classroom, WeeklyMysteryPrompt prompt) {
+<span class="nc" id="L141">    classroom.setWeeklyMysteryPrompt(prompt);</span>
+<span class="nc" id="L142">    classroomRepo.save(classroom);</span>
+<span class="nc" id="L143">  }</span>
+
+  @Transactional
+  public ClassroomResponse removeMember(UUID classroomUid, UUID memberUuid, UUID callerUuid) {
+<span class="fc" id="L147">    Classroom c = requireOwned(classroomUid, callerUuid);</span>
+
+<span class="fc" id="L149">    StudentUser member = requireStudent(memberUuid);</span>
+
+<span class="pc bpc" id="L151" title="2 of 4 branches missed.">    if (member.getClassroom() == null || !member.getClassroom().getUid().equals(classroomUid)) {</span>
+<span class="nc" id="L152">      throw new StudentNotInClassException(&quot;Student is not a member of this classroom&quot;);</span>
+    }
+<span class="fc" id="L154">    member.setClassroom(null);</span>
+<span class="fc" id="L155">    member.setClassroomPending(false);</span>
+<span class="fc" id="L156">    c.getMembers().remove(member);</span>
+
+<span class="fc" id="L158">    return ClassroomResponse.from(c);</span>
+  }
+
+  @Transactional
+  public ClassroomResponse approveMember(UUID classroomUid, UUID memberUuid, UUID callerUuid) {
+<span class="fc" id="L163">    Classroom c = requireOwned(classroomUid, callerUuid);</span>
+<span class="fc" id="L164">    StudentUser member = requireStudent(memberUuid);</span>
+
+<span class="pc bpc" id="L166" title="2 of 4 branches missed.">    if (member.getClassroom() == null || !member.getClassroom().getUid().equals(classroomUid)) {</span>
+<span class="nc" id="L167">      throw new StudentNotInClassException(&quot;Student is not a member of this classroom&quot;);</span>
+    }
+
+<span class="fc" id="L170">    member.setClassroomPending(false);</span>
+<span class="fc" id="L171">    return ClassroomResponse.from(c);</span>
+  }
+
+  @Transactional
+  public void leaveClassroom(UUID classroomUid, UUID callerUuid) {
+<span class="fc" id="L176">    classroomRepo.findByUid(classroomUid)</span>
+<span class="pc" id="L177">        .orElseThrow(() -&gt; new NotFoundException(&quot;Could not find classroom&quot;));</span>
+
+<span class="fc" id="L179">    StudentUser member = studentRepo.findByPublicUuid(callerUuid)</span>
+<span class="pc" id="L180">        .orElseThrow(() -&gt; new NotFoundException(&quot;Student not found&quot;));</span>
+
+<span class="pc bpc" id="L182" title="1 of 4 branches missed.">    if (member.getClassroom() == null || !member.getClassroom().getUid().equals(classroomUid)) {</span>
+<span class="fc" id="L183">      throw new StudentNotInClassException(&quot;Student is not a member of this classroom&quot;);</span>
+    }
+
+<span class="fc" id="L186">    member.setClassroom(null);</span>
+<span class="fc" id="L187">    member.setClassroomPending(false);</span>
+<span class="fc" id="L188">    studentRepo.save(member);</span>
+<span class="fc" id="L189">  }</span>
+
+  @Transactional(readOnly = true)
+  public Set&lt;ClassroomResponse&gt; getOwnedClassrooms(UUID callerUuid) {
+<span class="nc" id="L193">    return classroomRepo.findAllByOwners_PublicUuid(callerUuid).stream()</span>
+<span class="nc" id="L194">        .map(ClassroomResponse::from)</span>
+<span class="nc" id="L195">        .collect(java.util.stream.Collectors.toSet());</span>
+  }
+
+  @Transactional(readOnly = true)
+  public ClassroomResponse getClassroom(UUID classroomUid, UUID callerUuid) {
+<span class="nc" id="L200">    Classroom c = requireOwned(classroomUid, callerUuid);</span>
+<span class="nc" id="L201">    return ClassroomResponse.from(c);</span>
+  }
+
+  @Transactional(readOnly = true)
+  public Classroom getFullClassroom(UUID classroomUid) {
+<span class="nc" id="L206">    Optional&lt;Classroom&gt; classroom = classroomRepo.findByUid(classroomUid);</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">    if (classroom.isEmpty()) {</span>
+<span class="nc" id="L208">      throw new NotFoundException(&quot;Classroom with uuid &quot; + classroomUid + &quot; not found&quot;);</span>
+    }
+<span class="nc" id="L210">    return classroom.get();</span>
+  }
+
+  @Transactional(readOnly = true)
+  public ClassroomResponse getMyClassroom(UUID callerUuid) {
+<span class="nc" id="L215">    StudentUser student = studentRepo.findByPublicUuid(callerUuid)</span>
+<span class="nc" id="L216">        .orElseThrow(() -&gt; new NotFoundException(&quot;Student not found&quot;));</span>
+
+<span class="nc bnc" id="L218" title="All 2 branches missed.">    if (student.getClassroom() == null) {</span>
+<span class="nc" id="L219">      throw new StudentNotInClassException(&quot;Student is not in a classroom&quot;);</span>
+    }
+
+<span class="nc" id="L222">    return ClassroomResponse.from(student.getClassroom(), student.isClassroomPending());</span>
+  }
+
+  /**
+   * Method for retrieving the weekly mystery prompt connected directly to a
+   * classroom.
+   * 
+   * @param classroomPublicId UUID representing a classrooms public id, for
+   *                          resolving.
+   * @return an object containing information about a Weekly Mystery Response.
+   */
+  public Optional&lt;WeeklyMysteryPrompt&gt; getClassroomWeeklyMystery(UUID classroomPublicId) {
+<span class="nc" id="L234">    return classroomRepo.findByUid(classroomPublicId)</span>
+<span class="nc" id="L235">        .map(Classroom::getWeeklyMysteryPrompt);</span>
+  }
+
+  /**
+   * Method for retrieving weekly mysteries associated with a given classroom
+   * @param classroomPublicId the UUID of the classroom
+   * @return a list of prompt response data transfer objects
+   */
+  public List&lt;WeeklyMysteryPromptResponse&gt; getWeeklyMysteryHistory(UUID classroomPublicId) {
+<span class="nc" id="L244">    Long classroomId = classroomRepo.findByUid(classroomPublicId)</span>
+<span class="nc" id="L245">      .map(Classroom::getInternalId).orElseThrow(() -&gt; new EntityNotFoundException());</span>
+
+<span class="nc" id="L247">    return classroomWeeklyMysteryRepository</span>
+<span class="nc" id="L248">      .findByClassroom_InternalIdOrderByAssignedDateDesc(classroomId)</span>
+<span class="nc" id="L249">      .stream()</span>
+<span class="nc" id="L250">      .map(ClassroomWeeklyMystery::getWeeklyMysteryPrompt)</span>
+<span class="nc" id="L251">      .map(WeeklyMysteryPromptResponse::fromEntity)</span>
+<span class="nc" id="L252">      .toList();</span>
+  }
+
+  private Classroom requireOwned(UUID classroomUid, UUID callerUuid) {
+<span class="fc bfc" id="L256" title="All 2 branches covered.">    if (classroomRepo.findByUid(classroomUid).isEmpty()) {</span>
+<span class="fc" id="L257">      throw new NotFoundException(&quot;Could not find classroom&quot;);</span>
+    }
+<span class="fc" id="L259">    return classroomRepo.findByUidAndOwners_PublicUuid(classroomUid, callerUuid)</span>
+<span class="fc" id="L260">        .orElseThrow(() -&gt; new NotClassroomOwnerException(&quot;Caller is not an owner of the classroom&quot;));</span>
+  }
+
+  private TeacherUser requireTeacher(UUID uuid) {
+<span class="pc" id="L264">    return teacherRepo.findByPublicUuid(uuid).orElseThrow(() -&gt; new NotFoundException(&quot;Teacher not found&quot;));</span>
+  }
+
+  private StudentUser requireStudent(UUID uuid) {
+<span class="pc" id="L268">    return studentRepo.findByPublicUuid(uuid).orElseThrow(() -&gt; new NotFoundException(&quot;Student not found&quot;));</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

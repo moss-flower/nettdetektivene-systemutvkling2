@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NotepadEntry.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.notepad.model</a> &gt; <span class="el_source">NotepadEntry.java</span></div><h1>NotepadEntry.java</h1><pre class="source lang-java linenums">package no.safety.backend.notepad.model;
+
+import java.time.ZonedDateTime;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import no.safety.backend.notepad.dto.NotepadEntryCreateRequest;
+import no.safety.backend.notepad.dto.NotepadEntryUpdateRequest;
+import no.safety.backend.user.model.User;
+
+/**
+ * Represents a notepad entry in the system.
+ * Contains information such as title, content, type, source, and creation date.
+ * Multiple users can have access to the same entry (e.g., student and teacher).
+ */
+@Builder
+@Entity
+@Table(name = &quot;notepad_entry&quot;)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class NotepadEntry {
+    /* The internal entity id used by the database */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(updatable = false, nullable = false)
+    private Long internalId;
+
+    /* The public UUID for the entity sent to the client, should be used in API calls */
+    @Column(updatable = false, nullable = false, unique = true, columnDefinition = &quot;BINARY(16)&quot;)
+    private UUID publicUuid;
+
+    /* The title of the entry. */
+    @NotBlank
+    @Size(max = 128)
+    @Column(nullable = false, length = 128)
+    private String title;
+
+    /* The date the entry was created */
+    @NotNull
+    @Column(nullable = false)
+    private ZonedDateTime dateCreated;
+
+    /* The source of the entry. */
+    @Size(max = 128)
+    private String source;
+
+    /* The type of entry. */
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 25)
+    private NotepadEntryType type;
+
+    /* The content of the entry. */
+    @NotBlank
+    @Size(max = 256)
+    @Column(nullable = false, columnDefinition = &quot;TEXT&quot;)
+    private String content;
+
+    /**
+     * Creates a many-to-many relationship between {@link NotepadEntry} and {@link User}.
+     * Allows multiple users to have access to the same note (e.g., student and teacher).
+     */
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
+    @JoinTable(
+            name = &quot;notepad_entry_users&quot;,
+            joinColumns = @JoinColumn(name = &quot;notepad_entry_id&quot;),
+            inverseJoinColumns = @JoinColumn(name = &quot;user_id&quot;)
+    )
+
+    @Builder.Default
+    private Set&lt;User&gt; users = new HashSet&lt;&gt;();
+
+    @PrePersist
+    protected void onCreate() {
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">        if (this.publicUuid == null) {</span>
+<span class="fc" id="L88">            this.publicUuid = UUID.randomUUID();</span>
+        }
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">        if (this.dateCreated == null) {</span>
+<span class="fc" id="L91">            this.dateCreated = ZonedDateTime.now();</span>
+        }
+<span class="fc" id="L93">    }</span>
+
+    public void addUser(User user) {
+<span class="fc" id="L96">        this.users.add(user);</span>
+<span class="fc" id="L97">    }</span>
+
+    public void removeUser(User user) {
+<span class="nc" id="L100">        this.users.remove(user);</span>
+<span class="nc" id="L101">    }</span>
+
+    /**
+     * Checks equality based on the public UUID.
+     *
+     * @param o the object to compare with
+     * @return true if the objects have the same public UUID, false otherwise
+     */
+    @Override
+    public boolean equals(Object o) {
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        if (this == o) return true;</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        if (!(o instanceof NotepadEntry that)) return false;</span>
+<span class="nc bnc" id="L113" title="All 4 branches missed.">        return publicUuid != null &amp;&amp; publicUuid.equals(that.publicUuid);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L118">        return getClass().hashCode();</span>
+    }
+
+    /**
+     * Updates the fields of this entry from the provided update request.
+     *
+     * @param request the update request containing new values
+     */
+    public void updateValuesFrom(NotepadEntryUpdateRequest request) {
+<span class="fc" id="L127">        this.title = request.title();</span>
+<span class="fc" id="L128">        this.content = request.content();</span>
+<span class="fc" id="L129">        this.type = request.type();</span>
+<span class="fc" id="L130">        this.source = request.source();</span>
+<span class="fc" id="L131">    }</span>
+
+    /**
+     * Creates a new notepad entry from the provided request and assigns it to the specified user.
+     *
+     * @param request the create request containing entry details
+     * @param user the user to assign the entry to
+     * @return a new notepad entry instance
+     */
+    public static NotepadEntry createFrom(NotepadEntryCreateRequest request, User user) {
+<span class="fc" id="L141">        return NotepadEntry.builder()</span>
+<span class="fc" id="L142">            .title(request.title())</span>
+<span class="fc" id="L143">            .type(request.type())</span>
+<span class="fc" id="L144">            .content(request.content())</span>
+<span class="fc" id="L145">            .source(request.source())</span>
+<span class="fc" id="L146">            .users(new HashSet&lt;&gt;(Set.of(user)))</span>
+<span class="fc" id="L147">            .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

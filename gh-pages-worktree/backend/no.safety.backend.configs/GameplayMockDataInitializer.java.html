@@ -1,0 +1,1427 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GameplayMockDataInitializer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.configs</a> &gt; <span class="el_source">GameplayMockDataInitializer.java</span></div><h1>GameplayMockDataInitializer.java</h1><pre class="source lang-java linenums">package no.safety.backend.configs;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import no.safety.backend.achievements.model.Achievement;
+import no.safety.backend.achievements.model.AchievementCategory;
+import no.safety.backend.achievements.repository.AchievementRepository;
+import no.safety.backend.excercise.model.Exercise;
+import no.safety.backend.excercise.repository.ExerciseRepository;
+import no.safety.backend.media.service.MediaStorageService;
+import no.safety.backend.notepad.model.NotepadEntry;
+import no.safety.backend.notepad.model.NotepadEntryType;
+import no.safety.backend.station.model.Station;
+import no.safety.backend.station.repository.StationRepository;
+import no.safety.backend.task.content.EmailHotspotsContent;
+import no.safety.backend.task.content.MultipleChoiceContent;
+import no.safety.backend.task.content.PasswordStrengthContent;
+import no.safety.backend.task.content.SortIntoBucketsContent;
+import no.safety.backend.task.content.XOrYContent;
+import no.safety.backend.task.dto.TaskRequest;
+import no.safety.backend.task.model.Task;
+import no.safety.backend.task.repository.TaskRepository;
+import no.safety.backend.world.model.World;
+import no.safety.backend.world.repository.WorldRepository;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * Initializes mock data for gameplay including worlds, stations, exercises, and achievements.
+ * Implements ApplicationRunner to seed the database on application startup.
+ */
+@Component
+@Order(5)
+@RequiredArgsConstructor
+public class GameplayMockDataInitializer implements ApplicationRunner {
+
+    /**
+     * Generates a stable UUID from a string value for consistent mock data identifiers.
+     * @param value the string value to convert to UUID
+     * @return a deterministic UUID based on the input string
+     */
+<span class="fc" id="L48">    public static final UUID SCHOOLYARD_WORLD_UID = stableUuid(&quot;world:schoolyard&quot;);</span>
+<span class="fc" id="L49">  public static final UUID QUICKSTART_WORLD_UID = stableUuid(&quot;world:quickstart&quot;);</span>
+<span class="fc" id="L50">  public static final UUID CREATIVE_LAB_WORLD_UID = stableUuid(&quot;world:creative-lab&quot;);</span>
+
+<span class="fc" id="L52">  public static final UUID NEWSSTAND_STATION_UID = stableUuid(&quot;station:newsstand&quot;);</span>
+<span class="fc" id="L53">  public static final UUID PHOTOGRAPH_STATION_UID = stableUuid(&quot;station:photograph&quot;);</span>
+<span class="fc" id="L54">  public static final UUID POSTOFFICE_STATION_UID = stableUuid(&quot;station:postoffice&quot;);</span>
+<span class="fc" id="L55">  public static final UUID PASSWORDBANK_STATION_UID = stableUuid(&quot;station:passwordbank&quot;);</span>
+<span class="fc" id="L56">  public static final UUID MARKETPLACE_STATION_UID = stableUuid(&quot;station:marketplace&quot;);</span>
+<span class="fc" id="L57">  public static final UUID SOCIALMEDIA_STATION_UID = stableUuid(&quot;station:socialmedia&quot;);</span>
+<span class="fc" id="L58">  public static final UUID DATACENTER_STATION_UID = stableUuid(&quot;station:datacenter&quot;);</span>
+
+<span class="fc" id="L60">  public static final UUID NEWSSTAND_EXERCISE_1_UID = stableUuid(&quot;exercise:newsstand-exercise-1&quot;);</span>
+<span class="fc" id="L61">  public static final UUID NEWSSTAND_EXERCISE_2_UID = stableUuid(&quot;exercise:newsstand-exercise-2&quot;);</span>
+<span class="fc" id="L62">  public static final UUID PHOTOGRAPH_EXERCISE_1_UID = stableUuid(&quot;exercise:photograph-exercise-1&quot;);</span>
+<span class="fc" id="L63">  public static final UUID PHOTOGRAPH_EXERCISE_2_UID = stableUuid(&quot;exercise:photograph-exercise-2&quot;);</span>
+<span class="fc" id="L64">  public static final UUID PHOTOGRAPH_EXERCISE_3_UID = stableUuid(&quot;exercise:photograph-exercise-3&quot;);</span>
+<span class="fc" id="L65">  public static final UUID POSTOFFICE_EXERCISE_1_UID = stableUuid(&quot;exercise:postoffice-exercise-1&quot;);</span>
+<span class="fc" id="L66">  public static final UUID POSTOFFICE_EXERCISE_2_UID = stableUuid(&quot;exercise:postoffice-exercise-2&quot;);</span>
+<span class="fc" id="L67">  public static final UUID PASSWORDBANK_EXERCISE_1_UID = stableUuid(&quot;exercise:passwordbank-exercise-1&quot;);</span>
+<span class="fc" id="L68">  public static final UUID PASSWORDBANK_EXERCISE_2_UID = stableUuid(&quot;exercise:passwordbank-exercise-2&quot;);</span>
+<span class="fc" id="L69">  public static final UUID MARKETPLACE_EXERCISE_1_UID = stableUuid(&quot;exercise:marketplace-exercise-1&quot;);</span>
+<span class="fc" id="L70">  public static final UUID MARKETPLACE_EXERCISE_2_UID = stableUuid(&quot;exercise:marketplace-exercise-2&quot;);</span>
+<span class="fc" id="L71">  public static final UUID SOCIALMEDIA_EXERCISE_1_UID = stableUuid(&quot;exercise:socialmedia-exercise-1&quot;);</span>
+<span class="fc" id="L72">  public static final UUID SOCIALMEDIA_EXERCISE_2_UID = stableUuid(&quot;exercise:socialmedia-exercise-2&quot;);</span>
+<span class="fc" id="L73">  public static final UUID DATACENTER_EXERCISE_UID = stableUuid(&quot;exercise:datacenter-exercise&quot;);</span>
+
+  private static final String NEWS_SAFE_IMAGE = &quot;seed/tasks/news-safe.svg&quot;;
+  private static final String NEWS_WARNING_IMAGE = &quot;seed/tasks/news-warning.svg&quot;;
+  private static final String PHOTO_SAFE_IMAGE = &quot;seed/tasks/photo-safe.svg&quot;;
+  private static final String PHOTO_WARNING_IMAGE = &quot;seed/tasks/photo-warning.svg&quot;;
+  private static final String EMAIL_SAFE_IMAGE = &quot;seed/tasks/email-safe.svg&quot;;
+  private static final String EMAIL_WARNING_IMAGE = &quot;seed/tasks/email-warning.svg&quot;;
+  private static final String PASSWORD_SAFE_IMAGE = &quot;seed/tasks/password-safe.svg&quot;;
+  private static final String PASSWORD_WARNING_IMAGE = &quot;seed/tasks/password-warning.svg&quot;;
+  private static final String SHOP_SAFE_IMAGE = &quot;seed/tasks/shop-safe.svg&quot;;
+  private static final String SHOP_WARNING_IMAGE = &quot;seed/tasks/shop-warning.svg&quot;;
+  private static final String SOCIAL_SAFE_IMAGE = &quot;seed/tasks/social-safe.svg&quot;;
+  private static final String SOCIAL_WARNING_IMAGE = &quot;seed/tasks/social-warning.svg&quot;;
+  private static final String DETECTIVE_HUB_IMAGE = &quot;seed/tasks/detective-hub.svg&quot;;
+
+  private static final String NEWSSTAND_STATION_IMAGE = &quot;seed/stations/nyhetskvtartalet.png&quot;;
+  private static final String PHOTOGRAPH_STATION_IMAGE = &quot;seed/stations/fotografen.png&quot;;
+  private static final String POSTOFFICE_STATION_IMAGE = &quot;seed/stations/postkontoret.png&quot;;
+  private static final String PASSWORDBANK_STATION_IMAGE = &quot;seed/stations/passordbanken.png&quot;;
+  private static final String MARKETPLACE_STATION_IMAGE = &quot;seed/stations/markedsplassen.png&quot;;
+  private static final String SOCIALMEDIA_STATION_IMAGE = &quot;seed/stations/sosial-moteplassen.png&quot;;
+
+  private static final String NEWSSTAND_SAFE_LIBRARY_IMAGE = &quot;seed/tasks/nyhetskvartalet/safe-lesehjorne.png&quot;;
+  private static final String NEWSSTAND_SAFE_READING_IMAGE = &quot;seed/tasks/nyhetskvartalet/safe-barn-leser-mer.png&quot;;
+  private static final String NEWSSTAND_WARNING_PHONE_IMAGE = &quot;seed/tasks/nyhetskvartalet/warning-gratis-mobil.png&quot;;
+  private static final String NEWSSTAND_WARNING_SCHOOL_IMAGE = &quot;seed/tasks/nyhetskvartalet/warning-skoler-stenger.png&quot;;
+  private static final String NEWSSTAND_WARNING_PLAYGROUND_IMAGE = &quot;seed/tasks/nyhetskvartalet/warning-bot-lekeplass.png&quot;;
+
+  private static final String PHOTOGRAPH_REAL_DOG_IMAGE = &quot;seed/tasks/fotografen/real-dog-frisbee.png&quot;;
+  private static final String PHOTOGRAPH_REAL_FOOTBALL_IMAGE = &quot;seed/tasks/fotografen/real-football-player-kicking-ball.jpeg&quot;;
+  private static final String PHOTOGRAPH_REAL_PEOPLE_IMAGE = &quot;seed/tasks/fotografen/real-people-holding-hands.png&quot;;
+  private static final String PHOTOGRAPH_AI_HANDS_IMAGE = &quot;seed/tasks/fotografen/ai-folded-hands-many-fingers.jpeg&quot;;
+  private static final String PHOTOGRAPH_AI_BANANA_IMAGE = &quot;seed/tasks/fotografen/ai-kid-giant-banana.jpeg&quot;;
+  private static final String PHOTOGRAPH_AI_SIGNS_IMAGE = &quot;seed/tasks/fotografen/ai-road-sign-arrows-both-ways.png&quot;;
+  private static final String PHOTOGRAPH_AI_MARS_IMAGE = &quot;seed/tasks/fotografen/ai-eiffel-tower-mars-landscape.jpeg&quot;;
+  private static final String PHOTOGRAPH_AI_SKY_IMAGE = &quot;seed/tasks/fotografen/ai-sunset-spiral-clouds.jpeg&quot;;
+
+  private static final String POSTOFFICE_FAKE_IPHONE_IMAGE = &quot;seed/tasks/postkontoret/fake-you-won-iphone.jpeg&quot;;
+  private static final String POSTOFFICE_FAKE_ACCOUNT_IMAGE = &quot;seed/tasks/postkontoret/fake-your-account-will-be-closed.jpeg&quot;;
+  private static final String POSTOFFICE_REAL_BOOK_IMAGE = &quot;seed/tasks/postkontoret/real-book-reservation-reminder.png&quot;;
+  private static final String POSTOFFICE_REAL_HIKE_IMAGE = &quot;seed/tasks/postkontoret/real-hike-reminder.jpeg&quot;;
+  private static final String POSTOFFICE_REAL_TIMETABLE_IMAGE = &quot;seed/tasks/postkontoret/real-timeplan-next-week.png&quot;;
+  private static final String POSTOFFICE_REAL_LIBRARY_IMAGE = &quot;seed/tasks/postkontoret/real-welcome-to-library.jpeg&quot;;
+
+  private static final String MARKETPLACE_FAKE_BIKE_IMAGE = &quot;seed/tasks/markedsplassen/fake-bike-ad.jpeg&quot;;
+  private static final String MARKETPLACE_FAKE_IPHONE_IMAGE = &quot;seed/tasks/markedsplassen/fake-iphone-ad.jpeg&quot;;
+  private static final String MARKETPLACE_FAKE_LAPTOP_IMAGE = &quot;seed/tasks/markedsplassen/fake-laptop-ad.jpeg&quot;;
+  private static final String MARKETPLACE_REAL_BIKE_IMAGE = &quot;seed/tasks/markedsplassen/real-bike-ad.jpeg&quot;;
+  private static final String MARKETPLACE_REAL_LAPTOP_IMAGE = &quot;seed/tasks/markedsplassen/real-laptop-ad.jpeg&quot;;
+
+  private static final String SOCIAL_BAD_SHARE_IMAGE = &quot;seed/tasks/sosiale-moteplassen/bad-alle-ma-dele-laerer-skjuler-sannhet.jpeg&quot;;
+  private static final String SOCIAL_BAD_SCHOOL_IMAGE = &quot;seed/tasks/sosiale-moteplassen/bad-alle-skoler-stenger-neste-uke.jpeg&quot;;
+  private static final String SOCIAL_BAD_CHIPS_IMAGE = &quot;seed/tasks/sosiale-moteplassen/bad-farlige-chips-gjor-barn-syke.jpeg&quot;;
+  private static final String SOCIAL_GOOD_TIPS_IMAGE = &quot;seed/tasks/sosiale-moteplassen/good-vaer-skeptisk-til-trender.jpeg&quot;;
+  private static final String SOCIAL_GOOD_CHIPS_IMAGE = &quot;seed/tasks/sosiale-moteplassen/good-faktasjekk-farlige-chips.jpeg&quot;;
+  private static final String SOCIAL_GOOD_SCHOOL_IMAGE = &quot;seed/tasks/sosiale-moteplassen/good-udir-skoler-stenger-ikke.jpeg&quot;;
+
+  private final ExerciseRepository exerciseRepository;
+  private final StationRepository stationRepository;
+  private final WorldRepository worldRepository;
+  private final MediaStorageService mediaStorageService;
+  private final AchievementRepository achievementRepository;
+  private final TaskRepository taskRepository;
+
+    /**
+     * Runs the mock data initialization on application startup.
+     * Seeds exercises, stations, worlds, and achievements into the database.
+     * @param args application arguments (not used)
+     */
+    @Override
+    @Transactional
+    public void run(ApplicationArguments args) {
+<span class="fc" id="L146">    seedExercises();</span>
+<span class="fc" id="L147">    seedStations();</span>
+<span class="fc" id="L148">    seedWorlds();</span>
+<span class="fc" id="L149">  }</span>
+
+    /**
+     * Seeds exercises into the database with predefined UUIDs.
+     * Creates various exercise types including multiple choice, X-or-Y, sort into buckets,
+     * email hotspots, and password strength tasks.
+     */
+    private void seedExercises() {
+<span class="fc" id="L157">    upsertExercise(NEWSSTAND_EXERCISE_1_UID, &quot;Troverdige nyheter&quot;, &quot;Lett&quot;,</span>
+        &quot;Undersøk hvilke nyhetssaker som virker ekte, og hvilke faresignaler du bør sjekke.&quot;,
+<span class="fc" id="L159">        List.of(</span>
+<span class="fc" id="L160">            multipleChoiceTask(</span>
+                &quot;Velg den forklaringen som best viser hvorfor saken virker trygg å stole på.&quot;,
+                &quot;Bra observert. En tydelig avsender gjør det lettere å sjekke hvem som står bak informasjonen.&quot;,
+                &quot;Se etter tegn som hjelper deg å sjekke saken, som tydelig avsender og konkret informasjon.&quot;,
+                &quot;Hvilken forklaring passer best?&quot;,
+                &quot;Se på skjermbildet og velg det beste tegnet på at saken virker troverdig.&quot;,
+<span class="fc" id="L166">                media(NEWSSTAND_SAFE_LIBRARY_IMAGE),</span>
+                &quot;Skjermbilde av en rolig nyhetssak om et nytt lesehjørne på skolen&quot;,
+<span class="fc" id="L168">                List.of(</span>
+                    new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Saken oppgir hvem som har skrevet den og når den er publisert&quot;),
+                    new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Saken har et stort bilde som ser ryddig ut&quot;)
+                ),
+                &quot;a&quot;
+            ),
+<span class="fc" id="L174">            xOrYTask(</span>
+                &quot;Sammenlign de to overskriftene og velg den som virker mest troverdig.&quot;,
+                &quot;Bra. Den troverdige saken bruker rolig språk og gir deg noe konkret å sjekke.&quot;,
+                &quot;Se etter rolig språk, tydelig avsender og konkrete opplysninger.&quot;,
+                &quot;Hvilken overskrift virker tryggest?&quot;,
+                &quot;Velg saken du ville stolt mest på ved første blikk.&quot;,
+<span class="fc" id="L180">                media(NEWSSTAND_WARNING_PHONE_IMAGE),</span>
+                &quot;Dramatisk nyhet om gratis mobil uten tydelig avsender&quot;,
+                &quot;&quot;,
+                &quot;Gratis mobil til alle elever&quot;,
+                &quot;Utsnitt fra en nyhetssak om skole og mobilbruk.&quot;,
+<span class="fc" id="L185">                media(NEWSSTAND_SAFE_READING_IMAGE),</span>
+                &quot;Rolig overskrift med tydelig avsender&quot;,
+                &quot;&quot;,
+                &quot;Barn leser mer etter nytt lesehjørne på skolebiblioteket&quot;,
+                &quot;Utsnitt fra en nyhetssak om skolebiblioteket.&quot;,
+                XOrYContent.Choice.Y
+            ),
+<span class="fc" id="L192">            sortIntoBucketsTask(</span>
+                &quot;Sorter tegnene i riktig boks.&quot;,
+                &quot;Riktig. Du skilte mellom gode tegn og faresignaler i en nyhetssak.&quot;,
+                &quot;Se en gang til på hvilke kort som hjelper deg å stole på saken, og hvilke som gjør deg mer skeptisk.&quot;,
+                &quot;Hva bør du stole på?&quot;,
+                &quot;Dra kortene til riktig kategori.&quot;,
+                &quot;Kort som skal sorteres&quot;,
+<span class="fc" id="L199">                List.of(</span>
+                    new SortIntoBucketsContent.Bucket(&quot;safe&quot;, &quot;Trygge tegn&quot;, &quot;Tegn som styrker troverdigheten.&quot;, &quot;#d9fbe6&quot;),
+                    new SortIntoBucketsContent.Bucket(&quot;warn&quot;, &quot;Faresignaler&quot;, &quot;Tegn som bør sjekkes ekstra.&quot;, &quot;#fee2e2&quot;)
+                ),
+<span class="fc" id="L203">                List.of(</span>
+                    new SortIntoBucketsContent.Item(&quot;news-1&quot;, &quot;Navngitt avsender&quot;, &quot;safe&quot;, &quot;Da kan du sjekke hvem som står bak.&quot;),
+                    new SortIntoBucketsContent.Item(&quot;news-2&quot;, &quot;Dato og klokkeslett&quot;, &quot;safe&quot;, &quot;Det gjør det lettere å forstå når saken ble skrevet.&quot;),
+                    new SortIntoBucketsContent.Item(&quot;news-3&quot;, &quot;Overskrift som lover mer enn den forklarer&quot;, &quot;warn&quot;, &quot;Da bør du være ekstra forsiktig.&quot;),
+                    new SortIntoBucketsContent.Item(&quot;news-4&quot;, &quot;Sak uten kilde eller forklaring&quot;, &quot;warn&quot;, &quot;Når kilden mangler, bør du være ekstra skeptisk.&quot;)
+                )
+            ),
+<span class="fc" id="L210">            multipleChoiceTask(</span>
+                &quot;Se på skjermbildet og velg den beste grunnen til at saken virker falsk.&quot;,
+                &quot;Riktig. Når en overskrift prøver å sjokkere og du ikke kjenner avsenderen, bør du stoppe opp og sjekke mer.&quot;,
+                &quot;Tenk på hvilke tegn som faktisk svekker troverdigheten, ikke bare hvordan saken ser ut visuelt.&quot;,
+                &quot;Hvorfor virker denne saken falsk?&quot;,
+                &quot;Velg forklaringen som passer best til det du ser i skjermbildet.&quot;,
+<span class="fc" id="L216">                media(NEWSSTAND_WARNING_PLAYGROUND_IMAGE),</span>
+                &quot;Skjermbilde av en tvilsom nyhetsartikkel om at lekeplassen skal stenge&quot;,
+<span class="fc" id="L218">                List.of(</span>
+                    new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Den har en tydelig avsender og viser til flere kilder&quot;),
+                    new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Den mangler navn på hvem som står bak saken&quot;),
+                    new MultipleChoiceContent.Option(&quot;c&quot;, &quot;Den har en stor illustrasjon øverst&quot;)
+                ),
+                &quot;b&quot;
+            )
+        )
+    );
+
+<span class="fc" id="L228">    upsertExercise(NEWSSTAND_EXERCISE_2_UID, &quot;Nyhetsdetektiv&quot;, &quot;Middels&quot;,</span>
+        &quot;Sammenlign nyhetssaker og finn ut hva du bør sjekke før du tror eller deler.&quot;,
+<span class="fc" id="L230">        List.of(</span>
+<span class="fc" id="L231">            multipleChoiceTask(</span>
+                &quot;Velg saken som virker mest pålitelig når du ser på språk, avsender og forklaringer.&quot;,
+                &quot;Riktig. Den gode saken forklarer hva som har skjedd og peker til en kjent avsender.&quot;,
+                &quot;Se etter kjent avsender, konkret språk og om saken forklarer hvor informasjonen kommer fra.&quot;,
+                &quot;Hva er det tydeligste faresignalet?&quot;,
+                &quot;Saken ser profesjonell ut, men ett tegn gjør at du bør være ekstra skeptisk.&quot;,
+<span class="fc" id="L237">                media(NEWSSTAND_WARNING_PHONE_IMAGE),</span>
+                &quot;Skjermbilde av en nyhetsartikkel om gratis mobil uten tydelige kilder&quot;,
+<span class="fc" id="L239">                List.of(</span>
+                    new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Den har en kort overskrift og et stort bilde&quot;),
+                    new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Den mangler tydelige kilder eller forklaringer&quot;),
+                    new MultipleChoiceContent.Option(&quot;c&quot;, &quot;Den handler om noe mange elever er nysgjerrige på&quot;)
+                ),
+                &quot;b&quot;
+            ),
+<span class="fc" id="L246">            xOrYTask(</span>
+                &quot;Velg den saken som virker mest troverdig når du sammenligner avsender og forklaring.&quot;,
+                &quot;Bra. Den beste saken gir deg nok informasjon til at du kan sjekke mer selv.&quot;,
+                &quot;Se etter hvem som står bak og om saken forklarer hvor opplysningene kommer fra.&quot;,
+                &quot;Hvilken sak ville du sjekket videre?&quot;,
+                &quot;Velg den som virker mest ryddig og pålitelig.&quot;,
+<span class="fc" id="L252">                media(NEWSSTAND_WARNING_SCHOOL_IMAGE),</span>
+                &quot;Nyhetssak med vag overskrift og ingen tydelig kilde&quot;,
+                &quot;&quot;,
+                &quot;Det skjer noe stort ved skolen i morgen&quot;,
+                &quot;Utsnitt fra en nyhetssak om skolen.&quot;,
+<span class="fc" id="L257">                media(NEWSSTAND_SAFE_READING_IMAGE),</span>
+                &quot;Nyhetssak med rolig overskrift og tydelig kilde&quot;,
+                &quot;&quot;,
+                &quot;Barn leser mer etter nytt lesehjørne på skolebiblioteket&quot;,
+                &quot;Utsnitt fra en nyhetssak om lesehjørnet på skolen.&quot;,
+                XOrYContent.Choice.Y
+            ),
+<span class="fc" id="L264">            multipleChoiceTask(</span>
+                &quot;Velg det beste neste steget når du blir usikker på om en nyhet stemmer.&quot;,
+                &quot;Ja. Det tryggeste er å sjekke kilden og se om andre troverdige steder skriver det samme.&quot;,
+                &quot;Tenk på hva som hjelper deg å undersøke saken, ikke hva som sprer den raskest.&quot;,
+                &quot;Hva bør du gjøre etterpå?&quot;,
+                &quot;Du er usikker på om saken stemmer. Velg det smarteste neste steget.&quot;,
+<span class="fc" id="L270">                media(NEWSSTAND_WARNING_PLAYGROUND_IMAGE),</span>
+                &quot;Skjermbilde av en nyhetssak som bør dobbeltsjekkes før den deles&quot;,
+<span class="fc" id="L272">                List.of(</span>
+                    new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Sjekke om andre troverdige kilder sier det samme&quot;),
+                    new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Spørre en venn om hva han eller hun tror&quot;),
+                    new MultipleChoiceContent.Option(&quot;c&quot;, &quot;Lese kommentarfeltet først&quot;)
+                ),
+                &quot;a&quot;
+            )
+        )
+    );
+
+<span class="fc" id="L282">    upsertExercise(PHOTOGRAPH_EXERCISE_1_UID, &quot;Bildeblikk&quot;, &quot;Lett&quot;,</span>
+        &quot;Se etter tydelige tegn på at et bilde kan være laget eller endret.&quot;,
+<span class="fc" id="L284">        List.of(</span>
+<span class="fc" id="L285">            multipleChoiceTask(</span>
+                &quot;Hva bør du se nærmere på i dette bildet?&quot;,
+                &quot;Bra. Når en detalj ikke passer helt med resten av bildet, er det lurt å dobbeltsjekke.&quot;,
+                &quot;Se etter ting som virker litt rare eller som ikke henger helt sammen.&quot;,
+                &quot;Hva er det beste tegnet på at bildet bør sjekkes nærmere?&quot;,
+                &quot;Velg det du ville lagt mest merke til først.&quot;,
+<span class="fc" id="L291">                media(PHOTOGRAPH_AI_HANDS_IMAGE),</span>
+                &quot;En hånd med flere fingre enn forventet&quot;,
+<span class="fc" id="L293">                List.of(</span>
+                    new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Hendene har for mange fingre&quot;),
+                    new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Bakgrunnen er litt uskarp&quot;),
+                    new MultipleChoiceContent.Option(&quot;c&quot;, &quot;Bildet er tatt i dagslys&quot;)
+                ),
+                &quot;a&quot;
+            ),
+<span class="fc" id="L300">            xOrYTask(</span>
+                &quot;Hvilket bilde virker mest naturlig ved første blikk?&quot;,
+                &quot;Bra. Det ene bildet har flere små ting som skurrer, mens det andre virker mer vanlig.&quot;,
+                &quot;Se etter om kropp, lys og ting i bildet passer sammen på en naturlig måte.&quot;,
+                &quot;Hvilket bilde virker mest troverdig?&quot;,
+                &quot;Velg bildet som virker mest vanlig og rolig.&quot;,
+<span class="fc" id="L306">                media(PHOTOGRAPH_AI_BANANA_IMAGE),</span>
+                &quot;Barn holder en veldig stor banan&quot;,
+                &quot;&quot;,
+                &quot;Den store banenen&quot;,
+                &quot;En gutt holder en kjempestor banan over hodet.&quot;,
+<span class="fc" id="L311">                media(PHOTOGRAPH_REAL_DOG_IMAGE),</span>
+                &quot;Hund som fanger en frisbee&quot;,
+                &quot;&quot;,
+                &quot;Hund med frisbee&quot;,
+                &quot;En hund som hopper etter en frisbee&quot;,
+                XOrYContent.Choice.Y
+            )
+        )
+    );
+
+<span class="fc" id="L321">    upsertExercise(PHOTOGRAPH_EXERCISE_2_UID, &quot;Foto eller fiks?&quot;, &quot;Middels&quot;,</span>
+        &quot;Sammenlign bilder og se etter små ting som gjør at noe føles feil.&quot;,
+<span class="fc" id="L323">        List.of(</span>
+<span class="fc" id="L324">            sortIntoBucketsTask(</span>
+                &quot;Sorter detaljene i riktig boks.&quot;,
+                &quot;Riktig. Du skilte mellom detaljer som passer godt inn, og detaljer som bør sjekkes nærmere.&quot;,
+                &quot;Se etter små ting som ikke helt passer sammen i bildet.&quot;,
+                &quot;Hva virker mest trygt å stole på?&quot;,
+                &quot;Dra kortene til riktig kategori.&quot;,
+                &quot;Detaljer som skal sorteres&quot;,
+<span class="fc" id="L331">                List.of(</span>
+                    new SortIntoBucketsContent.Bucket(&quot;ok&quot;, &quot;Virker naturlig&quot;, &quot;Ting som passer godt inn i et ekte bilde.&quot;, &quot;#dbeafe&quot;),
+                    new SortIntoBucketsContent.Bucket(&quot;check&quot;, &quot;Bør sjekkes&quot;, &quot;Ting som ofte avslører at noe er laget eller endret.&quot;, &quot;#fee2e2&quot;)
+                ),
+<span class="fc" id="L335">                List.of(</span>
+                    new SortIntoBucketsContent.Item(&quot;photo-1&quot;, &quot;Skygger peker samme vei&quot;, &quot;ok&quot;, &quot;Det passer bedre med ekte lys.&quot;),
+                    new SortIntoBucketsContent.Item(&quot;photo-2&quot;, &quot;Skilt med piler som peker begge veier&quot;, &quot;check&quot;, &quot;Retningen virker ikke helt logisk.&quot;),
+                    new SortIntoBucketsContent.Item(&quot;photo-3&quot;, &quot;Ansikter og klær ser jevne ut&quot;, &quot;ok&quot;, &quot;Det gir mindre grunn til mistanke.&quot;),
+                    new SortIntoBucketsContent.Item(&quot;photo-4&quot;, &quot;Utydelig kant rundt motivet&quot;, &quot;check&quot;, &quot;Når kanter blir rare, bør du bli skeptisk.&quot;)
+                )
+            ),
+<span class="fc" id="L342">            multipleChoiceTask(</span>
+                &quot;Hva bør du se nærmere på i skiltet?&quot;,
+                &quot;Bra. Når retningen ikke virker helt logisk, er det et tegn på at noe bør sjekkes.&quot;,
+                &quot;Tenk på hva som ikke helt stemmer med det du forventer å se på et skilt.&quot;,
+                &quot;Hva virker mest usikkert?&quot;,
+                &quot;Velg det som bør få deg til å stoppe opp.&quot;,
+<span class="fc" id="L348">                media(PHOTOGRAPH_AI_SIGNS_IMAGE),</span>
+                &quot;Et veiskilt med piler i to retninger&quot;,
+<span class="fc" id="L350">                List.of(</span>
+                    new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Retningen på pilene virker ikke helt logisk&quot;),
+                    new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Skiltet har tydelige farger&quot;),
+                    new MultipleChoiceContent.Option(&quot;c&quot;, &quot;Det står ved en vei&quot;)
+                ),
+                &quot;a&quot;
+            )
+        )
+    );
+
+<span class="fc" id="L360">    upsertExercise(PHOTOGRAPH_EXERCISE_3_UID, &quot;Bildedetektiv&quot;, &quot;Vanskelig&quot;,</span>
+        &quot;Undersøk bilder som ser nesten ekte ut, men som har små detaljer som ikke stemmer.&quot;,
+<span class="fc" id="L362">        List.of(</span>
+<span class="fc" id="L363">            xOrYTask(</span>
+                &quot;Hvilket bilde virker mest troverdig ved første blikk?&quot;,
+                &quot;Riktig. Det ene motivet passer dårlig sammen, mens det andre virker mer som et vanlig bilde av noe på himmelen.&quot;,
+                &quot;Se etter hvilket bilde som virker mest naturlig og minst kunstig.&quot;,
+                &quot;Hvilket bilde ville du stolt mest på?&quot;,
+                &quot;Velg bildet som virker mest vanlig og minst overraskende.&quot;,
+<span class="fc" id="L369">                media(PHOTOGRAPH_AI_MARS_IMAGE),</span>
+                &quot;Eiffeltårnet står på Mars&quot;,
+                &quot;&quot;,
+                &quot;Alternativ 1&quot;,
+                &quot;Et kjent tårn i et rødt landskap.&quot;,
+<span class="fc" id="L374">                media(PHOTOGRAPH_REAL_PEOPLE_IMAGE),</span>
+                &quot;Personer som går tur sammen&quot;,
+                &quot;&quot;,
+                &quot;Alternativ 2&quot;,
+                &quot;Mange personer går ute sammen.&quot;,
+                XOrYContent.Choice.Y
+            ),
+<span class="fc" id="L381">            multipleChoiceTask(</span>
+                &quot;Hva bør du undersøke først i dette bildet?&quot;,
+                &quot;Bra. Når bevegelse og kropp ikke helt henger sammen, er det lurt å se nærmere på bildet.&quot;,
+                &quot;Se etter noe som virker litt feil i måten motivet er satt sammen på.&quot;,
+                &quot;Hva er det beste spørsmålet å stille?&quot;,
+                &quot;Velg det som hjelper deg å vurdere om bildet er ekte.&quot;,
+<span class="fc" id="L387">                media(PHOTOGRAPH_REAL_FOOTBALL_IMAGE),</span>
+                &quot;En spiller som sparker ballen i en kamp&quot;,
+<span class="fc" id="L389">                List.of(</span>
+                    new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Ser bevegelsen og kroppen naturlig ut?&quot;),
+                    new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Har bildet mange ulike farger?&quot;),
+                    new MultipleChoiceContent.Option(&quot;c&quot;, &quot;Er bildet tatt ute på en bane?&quot;)
+                ),
+                &quot;a&quot;
+            )
+        )
+    );
+
+<span class="fc" id="L399">    upsertExercise(POSTOFFICE_EXERCISE_1_UID, &quot;Før du klikker&quot;, &quot;Lett&quot;,</span>
+        &quot;Lær å kjenne igjen vanlige e-poster og de første tegnene på at noe er rart.&quot;,
+<span class="fc" id="L401">        List.of(</span>
+<span class="fc" id="L402">            multipleChoiceTask(</span>
+                &quot;Hva er det første du bør sjekke i denne meldingen?&quot;,
+                &quot;Bra. Avsenderen er ofte det viktigste å kontrollere først.&quot;,
+                &quot;Se etter noe som hjelper deg å forstå om meldingen er trygg å åpne.&quot;,
+                &quot;Hva bør du se på først?&quot;,
+                &quot;Velg det som sier mest om hvem som sendte meldingen.&quot;,
+<span class="fc" id="L408">                media(POSTOFFICE_REAL_LIBRARY_IMAGE),</span>
+                &quot;En vanlig e-post med tydelig avsender&quot;,
+<span class="fc" id="L410">                List.of(</span>
+                    new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Hvem som sendte e-posten&quot;),
+                    new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Hvor mange linjer teksten har&quot;),
+                    new MultipleChoiceContent.Option(&quot;c&quot;, &quot;Om det er et bilde øverst&quot;)
+                ),
+                &quot;a&quot;
+            ),
+<span class="fc" id="L417">            xOrYTask(</span>
+                &quot;Hvilken melding virker mest som en vanlig e-post?&quot;,
+                &quot;Riktig. Den ene prøver å lokke deg raskt, mens den andre ser ut som en vanlig påminnelse.&quot;,
+                &quot;Se etter hvilken melding som virker mest rolig og vanlig.&quot;,
+                &quot;Hvilken melding ville du åpnet først?&quot;,
+                &quot;Velg den som virker mest hverdagslig.&quot;,
+<span class="fc" id="L423">                media(POSTOFFICE_FAKE_IPHONE_IMAGE),</span>
+                &quot;Du har vunnet en iPhone&quot;,
+                &quot;&quot;,
+                &quot;Melding 1&quot;,
+                &quot;Meldingen lover en premie og vil at du skal klikke raskt.&quot;,
+<span class="fc" id="L428">                media(POSTOFFICE_REAL_BOOK_IMAGE),</span>
+                &quot;Påminnelse om en reservert bok&quot;,
+                &quot;&quot;,
+                &quot;Melding 2&quot;,
+                &quot;Meldingen minner deg bare om en bok du har lånt.&quot;,
+                XOrYContent.Choice.Y
+            ),
+<span class="fc" id="L435">            emailHotspotsTask(</span>
+                &quot;Trykk på de delene av e-posten som virker mest mistenkelige.&quot;,
+                &quot;Bra jobbet. Du fant flere tegn på at meldingen ikke er trygg.&quot;,
+                &quot;Se etter avsenderen, lenken og ting som prøver å stresse deg.&quot;,
+                &quot;Finn faresignalene&quot;,
+                &quot;Trykk på det som gjør meldingen mistenkelig.&quot;,
+                new EmailHotspotsContent.Email(
+                    &quot;Skole-IT&quot;,
+                    &quot;sender-name&quot;,
+                    &quot;support@skolekonto-trygg.info&quot;,
+                    &quot;sender-address&quot;,
+                    &quot;Kontoen din blir stengt i dag&quot;,
+                    &quot;subject&quot;,
+                    &quot;IT&quot;,
+                    &quot;I dag 08:15&quot;,
+                    &quot;received&quot;,
+                    &quot;Hei elev!&quot;,
+                    &quot;greeting&quot;,
+<span class="fc" id="L453">                    List.of(</span>
+                        new EmailHotspotsContent.TextBlock(&quot;body-text&quot;, &quot;Du må oppdatere kontoen din med en gang for at den ikke skal bli sperret.&quot;, &quot;body-text-target&quot;),
+                        new EmailHotspotsContent.LinkBlock(&quot;body-link&quot;, &quot;Oppdater her&quot;, &quot;skolekonto-trygg.info/login&quot;, &quot;Gjør det nå&quot;, &quot;body-link-target&quot;)
+                    ),
+                    new EmailHotspotsContent.ActionButton(&quot;Logg inn&quot;, &quot;skolenorge.no&quot;, &quot;action-button&quot;),
+<span class="fc" id="L458">                    List.of(new EmailHotspotsContent.Attachment(&quot;attachment&quot;, &quot;oppdatering.zip&quot;, &quot;Uvanlig vedlegg&quot;, &quot;attachment-target&quot;)),</span>
+                    &quot;Hilsen support&quot;,
+                    &quot;closing&quot;
+                ),
+<span class="fc" id="L462">                List.of(</span>
+                    new EmailHotspotsContent.Target(&quot;sender-name&quot;, false),
+                    new EmailHotspotsContent.Target(&quot;sender-address&quot;, true),
+                    new EmailHotspotsContent.Target(&quot;subject&quot;, true),
+                    new EmailHotspotsContent.Target(&quot;received&quot;, false),
+                    new EmailHotspotsContent.Target(&quot;greeting&quot;, false),
+                    new EmailHotspotsContent.Target(&quot;body-text-target&quot;, true),
+                    new EmailHotspotsContent.Target(&quot;body-link-target&quot;, true),
+                    new EmailHotspotsContent.Target(&quot;action-button&quot;, false),
+                    new EmailHotspotsContent.Target(&quot;attachment-target&quot;, true),
+                    new EmailHotspotsContent.Target(&quot;closing&quot;, false)
+                )
+            )
+        )
+    );
+
+<span class="fc" id="L478">    upsertExercise(POSTOFFICE_EXERCISE_2_UID, &quot;E-postdetektiv&quot;, &quot;Middels&quot;,</span>
+        &quot;Sammenlign meldinger og finn tegn som hjelper deg å avgjøre om de er trygge.&quot;,
+<span class="fc" id="L480">        List.of(</span>
+<span class="fc" id="L481">            multipleChoiceTask(</span>
+                &quot;Hva virker mest normalt i denne meldingen?&quot;,
+                &quot;Riktig. En tydelig og kjent avsender er et godt tegn.&quot;,
+                &quot;Se etter det som gjør meldingen lett å forstå og kontrollere.&quot;,
+                &quot;Hva er det beste tegnet på at meldingen er grei?&quot;,
+                &quot;Velg det som virker mest som en vanlig skolemelding.&quot;,
+<span class="fc" id="L487">                media(POSTOFFICE_REAL_TIMETABLE_IMAGE),</span>
+                &quot;Melding om neste ukes timeplan&quot;,
+<span class="fc" id="L489">                List.of(</span>
+                    new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Den kommer fra en tydelig avsender&quot;),
+                    new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Den lover en premie&quot;),
+                    new MultipleChoiceContent.Option(&quot;c&quot;, &quot;Den ber deg logge inn med en gang&quot;)
+                ),
+                &quot;a&quot;
+            ),
+<span class="fc" id="L496">            xOrYTask(</span>
+                &quot;Hvilken melding virker mest troverdig ved første blikk?&quot;,
+                &quot;Bra. Den ene prøver å få deg til å stresse, mens den andre ligner mer på en vanlig melding.&quot;,
+                &quot;Se etter hvilken melding som virker mest rolig og vanlig.&quot;,
+                &quot;Hvilken melding ville du sjekket først?&quot;,
+                &quot;Velg den som virker minst mistenkelig.&quot;,
+<span class="fc" id="L502">                media(POSTOFFICE_FAKE_ACCOUNT_IMAGE),</span>
+                &quot;Kontoen må oppdateres nå&quot;,
+                &quot;&quot;,
+                &quot;Melding 1&quot;,
+                &quot;Meldingen presser deg til å handle raskt.&quot;,
+<span class="fc" id="L507">                media(POSTOFFICE_REAL_HIKE_IMAGE),</span>
+                &quot;Påminnelse om tur i helgen&quot;,
+                &quot;&quot;,
+                &quot;Melding 2&quot;,
+                &quot;Meldingen virker som en vanlig beskjed uten press.&quot;,
+                XOrYContent.Choice.Y
+            ),
+<span class="fc" id="L514">            multipleChoiceTask(</span>
+                &quot;Hva er det tydeligste faresignalet i denne e-posten?&quot;,
+                &quot;Bra. Når en e-post lover noe stort og vil ha deg til å klikke raskt, bør du være ekstra forsiktig.&quot;,
+                &quot;Se etter det som gjør at du stopper opp og sjekker mer.&quot;,
+                &quot;Hva skurrer mest?&quot;,
+                &quot;Velg det tegnet som gjør e-posten mest mistenkelig.&quot;,
+<span class="fc" id="L520">                media(POSTOFFICE_FAKE_IPHONE_IMAGE),</span>
+                &quot;E-post om at du har vunnet en iPhone&quot;,
+<span class="fc" id="L522">                List.of(</span>
+                    new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Den lover en premie og ber deg klikke raskt&quot;),
+                    new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Den har en kort overskrift&quot;),
+                    new MultipleChoiceContent.Option(&quot;c&quot;, &quot;Den bruker et bilde øverst&quot;)
+                ),
+                &quot;a&quot;
+            )
+        )
+    );
+
+<span class="fc" id="L532">    upsertExercise(PASSWORDBANK_EXERCISE_1_UID, &quot;Passorddetektiv&quot;, &quot;Lett&quot;,</span>
+        &quot;Lær hva som gjør et passord sterkt, trygt og mulig å huske.&quot;,
+<span class="fc" id="L534">        List.of(</span>
+<span class="fc" id="L535">            sortIntoBucketsTask(</span>
+                &quot;Sorter delene i riktig boks.&quot;,
+                &quot;Riktig. Du skilte mellom ting som ofte styrker et passord, og ting som ofte gjør det lettere å gjette.&quot;,
+                &quot;Tenk på hvilke valg som gjør passordet lengre og mindre opplagt.&quot;,
+                &quot;Hva er smart å bruke i et passord?&quot;,
+                &quot;Legg hvert kort i riktig kategori.&quot;,
+                &quot;Deler som skal sorteres&quot;,
+<span class="fc" id="L542">                List.of(</span>
+                    new SortIntoBucketsContent.Bucket(&quot;smart&quot;, &quot;Smart å bruke&quot;, &quot;Valg som ofte gjør passordet sterkere.&quot;, &quot;#d9fbe6&quot;),
+                    new SortIntoBucketsContent.Bucket(&quot;avoid&quot;, &quot;Bør unngås&quot;, &quot;Valg som ofte gjør passordet lettere å gjette.&quot;, &quot;#fee2e2&quot;)
+                ),
+<span class="fc" id="L546">                List.of(</span>
+                    new SortIntoBucketsContent.Item(&quot;pw-1&quot;, &quot;Flere ord som bare du husker&quot;, &quot;smart&quot;, &quot;Lengde og variasjon hjelper.&quot;),
+                    new SortIntoBucketsContent.Item(&quot;pw-2&quot;, &quot;Eget navn og fødselsår&quot;, &quot;avoid&quot;, &quot;Det kan andre ofte vite om deg.&quot;),
+                    new SortIntoBucketsContent.Item(&quot;pw-3&quot;, &quot;Et symbol eller tall som ikke er opplagt&quot;, &quot;smart&quot;, &quot;Små ekstra detaljer kan gjøre passordet vanskeligere å gjette.&quot;),
+                    new SortIntoBucketsContent.Item(&quot;pw-4&quot;, &quot;123 eller qwerty&quot;, &quot;avoid&quot;, &quot;Vanlige mønstre blir ofte prøvd først.&quot;)
+                )
+            ),
+<span class="fc" id="L553">            passwordStrengthTask(</span>
+                &quot;Lag et nytt passord til skolekontoen din.&quot;,
+                &quot;Bra jobbet. Passordet ditt var langt nok og vanskeligere å gjette.&quot;,
+                &quot;Prøv igjen med flere tegn og en bedre blanding av bokstaver, tall og symboler.&quot;,
+                &quot;Lag et nytt passord&quot;,
+                &quot;Lag et passord som ikke er lett å gjette, men som du fortsatt kan huske.&quot;,
+                &quot;Bruk minst 12 tegn og bland flere typer tegn uten å bruke navn eller enkle mønstre.&quot;,
+                PasswordStrengthContent.Mode.CREATE,
+                &quot;Skriv passordet her&quot;,
+                null,
+<span class="fc" id="L563">                12,</span>
+                4,
+<span class="fc" id="L565">                List.of(&quot;123&quot;, &quot;qwerty&quot;, &quot;passord&quot;, &quot;skole&quot;, &quot;ada&quot;)</span>
+            ),
+<span class="fc" id="L567">            passwordStrengthTask(</span>
+                &quot;Gjør startpassordet tryggere.&quot;,
+                &quot;Bra. Du bygde videre på startpassordet og gjorde det mye vanskeligere å gjette.&quot;,
+                &quot;Du må beholde noe av startpassordet, men gjøre det lengre og mindre opplagt.&quot;,
+                &quot;Forbedre passordet&quot;,
+                &quot;Tenk deg at noen bruker dette svake passordet allerede. Gjør det bedre uten å bytte det helt ut.&quot;,
+                &quot;Behold startpassordet som en del av det nye passordet, men legg til flere tegn og mer variasjon.&quot;,
+                PasswordStrengthContent.Mode.IMPROVE,
+                &quot;Skriv det forbedrede passordet her&quot;,
+                &quot;Ada2026&quot;,
+<span class="fc" id="L577">                12,</span>
+                4,
+<span class="fc" id="L579">                List.of(&quot;123&quot;, &quot;qwerty&quot;, &quot;passord&quot;, &quot;ada&quot;)</span>
+            )
+        )
+    );
+
+<span class="fc" id="L584">    upsertExercise(PASSWORDBANK_EXERCISE_2_UID, &quot;Passordmester&quot;, &quot;Middels&quot;,</span>
+        &quot;Øv på gjenbruk, forbedring og gode passordvaner i flere situasjoner.&quot;,
+<span class="fc" id="L586">        List.of(</span>
+<span class="fc" id="L587">            sortIntoBucketsTask(</span>
+                &quot;Sorter vanene i riktig boks.&quot;,
+                &quot;Riktig. Du skilte mellom vaner som beskytter kontoene dine, og vaner som gjør dem mer sårbare.&quot;,
+                &quot;Tenk på hva som skjer hvis noen får tak i ett av passordene dine.&quot;,
+                &quot;Hvilke vaner er lure?&quot;,
+                &quot;Legg hvert kort i riktig kategori.&quot;,
+                &quot;Vaner som skal sorteres&quot;,
+<span class="fc" id="L594">                List.of(</span>
+                    new SortIntoBucketsContent.Bucket(&quot;smart&quot;, &quot;Lur vane&quot;, &quot;Valg som beskytter kontoene dine bedre.&quot;, &quot;#d9fbe6&quot;),
+                    new SortIntoBucketsContent.Bucket(&quot;unsafe&quot;, &quot;Utrygg vane&quot;, &quot;Valg som kan gjøre flere kontoer sårbare.&quot;, &quot;#fee2e2&quot;)
+                ),
+<span class="fc" id="L598">                List.of(</span>
+                    new SortIntoBucketsContent.Item(&quot;pw-5&quot;, &quot;Bruke ulike passord til skole og spill&quot;, &quot;smart&quot;, &quot;Da blir ikke alt utsatt hvis ett passord lekker.&quot;),
+                    new SortIntoBucketsContent.Item(&quot;pw-6&quot;, &quot;Bruke samme passord overalt&quot;, &quot;unsafe&quot;, &quot;Da kan flere kontoer bli åpnet med ett funn.&quot;),
+                    new SortIntoBucketsContent.Item(&quot;pw-7&quot;, &quot;Lage et langt passord du kan huske&quot;, &quot;smart&quot;, &quot;Lengde hjelper mye.&quot;),
+                    new SortIntoBucketsContent.Item(&quot;pw-8&quot;, &quot;Dele passord med en venn&quot;, &quot;unsafe&quot;, &quot;Da mister du kontrollen over hvem som kan logge inn.&quot;)
+                )
+            ),
+<span class="fc" id="L605">            passwordStrengthTask(</span>
+                &quot;Forbedre et passord som brukes flere steder.&quot;,
+                &quot;Bra. Du gjorde passordet sterkere uten å la det bli stående nesten likt.&quot;,
+                &quot;Du må bygge videre på startpassordet med flere tegn og mer variasjon.&quot;,
+                &quot;Forbedre passordet&quot;,
+                &quot;Tenk deg at dette passordet allerede er brukt på flere kontoer. Gjør det bedre.&quot;,
+                &quot;Behold litt av startpassordet, men gjør det lengre og mindre lett å gjette.&quot;,
+                PasswordStrengthContent.Mode.IMPROVE,
+                &quot;Skriv det forbedrede passordet her&quot;,
+                &quot;fotball123&quot;,
+<span class="fc" id="L615">                13,</span>
+                4,
+<span class="fc" id="L617">                List.of(&quot;123&quot;, &quot;qwerty&quot;, &quot;passord&quot;, &quot;fotball&quot;)</span>
+            ),
+<span class="fc" id="L619">            passwordStrengthTask(</span>
+                &quot;Lag et nytt passord til en spillkonto.&quot;,
+                &quot;Bra jobbet. Passordet ditt ble langt nok og vanskeligere å gjette.&quot;,
+                &quot;Prøv igjen med mer lengde og mindre opplagte mønstre.&quot;,
+                &quot;Lag et nytt spillpassord&quot;,
+                &quot;Lag et passord som ikke bygger på navnet ditt, favorittlaget ditt eller en enkel tallrekke.&quot;,
+                &quot;Bruk minst 14 tegn og bland flere typer tegn på en måte du fortsatt kan huske.&quot;,
+                PasswordStrengthContent.Mode.CREATE,
+                &quot;Skriv spillpassordet her&quot;,
+                null,
+<span class="fc" id="L629">                14,</span>
+                4,
+<span class="fc" id="L631">                List.of(&quot;123&quot;, &quot;qwerty&quot;, &quot;passord&quot;, &quot;fotball&quot;, &quot;gaming&quot;)</span>
+            )
+        )
+    );
+
+<span class="fc" id="L636">    upsertExercise(MARKETPLACE_EXERCISE_1_UID, &quot;Trygg handel&quot;, &quot;Lett&quot;,</span>
+        &quot;Lær å oppdage de første tegnene på at en annonse eller butikk kan være mistenkelig.&quot;,
+<span class="fc" id="L638">        List.of(</span>
+<span class="fc" id="L639">            multipleChoiceTask(</span>
+                &quot;Hva bør få deg til å stoppe opp i denne annonsen?&quot;,
+                &quot;Bra. Når en annonse virker altfor god til å være sann, bør du sjekke mer før du trykker.&quot;,
+                &quot;Se etter det som gjør annonsen vanskelig å stole på med en gang.&quot;,
+                &quot;Hva skurrer mest?&quot;,
+                &quot;Velg det tydeligste faresignalet i annonsen.&quot;,
+<span class="fc" id="L645">                media(MARKETPLACE_FAKE_IPHONE_IMAGE),</span>
+                &quot;En annonse for en iPhone som virker mistenkelig&quot;,
+<span class="fc" id="L647">                List.of(</span>
+                    new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Prisen og tilbudet virker altfor gode til å være sanne&quot;),
+                    new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Annonsen viser et tydelig produktbilde&quot;),
+                    new MultipleChoiceContent.Option(&quot;c&quot;, &quot;Det står hva varen heter&quot;)
+                ),
+                &quot;a&quot;
+            ),
+<span class="fc" id="L654">            xOrYTask(</span>
+                &quot;Hvilken annonse virker mest som en vanlig salgsannonse?&quot;,
+                &quot;Riktig. Den ene annonsen virker mer vanlig, mens den andre lover mye uten å virke like ryddig.&quot;,
+                &quot;Se etter hvilken annonse som virker mest rolig og vanlig.&quot;,
+                &quot;Hvilken annonse ville du sett nærmere på først?&quot;,
+                &quot;Velg den som virker minst mistenkelig ved første blikk.&quot;,
+<span class="fc" id="L660">                media(MARKETPLACE_FAKE_BIKE_IMAGE),</span>
+                &quot;En sykkelannonse som virker mistenkelig&quot;,
+                &quot;&quot;,
+                &quot;Annonse 1&quot;,
+                &quot;En sykkel ligger til salgs.&quot;,
+<span class="fc" id="L665">                media(MARKETPLACE_REAL_BIKE_IMAGE),</span>
+                &quot;En vanlig sykkelannonse&quot;,
+                &quot;&quot;,
+                &quot;Annonse 2&quot;,
+                &quot;En annen sykkel ligger til salgs.&quot;,
+                XOrYContent.Choice.Y
+            ),
+<span class="fc" id="L672">            sortIntoBucketsTask(</span>
+                &quot;Sorter tegnene i riktig boks.&quot;,
+                &quot;Riktig. Du skilte mellom ting som gjør en annonse lettere å stole på, og ting som bør sjekkes nærmere.&quot;,
+                &quot;Tenk på hvilke detaljer som virker ryddige, og hvilke som virker pressende eller uklare.&quot;,
+                &quot;Hva er greit, og hva bør sjekkes?&quot;,
+                &quot;Legg hvert kort i riktig kategori.&quot;,
+                &quot;Kort som skal sorteres&quot;,
+<span class="fc" id="L679">                List.of(</span>
+                    new SortIntoBucketsContent.Bucket(&quot;shop-safe&quot;, &quot;Trygge tegn&quot;, &quot;Detaljer som ofte gjør en annonse lettere å kontrollere.&quot;, &quot;#d9fbe6&quot;),
+                    new SortIntoBucketsContent.Bucket(&quot;shop-warn&quot;, &quot;Faresignaler&quot;, &quot;Detaljer som bør få deg til å stoppe opp.&quot;, &quot;#fee2e2&quot;)
+                ),
+<span class="fc" id="L683">                List.of(</span>
+                    new SortIntoBucketsContent.Item(&quot;shop-1&quot;, &quot;Tydelig informasjon om varen&quot;, &quot;shop-safe&quot;, &quot;Da blir annonsen lettere å forstå og sjekke.&quot;),
+                    new SortIntoBucketsContent.Item(&quot;shop-2&quot;, &quot;Pris som virker altfor lav&quot;, &quot;shop-warn&quot;, &quot;Et ekstremt godt tilbud kan være et faresignal.&quot;),
+                    new SortIntoBucketsContent.Item(&quot;shop-3&quot;, &quot;Selger svarer rolig og konkret&quot;, &quot;shop-safe&quot;, &quot;Rolige og tydelige svar gjør det lettere å vurdere annonsen.&quot;),
+                    new SortIntoBucketsContent.Item(&quot;shop-4&quot;, &quot;Melding om at du må betale med en gang&quot;, &quot;shop-warn&quot;, &quot;Press brukes ofte for å få deg til å handle for fort.&quot;)
+                )
+            )
+        )
+    );
+
+<span class="fc" id="L693">    upsertExercise(MARKETPLACE_EXERCISE_2_UID, &quot;Nettbutikksjekk&quot;, &quot;Middels&quot;,</span>
+        &quot;Sammenlign annonser og kjøpssituasjoner, og finn tegn som hjelper deg å vurdere dem bedre.&quot;,
+<span class="fc" id="L695">        List.of(</span>
+<span class="fc" id="L696">            multipleChoiceTask(</span>
+                &quot;Hva gjør denne annonsen lettere å stole på?&quot;,
+                &quot;Bra. Tydelig informasjon og en vanlig pris gjør det lettere å vurdere annonsen.&quot;,
+                &quot;Se etter konkrete ting som gjør annonsen lettere å kontrollere.&quot;,
+                &quot;Hva styrker tilliten mest?&quot;,
+                &quot;Velg det beste tegnet på at annonsen virker grei.&quot;,
+<span class="fc" id="L702">                media(MARKETPLACE_REAL_LAPTOP_IMAGE),</span>
+                &quot;En vanlig annonse for en brukt laptop&quot;,
+<span class="fc" id="L704">                List.of(</span>
+                    new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Annonsen forklarer varen rolig og med vanlige detaljer&quot;),
+                    new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Annonsen sier at tilbudet forsvinner om to minutter&quot;),
+                    new MultipleChoiceContent.Option(&quot;c&quot;, &quot;Annonsen bruker store bokstaver i overskriften&quot;)
+                ),
+                &quot;a&quot;
+            ),
+<span class="fc" id="L711">            multipleChoiceTask(</span>
+                &quot;Hva er det tydeligste faresignalet i denne annonsen?&quot;,
+                &quot;Riktig. Når en annonse prøver å lokke med veldig lav pris uten å virke ryddig, bør du være forsiktig.&quot;,
+                &quot;Se etter det som gjør annonsen vanskelig å stole på.&quot;,
+                &quot;Hva skurrer mest?&quot;,
+                &quot;Velg det sterkeste faresignalet i annonsen.&quot;,
+<span class="fc" id="L717">                media(MARKETPLACE_FAKE_LAPTOP_IMAGE),</span>
+                &quot;En laptopannonse som virker mistenkelig&quot;,
+<span class="fc" id="L719">                List.of(</span>
+                    new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Annonsen virker altfor billig uten å forklare godt hvorfor&quot;),
+                    new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Annonsen viser hva slags vare som selges&quot;),
+                    new MultipleChoiceContent.Option(&quot;c&quot;, &quot;Annonsen har et bilde av produktet&quot;)
+                ),
+                &quot;a&quot;
+            ),
+<span class="fc" id="L726">            xOrYTask(</span>
+                &quot;Hvilken annonse ville du vært minst skeptisk til?&quot;,
+                &quot;Bra. Den ene annonsen virker mer vanlig, mens den andre prøver hardere å lokke deg raskt.&quot;,
+                &quot;Se etter hvilken annonse som virker mest rolig og mest mulig som et vanlig salg.&quot;,
+                &quot;Hvilken annonse virker mest troverdig?&quot;,
+                &quot;Velg den som virker enklest å kontrollere videre.&quot;,
+<span class="fc" id="L732">                media(MARKETPLACE_FAKE_IPHONE_IMAGE),</span>
+                &quot;En mistenkelig annonse for en iPhone&quot;,
+                &quot;&quot;,
+                &quot;Alternativ 1&quot;,
+                &quot;En telefon ligger ute til salgs.&quot;,
+<span class="fc" id="L737">                media(MARKETPLACE_REAL_LAPTOP_IMAGE),</span>
+                &quot;En vanlig annonse for en brukt laptop&quot;,
+                &quot;&quot;,
+                &quot;Alternativ 2&quot;,
+                &quot;En datamaskin ligger ute til salgs.&quot;,
+                XOrYContent.Choice.Y
+            )
+        )
+    );
+
+<span class="fc" id="L747">    upsertExercise(SOCIALMEDIA_EXERCISE_1_UID, &quot;Tenk for du deler&quot;, &quot;Lett&quot;,</span>
+        &quot;Lær å stoppe opp når innlegg spiller på sterke følelser eller ber deg dele raskt.&quot;,
+<span class="fc" id="L749">        List.of(</span>
+<span class="fc" id="L750">            multipleChoiceTask(</span>
+                &quot;Hva bør få deg til å stoppe opp i dette innlegget?&quot;,
+                &quot;Bra. Når et innlegg prøver å få deg til å dele med en gang, bør du være ekstra forsiktig.&quot;,
+                &quot;Se etter det som gjør at innlegget prøver å presse fram en rask reaksjon.&quot;,
+                &quot;Hva skurrer mest?&quot;,
+                &quot;Velg det tydeligste faresignalet i innlegget.&quot;,
+<span class="fc" id="L756">                media(SOCIAL_BAD_SHARE_IMAGE),</span>
+                &quot;Et innlegg som sier at alle må dele fordi læreren skjuler sannheten&quot;,
+<span class="fc" id="L758">                List.of(</span>
+                    new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Innlegget prøver å få deg til å dele raskt uten å sjekke&quot;),
+                    new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Innlegget har mye tekst i bildet&quot;),
+                    new MultipleChoiceContent.Option(&quot;c&quot;, &quot;Innlegget handler om skolen&quot;)
+                ),
+                &quot;a&quot;
+            ),
+<span class="fc" id="L765">            xOrYTask(</span>
+                &quot;Hvilket innlegg virker mest som en rolig faktasjekk?&quot;,
+                &quot;Riktig. Det ene innlegget virker mer som en vanlig oppklaring, mens det andre prøver å få deg til å reagere raskt.&quot;,
+                &quot;Se etter hvilket innlegg som virker mest rolig og konkret.&quot;,
+                &quot;Hvilket innlegg ville du lest først?&quot;,
+                &quot;Velg innlegget som virker minst stressende.&quot;,
+<span class="fc" id="L771">                media(SOCIAL_BAD_SCHOOL_IMAGE),</span>
+                &quot;Et innlegg som sier at alle skoler stenger neste uke&quot;,
+                &quot;&quot;,
+                &quot;Innlegg 1&quot;,
+                &quot;Et innlegg om at skoler skal stenge neste uke.&quot;,
+<span class="fc" id="L776">                media(SOCIAL_GOOD_SCHOOL_IMAGE),</span>
+                &quot;Et innlegg fra Udir som forklarer at skolene ikke stenger&quot;,
+                &quot;&quot;,
+                &quot;Innlegg 2&quot;,
+                &quot;Et innlegg om hva som faktisk gjelder for skolene.&quot;,
+                XOrYContent.Choice.Y
+            ),
+<span class="fc" id="L783">            sortIntoBucketsTask(</span>
+                &quot;Sorter reaksjonene i riktig boks.&quot;,
+                &quot;Riktig. Du skilte mellom valg som gir deg tid til å tenke, og valg som sprer noe for fort.&quot;,
+                &quot;Tenk på hvilke valg som bremser delingen, og hvilke valg som sprer innholdet videre med en gang.&quot;,
+                &quot;Hva er smart å gjøre?&quot;,
+                &quot;Legg hvert kort i riktig kategori.&quot;,
+                &quot;Reaksjoner som skal sorteres&quot;,
+<span class="fc" id="L790">                List.of(</span>
+                    new SortIntoBucketsContent.Bucket(&quot;smart&quot;, &quot;Smart trekk&quot;, &quot;Valg som hjelper deg å tenke deg om.&quot;, &quot;#d9fbe6&quot;),
+                    new SortIntoBucketsContent.Bucket(&quot;hasty&quot;, &quot;Dumt trekk&quot;, &quot;Valg som kan spre noe videre for fort.&quot;, &quot;#fee2e2&quot;)
+                ),
+<span class="fc" id="L794">                List.of(</span>
+                    new SortIntoBucketsContent.Item(&quot;social-1&quot;, &quot;Sjekke hvem som står bak innlegget&quot;, &quot;smart&quot;, &quot;Da undersøker du innholdet først.&quot;),
+                    new SortIntoBucketsContent.Item(&quot;social-2&quot;, &quot;Dele fordi mange andre allerede har delt&quot;, &quot;hasty&quot;, &quot;Popularitet betyr ikke at noe stemmer.&quot;),
+                    new SortIntoBucketsContent.Item(&quot;social-3&quot;, &quot;Vente litt hvis innlegget gjør deg sint eller redd&quot;, &quot;smart&quot;, &quot;Sterke følelser er et tegn på at du bør tenke deg om.&quot;),
+                    new SortIntoBucketsContent.Item(&quot;social-4&quot;, &quot;Trykke del med en gang&quot;, &quot;hasty&quot;, &quot;Da sprer du innholdet uten å sjekke det.&quot;)
+                )
+            )
+        )
+    );
+
+<span class="fc" id="L804">    upsertExercise(SOCIALMEDIA_EXERCISE_2_UID, &quot;Del eller vent&quot;, &quot;Middels&quot;,</span>
+        &quot;Øv på å sammenligne innlegg og velge det som hjelper deg å sjekke før du deler.&quot;,
+<span class="fc" id="L806">        List.of(</span>
+<span class="fc" id="L807">            multipleChoiceTask(</span>
+                &quot;Hva er det smarteste første steget når du blir usikker på et innlegg?&quot;,
+                &quot;Ja. Det er tryggere å stoppe opp og sjekke enn å reagere med en gang.&quot;,
+                &quot;Tenk på hvilket valg som gir deg mer tid til å undersøke videre.&quot;,
+                &quot;Hva bør du gjøre først?&quot;,
+                &quot;Velg reaksjonen som hjelper deg å finne ut mer før du deler.&quot;,
+<span class="fc" id="L813">                media(SOCIAL_GOOD_TIPS_IMAGE),</span>
+                &quot;Et innlegg med tips om å være skeptisk til sosiale medier-trender&quot;,
+<span class="fc" id="L815">                List.of(</span>
+                    new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Stoppe opp og sjekke om andre troverdige kilder sier det samme&quot;),
+                    new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Dele innlegget videre og spørre etterpå om det stemmer&quot;),
+                    new MultipleChoiceContent.Option(&quot;c&quot;, &quot;Tro på innlegget hvis mange har kommentert det&quot;)
+                ),
+                &quot;a&quot;
+            ),
+<span class="fc" id="L822">            xOrYTask(</span>
+                &quot;Hvilket innlegg virker mest troverdig ved første blikk?&quot;,
+                &quot;Bra. Det ene innlegget virker mer som en vanlig faktasjekk, mens det andre prøver hardere å skape reaksjon.&quot;,
+                &quot;Se etter hvilket innlegg som virker mest rolig og mest konkret.&quot;,
+                &quot;Hvilket innlegg ville du stolt minst på?&quot;,
+                &quot;Velg innlegget som virker enklest å kontrollere videre.&quot;,
+<span class="fc" id="L828">                media(SOCIAL_BAD_CHIPS_IMAGE),</span>
+                &quot;Et innlegg som sier at farlige chips gjør barn syke og at alle må se det&quot;,
+                &quot;&quot;,
+                &quot;Innlegg 1&quot;,
+                &quot;Et innlegg om at farlige chips gjør barn syke.&quot;,
+<span class="fc" id="L833">                media(SOCIAL_GOOD_CHIPS_IMAGE),</span>
+                &quot;Et rolig innlegg som faktasjekker ryktet om farlige chips&quot;,
+                &quot;&quot;,
+                &quot;Innlegg 2&quot;,
+                &quot;Et innlegg som undersøker ryktet om chipsene.&quot;,
+                XOrYContent.Choice.Y
+            ),
+<span class="fc" id="L840">            multipleChoiceTask(</span>
+                &quot;Hva er det beste tegnet på at et innlegg bør sjekkes ekstra før du deler det?&quot;,
+                &quot;Bra. Når et innlegg vil at alle skal dele med en gang og bruker sterke ord, bør du være ekstra forsiktig.&quot;,
+                &quot;Se etter det som gjør at innlegget prøver å styre følelsene dine raskt.&quot;,
+                &quot;Hva er det sterkeste faresignalet?&quot;,
+                &quot;Velg det som gjør innlegget mest mistenkelig.&quot;,
+<span class="fc" id="L846">                media(SOCIAL_BAD_SHARE_IMAGE),</span>
+                &quot;Et innlegg som sier at alle må dele fordi læreren skjuler sannheten&quot;,
+<span class="fc" id="L848">                List.of(</span>
+                    new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Innlegget ber alle dele raskt og spiller på sinne eller frykt&quot;),
+                    new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Innlegget handler om noe på skolen&quot;),
+                    new MultipleChoiceContent.Option(&quot;c&quot;, &quot;Innlegget har et stort bilde og mye tekst&quot;)
+                ),
+                &quot;a&quot;
+            )
+        )
+    );
+
+<span class="fc" id="L858">    upsertExercise(DATACENTER_EXERCISE_UID, &quot;Datatyven&quot;, &quot;Høy&quot;,</span>
+        &quot;Bruk det vanskeligste du har lært i de andre stasjonene for å stoppe datatyven.&quot;,
+<span class="fc" id="L860">        List.of(</span>
+<span class="fc" id="L861">            multipleChoiceTask(</span>
+                &quot;Datatyven pakker en falsk nyhet inn som en vanlig sak. Hva er det tydeligste faresignalet?&quot;,
+                &quot;Riktig. Når en sak mangler tydelige kilder eller forklaringer, bør du stoppe opp.&quot;,
+                &quot;Se etter det som gjør saken vanskelig å kontrollere videre.&quot;,
+                &quot;Hva skurrer mest?&quot;,
+                &quot;Velg det sterkeste tegnet på at saken bør sjekkes mer.&quot;,
+<span class="fc" id="L867">                media(NEWSSTAND_WARNING_PHONE_IMAGE),</span>
+                &quot;En nyhet om gratis mobil uten tydelige kilder&quot;,
+<span class="fc" id="L869">                List.of(</span>
+                    new MultipleChoiceContent.Option(&quot;a&quot;, &quot;Den mangler tydelige kilder eller forklaringer&quot;),
+                    new MultipleChoiceContent.Option(&quot;b&quot;, &quot;Den handler om noe mange elever er nysgjerrige på&quot;),
+                    new MultipleChoiceContent.Option(&quot;c&quot;, &quot;Den har et stort bilde ved siden av teksten&quot;)
+                ),
+                &quot;a&quot;
+            ),
+<span class="fc" id="L876">            xOrYTask(</span>
+                &quot;Datatyven viser to bilder. Hvilket virker mest troverdig ved første blikk?&quot;,
+                &quot;Bra. Det ene motivet virker mer som et vanlig bilde, mens det andre ikke henger like godt sammen.&quot;,
+                &quot;Se etter hvilket bilde som virker mest naturlig og minst kunstig.&quot;,
+                &quot;Hvilket bilde ville du stolt mest på?&quot;,
+                &quot;Velg bildet som virker enklest å tro på ved første blikk.&quot;,
+<span class="fc" id="L882">                media(PHOTOGRAPH_AI_MARS_IMAGE),</span>
+                &quot;Et kjent tårn i et rødt landskap&quot;,
+                &quot;&quot;,
+                &quot;Alternativ 1&quot;,
+                &quot;Et kjent tårn står i et rødt landskap.&quot;,
+<span class="fc" id="L887">                media(PHOTOGRAPH_REAL_PEOPLE_IMAGE),</span>
+                &quot;Personer som går tur sammen&quot;,
+                &quot;&quot;,
+                &quot;Alternativ 2&quot;,
+                &quot;To personer går ute sammen.&quot;,
+                XOrYContent.Choice.Y
+            ),
+<span class="fc" id="L894">            emailHotspotsTask(</span>
+                &quot;Datatyven sender en e-post som ser nesten ekte ut. Trykk på alle faresignalene.&quot;,
+                &quot;Bra. Du fant de viktigste tegnene på at e-posten ikke er trygg.&quot;,
+                &quot;Se etter press, rar avsender, uventet vedlegg og lenker du ikke kjenner igjen.&quot;,
+                &quot;Finn alt som skurrer&quot;,
+                &quot;Trykk på delene av e-posten som gjør den mistenkelig.&quot;,
+                new EmailHotspotsContent.Email(
+                    &quot;Skolekonto&quot;,
+                    &quot;boss-sender-name&quot;,
+                    &quot;melding@skole-konto-verify.biz&quot;,
+                    &quot;boss-sender-address&quot;,
+                    &quot;Viktig: konto må oppdateres nå&quot;,
+                    &quot;boss-subject&quot;,
+                    &quot;SK&quot;,
+                    &quot;I dag 10:02&quot;,
+                    &quot;boss-received&quot;,
+                    &quot;Hei elev!&quot;,
+                    &quot;boss-greeting&quot;,
+<span class="fc" id="L912">                    List.of(</span>
+                        new EmailHotspotsContent.TextBlock(&quot;boss-body-text&quot;, &quot;Hvis du ikke svarer innen 10 minutter, blir kontoen din sperret.&quot;, &quot;boss-body-text-target&quot;),
+                        new EmailHotspotsContent.LinkBlock(&quot;boss-body-link&quot;, &quot;Åpne skolekonto&quot;, &quot;secure-school-check.biz/login&quot;, &quot;Må gjøres i dag&quot;, &quot;boss-body-link-target&quot;)
+                    ),
+                    new EmailHotspotsContent.ActionButton(&quot;Les mer&quot;, &quot;skoleportalen.no&quot;, &quot;boss-action-button&quot;),
+<span class="fc" id="L917">                    List.of(new EmailHotspotsContent.Attachment(&quot;boss-attachment&quot;, &quot;skjema.zip&quot;, &quot;Uventet komprimert fil&quot;, &quot;boss-attachment-target&quot;)),</span>
+                    &quot;Hilsen administrasjonen&quot;,
+                    &quot;boss-closing&quot;
+                ),
+<span class="fc" id="L921">                List.of(</span>
+                    new EmailHotspotsContent.Target(&quot;boss-sender-name&quot;, false),
+                    new EmailHotspotsContent.Target(&quot;boss-sender-address&quot;, true),
+                    new EmailHotspotsContent.Target(&quot;boss-subject&quot;, false),
+                    new EmailHotspotsContent.Target(&quot;boss-received&quot;, false),
+                    new EmailHotspotsContent.Target(&quot;boss-greeting&quot;, false),
+                    new EmailHotspotsContent.Target(&quot;boss-body-text-target&quot;, true),
+                    new EmailHotspotsContent.Target(&quot;boss-body-link-target&quot;, true),
+                    new EmailHotspotsContent.Target(&quot;boss-action-button&quot;, false),
+                    new EmailHotspotsContent.Target(&quot;boss-attachment-target&quot;, true),
+                    new EmailHotspotsContent.Target(&quot;boss-closing&quot;, false)
+                )
+            ),
+<span class="fc" id="L934">            passwordStrengthTask(</span>
+                &quot;Datatyven kjenner et gammelt passord. Forbedre det så det blir mye tryggere.&quot;,
+                &quot;Bra. Du gjorde passordet sterkere uten å la det bli stående nesten likt.&quot;,
+                &quot;Du må bygge videre på startpassordet med mer lengde og bedre variasjon.&quot;,
+                &quot;Forbedre passordet&quot;,
+                &quot;Tenk deg at dette passordet allerede er brukt flere steder. Gjør det vanskeligere å gjette.&quot;,
+                &quot;Behold litt av startpassordet, men gjør det lengre og mindre opplagt.&quot;,
+                PasswordStrengthContent.Mode.IMPROVE,
+                &quot;Skriv det forbedrede passordet her&quot;,
+                &quot;fotball123&quot;,
+<span class="fc" id="L944">                13,</span>
+                4,
+<span class="fc" id="L946">                List.of(&quot;123&quot;, &quot;qwerty&quot;, &quot;passord&quot;, &quot;fotball&quot;, &quot;datatyv&quot;)</span>
+            ),
+<span class="fc" id="L948">            xOrYTask(</span>
+                &quot;Datatyven lokker med to annonser. Hvilken virker mest troverdig?&quot;,
+                &quot;Bra. Den ene annonsen virker mer som et vanlig salg, mens den andre prøver hardere å lokke deg raskt.&quot;,
+                &quot;Se etter hvilken annonse som virker mest rolig og enklest å kontrollere videre.&quot;,
+                &quot;Hvilken annonse ville du vært minst skeptisk til?&quot;,
+                &quot;Velg annonsen som virker mest vanlig ved første blikk.&quot;,
+<span class="fc" id="L954">                media(MARKETPLACE_FAKE_IPHONE_IMAGE),</span>
+                &quot;En mistenkelig annonse for en iPhone&quot;,
+                &quot;&quot;,
+                &quot;Alternativ 1&quot;,
+                &quot;En telefon ligger ute til salgs.&quot;,
+<span class="fc" id="L959">                media(MARKETPLACE_REAL_LAPTOP_IMAGE),</span>
+                &quot;En vanlig annonse for en brukt laptop&quot;,
+                &quot;&quot;,
+                &quot;Alternativ 2&quot;,
+                &quot;En datamaskin ligger ute til salgs.&quot;,
+                XOrYContent.Choice.Y
+            ),
+<span class="fc" id="L966">            xOrYTask(</span>
+                &quot;Datatyven sprer to innlegg. Hvilket virker mest som en faktisk oppklaring?&quot;,
+                &quot;Riktig. Det ene innlegget virker mer som en vanlig faktasjekk, mens det andre prøver å få deg til å reagere raskt.&quot;,
+                &quot;Se etter hvilket innlegg som virker mest rolig og mest konkret.&quot;,
+                &quot;Hvilket innlegg ville du lest først?&quot;,
+                &quot;Velg innlegget som virker minst stressende.&quot;,
+<span class="fc" id="L972">                media(SOCIAL_BAD_CHIPS_IMAGE),</span>
+                &quot;Et innlegg om at farlige chips gjør barn syke&quot;,
+                &quot;&quot;,
+                &quot;Innlegg 1&quot;,
+                &quot;Et innlegg om at farlige chips gjør barn syke.&quot;,
+<span class="fc" id="L977">                media(SOCIAL_GOOD_CHIPS_IMAGE),</span>
+                &quot;Et innlegg som faktasjekker ryktet om farlige chips&quot;,
+                &quot;&quot;,
+                &quot;Innlegg 2&quot;,
+                &quot;Et innlegg som undersøker ryktet om chipsene.&quot;,
+                XOrYContent.Choice.Y
+            )
+        )
+    );
+<span class="fc" id="L986">  }</span>
+
+    /**
+     * Seeds stations into the database with predefined UUIDs.
+     * Creates stations and associates them with exercises.
+     */
+  private void seedStations() {
+<span class="fc" id="L993">    upsertStation(NEWSSTAND_STATION_UID, &quot;Nyhetskvartalet&quot;,</span>
+        &quot;Nyhetsartikler og kildekritikk for skoleelever.&quot;,
+        &quot;Start med a sjekke hvem som er avsender, og om saken bruker sterke ord for a presse deg til a tro pa den.&quot;,
+<span class="fc" id="L996">        media(NEWSSTAND_STATION_IMAGE), &quot;#cfe9ff&quot;,</span>
+<span class="fc" id="L997">        List.of(NEWSSTAND_EXERCISE_1_UID, NEWSSTAND_EXERCISE_2_UID), false);</span>
+
+<span class="fc" id="L999">    upsertStation(PHOTOGRAPH_STATION_UID, &quot;Fotografen&quot;,</span>
+        &quot;Normal, manipulert og KI-genererte bilder.&quot;,
+        &quot;Se ekstra nøye pa detaljer som hender, tekst, skygger og bakgrunn nar du vurderer bilder.&quot;,
+<span class="fc" id="L1002">        media(PHOTOGRAPH_STATION_IMAGE), &quot;#5F5F5F&quot;,</span>
+<span class="fc" id="L1003">        List.of(PHOTOGRAPH_EXERCISE_1_UID, PHOTOGRAPH_EXERCISE_2_UID, PHOTOGRAPH_EXERCISE_3_UID), false);</span>
+
+<span class="fc" id="L1005">    upsertStation(POSTOFFICE_STATION_UID, &quot;Postkontoret&quot;,</span>
+        &quot;Klikkbare e-posttester med avsendere, lenker og vedlegg.&quot;,
+        &quot;Ikke klikk med en gang. Sjekk avsender, lenkeadresse og om meldingen prover a stresse deg.&quot;,
+<span class="fc" id="L1008">        media(POSTOFFICE_STATION_IMAGE), &quot;#fde68a&quot;,</span>
+<span class="fc" id="L1009">        List.of(POSTOFFICE_EXERCISE_1_UID, POSTOFFICE_EXERCISE_2_UID), false);</span>
+
+<span class="fc" id="L1011">    upsertStation(PASSWORDBANK_STATION_UID, &quot;Passordbanken&quot;,</span>
+        &quot;Passordsjekking og gode passordvaner.&quot;,
+        &quot;Et sterkt passord er langt, unikt og vanskelig for andre a gjette, men fortsatt mulig for deg a huske.&quot;,
+<span class="fc" id="L1014">        media(PASSWORDBANK_STATION_IMAGE), &quot;#1D5232&quot;,</span>
+<span class="fc" id="L1015">        List.of(PASSWORDBANK_EXERCISE_1_UID, PASSWORDBANK_EXERCISE_2_UID), false);</span>
+
+<span class="fc" id="L1017">    upsertStation(MARKETPLACE_STATION_UID, &quot;Markedsplassen&quot;,</span>
+        &quot;Reklame, tilbud og e-butikker som ma vurderes.&quot;,
+        &quot;Hvis et tilbud virker for godt eller haster veldig, bor du stoppe opp og sjekke butikken forst.&quot;,
+<span class="fc" id="L1020">        media(MARKETPLACE_STATION_IMAGE), &quot;#962C2C&quot;,</span>
+<span class="fc" id="L1021">        List.of(MARKETPLACE_EXERCISE_1_UID, MARKETPLACE_EXERCISE_2_UID), false);</span>
+
+<span class="fc" id="L1023">    upsertStation(SOCIALMEDIA_STATION_UID, &quot;Den sosiale moteplassen&quot;,</span>
+        &quot;Deling av innlegg, vurderinger og gruppepress i sosiale medier.&quot;,
+        &quot;Vent litt for du deler. Sjekk om innholdet har en tydelig kilde og om det prover a gjore deg sint eller redd.&quot;,
+<span class="fc" id="L1026">        media(SOCIALMEDIA_STATION_IMAGE), &quot;#fbcfe8&quot;,</span>
+<span class="fc" id="L1027">        List.of(SOCIALMEDIA_EXERCISE_1_UID, SOCIALMEDIA_EXERCISE_2_UID), false);</span>
+
+<span class="fc" id="L1029">    upsertStation(DATACENTER_STATION_UID, &quot;Datasenteret&quot;,</span>
+        &quot;Finalebanen der du bruker alt du har lært for å bekjempe datatyven.&quot;,
+        &quot;Bruk alt du har lært: stopp opp, sjekk kilden, vurder detaljer og velg trygge handlinger.&quot;,
+<span class="fc" id="L1032">        media(&quot;seed/stations/datacenter.svg&quot;), &quot;#8A2A2A&quot;,</span>
+<span class="fc" id="L1033">        List.of(DATACENTER_EXERCISE_UID), true);</span>
+<span class="fc" id="L1034">  }</span>
+
+    /**
+     * Seeds worlds into the database with predefined UUIDs.
+     * Creates worlds and associates them with stations.
+     */
+    private void seedWorlds() {
+<span class="fc" id="L1041">    upsertWorld(SCHOOLYARD_WORLD_UID, &quot;3-trinn&quot;,</span>
+        &quot;Datasikkerhet for skoleelever: nyheter, bilder, e-post, passord, reklame, e-butikker og deling.&quot;,
+<span class="fc" id="L1043">        media(&quot;seed/worlds/schoolyard.svg&quot;),</span>
+<span class="fc" id="L1044">        List.of(</span>
+            NEWSSTAND_STATION_UID,
+            PHOTOGRAPH_STATION_UID,
+            POSTOFFICE_STATION_UID,
+            PASSWORDBANK_STATION_UID,
+            MARKETPLACE_STATION_UID,
+            SOCIALMEDIA_STATION_UID,
+            DATACENTER_STATION_UID
+        ));
+
+<span class="fc" id="L1054">    upsertWorld(QUICKSTART_WORLD_UID, &quot;7-trinn&quot;,</span>
+        &quot;Datasikkerhet for skoleelever: nyheter, bilder, e-post, passord, reklame, e-butikker og deling.&quot;,
+<span class="fc" id="L1056">        media(&quot;seed/worlds/quickstart.svg&quot;),</span>
+<span class="fc" id="L1057">        List.of(</span>
+            NEWSSTAND_STATION_UID,
+            PHOTOGRAPH_STATION_UID,
+            POSTOFFICE_STATION_UID,
+            PASSWORDBANK_STATION_UID,
+            MARKETPLACE_STATION_UID,
+            SOCIALMEDIA_STATION_UID,
+            DATACENTER_STATION_UID
+        ));
+
+<span class="fc" id="L1067">    worldRepository.findByUid(CREATIVE_LAB_WORLD_UID).ifPresent(worldRepository::delete);</span>
+<span class="fc" id="L1068">  }</span>
+
+    /**
+     * Creates or updates an exercise with the specified properties.
+     * @param publicId the public UUID for the exercise
+     * @param title the title of the exercise
+     * @param difficultyName the difficulty level name
+     * @param description the description of the exercise
+     * @param taskRequests the list of task requests for the exercise
+     */
+    private void upsertExercise(UUID publicId, String title, String difficultyName, String description,
+        List&lt;TaskRequest&gt; taskRequests) {
+<span class="fc" id="L1080">    upsertExercise(publicId, title, difficultyName, description,</span>
+        &quot;Les oppgaven rolig og se etter detaljer som virker uvanlige eller vanskelige a kontrollere.&quot;,
+        taskRequests);
+<span class="fc" id="L1083">  }</span>
+
+    /**
+     * Creates or updates an exercise with hint included.
+     * @param publicId the public UUID for the exercise
+     * @param title the title of the exercise
+     * @param difficultyName the difficulty level name
+     * @param description the description of the exercise
+     * @param hint the hint for the exercise
+     * @param taskRequests the list of task requests for the exercise
+     */
+  private void upsertExercise(UUID publicId, String title, String difficultyName, String description,
+        String hint, List&lt;TaskRequest&gt; taskRequests) {
+<span class="fc" id="L1096">    Exercise exercise = exerciseRepository.findByPublicId(publicId).orElseGet(Exercise::new);</span>
+<span class="fc bfc" id="L1097" title="All 2 branches covered.">    boolean existingExercise = exercise.getInternalId() != null;</span>
+
+<span class="fc" id="L1099">    exercise.setPublicId(publicId);</span>
+<span class="fc" id="L1100">    exercise.setTitle(title);</span>
+<span class="fc" id="L1101">    exercise.setDifficultyName(difficultyName);</span>
+<span class="fc" id="L1102">    exercise.setDescription(description);</span>
+<span class="fc" id="L1103">    exercise.setHint(hint);</span>
+<span class="fc" id="L1104">    exercise.setNotepadEntry(defaultNotepadEntry(publicId, title, description, hint));</span>
+
+<span class="fc bfc" id="L1106" title="All 2 branches covered.">    if (existingExercise) {</span>
+<span class="fc" id="L1107">      taskRepository.deleteByExerciseId(exercise.getInternalId());</span>
+    }
+
+<span class="fc" id="L1110">    exercise.getTasks().clear();</span>
+<span class="fc" id="L1111">    exercise.getTasks().addAll(newTasks(exercise, taskRequests));</span>
+
+<span class="fc" id="L1113">    exerciseRepository.save(exercise);</span>
+<span class="fc" id="L1114">  }</span>
+
+    /**
+     * Creates a default notepad entry for an exercise based on its properties.
+     * @param publicId the public UUID of the exercise
+     * @param title the title of the exercise
+     * @param description the description of the exercise
+     * @param hint the hint for the exercise
+     * @return a NotepadEntry configured based on the exercise properties
+     */
+    private NotepadEntry defaultNotepadEntry(UUID publicId, String title, String description, String hint) {
+<span class="fc" id="L1125">    NotepadEntry notepadEntry = new NotepadEntry();</span>
+<span class="fc" id="L1126">    notepadEntry.setSource(title);</span>
+
+<span class="fc" id="L1128">    int variant = Math.floorMod(publicId.hashCode(), 3);</span>
+<span class="fc bfc" id="L1129" title="All 3 branches covered.">    switch (variant) {</span>
+      case 0 -&gt; {
+<span class="fc" id="L1131">        notepadEntry.setTitle(title);</span>
+<span class="fc" id="L1132">        notepadEntry.setType(NotepadEntryType.TIP);</span>
+<span class="fc" id="L1133">        notepadEntry.setContent(limitTo256(hint));</span>
+<span class="fc" id="L1134">      }</span>
+      case 1 -&gt; {
+<span class="fc" id="L1136">        notepadEntry.setTitle(title);</span>
+<span class="fc" id="L1137">        notepadEntry.setType(NotepadEntryType.INFO);</span>
+<span class="fc" id="L1138">        notepadEntry.setContent(limitTo256(&quot;Dette trener du pa: &quot; + description));</span>
+<span class="fc" id="L1139">      }</span>
+      default -&gt; {
+<span class="fc" id="L1141">        notepadEntry.setTitle(title);</span>
+<span class="fc" id="L1142">        notepadEntry.setType(NotepadEntryType.TIP);</span>
+<span class="fc" id="L1143">        notepadEntry.setContent(limitTo256(&quot;Husk dette fra oppgaven: &quot; + description + &quot; Se etter: &quot; + hint));</span>
+      }
+    }
+
+<span class="fc" id="L1147">    return notepadEntry;</span>
+  }
+
+    /**
+     * Limits a string value to 256 characters.
+     * @param value the string to limit
+     * @return the truncated string if longer than 256 characters, otherwise the original
+     */
+    private String limitTo256(String value) {
+<span class="pc bpc" id="L1156" title="1 of 2 branches missed.">    return value.length() &lt;= 256 ? value : value.substring(0, 256);</span>
+  }
+
+    /**
+     * Creates new Task entities from a list of TaskRequests.
+     * @param exercise the exercise to associate the tasks with
+     * @param taskRequests the list of task requests to convert
+     * @return a list of Task entities
+     */
+    private List&lt;Task&gt; newTasks(Exercise exercise, List&lt;TaskRequest&gt; taskRequests) {
+<span class="fc" id="L1166">    List&lt;Task&gt; tasks = new ArrayList&lt;&gt;();</span>
+
+<span class="fc bfc" id="L1168" title="All 2 branches covered.">    for (TaskRequest taskRequest : taskRequests) {</span>
+<span class="fc" id="L1169">      Task task = new Task();</span>
+<span class="fc" id="L1170">      task.setExercise(exercise);</span>
+<span class="fc" id="L1171">      task.setIntroText(taskRequest.introText());</span>
+<span class="fc" id="L1172">      task.setFeedbackCorrect(taskRequest.feedbackCorrect());</span>
+<span class="fc" id="L1173">      task.setFeedbackIncorrect(taskRequest.feedbackIncorrect());</span>
+<span class="fc" id="L1174">      task.setContent(taskRequest.content());</span>
+<span class="fc" id="L1175">      task.setTemplateKind(null);</span>
+<span class="fc" id="L1176">      tasks.add(task);</span>
+<span class="fc" id="L1177">    }</span>
+
+<span class="fc" id="L1179">    return tasks;</span>
+  }
+
+    /**
+     * Creates or updates a station with the specified properties.
+     * Also creates an achievement for the station.
+     * @param uid the UUID for the station
+     * @param title the title of the station
+     * @param description the description of the station
+     * @param hint the hint for the station
+     * @param image the image URL for the station
+     * @param backgroundColor the background color for the station
+     * @param exerciseUids the list of exercise UUIDs associated with the station
+     * @param isBoss whether this is a boss station
+     */
+    private void upsertStation(UUID uid, String title, String description, String hint, String image,
+        String backgroundColor, List&lt;UUID&gt; exerciseUids, boolean isBoss) {
+<span class="fc" id="L1196">    Station station = stationRepository.findByUid(uid).orElseGet(Station::new);</span>
+
+<span class="fc" id="L1198">    station.setUid(uid);</span>
+<span class="fc" id="L1199">    station.setTitle(title);</span>
+<span class="fc" id="L1200">    station.setDescription(description);</span>
+<span class="fc" id="L1201">    station.setHint(hint);</span>
+<span class="fc" id="L1202">    station.setImage(image);</span>
+<span class="fc" id="L1203">    station.setBackgroundColor(backgroundColor);</span>
+<span class="fc" id="L1204">    station.setExerciseUids(new ArrayList&lt;&gt;(exerciseUids));</span>
+<span class="fc" id="L1205">    station.setBoss(isBoss);</span>
+
+<span class="fc" id="L1207">    stationRepository.save(station);</span>
+
+<span class="fc" id="L1209">    createStationAchievement(uid, title, description, isBoss);</span>
+<span class="fc" id="L1210">  }</span>
+
+    /**
+     * Creates an achievement for a station if it doesn't already exist.
+     * @param title the title of the station (used as achievement title)
+     * @param description the description of the station (used as achievement description)
+     * @param isBoss whether this is a boss station (affects achievement category)
+     */
+  private void createStationAchievement(UUID stationUid, String title, String description, boolean isBoss) {
+<span class="fc bfc" id="L1219" title="All 2 branches covered.">    if (achievementRepository.findBySource(stationUid.toString()).isPresent()) {</span>
+<span class="fc" id="L1220">      return;</span>
+    }
+
+<span class="fc" id="L1223">    Achievement achievement = new Achievement();</span>
+<span class="fc" id="L1224">    achievement.setUUID(UUID.randomUUID());</span>
+<span class="fc" id="L1225">    achievement.setTitle(title);</span>
+<span class="fc" id="L1226">    achievement.setDescription(description);</span>
+<span class="fc bfc" id="L1227" title="All 2 branches covered.">    achievement.setCategory(isBoss ? AchievementCategory.SPECIAL : AchievementCategory.STOP);</span>
+<span class="fc" id="L1228">    achievement.setSource(stationUid.toString());</span>
+<span class="fc bfc" id="L1229" title="All 2 branches covered.">    achievement.setReward(isBoss ? &quot;Spesialmedalje for å ha slått bossen&quot; : null);</span>
+
+<span class="fc" id="L1231">    achievementRepository.save(achievement);</span>
+<span class="fc" id="L1232">  }</span>
+
+    /**
+     * Creates or updates a world with the specified properties.
+     * @param uid the UUID for the world
+     * @param title the title of the world
+     * @param description the description of the world
+     * @param image the image URL for the world
+     * @param stationUids the list of station UUIDs associated with the world
+     */
+    private void upsertWorld(UUID uid, String title, String description, String image, List&lt;UUID&gt; stationUids) {
+<span class="fc" id="L1243">    World world = worldRepository.findByUid(uid).orElseGet(World::new);</span>
+
+<span class="fc" id="L1245">    world.setUid(uid);</span>
+<span class="fc" id="L1246">    world.setTitle(title);</span>
+<span class="fc" id="L1247">    world.setDescription(description);</span>
+<span class="fc" id="L1248">    world.setImage(image);</span>
+<span class="fc" id="L1249">    world.setStationUids(new ArrayList&lt;&gt;(stationUids));</span>
+
+<span class="fc" id="L1251">    worldRepository.save(world);</span>
+<span class="fc" id="L1252">  }</span>
+
+
+  private String media(String objectKey) {
+<span class="fc" id="L1256">    return mediaStorageService.publicUrl(objectKey);</span>
+  }
+
+  /**
+     * Creates a multiple choice task request.
+     * @param introText the introduction text for the task
+     * @param feedbackCorrect feedback to show when answer is correct
+     * @param feedbackIncorrect feedback to show when answer is incorrect
+     * @param promptTitle the title for the prompt
+     * @param promptText the text for the prompt
+     * @param imageUrl the URL of the image to display
+     * @param imageAlt alt text for the image
+     * @param options the list of options to choose from
+     * @param correctChoice the ID of the correct option
+     * @return a TaskRequest configured for multiple choice
+     */
+  private TaskRequest multipleChoiceTask(String introText, String feedbackCorrect,
+      String feedbackIncorrect, String promptTitle, String promptText,
+      String imageUrl, String imageAlt, List&lt;MultipleChoiceContent.Option&gt; options,
+      String correctChoice) {
+<span class="fc" id="L1276">    return new TaskRequest(</span>
+        introText,
+        feedbackCorrect,
+        feedbackIncorrect,
+        new MultipleChoiceContent(
+            new MultipleChoiceContent.Prompt(imageUrl, imageAlt, promptTitle, promptText),
+            options,
+            correctChoice
+        )
+    );
+  }
+
+    /**
+     * Creates an X-or-Y task request where users choose between two options.
+     * @param introText the introduction text for the task
+     * @param feedbackCorrect feedback to show when answer is correct
+     * @param feedbackIncorrect feedback to show when answer is incorrect
+     * @param promptTitle the title for the prompt
+     * @param promptText the text for the prompt
+     * @param xImageUrl the image URL for option X
+     * @param xImageAlt alt text for option X image
+     * @param xEyebrow the eyebrow text for option X
+     * @param xTitle the title for option X
+     * @param xText the description text for option X
+     * @param yImageUrl the image URL for option Y
+     * @param yImageAlt alt text for option Y image
+     * @param yEyebrow the eyebrow text for option Y
+     * @param yTitle the title for option Y
+     * @param yText the description text for option Y
+     * @param correctChoice the correct choice (X or Y)
+     * @return a TaskRequest configured for X-or-Y comparison
+     */
+    private TaskRequest xOrYTask(String introText, String feedbackCorrect, String feedbackIncorrect,
+        String promptTitle, String promptText,
+        String xImageUrl, String xImageAlt, String xEyebrow, String xTitle, String xText,
+        String yImageUrl, String yImageAlt, String yEyebrow, String yTitle, String yText,
+        XOrYContent.Choice correctChoice) {
+<span class="fc" id="L1313">    return new TaskRequest(</span>
+        introText,
+        feedbackCorrect,
+        feedbackIncorrect,
+        new XOrYContent(
+            new XOrYContent.Prompt(promptTitle, promptText),
+            new XOrYContent.Options(
+                new XOrYContent.Option(xImageUrl, xImageAlt, xEyebrow, xTitle, xText),
+                new XOrYContent.Option(yImageUrl, yImageAlt, yEyebrow, yTitle, yText)
+            ),
+            correctChoice
+        )
+    );
+  }
+
+    /**
+     * Creates an email hotspots task request where users click on suspicious parts.
+     * @param introText the introduction text for the task
+     * @param feedbackCorrect feedback to show when answer is correct
+     * @param feedbackIncorrect feedback to show when answer is incorrect
+     * @param promptTitle the title for the prompt
+     * @param promptText the text for the prompt
+     * @param email the email content with hotspots
+     * @param targets the list of targets (hotspots) to click
+     * @return a TaskRequest configured for email hotspots
+     */
+    private TaskRequest emailHotspotsTask(String introText, String feedbackCorrect,
+        String feedbackIncorrect, String promptTitle, String promptText,
+        EmailHotspotsContent.Email email, List&lt;EmailHotspotsContent.Target&gt; targets) {
+<span class="fc" id="L1342">    return new TaskRequest(</span>
+        introText,
+        feedbackCorrect,
+        feedbackIncorrect,
+        new EmailHotspotsContent(
+            new EmailHotspotsContent.Prompt(promptTitle, promptText),
+            email,
+            targets
+        )
+    );
+  }
+
+    /**
+     * Creates a sort-into-buckets task request where users categorize items.
+     * @param introText the introduction text for the task
+     * @param feedbackCorrect feedback to show when answer is correct
+     * @param feedbackIncorrect feedback to show when answer is incorrect
+     * @param promptTitle the title for the prompt
+     * @param promptText the text for the prompt
+     * @param unplacedLabel label for items not yet sorted
+     * @param buckets the list of buckets to sort into
+     * @param items the list of items to sort
+     * @return a TaskRequest configured for sort-into-buckets
+     */
+    private TaskRequest sortIntoBucketsTask(String introText, String feedbackCorrect,
+        String feedbackIncorrect, String promptTitle, String promptText, String unplacedLabel,
+        List&lt;SortIntoBucketsContent.Bucket&gt; buckets, List&lt;SortIntoBucketsContent.Item&gt; items) {
+<span class="fc" id="L1369">    return new TaskRequest(</span>
+        introText,
+        feedbackCorrect,
+        feedbackIncorrect,
+        new SortIntoBucketsContent(
+            new SortIntoBucketsContent.Prompt(promptTitle, promptText),
+            unplacedLabel,
+            buckets,
+            items
+        )
+    );
+  }
+
+    /**
+     * Creates a password strength task request.
+     * @param introText the introduction text for the task
+     * @param feedbackCorrect feedback to show when answer is correct
+     * @param feedbackIncorrect feedback to show when answer is incorrect
+     * @param promptTitle the title for the prompt
+     * @param promptText the text for the prompt
+     * @param helperText helper text to display
+     * @param mode the mode (CREATE or IMPROVE)
+     * @param placeholder placeholder text for the input
+     * @param startingPassword the starting password (for IMPROVE mode)
+     * @param minLength minimum password length required
+     * @param minScoreToPass minimum score required to pass
+     * @param commonPatterns list of common patterns to reject
+     * @return a TaskRequest configured for password strength
+     */
+    private TaskRequest passwordStrengthTask(String introText, String feedbackCorrect,
+        String feedbackIncorrect, String promptTitle, String promptText, String helperText,
+        PasswordStrengthContent.Mode mode, String placeholder, String startingPassword,
+        Integer minLength, int minScoreToPass, List&lt;String&gt; commonPatterns) {
+<span class="fc" id="L1402">    return new TaskRequest(</span>
+        introText,
+        feedbackCorrect,
+        feedbackIncorrect,
+        new PasswordStrengthContent(
+            new PasswordStrengthContent.Prompt(promptTitle, promptText, helperText),
+            mode,
+            placeholder,
+            startingPassword,
+            minLength,
+            minScoreToPass,
+            commonPatterns
+        )
+    );
+  }
+
+    /**
+     * Generates a stable UUID from a string value for consistent mock data identifiers.
+     * @param value the string value to convert to UUID
+     * @return a deterministic UUID based on the input string
+     */
+    private static UUID stableUuid(String value) {
+<span class="fc" id="L1424">    return UUID.nameUUIDFromBytes(value.getBytes(StandardCharsets.UTF_8));</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

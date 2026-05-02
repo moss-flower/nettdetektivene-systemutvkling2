@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WeeklyMysterySubmission.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.weeklymystery.model</a> &gt; <span class="el_source">WeeklyMysterySubmission.java</span></div><h1>WeeklyMysterySubmission.java</h1><pre class="source lang-java linenums">package no.safety.backend.weeklymystery.model;
+
+import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import no.safety.backend.user.model.StudentUser;
+
+
+/**
+ * Entity for tracking student submissions based on weekly mystery prompts.
+ * Has fields for storing its own public Id and its relationship to the
+ * student who submitted it, as well as the weekly mystery
+ * towards which it was directed.
+ */
+@Entity
+@Table(name = &quot;mystery_submissions&quot;)
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class WeeklyMysterySubmission {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long internalId;
+
+    @Column(name = &quot;public_Uuid&quot;, nullable = false, updatable = false, columnDefinition = &quot;BINARY(16)&quot;)
+    private UUID publicUuid;
+
+    @Column
+    private String message;
+
+    @Column
+    private String fileName;
+
+    @Column
+    private String storageKey;
+
+    @ManyToOne
+    @JoinColumn(name = &quot;student_id&quot;)
+    private StudentUser submitterStudentUser;
+
+    @ManyToOne
+    @JoinColumn(name = &quot;weekly_mystery_prompt_id&quot;)
+    private WeeklyMysteryPrompt weeklyMysteryPrompt;
+
+    @PrePersist
+    private void onCreate() {
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        if (publicUuid == null) {</span>
+<span class="nc" id="L64">            publicUuid = UUID.randomUUID();</span>
+        }
+<span class="nc" id="L66">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

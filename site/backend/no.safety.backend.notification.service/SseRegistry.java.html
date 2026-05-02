@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SseRegistry.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.notification.service</a> &gt; <span class="el_source">SseRegistry.java</span></div><h1>SseRegistry.java</h1><pre class="source lang-java linenums">package no.safety.backend.notification.service;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import no.safety.backend.notification.dto.NotificationDto;
+import no.safety.backend.notification.model.Notification;
+
+/**
+ * Registry for managing SSE emitters mapped to user IDs.
+ * Handles registration, sending notifications, and cleanup of emitters.
+ */
+@Service
+<span class="fc" id="L20">public class SseRegistry {</span>
+<span class="fc" id="L21">    private final Logger logger = LoggerFactory.getLogger(SseRegistry.class);</span>
+<span class="fc" id="L22">    private Map&lt;Long, SseEmitter&gt; emitters = new ConcurrentHashMap&lt;&gt;();</span>
+
+    /**
+     * Registers a new SSE emitter for the specified user.
+     * The emitter will be automatically removed on completion, error, or timeout.
+     *
+     * @param userId the internal ID of the user to register the emitter for
+     * @return a new SseEmitter with no timeout
+     */
+    public SseEmitter register(Long userId) {
+<span class="nc" id="L32">        logger.info(&quot;JARJAR: SSE Register reached&quot;);</span>
+<span class="nc" id="L33">        logger.debug(&quot;Registering emitter for userId &quot; + userId);</span>
+<span class="nc" id="L34">        SseEmitter emitter = new SseEmitter(0L);</span>
+
+<span class="nc" id="L36">        emitters.put(userId, emitter);</span>
+        
+<span class="nc" id="L38">        emitter.onCompletion(() -&gt; emitters.remove(userId));</span>
+<span class="nc" id="L39">        emitter.onError((ex) -&gt; emitters.remove(userId));</span>
+<span class="nc" id="L40">        emitter.onTimeout(() -&gt; emitters.remove(userId));</span>
+        try {
+<span class="nc" id="L42">            emitter.send(SseEmitter.event().comment(&quot;connected&quot;));</span>
+<span class="nc" id="L43">        } catch (IOException e) {</span>
+<span class="nc" id="L44">            logger.error(&quot;Failed to send initial ping&quot;, e);</span>
+<span class="nc" id="L45">        }</span>
+
+<span class="nc" id="L47">        return emitter;</span>
+    }
+
+    /**
+     * Sends a notification to the specified user via their registered SSE emitter.
+     *
+     * @param userId the internal ID of the target user
+     * @param payload the notification to send
+     */
+    public void send(Long userId, Notification payload) {
+<span class="nc" id="L57">        logger.debug(&quot;Sending message to user with internal id: &quot; + userId);</span>
+
+<span class="nc" id="L59">        SseEmitter emitter = emitters.get(userId);</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        if(emitter != null) {</span>
+            try {
+<span class="nc" id="L62">                synchronized(emitter) {</span>
+<span class="nc" id="L63">                    emitter.send(NotificationDto.fromEntity(payload));</span>
+<span class="nc" id="L64">                }</span>
+<span class="nc" id="L65">            } catch (IOException e) {</span>
+<span class="nc" id="L66">                logger.error(&quot;Registry: Emitter not found: &quot; + e );</span>
+<span class="nc" id="L67">                emitters.remove(userId);</span>
+<span class="nc" id="L68">            }</span>
+        }
+<span class="nc" id="L70">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WeeklyMysteryController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">no.safety.backend.weeklymystery.controller</a> &gt; <span class="el_source">WeeklyMysteryController.java</span></div><h1>WeeklyMysteryController.java</h1><pre class="source lang-java linenums">package no.safety.backend.weeklymystery.controller;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import no.safety.backend.auth.model.UserPrincipal;
+import no.safety.backend.weeklymystery.dto.WeeklyMysteryExerciseLinkRequest;
+import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptCreateRequest;
+import no.safety.backend.weeklymystery.dto.WeeklyMysteryPromptResponse;
+import no.safety.backend.weeklymystery.dto.WeeklyMysterySubmissionCreateRequest;
+import no.safety.backend.weeklymystery.dto.WeeklyMysterySubmissionResponse;
+import no.safety.backend.weeklymystery.service.WeeklyMysteryService;
+
+@RestController
+@RequestMapping(&quot;/api/v1/WeeklyMystery&quot;)
+@RequiredArgsConstructor
+public class WeeklyMysteryController {
+
+    private final WeeklyMysteryService weeklyMysteryService;
+
+    /**
+     * Allows students to submit files related to a given Weekly Mystery prompt
+     * @param request an object containing a prompt id, file and message.
+     * @param principal user information (Automatically provided by Spring, ignore)
+     * @return an empty response entity indicating success or failure.
+     */
+    @PreAuthorize(&quot;hasRole('STUDENT')&quot;)
+    @PostMapping(value = &quot;/&quot;, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity&lt;?&gt; submitResponse(@Valid @ModelAttribute WeeklyMysterySubmissionCreateRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+<span class="nc" id="L49">        weeklyMysteryService.saveStudentSubmission(request, principal.getUserInternalId());</span>
+<span class="nc" id="L50">        return ResponseEntity.ok(null);</span>
+    }
+
+    /**
+     * Allows teachers to submit new Weekly Mystery prompts for persistence.
+     * @param request A request containing clue, title, prompt, selected date and selected classroom (public UUID's)
+     * @param principal user information (Automatically provided by spring, Ignore)
+     * @return a response entity containing the submitted prompt information plus public UUID for prompt on success.
+     */
+    @Operation(
+        summary = &quot;Create Prompt&quot;,
+        description = &quot;Endpoint allows teachers to create a new Weekly Mystery Prompt&quot;
+    )
+    @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+    @PostMapping(value = &quot;/prompts&quot;)
+    public ResponseEntity&lt;WeeklyMysteryPromptResponse&gt; submitPrompt(
+            @Valid @RequestBody WeeklyMysteryPromptCreateRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+<span class="nc" id="L68">        return ResponseEntity.ok(weeklyMysteryService.savePrompt(request, principal.getUserInternalId()));</span>
+        
+    }
+
+
+
+    /**
+     * Provides an endpoint for retrieving a list of submissions related to a given
+     * Weekly Mystery Prompt. 
+     * @param promptId the public UUID of the prompt you want to view submissions for.
+     * @return a set of Weekly Mystery Submission DTOs.
+     */
+    @Operation(
+        summary = &quot;Get a set of submissions&quot;,
+        description = &quot;Get a set of submissions related to a weekly mystery prompt.&quot;
+    )
+    @RequestMapping(value = &quot;/{promptId}/submissions&quot;, method = RequestMethod.GET)
+    public ResponseEntity&lt;Set&lt;WeeklyMysterySubmissionResponse&gt;&gt; getSubmissions(
+        @PathVariable UUID promptId 
+        ) {
+<span class="nc" id="L88">            return ResponseEntity.ok(weeklyMysteryService.getWeeklyMysterySubmissionResponses(promptId));</span>
+    
+    }
+
+    @Operation(
+        summary = &quot;Link exercise to prompt&quot;,
+        description = &quot;Connect a saved exercise to a Weekly Mystery prompt so students can play it.&quot;
+    )
+    @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+    @PatchMapping(&quot;/{promptId}/exercise&quot;)
+    public ResponseEntity&lt;WeeklyMysteryPromptResponse&gt; linkExercise(
+            @PathVariable UUID promptId,
+            @Valid @RequestBody WeeklyMysteryExerciseLinkRequest request,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+<span class="nc" id="L103">        return ResponseEntity.ok(weeklyMysteryService.linkExercise(</span>
+                promptId,
+<span class="nc" id="L105">                request.exerciseUid(),</span>
+<span class="nc" id="L106">                principal.getUserInternalId()));</span>
+    }
+
+
+    /**
+     * Allows teachers to retrieve a list of all prompts that they have created.
+     * @param principal user information (Automatically provided by spring)
+     * @return a response entity a set of Prompt Responses
+     */
+    @Operation(
+        summary = &quot;Retrieve prompts&quot;,
+        description = &quot;Endpoint allows teachers to retrieve a list of all prompts connected to their account.&quot;
+    )
+    @PreAuthorize(&quot;hasRole('TEACHER')&quot;)
+    @RequestMapping(value = &quot;/prompts&quot;, method = RequestMethod.GET)
+    public ResponseEntity&lt;HashSet&lt;WeeklyMysteryPromptResponse&gt;&gt; fetchPrompts(
+        @AuthenticationPrincipal UserPrincipal principal
+    ) {
+<span class="nc" id="L124">        return ResponseEntity.ok(weeklyMysteryService.fetchUsersPrompts(principal.getUserInternalId()));</span>
+    }
+
+    /**
+     * Provides an endpoint for deleting a specific submission.
+     * The requesting user must be either the submitting student or an authorized teacher.
+     *
+     * @param submissionId the public UUID of the submission to delete.
+     */
+    @Operation(
+    summary = &quot;Delete a submission&quot;,
+    description = &quot;Delete a submission by its UUID. Requester must be the submitting student or an authorized teacher.&quot;
+)
+    @DeleteMapping(&quot;/{promptId}/submissions/{submissionId}&quot;)
+    public ResponseEntity&lt;Void&gt; deleteSubmission(
+            @PathVariable UUID promptId,
+            @PathVariable UUID submissionId,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+<span class="nc" id="L143">        weeklyMysteryService.deleteSubmission(submissionId, principal.getUserInternalId());</span>
+<span class="nc" id="L144">        return ResponseEntity.noContent().build();</span>
+    }
+
+
+    /**
+     * Provides an endpoint for deleting a specific Weekly Mystery Prompt.
+     * The requesting user must be the teacher who created the prompt.
+     *
+     * @param promptId the public UUID of the prompt to delete.
+     */
+    @Operation(
+        summary = &quot;Delete a prompt&quot;,
+        description = &quot;Delete a Weekly Mystery prompt by its UUID. Requester must be the teacher who created it.&quot;
+    )
+    @DeleteMapping(&quot;/{promptId}&quot;)
+    public ResponseEntity&lt;Void&gt; deletePrompt(
+            @PathVariable UUID promptId,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+<span class="nc" id="L163">        weeklyMysteryService.delete(promptId, principal.getUserInternalId());</span>
+<span class="nc" id="L164">        return ResponseEntity.noContent().build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
