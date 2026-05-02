@@ -72,7 +72,6 @@ function closeAchievement() {
         <h1 class="sectionTitle">Spesialmedalje</h1>
         <MedalElement
           v-if="specialMedal"
-          class="specialMedal"
           :medal="specialMedal"
           @select="openAchievement"
         />
