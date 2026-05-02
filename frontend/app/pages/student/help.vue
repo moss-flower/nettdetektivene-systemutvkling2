@@ -35,7 +35,7 @@ function selectVideo(video: IntroVideoMeta) {
     <section class="student-help__gallery" aria-labelledby="student-help-gallery-title">
       <div class="student-help__gallery-header">
         <p class="student-help__eyebrow">Videoer</p>
-        <h3 id="student-help-gallery-title">Se introvideoer igjen</h3>
+        <h3 id="student-help-gallery-title">Se introvideoer</h3>
         <p>
           Trykk på "Hjemskjermen" for å spille av introduksjon på nytt,
           eller trykk på de andre videoene hvis du vil lære om nettvett.

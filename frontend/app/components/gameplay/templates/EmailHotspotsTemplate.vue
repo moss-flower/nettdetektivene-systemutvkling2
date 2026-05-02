@@ -270,9 +270,82 @@ const activateTarget = (targetId?: string) => {
 
 <style scoped>
 .emailHotspotsTemplate {
+  /* header */
+  --hot-title: var(--palette-cork-900);
+  --hot-muted: var(--palette-cork-580);
+
+  /* progress pill */
+  --hot-pill-bg: var(--palette-cream-200);
+  --hot-pill-text: var(--palette-navy-700);
+
+  /* email card */
+  --hot-mail-bg: var(--palette-cream-100);
+  --hot-mail-border: var(--palette-overlay-cork-medium);
+  --hot-mail-shadow: var(--palette-overlay-dark-soft);
+
+  /* email header bar */
+  --hot-header-bg: var(--palette-cream-200);
+  --hot-header-border: var(--palette-overlay-cork-medium);
+
+  /* avatar */
+  --hot-avatar-bg: var(--palette-navy-200);
+  --hot-avatar-text: var(--palette-navy-900);
+
+  /* sender / meta text */
+  --hot-sender-name: var(--palette-cork-900);
+  --hot-sender-address: var(--palette-cork-700);
+  --hot-received-label: var(--palette-cork-700);
+
+  /* subject */
+  --hot-subject: var(--palette-cork-900);
+
+  /* body text */
+  --hot-body-text: var(--palette-cork-700);
+
+  /* target buttons - idle */
+  --hot-target-bg: var(--palette-white);
+  --hot-target-border: var(--palette-navy-200);
+  --hot-target-shadow: var(--palette-overlay-dark-soft);
+
+  /* target buttons - hover */
+  --hot-target-border-hover: var(--palette-navy-700);
+  --hot-target-shadow-hover: var(--palette-overlay-dark-medium);
+
+  /* link card */
+  --hot-link-bg: var(--palette-cream-200);
+  --hot-link-border: var(--palette-cream-300);
+  --hot-link-label: var(--palette-navy-900);
+  --hot-link-url: var(--palette-cork-580);
+
+  /* CTA button */
+  --hot-cta-bg: var(--palette-navy-700);
+  --hot-cta-bg-hover: var(--palette-navy-600);
+  --hot-cta-text: var(--palette-white);
+  --hot-cta-shadow-hover: var(--palette-overlay-dark-medium);
+
+  /* attachment */
+  --hot-attach-bg: var(--palette-gray-50);
+  --hot-attach-border: var(--palette-gray-200);
+  --hot-attach-name: var(--palette-navy-900);
+  --hot-attach-details: var(--palette-cork-580);
+  --hot-attach-interactive-border: var(--palette-navy-200);
+
+  /* found / correct state */
+  --hot-found-bg: var(--palette-green-100);
+  --hot-found-border: var(--palette-green-700);
+
+  /* incorrect state */
+  --hot-incorrect-bg: var(--palette-red-100);
+  --hot-incorrect-border: var(--palette-red-700);
+
+  /* plain target found/incorrect (inset ring style) */
+  --hot-plain-found-bg: var(--palette-cream-200);
+  --hot-plain-found-ring: var(--palette-green-700);
+  --hot-plain-incorrect-bg: var(--palette-red-100);
+
   display: grid;
   gap: var(--space-4);
-  color: var(--color-text-primary);
+  color: var(--hot-title);
 }
 
 .hotspotsTemplateHeader {
@@ -284,37 +357,38 @@ const activateTarget = (targetId?: string) => {
 
 .hotspotsTemplateHeading {
   display: grid;
-  gap: 0.35rem;
+  gap: var(--space-1);
 }
 
 .hotspotsTemplateTitle {
+  /* fluid title scale, deliberate exception */
   font-size: clamp(1.15rem, 1.8vw, 1.45rem);
   line-height: 1.15;
-  color: var(--color-text-primary);
+  color: var(--hot-title);
 }
 
 .hotspotsTemplateText {
-  max-width: 46rem;
-  font-size: 0.95rem;
-  line-height: 1.45;
-  color: var(--color-text-secondary);
+  max-width: 46ch;
+  font-size: var(--font-size-14);
+  line-height: var(--font-leading-14);
+  color: var(--hot-muted);
 }
 
 .templateProgressPill {
   flex-shrink: 0;
-  padding: 0.45rem 0.8rem;
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-pill);
-  background: var(--color-semantic-info);
-  color: #24456e;
-  font-size: 0.88rem;
-  font-weight: 700;
+  background: var(--hot-pill-bg);
+  color: var(--hot-pill-text);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
 }
 
 .hotspotsTemplateMail {
-  border-radius: 1.6rem;
-  background: var(--color-bg-surface);
-  border: var(--border-width-thin) solid var(--color-border-default);
-  box-shadow: 0 16px 34px rgba(50, 72, 103, 0.1);
+  border-radius: var(--radius-3);
+  background: var(--hot-mail-bg);
+  border: var(--border-width-thin) solid var(--hot-mail-border);
+  box-shadow: 0 var(--space-4) var(--space-6) var(--hot-mail-shadow);
   overflow: hidden;
 }
 
@@ -323,9 +397,9 @@ const activateTarget = (targetId?: string) => {
   align-items: start;
   justify-content: space-between;
   gap: var(--space-4);
-  padding: var(--space-4) 1.15rem;
-  background: var(--color-semantic-info);
-  border-bottom: var(--border-width-hairline) solid var(--color-border-default);
+  padding: var(--space-4) var(--space-3);
+  background: var(--hot-header-bg);
+  border-bottom: var(--border-width-hairline) solid var(--hot-header-border);
 }
 
 .templateMailImageFrame {
@@ -345,76 +419,77 @@ const activateTarget = (targetId?: string) => {
 
 .hotspotsTemplateSender {
   display: flex;
-  gap: 0.85rem;
+  gap: var(--space-2);
   min-width: 0;
 }
 
 .hotspotsTemplateAvatar {
   display: grid;
   place-items: center;
-  width: 2.8rem;
-  height: 2.8rem;
+  width: var(--size-control-md);
+  height: var(--size-control-md);
   border-radius: var(--radius-pill);
-  background: #dce9f8;
-  color: #234369;
-  font-weight: 800;
+  background: var(--hot-avatar-bg);
+  color: var(--hot-avatar-text);
+  font-weight: var(--font-weight-bold);
 }
 
 .templateSenderCopy {
   display: grid;
-  gap: 0.2rem;
+  gap: var(--space-1);
   min-width: 0;
 }
 
 .templateSenderName {
-  font-weight: 700;
-  color: var(--color-text-primary);
+  font-weight: var(--font-weight-bold);
+  color: var(--hot-sender-name);
 }
 
 .templateSenderAddress,
 .templateReceivedLabel {
-  font-size: 0.9rem;
-  color: #617083;
+  font-size: var(--font-size-14);
+  color: var(--hot-sender-address);
 }
 
 .templateSubjectRow {
-  padding: var(--space-4) 1.15rem 0;
+  padding: var(--space-4) var(--space-3) 0;
 }
 
 .hotspotsTemplateSubject {
+  /* fluid subject scale, deliberate exception */
   font-size: clamp(1.2rem, 1.9vw, 1.6rem);
   line-height: 1.15;
-  color: var(--color-text-primary);
+  color: var(--hot-subject);
 }
 
 .hotspotsTemplateBody {
   display: grid;
-  gap: 0.8rem;
-  padding: var(--space-4) 1.15rem 1.2rem;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-3) var(--space-3);
 }
 
 .hotspotsTemplateGreeting,
 .hotspotsTemplateParagraph,
 .hotspotsTemplateClosing {
   font-size: var(--font-size-16);
-  line-height: 1.55;
-  color: #334155;
+  line-height: var(--font-leading-16);
+  color: var(--hot-body-text);
 }
 
 .templateLinkCard,
 .hotspotsTemplateTarget {
   display: grid;
-  gap: 0.2rem;
+  gap: var(--space-1);
   width: 100%;
   text-align: left;
   border-radius: var(--radius-2);
 }
 
 .hotspotsTemplateTarget {
-  padding: 0.8rem 0.9rem;
-  border: var(--border-width-thin) dashed #b9cae1;
-  background: var(--palette-white);
-  transition: transform var(--transition-base) ease, border-color var(--transition-base) ease, background-color var(--transition-base) ease, box-shadow var(--transition-base) ease;
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width-thin) dashed var(--hot-target-border);
+  background: var(--hot-target-bg);
+  transition: transform var(--transition-base), border-color var(--transition-base), background-color var(--transition-base), box-shadow var(--transition-base);
 }
 
 .templateTargetPlain {
@@ -428,48 +503,49 @@ const activateTarget = (targetId?: string) => {
 .hotspotsTemplateTarget:focus-visible,
 .templateAttachmentInteractive:hover:not(:disabled),
 .templateAttachmentInteractive:focus-visible {
-  transform: translateY(-1px);
-  border-color: #7ea1ca;
-  box-shadow: 0 12px 24px rgba(71, 107, 153, 0.12);
+  transform: translateY(calc(var(--border-width-hairline) * -1));
+  border-color: var(--hot-target-border-hover);
+  box-shadow: 0 var(--space-3) var(--space-5) var(--hot-target-shadow-hover);
   outline: none;
 }
 
 .templateTargetInline {
   justify-self: start;
   width: auto;
-  color: #4f6683;
-  font-size: 0.9rem;
+  color: var(--hot-sender-address);
+  font-size: var(--font-size-14);
   text-decoration: underline;
   text-decoration-style: dashed;
-  text-underline-offset: 0.16em;
+  text-underline-offset: var(--space-1);
   box-shadow: none;
 }
 
 .templateTargetSubject {
+  /* fluid subject scale, deliberate exception */
   font-size: clamp(1.2rem, 1.9vw, 1.6rem);
   line-height: 1.15;
-  color: var(--color-text-primary);
+  color: var(--hot-subject);
   box-shadow: none;
 }
 
 .targetSenderName {
   justify-self: start;
   width: auto;
-  font-weight: 700;
-  color: var(--color-text-primary);
+  font-weight: var(--font-weight-bold);
+  color: var(--hot-sender-name);
 }
 
 .targetReceivedLabel {
   justify-self: start;
   width: auto;
-  font-size: 0.9rem;
-  color: #617083;
+  font-size: var(--font-size-14);
+  color: var(--hot-received-label);
 }
 
 .templateTargetParagraph {
   font-size: var(--font-size-16);
-  line-height: 1.55;
-  color: #334155;
+  line-height: var(--font-leading-16);
+  color: var(--hot-body-text);
 }
 
 .templateTargetPlain:hover:not(:disabled),
@@ -480,93 +556,107 @@ const activateTarget = (targetId?: string) => {
 }
 
 .templateLinkCard {
-  padding: 0.85rem 0.95rem;
-  background: var(--color-semantic-info);
-  border: var(--border-width-hairline) solid #d3e1f4;
+  padding: var(--space-2) var(--space-3);
+  background: var(--hot-link-bg);
+  border: var(--border-width-hairline) solid var(--hot-link-border);
 }
 
 .templateTargetLink {
   border-style: solid;
 }
 
-.templateLinkLabel,
+.templateLinkLabel {
+  font-weight: var(--font-weight-bold);
+  color: var(--hot-link-label);
+}
+
 .templateAttachmentName {
-  font-weight: 700;
-  color: #173556;
+  font-weight: var(--font-weight-bold);
+  color: var(--hot-attach-name);
 }
 
 .templateLinkUrl,
-.templateLinkHelper,
-.templateAttachmentDetails,
+.templateLinkHelper {
+  font-size: var(--font-size-14);
+  color: var(--hot-link-url);
+}
+
 .templateCtaHelper {
-  font-size: 0.88rem;
-  color: #5f7289;
+  font-size: var(--font-size-14);
+  color: var(--hot-cta-text);
+}
+
+.templateAttachmentDetails {
+  font-size: var(--font-size-14);
+  color: var(--hot-attach-details);
 }
 
 .templateTargetCta,
 .templateCtaStatic {
   justify-self: start;
-  padding: 0.9rem 1.1rem;
+  padding: var(--space-3) var(--space-3);
   border-radius: var(--radius-pill);
   border: 0;
-  background: #2d5a8f;
-  color: var(--palette-white);
-  font-weight: 700;
+  background: var(--hot-cta-bg);
+  color: var(--hot-cta-text);
+  font-weight: var(--font-weight-bold);
 }
 
 .templateTargetCta {
-  transition: transform var(--transition-base) ease, box-shadow var(--transition-base) ease, background-color var(--transition-base) ease;
+  transition: transform var(--transition-base), box-shadow var(--transition-base), background-color var(--transition-base);
 }
 
 .templateTargetCta:hover:not(:disabled),
 .templateTargetCta:focus-visible {
-  background: #3468a7;
-  box-shadow: 0 12px 24px rgba(52, 104, 167, 0.22);
+  background: var(--hot-cta-bg-hover);
+  box-shadow: 0 var(--space-3) var(--space-5) var(--hot-cta-shadow-hover);
   outline: none;
 }
 
 .templateAttachments {
   display: grid;
-  gap: 0.7rem;
+  gap: var(--space-2);
 }
 
 .templateAttachment {
   display: grid;
-  gap: 0.15rem;
+  gap: var(--space-1);
   justify-items: start;
-  padding: 0.8rem 0.9rem;
-  border-radius: 0.95rem;
-  border: var(--border-width-hairline) solid #d9e1ec;
-  background: #fbfcfe;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-2);
+  border: var(--border-width-hairline) solid var(--hot-attach-border);
+  background: var(--hot-attach-bg);
   text-align: left;
 }
 
 .templateAttachmentInteractive {
-  border: var(--border-width-thin) dashed #b9cae1;
-  transition: transform var(--transition-base) ease, border-color var(--transition-base) ease, background-color var(--transition-base) ease, box-shadow var(--transition-base) ease;
+  border: var(--border-width-thin) dashed var(--hot-attach-interactive-border);
+  transition: transform var(--transition-base), border-color var(--transition-base), background-color var(--transition-base), box-shadow var(--transition-base);
 }
 
 .templateTargetFound {
-  border-color: #4a9b5a;
-  background: #eefaf0;
+  border-color: var(--hot-found-border);
+  background: var(--hot-found-bg);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
 .templateTargetIncorrect {
-  border-color: #d66363;
-  background: #fff0f0;
+  border-color: var(--hot-incorrect-border);
+  background: var(--hot-incorrect-bg);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
 .templateTargetPlain.templateTargetFound,
 .templateTargetPlain.templateAttachmentInteractive.templateTargetFound {
-  border-radius: 0.45rem;
-  background: var(--color-semantic-info);
-  box-shadow: inset 0 0 0 2px #4a9b5a;
+  border-radius: var(--radius-1);
+  background: var(--hot-plain-found-bg);
+  box-shadow: inset 0 0 0 var(--border-width-thin) var(--hot-plain-found-ring);
 }
 
 .templateTargetPlain.templateTargetIncorrect,
 .templateTargetPlain.templateAttachmentInteractive.templateTargetIncorrect {
-  border-radius: 0.45rem;
-  background: #fff0f0;
+  border-radius: var(--radius-1);
+  background: var(--hot-plain-incorrect-bg);
 }
 
 </style>
